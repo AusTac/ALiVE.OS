@@ -117,12 +117,12 @@ class cfgFunctions {
                 RECOMPILE;
             };
             class addCivilianActions {
-                description = "addCivilianActions";
+                description = "Adds civilian actions";
                 file = "\x\alive\addons\amb_civ_population\fnc_addCivilianActions.sqf";
                 RECOMPILE;
             };
             class selectRoleAction {
-                description = "addCivilianActions";
+                description = "Selects civilian action";
                 file = "\x\alive\addons\amb_civ_population\fnc_selectRoleAction.sqf";
                 RECOMPILE;
             };

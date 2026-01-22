@@ -94,6 +94,20 @@ class ALiVE_CivilianInteraction {
 			colorActive[] = {0,0,0,0};
 			sizeEx = "(((((safezoneW / safezoneH) min 1.2) / 1.2) / 25) * 1)";
 		};
+		
+		
+		class CivInteract_Stop: CivInteract_RscButton {
+			idc = 92310;
+			action = "[ALiVE_civInteractHandler,'Stop'] call ALiVE_fnc_civInteract";
+
+			text = "Stop";
+            x = 0.339583 * safezoneW + safezoneX;
+            y = 0.8276 * safezoneH + safezoneY;
+            w = 0.065625 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorActive[] = {0,0,0,0.5};
+		};
+		
 
 		class CivInteract_Detain: CivInteract_RscButton {
 			idc = 92311;

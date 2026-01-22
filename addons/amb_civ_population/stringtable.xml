@@ -271,6 +271,11 @@
     <Spanish>Hablar con %1</Spanish>
     <Chinesesimp>与%1交谈</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_CIV_INTERACT_ACTIONS_STOP">
+    <English>Stop</English>
+    <Spanish>Stop</Spanish>
+    <Chinesesimp>扣留</Chinesesimp>
+</Key>
 <Key ID="STR_ALIVE_CIV_INTERACT_ACTIONS_DETAIN">
     <English>Detain</English>
     <Spanish>Detener</Spanish>

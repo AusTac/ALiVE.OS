@@ -118,6 +118,25 @@ _id = _object addAction [
     5
 ];
 
+
+_text = localize "STR_ALIVE_CIV_INTERACT_ACTIONS_STOP";
+_params = [];
+_code = {_object = _this select 0; _caller = _this select 1; _params = _this select 3;  _group = if (side (group _object) == Civilian) then {group _object} else {createGroup Civilian}; _object disableAI "MOVE"; sleep (60 + (ceil random 20)); _object enableAI "MOVE"; _object setUnitPos "AUTO";};
+_condition = "alive _target";
+
+_id = _object addAction [
+    _text,
+    _code,
+    _params,
+    1,
+    false,
+    true,
+    "",
+    _condition,
+    5
+];
+
+
 _text = localize "STR_ALIVE_CIV_INTERACT_ACTIONS_DETAIN";
 _params = [];
 _code = {_object = _this select 0; _caller = _this select 1; _params = _this select 3; _group = group _object; [_object] joinsilent (group _caller); _object setvariable ['detained',true,true]; _group call ALiVE_fnc_DeleteGroupRemote};

@@ -5,7 +5,7 @@ SCRIPT(civInteract);
 Function: MAINCLASS
 
 Description:
-Main handler for civilian interraction
+Main handler for civilian interaction
 
 Parameters:
 String - Operation
@@ -767,6 +767,23 @@ switch (_operation) do {
 			};
 		};
 	};
+	
+	case "Stop": {
+		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+
+		closeDialog 0;
+
+		if (!isNil "_civ") then {
+			[_civ] spawn {
+				params ["_civ"];
+				sleep 1;
+				_civ disableAI "MOVE";
+				sleep (60 + (ceil random 20));
+				_civ enableAI "MOVE";
+				_civ setUnitPos "AUTO";
+			};
+		};
+	};
 
 	case "getDown": {
 		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
@@ -779,7 +796,7 @@ switch (_operation) do {
 				sleep 1;
 				_civ disableAI "MOVE";
 				_civ setUnitPos "DOWN";
-				sleep (10 + (ceil random 20));
+				sleep (60 + (ceil random 20));
 				_civ enableAI "MOVE";
 				_civ setUnitPos "AUTO";
 			};
