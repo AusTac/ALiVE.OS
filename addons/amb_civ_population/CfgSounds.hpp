@@ -100,7 +100,7 @@ class CfgSounds
     class ALiVE_Civpop_Audio_17
     {
         name = "baby";
-        sound[] = {"x\alive\addons\amb_civ_population\audio\baby.ogg", 0.7, 1, 20};
+        sound[] = {"x\alive\addons\amb_civ_population\audio\baby.ogg", 0.2, 1, 10};
         titles[] = {};
     };
     class ALiVE_Civpop_Audio_18
