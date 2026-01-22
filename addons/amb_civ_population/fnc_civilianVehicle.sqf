@@ -338,6 +338,7 @@ switch(_operation) do {
        				  _unit setDamage (random [0.3, 0.55, 0.89]);
                };
              };
+             
 
             // set profile id on the unit
             _unit setVariable ["agentID", _agentID];
@@ -347,7 +348,26 @@ switch(_operation) do {
 
             // getin event handler
             _eventID = _unit addEventHandler["getIn", ALIVE_fnc_agentGetInEventHandler];
-
+            
+             // START Civ Drivers
+             _thislist = _unit nearEntities ["Man", 100];
+             // ["_thislist: %1",_thislist] call ALIVE_fnc_dump;
+ 						 _nearcivs = [];
+			        {
+			         if (side _x  == civilian) then {_nearcivs pushBack _x};
+			        } forEach _thislist;
+			       // ["_nearcivs: %1",_nearcivs] call ALIVE_fnc_dump;
+			       if (count _nearcivs > 0) then {
+			       	
+                _diceRoll = random 1;
+                if(_diceRoll < 0.45) then {
+			       	   (_nearcivs select 0) moveInDriver _unit;
+                 (_nearcivs select 0) assignAsDriver _unit;
+                 ["civilian driver: %1",_nearcivs select 0] call ALIVE_fnc_dump;
+                };
+			       }; 
+             // END Civ Drivers
+						
             // set profile as active and store a reference to the unit on the profile
             [_logic,"unit",_unit] call ALIVE_fnc_hashSet;
             [_logic,"active",true] call ALIVE_fnc_hashSet;
