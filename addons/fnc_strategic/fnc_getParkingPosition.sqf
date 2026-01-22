@@ -188,7 +188,7 @@ for "_i" from 1 to 4 do {
 	  _distance_between_cars = (_road_seg_length / _num_cars_in_road_segment) + _car_extra_space;
 	
 	  if (_num_cars_in_road_segment > 0) then {
-		  _pos_middle_right = [(_pos_flat_empty # 0), (_pos_flat_empty # 1), (_pos_flat_empty # 2 - getTerrainHeightASL _pos_flat_empty)] getPos [_road_seg_width * 0.35, (_direction + 90)];
+		  _pos_middle_right = [(_pos_flat_empty # 0), (_pos_flat_empty # 1), (_pos_flat_empty # 2 - getTerrainHeightASL _pos_flat_empty)] getPos [_road_seg_width * 1.35, (_direction + 90)];
 		  _pos_back_right = _pos_middle_right getPos [(_road_seg_length / 2), (_direction - 180)];
 		  _last_pos = _pos_back_right;
 		
