@@ -1,0 +1,5 @@
+Changelog
+
+ALiVE Operation Cobra v.1.00.7
+
+- Fixed issue where arsenal did not contain the correct weapons and items.
