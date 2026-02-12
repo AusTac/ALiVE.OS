@@ -68,9 +68,7 @@ There are several entries in the Field Manual which will guide you through inter
 - Some features will require that you carry a **Laser Designator** (or any custom item defined in the editor modules).
 - For Advanced Markers, access the map and press **CTRL ALT LMB** to place or edit a marker. Press **CTRL ALT RMB** to delete a marker.
 
-For full instructions refer to the wiki at http://alivemod.com/wiki/
-
-Our devs check our forum daily, so any issues please contact us via the forum at http://alivemod.com/forum/
+For full instructions refer to the wiki at https://alivewiki.com/
 
 ### ALiVE War Room
 We highly recommend that you (as a player or a group admin) register with our ALiVE War Room at http://alivemod.com/user/register
