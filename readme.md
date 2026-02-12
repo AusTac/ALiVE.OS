@@ -70,6 +70,8 @@ There are several entries in the Field Manual which will guide you through inter
 
 For full instructions refer to the wiki at https://alivewiki.com/
 
+Join us on Discord: https://discord.gg/KkacXFx
+
 ### How It Works
 ALiVE is complex but not complicated. Each module is standalone but they can be synchronised to each other to create different scenarios. The modules work independently but will use data derived from another module if it is synchronised. This layered approach provides a high degree of flexibility and allows you to build custom scenarios quickly.
 
