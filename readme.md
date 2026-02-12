@@ -70,13 +70,6 @@ There are several entries in the Field Manual which will guide you through inter
 
 For full instructions refer to the wiki at https://alivewiki.com/
 
-### ALiVE War Room
-We highly recommend that you (as a player or a group admin) register with our ALiVE War Room at http://alivemod.com/user/register
-
-On the War Room you can create a new group or join a current group if they accept applications.  If you create a group, you can register one or more servers to enable database persistence, player stats and AAR.
-
-In order to capture data properly with ALiVE and ensure mission persistence, players should always use the **PLAYER EXIT** button when on a dedicated server. Administrators should use the **SERVER SAVE AND EXIT** button when closing down an MP session on a dedicated server. Both these buttons are available by pressing ESC to get to the main menu while in game.
-
 ### How It Works
 ALiVE is complex but not complicated. Each module is standalone but they can be synchronised to each other to create different scenarios. The modules work independently but will use data derived from another module if it is synchronised. This layered approach provides a high degree of flexibility and allows you to build custom scenarios quickly.
 
