@@ -5338,6 +5338,13 @@ switch(_operation) do {
                             [_transportProfile, "addWaypoint", _leaveWPStraight] call ALIVE_fnc_profileEntity;
                             [_transportProfile, "addWaypoint", _leaveWPTurn] call ALIVE_fnc_profileEntity;
                             [_transportProfile, "addWaypoint", _leaveWPFinal] call ALIVE_fnc_profileEntity;
+
+                            // Signal the slingload spawn thread (if still running) that RTB
+                            // waypoints have been issued - it must not clear them.
+                            private _rtbVehicleObj = _transportProfile select 2 select 10;
+                            if (!isNull _rtbVehicleObj) then {
+                                _rtbVehicleObj setVariable ["alive_ml_rtb_issued", true];
+                            };
                         };
                     } forEach _eventTransportProfiles;
 
@@ -8933,10 +8940,10 @@ switch(_operation) do {
                                     // Gradient is sampled at the slung vehicle's ground position so we
                                     // know the terrain the vehicle will actually land on.
                                     //
-                                    // If the heli stalls above the drop height (e.g. AI won't descend
-                                    // further due to terrain below rotor disc) a retry waypoint is
-                                    // re-issued every SLINGLOAD_WP_RETRY_INTERVAL seconds, mirroring
-                                    // the _landAtIssued retry pattern in heliDeliveryWatchdog.
+                                    // If the heli stalls above the drop height a retry waypoint is
+                                    // re-issued every SLINGLOAD_WP_RETRY_INTERVAL seconds, UNLESS the
+                                    // event state machine has already issued RTB waypoints - checked via
+                                    // the alive_ml_rtb_issued vehicle variable set by heliTransportReturn.
                                     private _dropTimer       = 0;
                                     private _dropped         = false;
                                     private _wpRetryTimer    = 0;
@@ -8955,6 +8962,18 @@ switch(_operation) do {
                                             ["ML - unloadTransportHelicopter: Slung vehicle destroyed mid-delivery for heli %1, aborting drop.", _vehicle] call ALiVE_fnc_dump;
                                             true
                                         };
+
+                                        // If heliTransportReturn has already issued RTB waypoints to this
+                                        // heli, do not fight it - release the load immediately and exit
+                                        // so the heli can depart. The state machine takes priority.
+                                        private _rtbIssued = _vehicle getVariable ["alive_ml_rtb_issued", false];
+                                        if (_rtbIssued) then {
+                                            _vehicle setSlingLoad objNull;
+                                            _dropped = true;
+                                            ["ML - unloadTransportHelicopter: RTB already issued to %1, force-releasing slung load and exiting spawn thread.",
+                                                _vehicle] call ALiVE_fnc_dump;
+                                            true
+                                        } else {
 
                                         // Measure the slung vehicle's AGL - correct reference point
                                         private _slungAGL = (getPosATL _slingloadVehicle) select 2;
@@ -9012,6 +9031,7 @@ switch(_operation) do {
                                         } else {
                                             false
                                         };
+                                        }; // end else (!_rtbIssued)
                                     };
 
                                     // Clean up profile slingload state hashes
