@@ -8903,10 +8903,26 @@ switch(_operation) do {
 
                                     _vehicle setVariable ["alive_ml_slingload_object", _slingloadVehicle];
 
-                                    // Fetch heli profile once - reused for both the waypoint issue
-                                    // and the post-drop state cleanup to avoid double lookups
+                                    // Fetch heli vehicle profile and its entity (pilot) profile.
+                                    // clearWaypoints/addWaypoint must be called on the ENTITY profile
+                                    // (fnc_profileEntity) - not the vehicle profile. Vehicle profiles
+                                    // have a different hash layout where index 21 is hasSimulated (bool),
+                                    // not units (array), causing "Type Bool, expected Array" errors.
                                     private _heliProfileID = _vehicle getVariable ["profileID", ""];
                                     private _heliProfile   = [ALIVE_profileHandler, "getProfile", _heliProfileID] call ALIVE_fnc_profileHandler;
+
+                                    // Resolve entity (pilot) profile from vehicle profile's entitiesInCommandOf
+                                    private _heliEntityProfile = nil;
+                                    if !(isNil "_heliProfile") then {
+                                        private _inCmd = _heliProfile select 2 select 8; // entitiesInCommandOf
+                                        if (count _inCmd > 0) then {
+                                            _heliEntityProfile = [ALIVE_profileHandler, "getProfile", _inCmd select 0] call ALIVE_fnc_profileHandler;
+                                        };
+                                    };
+                                    // Store entity profile ID for retry lookups in the waitUntil loop
+                                    private _heliEntityProfileID = if !(isNil "_heliEntityProfile") then {
+                                        _heliEntityProfile select 2 select 4
+                                    } else { "" };
 
                                     // Clear any existing native waypoints so the AI doesn't fight
                                     // the profile waypoint we are about to issue
@@ -8922,12 +8938,12 @@ switch(_operation) do {
                                     // consistent with all other heli destination waypoints in this file.
                                     // We monitor the SLUNG VEHICLE'S actual AGL in the waitUntil below
                                     // rather than directing the heli to a specific altitude.
-                                    if !(isNil "_heliProfile") then {
+                                    if !(isNil "_heliEntityProfile") then {
                                         private _dropWPPos = +_position;
                                         _dropWPPos set [2, 0];
                                         private _dropWP = [_dropWPPos, 30, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
-                                        [_heliProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                                        [_heliProfile, "addWaypoint", _dropWP] call ALIVE_fnc_profileEntity;
+                                        [_heliEntityProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
+                                        [_heliEntityProfile, "addWaypoint", _dropWP] call ALIVE_fnc_profileEntity;
                                     };
 
                                     ["ML - unloadTransportHelicopter: Slingload heli %1 directed to drop pos %2",
@@ -8983,7 +8999,7 @@ switch(_operation) do {
                                         // Waypoint Z=0 so the AI manages its own descent naturally.
                                         if (_wpRetryTimer >= _wpRetryInterval && _slungAGL > SLINGLOAD_DROP_HEIGHT) then {
                                             _wpRetryTimer = 0;
-                                            private _profNow = [ALIVE_profileHandler, "getProfile", _heliProfileID] call ALIVE_fnc_profileHandler;
+                                            private _profNow = [ALIVE_profileHandler, "getProfile", _heliEntityProfileID] call ALIVE_fnc_profileHandler;
                                             if !(isNil "_profNow") then {
                                                 private _retryWPPos = +_position;
                                                 _retryWPPos set [2, 0];

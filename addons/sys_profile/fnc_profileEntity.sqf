@@ -696,7 +696,10 @@ switch(_operation) do {
         if (_active) then {
             private _units = _logic select 2 select 21; //[_logic,"units"] call ALIVE_fnc_hashGet;
 
-            if (count _units > 0) then {
+            // Guard: vehicle profiles have a different hash layout - index 21 is
+            // hasSimulated (bool) not units (array). Skip waypoint deletion if
+            // _units is not an array (i.e. this is a vehicle profile, not entity).
+            if (_units isEqualType [] && count _units > 0) then {
                 private _unit = _units select 0;
                 private _group = group _unit;
                 while { count (waypoints _group) > 0 } do
