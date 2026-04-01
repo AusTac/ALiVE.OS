@@ -1159,7 +1159,7 @@ switch(_operation) do {
                             };
                         };
 
-                        // UNLOAD - wait for cargo to exit, then issue RTB waypoints
+                        // UNLOAD - wait for cargo to exit, then scatter troops before RTB
                         case 2: {
                             private _cargoCount = 0;
                             {
@@ -1173,6 +1173,22 @@ switch(_operation) do {
                                 if (_cargoCount > 0) then {
                                     { if (alive _x && _x != driver _heli && _x != gunner _heli) then { unassignVehicle _x; _x moveOut _heli; }; } forEach crew _heli;
                                 };
+
+                                // Scatter dismounted troops away from the LZ before heli lifts off.
+                                // Without this, units cluster under the rotor disc and are killed on takeoff.
+                                private _heliPos = getPos _heli;
+                                {
+                                    if (alive _x && _x != driver _heli && _x != gunner _heli) then {
+                                        private _angle  = random 360;
+                                        private _dist   = 15 + random 20;
+                                        private _movePos = _heliPos getPos [_dist, _angle];
+                                        _movePos set [2, 0];
+                                        _x doMove _movePos;
+                                    };
+                                } forEach (allUnits select { group _x == group (driver _heli) || vehicle _x == _heli });
+
+                                // Brief pause to let units begin moving clear before RTB issued
+                                sleep 6;
 
                                 // Issue RTB waypoints via profile - go direct to return position
                                 // No intermediate waypoint to avoid heli hovering at air position
