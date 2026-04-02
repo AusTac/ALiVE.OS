@@ -58,7 +58,7 @@ ARJay & Jman
 #define START_FORCE_STRENGTH_DEC_FACTOR "1"
 // LZ search constants
 #define LZ_MIN_CLEAR_RADIUS 5
-#define LZ_OBJECT_CLEAR_RADIUS 20
+#define LZ_OBJECT_CLEAR_RADIUS 30
 #define LZ_VEHICLE_CLEAR_RADIUS 15
 #define LZ_VERTICAL_CHECK_HEIGHT 35
 #define LZ_MAX_GRADIENT 15
@@ -549,7 +549,7 @@ switch(_operation) do {
                 // Road surface check - no terrain objects or overhead structures
                 private _nearTerrain = nearestTerrainObjects [
                     _candidate,
-                    ["ROCK","HOUSE","WALL","FENCE","BUILDING"],
+                    ["ROCK","TREE","HOUSE","WALL","FENCE","BUILDING"],
                     LZ_OBJECT_CLEAR_RADIUS
                 ];
                 // Check for any objects above the candidate (catches petrol station canopies etc)
@@ -1124,7 +1124,11 @@ switch(_operation) do {
             if (!isNull _heliForEH && alive _heliForEH && !_hitEHAdded) then {
                 _heliForEH setVariable ["alive_ml_watchdog_phase", _phase];
                 _hitEH = _heliForEH addEventHandler ["HitPart", {
-                    params ["_vehicle","_shooter","_projectile","_position","_velocity","_selection","_radius","_surfaceNormal","_isDirect"];
+                    // HitPart _this = [[vehicle, shooter, bullet, ...], ...] -- array of per-part arrays.
+                    // params ["_vehicle",...] would unpack the OUTER array making _vehicle the per-part
+                    // array instead of the vehicle object, causing getVariable: Type Array errors.
+                    private _partData = _this select 0;
+                    private _vehicle  = _partData select 0;
                     // Only act during LANDING (1) and UNLOAD (2) phases
                     private _currentPhase = _vehicle getVariable ["alive_ml_watchdog_phase", 0];
                     if (_currentPhase in [1, 2]) then {
@@ -6430,6 +6434,17 @@ switch(_operation) do {
                                 private _noCargo = count (_vehicle getvariable ["ALiVE_SYS_LOGISTICS_CARGO", []]) == 0;
                                 private _slingLoading = [_vehicleProfile, "slingloading", false] call ALiVE_fnc_hashGet;
 
+                                // FIX: ALiVE_SYS_LOGISTICS_CARGO is never populated for slingload
+                                // operations so _noCargo is always true for slingload helis regardless
+                                // of whether the slung vehicle has been dropped. Check getSlingLoad on
+                                // the live vehicle object directly to determine actual sling state.
+                                if (_active && !isNull _vehicle && alive _vehicle) then {
+                                    if (!isNull (getSlingLoad _vehicle)) then {
+                                        _noCargo      = false;
+                                        _slingLoading = true;
+                                    };
+                                };
+
                                 // If payload vehicle is not slingloading and its cargo is empty - its done.
                                 TRACE_1("PR UNLOADED", !_slingLoading, _noCargo);
 
@@ -9254,29 +9269,20 @@ switch(_operation) do {
 
                                     _vehicle setVariable ["alive_ml_slingload_object", _slingloadVehicle];
 
-                                    // Fetch heli vehicle profile and its entity (pilot) profile.
-                                    // clearWaypoints/addWaypoint must be called on the ENTITY profile
-                                    // (fnc_profileEntity) - not the vehicle profile. Vehicle profiles
-                                    // have a different hash layout where index 21 is hasSimulated (bool),
-                                    // not units (array), causing "Type Bool, expected Array" errors.
+                                    // Guard against multiple concurrent spawn threads.
+                                    // heliTransport calls unloadTransportHelicopter every monitor
+                                    // cycle for any transport at its waypoint -- without this guard
+                                    // each cycle spawns a new descent thread.
+                                    if (_vehicle getVariable ["alive_ml_sling_unload_active", false]) exitWith {
+                                        ["ML - unloadTransportHelicopter: Slingload unload already active for %1, skipping duplicate.", _vehicle] call ALiVE_fnc_dump;
+                                    };
+                                    _vehicle setVariable ["alive_ml_sling_unload_active", true];
+
+                                    // Fetch heli vehicle profile for cleanup later
                                     private _heliProfileID = _vehicle getVariable ["profileID", ""];
                                     private _heliProfile   = [ALIVE_profileHandler, "getProfile", _heliProfileID] call ALIVE_fnc_profileHandler;
 
-                                    // Resolve entity (pilot) profile from vehicle profile's entitiesInCommandOf
-                                    private _heliEntityProfile = nil;
-                                    if !(isNil "_heliProfile") then {
-                                        private _inCmd = _heliProfile select 2 select 8; // entitiesInCommandOf
-                                        if (count _inCmd > 0) then {
-                                            _heliEntityProfile = [ALIVE_profileHandler, "getProfile", _inCmd select 0] call ALIVE_fnc_profileHandler;
-                                        };
-                                    };
-                                    // Store entity profile ID for retry lookups in the waitUntil loop
-                                    private _heliEntityProfileID = if !(isNil "_heliEntityProfile") then {
-                                        _heliEntityProfile select 2 select 4
-                                    } else { "" };
-
-                                    // Clear any existing native waypoints so the AI doesn't fight
-                                    // the profile waypoint we are about to issue
+                                    // Clear any existing native waypoints
                                     private _heliGrp = group _vehicle;
                                     if (!isNull _heliGrp) then {
                                         while {count (waypoints _heliGrp) > 0} do {
@@ -9284,37 +9290,27 @@ switch(_operation) do {
                                         };
                                     };
 
-                                    // Issue a profile MOVE waypoint to the drop position at ground level (Z=0).
-                                    // Arma's heli AI manages its own descent when given a Z=0 waypoint,
-                                    // consistent with all other heli destination waypoints in this file.
-                                    // We monitor the SLUNG VEHICLE'S actual AGL in the waitUntil below
-                                    // rather than directing the heli to a specific altitude.
-                                    if !(isNil "_heliEntityProfile") then {
-                                        private _dropWPPos = +_position;
-                                        _dropWPPos set [2, 0];
-                                        private _dropWP = [_dropWPPos, 30, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
-                                        [_heliEntityProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                                        [_heliEntityProfile, "addWaypoint", _dropWP] call ALIVE_fnc_profileEntity;
+                                    // Issue landAt to a helipad at the drop position.
+                                    // Profile MOVE waypoints at Z=0 were completed horizontally
+                                    // without descent -- the AI considers the waypoint done when
+                                    // within the 2D completion radius regardless of altitude.
+                                    // landAt forces a true vertical descent to ground level.
+                                    private _slingDropPad = createVehicle ["Land_HelipadEmpty_F", _position, [], 0, "CAN_COLLIDE"];
+                                    _vehicle landAt _slingDropPad;
+                                    // Safety cleanup in case the thread exits without deleting the pad
+                                    [_slingDropPad] spawn {
+                                        sleep 300;
+                                        if (!isNull (_this select 0)) then { deleteVehicle (_this select 0); };
                                     };
 
                                     ["ML - unloadTransportHelicopter: Slingload heli %1 directed to drop pos %2",
                                         _vehicle, _position] call ALiVE_fnc_dump;
 
                                     // Wait for the SLUNG VEHICLE (not the heli) to reach safe drop height.
-                                    // getPosATL on the slung object gives its actual AGL regardless of cable
-                                    // length or helicopter type, so SLINGLOAD_DROP_HEIGHT is accurate.
-                                    //
-                                    // Gradient is sampled at the slung vehicle's ground position so we
-                                    // know the terrain the vehicle will actually land on.
-                                    //
-                                    // If the heli stalls above the drop height a retry waypoint is
-                                    // re-issued every SLINGLOAD_WP_RETRY_INTERVAL seconds, UNLESS the
-                                    // event state machine has already issued RTB waypoints - checked via
-                                    // the alive_ml_rtb_issued vehicle variable set by heliTransportReturn.
                                     private _dropTimer       = 0;
                                     private _dropped         = false;
                                     private _wpRetryTimer    = 0;
-                                    private _wpRetryInterval = 30; // seconds between waypoint retries
+                                    private _wpRetryInterval = 30; // seconds between landAt retries
 
                                     waitUntil {
                                         sleep 2;
@@ -9324,47 +9320,57 @@ switch(_operation) do {
                                         if (!alive _vehicle) exitWith { true };
 
                                         // Guard: slung vehicle may have been destroyed mid-delivery
-                                        // (enemy fire, collision). If so, clean up and exit.
                                         if (isNull _slingloadVehicle || !alive _slingloadVehicle) exitWith {
                                             ["ML - unloadTransportHelicopter: Slung vehicle destroyed mid-delivery for heli %1, aborting drop.", _vehicle] call ALiVE_fnc_dump;
                                             true
                                         };
 
-                                        // If heliTransportReturn has already issued RTB waypoints to this
-                                        // heli, do not fight it - release the load immediately and exit
-                                        // so the heli can depart. The state machine takes priority.
+                                        // If heliTransportReturn has already issued RTB waypoints,
+                                        // release the load immediately so the heli can depart.
+                                        // Attach a parachute if still at altitude so vehicle lands intact.
                                         private _rtbIssued = _vehicle getVariable ["alive_ml_rtb_issued", false];
                                         if (_rtbIssued) then {
+                                            private _rtbAGL = (getPosATL _slingloadVehicle) select 2;
+                                            if (_rtbAGL > 5) then {
+                                                private _rtbPara = createVehicle ["B_Parachute_02_F", getPosATL _slingloadVehicle, [], 0, "FLY"];
+                                                _rtbPara setPosASL (getPosASL _slingloadVehicle);
+                                                _rtbPara setVelocity (velocity _vehicle);
+                                                _slingloadVehicle attachTo [_rtbPara, [0,0,0]];
+                                                [_rtbPara, _slingloadVehicle] spawn {
+                                                    private _p = _this select 0; private _v = _this select 1;
+                                                    waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                                    detach _v; deleteVehicle _p;
+                                                };
+                                                ["ML - unloadTransportHelicopter: RTB force-release - parachute attached to %1 at AGL %2m",
+                                                    _slingloadVehicle, _rtbAGL] call ALiVE_fnc_dump;
+                                            };
                                             _vehicle setSlingLoad objNull;
+                                            deleteVehicle _slingDropPad;
+                                            _vehicle setVariable ["alive_ml_sling_unload_active", false];
                                             _dropped = true;
-                                            ["ML - unloadTransportHelicopter: RTB already issued to %1, force-releasing slung load and exiting spawn thread.",
+                                            ["ML - unloadTransportHelicopter: RTB already issued to %1, force-releasing slung load.",
                                                 _vehicle] call ALiVE_fnc_dump;
                                             true
                                         } else {
 
-                                        // Measure the slung vehicle's AGL - correct reference point
                                         private _slungAGL = (getPosATL _slingloadVehicle) select 2;
 
-                                        // Periodically re-issue the descent waypoint if heli is stalling
-                                        // above drop height (AI pathfinding hesitation on hilly terrain).
-                                        // Waypoint Z=0 so the AI manages its own descent naturally.
+                                        // Re-issue landAt if heli stalls above drop height.
+                                        // Profile waypoint retries were ineffective because the AI
+                                        // completed them horizontally without descending.
                                         if (_wpRetryTimer >= _wpRetryInterval && _slungAGL > SLINGLOAD_DROP_HEIGHT) then {
                                             _wpRetryTimer = 0;
-                                            private _profNow = [ALIVE_profileHandler, "getProfile", _heliEntityProfileID] call ALIVE_fnc_profileHandler;
-                                            if !(isNil "_profNow") then {
-                                                private _retryWPPos = +_position;
-                                                _retryWPPos set [2, 0];
-                                                private _retryWP = [_retryWPPos, 30, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
-                                                [_profNow, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                                                [_profNow, "addWaypoint", _retryWP] call ALIVE_fnc_profileEntity;
-                                                ["ML - unloadTransportHelicopter: Retry descent WP issued to %1 (slungAGL=%2m timer=%3s)",
-                                                    _vehicle, _slungAGL, _dropTimer] call ALiVE_fnc_dump;
+                                            if (!isNull _heliGrp) then {
+                                                while {count (waypoints _heliGrp) > 0} do {
+                                                    deleteWaypoint [_heliGrp, 0];
+                                                };
                                             };
+                                            _vehicle landAt _slingDropPad;
+                                            ["ML - unloadTransportHelicopter: Retry landAt issued to %1 (slungAGL=%2m timer=%3s)",
+                                                _vehicle, _slungAGL, _dropTimer] call ALiVE_fnc_dump;
                                         };
 
                                         if (_slungAGL <= SLINGLOAD_DROP_HEIGHT || _dropTimer >= SLINGLOAD_DROP_TIMEOUT) then {
-                                            // Sample gradient at the slung vehicle's ground position -
-                                            // this is the terrain the dropped vehicle will actually land on
                                             private _groundPos = getPosATL _slingloadVehicle;
                                             _groundPos set [2, 0];
                                             private _h0 = getTerrainHeightASL _groundPos;
@@ -9377,19 +9383,39 @@ switch(_operation) do {
                                             } forEach [0, 90, 180, 270];
 
                                             if (!_gradOK && _dropTimer < SLINGLOAD_DROP_TIMEOUT) then {
-                                                // Steep ground - find a better nearby drop position and retry
+                                                // Steep ground - find better drop position and retry
                                                 private _retryPos = [_logic, "findHelicopterLandingPos", [
                                                     getPos _vehicle, 0, 200
                                                 ]] call MAINCLASS;
                                                 if (count _retryPos > 0 && !(surfaceIsWater _retryPos)) then {
                                                     _position = _retryPos;
-                                                    ["ML - unloadTransportHelicopter: Steep ground at drop pos, retrying at %1", _position] call ALiVE_fnc_dump;
+                                                    // Move the pad to the new position and re-issue landAt
+                                                    _slingDropPad setPosATL _position;
+                                                    _vehicle landAt _slingDropPad;
+                                                    ["ML - unloadTransportHelicopter: Steep ground, retrying at %1", _position] call ALiVE_fnc_dump;
                                                 };
-                                                _wpRetryTimer = _wpRetryInterval; // force immediate WP re-issue next tick
+                                                _wpRetryTimer = _wpRetryInterval;
                                                 false
                                             } else {
-                                                // Flat enough, or timed out - release the load
+                                                // Flat enough or timed out - release the load.
+                                                // Attach parachute if still at altitude so vehicle lands intact.
+                                                private _relAGL = (getPosATL _slingloadVehicle) select 2;
+                                                if (_relAGL > 5) then {
+                                                    private _relPara = createVehicle ["B_Parachute_02_F", getPosATL _slingloadVehicle, [], 0, "FLY"];
+                                                    _relPara setPosASL (getPosASL _slingloadVehicle);
+                                                    _relPara setVelocity (velocity _vehicle);
+                                                    _slingloadVehicle attachTo [_relPara, [0,0,0]];
+                                                    [_relPara, _slingloadVehicle] spawn {
+                                                        private _p = _this select 0; private _v = _this select 1;
+                                                        waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                                        detach _v; deleteVehicle _p;
+                                                    };
+                                                    ["ML - unloadTransportHelicopter: Parachute attached to slung vehicle %1 at AGL %2m",
+                                                        _slingloadVehicle, _relAGL] call ALiVE_fnc_dump;
+                                                };
                                                 _vehicle setSlingLoad objNull;
+                                                deleteVehicle _slingDropPad;
+                                                _vehicle setVariable ["alive_ml_sling_unload_active", false];
                                                 _dropped = true;
                                                 ["ML - unloadTransportHelicopter: Slingload released from %1, slungAGL=%2m timer=%3s gradOK=%4",
                                                     _vehicle, _slungAGL, _dropTimer, _gradOK] call ALiVE_fnc_dump;
