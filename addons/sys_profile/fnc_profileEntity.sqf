@@ -699,12 +699,16 @@ switch(_operation) do {
             // Guard: vehicle profiles have a different hash layout - index 21 is
             // hasSimulated (bool) not units (array). Skip waypoint deletion if
             // _units is not an array (i.e. this is a vehicle profile, not entity).
-            if (_units isEqualType [] && count _units > 0) then {
-                private _unit = _units select 0;
-                private _group = group _unit;
-                while { count (waypoints _group) > 0 } do
-                {
-                    deleteWaypoint ((waypoints _group) select 0);
+            // NOTE: use nested if rather than && to ensure count is never called
+            // on a non-array - SQF does not short-circuit inline && expressions.
+            if (_units isEqualType []) then {
+                if (count _units > 0) then {
+                    private _unit = _units select 0;
+                    private _group = group _unit;
+                    while { count (waypoints _group) > 0 } do
+                    {
+                        deleteWaypoint ((waypoints _group) select 0);
+                    };
                 };
             };
         };
