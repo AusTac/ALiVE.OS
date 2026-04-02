@@ -1530,7 +1530,7 @@ switch(_operation) do {
                                     };
                                     private _dropPosASL = getPosASL _heli2;
                                     _dropPosASL set [2, (_dropPosASL select 2) - 8];
-                                    private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "FLY"];
+                                    private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
                                     _para allowDamage false;
                                     _para setPosASL _dropPosASL;
                                     _para setVelocity (velocity _heli2);
@@ -1586,7 +1586,7 @@ switch(_operation) do {
                                             };
                                             private _dropPosASL = getPosASL _heli3;
                                             _dropPosASL set [2, (_dropPosASL select 2) - 8];
-                                            private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "FLY"];
+                                            private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
                                             _para allowDamage false;
                                             _para setPosASL _dropPosASL;
                                             _para setVelocity (velocity _heli3);
