@@ -1477,15 +1477,26 @@ switch(_operation) do {
                         if (_heliActive) then {
                             // -------------------------------------------------------
                             // ACTIVE drop: heli is within activation range.
-                            // Teleport infantry profile to heli position first so
-                            // ALiVE will spawn them (out-of-range spawn silently fails),
+                            // Teleport infantry profile position to ground below the heli
+                            // so ALiVE will spawn them (out-of-range spawn silently fails),
                             // then physically place them in parachutes.
                             // -------------------------------------------------------
-                            // Teleport infantry profile to ground below the heli so
-                            // ALiVE's spawn system activates them (spawn fails if outside range).
-                            // Use ground position directly beneath heli, not the heli's altitude.
-                            private _heliPos = getPos _heli2;  // AGL ground-level x,y
+                            private _heliPos = getPos _heli2;  // ground-level x,y beneath heli
                             [_infProfile, "position", _heliPos] call ALIVE_fnc_profileEntity;
+
+                            // Remove vehicle assignment before spawning. Infantry profiles
+                            // were assigned to the transport heli at creation so the profile
+                            // system tracks their position from the vehicle during transit.
+                            // With the assignment still in place ALiVE may spawn the units
+                            // already seated in the heli, after which moveInDriver into a
+                            // parachute silently fails or conflicts with the seated state.
+                            // Clearing the assignment here forces ALiVE to spawn them as a
+                            // free infantry group at _heliPos, ready to be placed in chutes.
+                            private _vAssignClear = [] call ALIVE_fnc_hashCreate;
+                            [_infProfile, "vehicleAssignments",  _vAssignClear] call ALIVE_fnc_hashSet;
+                            [_infProfile, "vehiclesInCargoOf",   []]            call ALIVE_fnc_hashSet;
+                            [_infProfile, "vehiclesInCommandOf", []]            call ALIVE_fnc_hashSet;
+                            [_infProfile, "speedPerSecond", "Man" call ALIVE_fnc_vehicleGetSpeedPerSecond] call ALIVE_fnc_hashSet;
 
                             private _infUnits = _infProfile select 2 select 21;
                             if (_dbg) then {
@@ -1505,9 +1516,18 @@ switch(_operation) do {
                                     ["ML - heliParadropWatchdog: %1 inf profile %2 units after spawn: %3 (waited %4s)", _tProfID, _infProfID, count _infUnits, _spawnTimer] call ALiVE_fnc_dump;
                                 };
                             };
+
+                            // Eject any units that spawned inside the heli due to a
+                            // residual vehicle assignment, then place all in parachutes.
                             {
                                 private _unit = _x;
                                 if (alive _unit) then {
+                                    // Eject from heli if seated -- moveInDriver into a
+                                    // parachute fails silently when the unit is in a vehicle.
+                                    if (vehicle _unit != _unit) then {
+                                        unassignVehicle _unit;
+                                        _unit moveOut (vehicle _unit);
+                                    };
                                     private _dropPosASL = getPosASL _heli2;
                                     _dropPosASL set [2, (_dropPosASL select 2) - 8];
                                     private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "FLY"];
@@ -1546,13 +1566,24 @@ switch(_operation) do {
                                     (!isNull _heli3 && alive _heli3) || _spawnWait > 3
                                 };
                                 if (!isNull _heli3 && alive _heli3) then {
-                                    // Heli activated -- run the active parachute drop path
+                                    // Heli activated -- clear vehicle assignment and run active parachute drop.
+                                    // Mirror the active drop path: remove assignment before spawning infantry
+                                    // so units don't materialise inside the heli, and eject any that do.
                                     if (_dbg) then {
                                         ["ML - heliParadropWatchdog: %1 force-spawned heli near DZ. Running active drop.", _tProfID] call ALiVE_fnc_dump;
                                     };
+                                    private _vAssignClear2 = [] call ALIVE_fnc_hashCreate;
+                                    [_infProfile, "vehicleAssignments",  _vAssignClear2] call ALIVE_fnc_hashSet;
+                                    [_infProfile, "vehiclesInCargoOf",   []]             call ALIVE_fnc_hashSet;
+                                    [_infProfile, "vehiclesInCommandOf", []]             call ALIVE_fnc_hashSet;
+                                    [_infProfile, "speedPerSecond", "Man" call ALIVE_fnc_vehicleGetSpeedPerSecond] call ALIVE_fnc_hashSet;
                                     {
                                         private _unit = _x;
                                         if (alive _unit) then {
+                                            if (vehicle _unit != _unit) then {
+                                                unassignVehicle _unit;
+                                                _unit moveOut (vehicle _unit);
+                                            };
                                             private _dropPosASL = getPosASL _heli3;
                                             _dropPosASL set [2, (_dropPosASL select 2) - 8];
                                             private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "FLY"];
@@ -4535,11 +4566,26 @@ switch(_operation) do {
 
                             if(count _transportGroups > 0) then {
 
+                                // Track used pickup positions so multiple paradrop helis
+                                // don't spawn on top of each other -- mirrors the
+                                // _usedLandingPositions pattern in heliTransportStart.
+                                private _usedPickupPositions = [];
+
                                 for "_i" from 0 to _groupCount -1 do {
 
                                     private _pickupLZPos = [_logic, "prepareHelicopterLZ", [
                                         _remotePosition getPos [random(200), random(360)], 80
                                     ]] call MAINCLASS;
+
+                                    // Push back from any already-claimed pickup position
+                                    private _tooClose = false;
+                                    { if (_pickupLZPos distance _x < 50) then { _tooClose = true; }; } forEach _usedPickupPositions;
+                                    if (_tooClose) then {
+                                        _pickupLZPos = [_logic, "prepareHelicopterLZ", [
+                                            _remotePosition getPos [random(300), random(360)], 80
+                                        ]] call MAINCLASS;
+                                    };
+                                    _usedPickupPositions pushback _pickupLZPos;
 
                                     if (_debug) then {
                                         ["ML - HELI_PARADROP: Heli [%1/%2] spawn LZ: %3",
@@ -4571,6 +4617,62 @@ switch(_operation) do {
                                                     };
                                                 };
                                             } forEach (_infantryProfiles select _i);
+                                        };
+                                    };
+
+                                    // Give heli a brief loiter at the pickup LZ before departure.
+                                    // Mirrors HELI_INSERT -- gives the profile system time to
+                                    // propagate the vehicle assignment before the heli moves.
+                                    // heliParadropStart assigns the actual drop zone waypoint.
+                                    private _paradropLoiter = [_pickupLZPos, 10, "MOVE", "LIMITED", 30, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                                    private _pdProfile = _profiles select 0;
+                                    [_pdProfile, "addWaypoint", _paradropLoiter] call ALIVE_fnc_profileEntity;
+
+                                    // If players are nearby at spawn time, physically board
+                                    // the infantry into the heli so the boarding is visible.
+                                    // Safe to do: the paradrop watchdog already ejects any
+                                    // physically-seated units via moveOut before placing them
+                                    // in parachutes, so this does not affect the drop sequence.
+                                    private _pdVehicleProfileID = _profiles select 1 select 2 select 4;
+                                    private _pdInfantryIDs = if (count _infantryProfiles > _i) then {
+                                        _infantryProfiles select _i
+                                    } else { [] };
+
+                                    if (count _pdInfantryIDs > 0) then {
+                                        [_pickupLZPos, _pdVehicleProfileID, _pdInfantryIDs] spawn {
+                                            private _lzPos      = _this select 0;
+                                            private _vProfID    = _this select 1;
+                                            private _infIDs     = _this select 2;
+
+                                            // Wait up to 10s for the heli to activate near players
+                                            private _waitT = 0;
+                                            private _heliObj = objNull;
+                                            waitUntil {
+                                                sleep 1;
+                                                _waitT = _waitT + 1;
+                                                private _vp = [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler;
+                                                if (!isNil "_vp" && { _vp select 2 select 1 }) then {
+                                                    _heliObj = _vp select 2 select 10;
+                                                };
+                                                (!isNull _heliObj && alive _heliObj) || _waitT > 10
+                                            };
+
+                                            if (!isNull _heliObj && alive _heliObj) then {
+                                                // Heli is physically spawned -- board any infantry
+                                                // that are also active (spawned near players)
+                                                {
+                                                    private _infID = _x;
+                                                    private _ip = [ALIVE_profileHandler, "getProfile", _infID] call ALIVE_fnc_profileHandler;
+                                                    if (!isNil "_ip" && { _ip select 2 select 1 }) then {
+                                                        private _infUnits = _ip select 2 select 21;
+                                                        {
+                                                            if (alive _x && vehicle _x == _x) then {
+                                                                _x moveInCargo _heliObj;
+                                                            };
+                                                        } forEach _infUnits;
+                                                    };
+                                                } forEach _infIDs;
+                                            };
                                         };
                                     };
 
