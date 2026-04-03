@@ -46,6 +46,7 @@ ARJay & Jman
 #define DEFAULT_TYPE "DYNAMIC"
 #define DEFAULT_REGISTRY_ID ""
 #define PARADROP_HEIGHT 500
+#define PARADROP_MIN_DROP_HEIGHT 200
 #define DESTINATION_VARIANCE 150
 #define DESTINATION_RADIUS 300
 #define WAIT_TIME_AIR 10
@@ -407,13 +408,50 @@ switch(_operation) do {
         private _attempts  = 0;
         private _curRadius = _searchRadius;
 
-        while {count _clearPos == 0 && _attempts < LZ_MAX_SEARCH_ATTEMPTS} do {
+        // --- Pass 1: Roads first ---
+        // nearRoads finds flat surfaced positions clear of buildings by definition.
+        // BIS_fnc_findSafePos repeatedly returns a sentinel value [8000,1900,300]
+        // on dense airfields, consuming all attempts without finding anything.
+        // Checking nearby roads first avoids this entirely.
+        private _roadSearchRadius = _searchRadius + 200;
+        private _candidateRoads = _centerPos nearRoads _roadSearchRadius;
+        _candidateRoads = _candidateRoads apply { [_x distance2D _centerPos, _x] };
+        _candidateRoads sort true;
+        {
+            if (count _clearPos > 0) exitWith {};
+            private _candidate = getPos (_x select 1);
+            if (count _candidate < 2) then { continue };
+            if (surfaceIsWater _candidate) then { continue };
+            if (count _candidate > 2 && (_candidate select 2) > 10) then { continue };
 
+            private _nearTerrain = nearestTerrainObjects [
+                _candidate,
+                ["ROCK","TREE","BUSH","WALL","FENCE","HOUSE"],
+                LZ_OBJECT_CLEAR_RADIUS
+            ];
+            private _nearVehicles = _candidate nearEntities [["Car","Tank","Air","Ship"], LZ_VEHICLE_CLEAR_RADIUS];
+            private _checkHigh = _candidate vectorAdd [0, 0, LZ_VERTICAL_CHECK_HEIGHT];
+            private _checkLow  = _candidate vectorAdd [0, 0, 1];
+            private _obstructed = count (lineIntersectsSurfaces [
+                AGLtoASL _checkHigh, AGLtoASL _checkLow,
+                objNull, objNull, true, 1, "GEOM"
+            ]) > 0;
+
+            if (count _nearTerrain == 0 && count _nearVehicles == 0 && !_obstructed) then {
+                _clearPos = _candidate;
+                if (_debug) then {
+                    ["ML - prepareHelicopterLZ: Road LZ found at %1", _clearPos] call ALiVE_fnc_dump;
+                };
+            };
+        } forEach _candidateRoads;
+
+        // --- Pass 2: BIS_fnc_findSafePos, strict 30m secondary check ---
+        while {count _clearPos == 0 && _attempts < LZ_MAX_SEARCH_ATTEMPTS} do {
             private _candidate = [
                 _centerPos,
                 LZ_MIN_CLEAR_RADIUS,
                 _curRadius,
-                LZ_OBJECT_CLEAR_RADIUS,
+                20,
                 0,
                 LZ_MAX_GRADIENT,
                 0
@@ -425,22 +463,16 @@ switch(_operation) do {
             };
 
             if (!(surfaceIsWater _candidate) && !(_candidate isEqualTo []) && (count _candidate < 3 || (_candidate select 2) < 10)) then {
-
                 private _nearTerrain  = nearestTerrainObjects [
                     _candidate,
                     ["ROCK","TREE","BUSH","WALL","FENCE","HOUSE"],
                     LZ_OBJECT_CLEAR_RADIUS
                 ];
-                private _nearVehicles = _candidate nearEntities [
-                    ["Car","Tank","Air","Ship"],
-                    LZ_VEHICLE_CLEAR_RADIUS
-                ];
-
+                private _nearVehicles = _candidate nearEntities [["Car","Tank","Air","Ship"], LZ_VEHICLE_CLEAR_RADIUS];
                 private _checkHigh  = _candidate vectorAdd [0, 0, LZ_VERTICAL_CHECK_HEIGHT];
                 private _checkLow   = _candidate vectorAdd [0, 0, 1];
                 private _obstructed = count (lineIntersectsSurfaces [
-                    AGLtoASL _checkHigh,
-                    AGLtoASL _checkLow,
+                    AGLtoASL _checkHigh, AGLtoASL _checkLow,
                     objNull, objNull, true, 1, "GEOM"
                 ]) > 0;
 
@@ -460,6 +492,32 @@ switch(_operation) do {
 
             _curRadius = _curRadius + LZ_SEARCH_RADIUS_INCREMENT;
             _attempts  = _attempts + 1;
+        };
+
+        // --- Pass 3: Relaxed 20m secondary check ---
+        // Last resort before accepting the raw fallback position.
+        if (count _clearPos == 0) then {
+            ["ML - prepareHelicopterLZ: Strict check failed, relaxed retry near %1", _centerPos] call ALiVE_fnc_dump;
+            private _attempts3 = 0;
+            private _curRadius3 = _searchRadius;
+            while {count _clearPos == 0 && _attempts3 < LZ_MAX_SEARCH_ATTEMPTS} do {
+                private _candidate3 = [
+                    _centerPos, LZ_MIN_CLEAR_RADIUS, _curRadius3, 10, 0, LZ_MAX_GRADIENT, 0
+                ] call BIS_fnc_findSafePos;
+                if (!(surfaceIsWater _candidate3) && !(_candidate3 isEqualTo []) && (count _candidate3 < 3 || (_candidate3 select 2) < 10)) then {
+                    private _nearTerrain3 = nearestTerrainObjects [_candidate3, ["ROCK","TREE","BUSH","WALL","FENCE","HOUSE"], 20];
+                    private _nearVehicles3 = _candidate3 nearEntities [["Car","Tank","Air","Ship"], LZ_VEHICLE_CLEAR_RADIUS];
+                    private _checkHigh3 = _candidate3 vectorAdd [0, 0, LZ_VERTICAL_CHECK_HEIGHT];
+                    private _checkLow3  = _candidate3 vectorAdd [0, 0, 1];
+                    private _obstructed3 = count (lineIntersectsSurfaces [AGLtoASL _checkHigh3, AGLtoASL _checkLow3, objNull, objNull, true, 1, "GEOM"]) > 0;
+                    if (count _nearTerrain3 == 0 && count _nearVehicles3 == 0 && !_obstructed3) then {
+                        _clearPos = _candidate3;
+                        ["ML - prepareHelicopterLZ: Relaxed clearance LZ found at %1", _clearPos] call ALiVE_fnc_dump;
+                    };
+                };
+                _curRadius3 = _curRadius3 + LZ_SEARCH_RADIUS_INCREMENT;
+                _attempts3  = _attempts3 + 1;
+            };
         };
 
         if (count _clearPos == 0) then {
@@ -527,74 +585,76 @@ switch(_operation) do {
             // Merge caller's usedPositions with global tracker
             private _allUsedPos = _usedPositions + (missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []]);
 
+            // Two sub-passes: first respecting _minRadius exclusion zone,
+            // then ignoring it if nothing was found outside the zone.
+            // This handles objectives in small settlements where all nearby
+            // roads fall inside the 200m exclusion radius.
+            private _roadPasses = [true, false]; // true = enforce minRadius, false = relax it
             {
-                private _road = _x select 1;
-                private _candidate = getPos _road;
-                if (count _candidate < 2) then { continue };
-
-                // Skip if too close to any used position (global or local)
-                private _tooClose = false;
-                {
-                    private _usedPos = _x;
-                    // Global entries have 4 elements [x,y,z,time], local have 3
-                    if (count _usedPos > 3) then { _usedPos = [_usedPos select 0, _usedPos select 1, _usedPos select 2]; };
-                    if (_candidate distance _usedPos < 150) then { _tooClose = true; };
-                } forEach _allUsedPos;
-                if (_tooClose) then { continue };
-
-                // Must be within radius bounds
-                private _dist = _candidate distance2D _centerPos;
-                if (_dist < _minRadius || _dist > _searchRadius + 100) then { continue };
-
-                // Road surface check - no terrain objects or overhead structures
-                private _nearTerrain = nearestTerrainObjects [
-                    _candidate,
-                    ["ROCK","TREE","HOUSE","WALL","FENCE","BUILDING"],
-                    LZ_OBJECT_CLEAR_RADIUS
-                ];
-                // Check for any objects above the candidate (catches petrol station canopies etc)
-                private _nearObjects = _candidate nearObjects LZ_OBJECT_CLEAR_RADIUS;
-                private _hasOverhead = false;
-                {
-                    if ((getPosASL _x select 2) > (AGLtoASL _candidate select 2) + 1) then {
-                        _hasOverhead = true;
-                    };
-                } forEach _nearObjects;
-                private _nearVehicles = _candidate nearEntities [["Car","Tank","Air","Ship"], LZ_VEHICLE_CLEAR_RADIUS];
-
-                private _checkHigh = _candidate vectorAdd [0, 0, LZ_VERTICAL_CHECK_HEIGHT];
-                private _checkLow  = _candidate vectorAdd [0, 0, 1];
-                private _obstructed = count (lineIntersectsSurfaces [
-                    AGLtoASL _checkHigh, AGLtoASL _checkLow,
-                    objNull, objNull, true, 1, "GEOM"
-                ]) > 0;
-
-                // Gradient check - sample terrain height at 4 cardinal points 15m away
-                // and check the slope is within limits for a helicopter to land safely
-                private _h0 = getTerrainHeightASL _candidate;
-                private _gradientTooSteep = false;
-                {
-                    private _samplePos = _candidate getPos [15, _x];
-                    private _h1 = getTerrainHeightASL _samplePos;
-                    if (abs(_h1 - _h0) > 2.5) then { _gradientTooSteep = true; }; // ~9 degree slope limit
-                } forEach [0, 90, 180, 270];
-                if (_gradientTooSteep) then { continue };
-
-                if (count _nearTerrain == 0 && !_hasOverhead && count _nearVehicles == 0 && !_obstructed) then {
-                    _foundPos = _candidate;
-                    if (count _foundPos == 2) then { _foundPos pushback 0; };
-                    // Register in global tracker so other events avoid this spot
-                    private _globalUsed = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
-                    // Expire entries older than 10 minutes
-                    _globalUsed = _globalUsed select { (time - (_x select 3)) < 600 };
-                    _globalUsed pushback (_foundPos + [time]);
-                    missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed];
-                    if (_debug) then {
-                        ["ML - findHelicopterLandingPos: Road LZ found at %1", _foundPos] call ALiVE_fnc_dump;
-                    };
-                };
+                private _enforceMin = _x;
                 if (count _foundPos > 0) exitWith {};
-            } forEach _roads;
+                {
+                    private _road = _x select 1;
+                    private _candidate = getPos _road;
+                    if (count _candidate < 2) then { continue };
+
+                    // Skip if too close to any used position (global or local)
+                    private _tooClose = false;
+                    {
+                        private _usedPos = _x;
+                        if (count _usedPos > 3) then { _usedPos = [_usedPos select 0, _usedPos select 1, _usedPos select 2]; };
+                        if (_candidate distance _usedPos < 150) then { _tooClose = true; };
+                    } forEach _allUsedPos;
+                    if (_tooClose) then { continue };
+
+                    // Distance bounds - relax minimum on second sub-pass
+                    private _dist = _candidate distance2D _centerPos;
+                    private _minCheck = if (_enforceMin) then { _minRadius } else { 0 };
+                    if (_dist < _minCheck || _dist > _searchRadius + 100) then { continue };
+
+                    // Road surface check - no terrain objects
+                    private _nearTerrain = nearestTerrainObjects [
+                        _candidate,
+                        ["ROCK","TREE","HOUSE","WALL","FENCE","BUILDING"],
+                        LZ_OBJECT_CLEAR_RADIUS
+                    ];
+                    private _nearVehicles = _candidate nearEntities [["Car","Tank","Air","Ship"], LZ_VEHICLE_CLEAR_RADIUS];
+
+                    // Vertical obstruction check via ray cast - catches bridges, canopies,
+                    // overhead structures. Replaces the old nearObjects overhead check which
+                    // was rejecting roads near lamp posts, poles and road signs.
+                    private _checkHigh = _candidate vectorAdd [0, 0, LZ_VERTICAL_CHECK_HEIGHT];
+                    private _checkLow  = _candidate vectorAdd [0, 0, 1];
+                    private _obstructed = count (lineIntersectsSurfaces [
+                        AGLtoASL _checkHigh, AGLtoASL _checkLow,
+                        objNull, objNull, true, 1, "GEOM"
+                    ]) > 0;
+
+                    // Gradient check
+                    private _h0 = getTerrainHeightASL _candidate;
+                    private _gradientTooSteep = false;
+                    {
+                        private _samplePos = _candidate getPos [15, _x];
+                        private _h1 = getTerrainHeightASL _samplePos;
+                        if (abs(_h1 - _h0) > 2.5) then { _gradientTooSteep = true; };
+                    } forEach [0, 90, 180, 270];
+                    if (_gradientTooSteep) then { continue };
+
+                    if (count _nearTerrain == 0 && count _nearVehicles == 0 && !_obstructed) then {
+                        _foundPos = _candidate;
+                        if (count _foundPos == 2) then { _foundPos pushback 0; };
+                        // Register in global tracker so other events avoid this spot
+                        private _globalUsed = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
+                        _globalUsed = _globalUsed select { (time - (_x select 3)) < 600 };
+                        _globalUsed pushback (_foundPos + [time]);
+                        missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed];
+                        if (_debug) then {
+                            ["ML - findHelicopterLandingPos: Road LZ found at %1", _foundPos] call ALiVE_fnc_dump;
+                        };
+                    };
+                    if (count _foundPos > 0) exitWith {};
+                } forEach _roads;
+            } forEach _roadPasses;
             _searchRadius = _searchRadius + 100;
         };
 
@@ -1414,7 +1474,8 @@ switch(_operation) do {
                             if (_paradropHitEH < 0 && isNull _paradropHitEHObj) then {
                                 _paradropHitEHObj = _heli;
                                 _paradropHitEH = _heli addEventHandler ["HitPart", {
-                                    params ["_vehicle"];
+                                    // HitPart: _this select 0 is the per-part array, vehicle is element 0
+                                    private _vehicle = (_this select 0) select 0;
                                     private _g = group (driver _vehicle);
                                     _g setBehaviour "CARELESS";
                                     _g allowFleeing 0;
@@ -1428,11 +1489,25 @@ switch(_operation) do {
                             };
 
                             private _dist = _heli distance2D _destPos;
+                            private _heliAGL = (_heli modelToWorldVisual [0,0,0]) select 2;
                             if (_dbg) then {
-                                ["ML - heliParadropWatchdog: %1 TRANSIT active. dist=%2m heightAGL=%3m t=%4s", _tProfID, round _dist, round ((_heli modelToWorldVisual [0,0,0]) select 2), _phaseTimer] call ALiVE_fnc_dump;
+                                ["ML - heliParadropWatchdog: %1 TRANSIT active. dist=%2m heightAGL=%3m t=%4s", _tProfID, round _dist, round _heliAGL, _phaseTimer] call ALiVE_fnc_dump;
                             };
-                            if (_dist < _dropRadius) then {
-                                ["ML - heliParadropWatchdog: %1 over DZ (active) dist=%2m. Beginning drop.", _tProfID, round _dist] call ALiVE_fnc_dump;
+
+                            // Enforce minimum paradrop altitude throughout transit.
+                            // Without this the heli descends on approach, lands short of the DZ,
+                            // and the drop never triggers (or triggers at ground level with no
+                            // time for parachutes to deploy). Apply every iteration.
+                            if (_heliAGL < PARADROP_MIN_DROP_HEIGHT) then {
+                                _heli flyInHeight PARADROP_HEIGHT;
+                                _heli forceSpeed 50;
+                                if (_dbg) then {
+                                    ["ML - heliParadropWatchdog: %1 below min height (%2m), enforcing %3m AGL.", _tProfID, round _heliAGL, PARADROP_HEIGHT] call ALiVE_fnc_dump;
+                                };
+                            };
+
+                            if (_dist < _dropRadius && _heliAGL >= PARADROP_MIN_DROP_HEIGHT) then {
+                                ["ML - heliParadropWatchdog: %1 over DZ (active) dist=%2m AGL=%3m. Beginning drop.", _tProfID, round _dist, round _heliAGL] call ALiVE_fnc_dump;
                                 _phase = 1;
                             };
                         } else {
@@ -1558,6 +1633,13 @@ switch(_operation) do {
                             private _tp3 = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
                             private _playersNearDZ = ([_destPos, 1500] call ALiVE_fnc_anyPlayersInRange) > 0;
                             if (!isNil "_tp3" && _playersNearDZ) then {
+                                // Set heli profile position to directly above the DZ at PARADROP_HEIGHT
+                                // before spawning. Without this the heli materialises at its current
+                                // virtual profile position which is Z=0 ground level -- infantry
+                                // parachutes are then created at ground level and units die on impact.
+                                private _spawnPos = +_destPos;
+                                _spawnPos set [2, PARADROP_HEIGHT];
+                                [_tp3, "position", _spawnPos] call ALIVE_fnc_profileEntity;
                                 [_tp3, "spawn"] call ALIVE_fnc_profileEntity;
                                 // Wait up to 3s for the heli vehicle object to materialise
                                 private _spawnWait = 0;
@@ -6748,10 +6830,16 @@ switch(_operation) do {
                             // stay 0 and the event to complete while the pilot profile still
                             // exists, leaking resources.
                             if (_active && _hasLiveVehicle) then {
-                                if (canMove _vehicle) then {
+                                // canMove can return false briefly after spawn during physics
+                                // initialisation, and also on airborne helis with AI fighting
+                                // the controls. Only treat canMove=false as "damaged/stuck"
+                                // when the vehicle is on or near the ground (AGL < 10m).
+                                // Airborne helis are always counted as alive regardless of canMove.
+                                private _heliAGL = (getPosATL _vehicle) select 2;
+                                if (canMove _vehicle || _heliAGL > 10) then {
                                     _anyAlive = _anyAlive + 1;
                                 } else {
-                                    // Vehicle can't move (broken rotors etc) - treat as done
+                                    // Vehicle is on the ground and can't move - treat as done
                                     if (_debug) then {
                                         ["ML - heliTransportReturnWait: Transport vehicle can't move (damaged?), counting as RTB done.", _x] call ALiVE_fnc_dump;
                                     };
@@ -9246,19 +9334,24 @@ switch(_operation) do {
                                         // findHelicopterLandingPos reads and writes ALIVE_ML_usedLZPositions
                                         // (150m separation, 10-min expiry) so concurrent slingload helis
                                         // and troop-drop helis all avoid each other automatically.
-                                        // Retry with expanding radius (up to 3 passes).
-                                        // minRadius=30 avoids placing directly on the event centre marker.
+                                        // minRadius=100 keeps the drop position away from airfield buildings
+                                        // and other structures that prevent landAt descent (AI collision
+                                        // avoidance defeats landAt when buildings are directly below).
                                         private _dropSearchRadii = [400, 600, 800];
                                         private _dropFound = false;
                                         {
                                             if (_dropFound) exitWith {};
                                             private _dropPos = [_logic, "findHelicopterLandingPos", [
-                                                _eventPosition, 30, _x
+                                                _eventPosition, 100, _x
                                             ]] call MAINCLASS;
                                             if (count _dropPos > 0 && !(surfaceIsWater _dropPos)) then {
-                                                _position = _dropPos;
-                                                _dropFound = true;
-                                                ["ML - unloadTransportHelicopter: Drop pos found at radius %1 -> %2", _x, _position] call ALiVE_fnc_dump;
+                                                // Extra check: reject if too close to buildings
+                                                private _nearBuildings = _dropPos nearObjects ["Building", 40];
+                                                if (count _nearBuildings == 0) then {
+                                                    _position = _dropPos;
+                                                    _dropFound = true;
+                                                    ["ML - unloadTransportHelicopter: Drop pos found at radius %1 -> %2", _x, _position] call ALiVE_fnc_dump;
+                                                };
                                             };
                                         } forEach _dropSearchRadii;
 
