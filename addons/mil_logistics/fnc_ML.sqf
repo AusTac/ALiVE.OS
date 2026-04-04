@@ -45,7 +45,7 @@ ARJay & Jman
 #define DEFAULT_ALLOW true
 #define DEFAULT_TYPE "DYNAMIC"
 #define DEFAULT_REGISTRY_ID ""
-#define PARADROP_HEIGHT 500
+#define PARADROP_HEIGHT 350
 #define PARADROP_MIN_DROP_HEIGHT 200
 #define DESTINATION_VARIANCE 150
 #define DESTINATION_RADIUS 300
@@ -1449,6 +1449,12 @@ switch(_operation) do {
             // altitude to prevent the heli hovering indefinitely at the DZ.
             private _stuckLowTimer  = 0;
 
+            // Stores the AGL overshoot position set by the first-activation block.
+            // Re-issued via doMove every loop tick so the AI never runs out of movement
+            // orders. addWaypoint is unreliable on vehicles not created by the ALiVE
+            // placement system; doMove is the safe alternative.
+            private _overshootPosAGL = [];
+
             ["ML - heliParadropWatchdog: %1 STARTED. dest=%2 groups=%3 dropHeight=%4m dropRadius=%5m loopInterval=%6s",
                 _tProfID, _destPos, count _infantryIDs, _dropHeight, _dropRadius, _loopInterval] call ALiVE_fnc_dump;
 
@@ -1469,7 +1475,21 @@ switch(_operation) do {
                         ["ML - heliParadropWatchdog: %1 TRANSIT timeout at %2s. Forcing drop.", _tProfID, _phaseTimer] call ALiVE_fnc_dump;
                         _phase = 1;
                     } else {
-                        private _heli = _tp select 2 select 10;
+                        // _tp is the entity (crew) profile. The vehicle object lives in
+                        // the vehicle profile at _vProfID. Read it from there.
+                        // _tp select 2 select 10 = "leader" on an entity profile -- wrong.
+                        private _vp = if (_vProfID != "") then {
+                            [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler
+                        } else { nil };
+                        private _heli = if (!isNil "_vp") then { _vp select 2 select 10 } else { objNull };
+
+                        // Diagnostic: log vehicle profile / heli object status every 10s
+                        if (_phaseTimer % 10 == 0) then {
+                            ["ML - heliParadropWatchdog: %1 vProfID=%2 vpNil=%3 heliNull=%4 heliAlive=%5 t=%6s",
+                                _tProfID, _vProfID, isNil "_vp", isNull _heli,
+                                (!isNull _heli && alive _heli), _phaseTimer] call ALiVE_fnc_dump;
+                        };
+
                         if (!isNull _heli && alive _heli) then {
 
                             // -------------------------------------------------------
@@ -1498,13 +1518,16 @@ switch(_operation) do {
                                 ["ML - heliParadropWatchdog: %1 FIRST ACTIVATION. spawnAGL=%2m terrainASL=%3m. Applying altitude correction to %4m AGL.",
                                     _tProfID, round _curAGL, round _terrainH, PARADROP_HEIGHT] call ALiVE_fnc_dump;
 
-                                // (a) Teleport to PARADROP_HEIGHT AGL from current x,y
-                                _posASL set [2, _terrainH + PARADROP_HEIGHT];
-                                _heli setPosASL _posASL;
-                                // Small upward velocity so AI doesn't immediately correct downward
+                                // (a) Command the heli to climb to PARADROP_HEIGHT using flyInHeight.
+                                // This lets the AI climb smoothly rather than teleporting,
+                                // which prevents cargo detachment and looks correct visually.
+                                // A strong upward velocity kick starts the climb immediately.
                                 private _curVel = velocity _heli;
-                                _heli setVelocity [_curVel select 0, _curVel select 1, 4];
+                                _heli setVelocity [_curVel select 0, _curVel select 1, 15];
                                 _heli flyInHeight PARADROP_HEIGHT;
+                                // Extended climb window: suppress drop trigger for 30s so the
+                                // heli has time to reach altitude before we start checking dist.
+                                _phaseTimer = 0;
 
                                 // (b) Issue overshoot native waypoint: 600m past DZ at PARADROP_HEIGHT.
                                 // The AI overflies the DZ on the way to the overshoot point,
@@ -1516,19 +1539,36 @@ switch(_operation) do {
                                 _overshootASL set [2, (_terrainH + PARADROP_HEIGHT)];
 
                                 private _grpNow = group (driver _heli);
-                                // Clear profile-converted waypoints before issuing overshoot WP
+                                // Clear any native waypoints inherited from profile system
                                 private _wpCount = count (waypoints _grpNow);
                                 while { count (waypoints _grpNow) > 0 } do {
                                     deleteWaypoint [_grpNow, 0];
                                 };
-                                private _wp = _grpNow addWaypoint [ASLToAGL _overshootASL, 200];
-                                _wp setWaypointType "MOVE";
-                                _wp setWaypointSpeed "NORMAL";
-                                _wp setWaypointBehaviour "CARELESS";
-                                _wp setWaypointCombatMode "BLUE";
 
-                                ["ML - heliParadropWatchdog: %1 Overshoot WP issued. DZ=%2 overshoot=%3 (DZ+600m at %4m AGL). Cleared %5 old WPs.",
-                                    _tProfID, _destPos, ASLToAGL _overshootASL, PARADROP_HEIGHT, _wpCount] call ALiVE_fnc_dump;
+                                // Use doMove instead of addWaypoint. addWaypoint silently fails
+                                // on vehicles not created by the ALiVE placement system
+                                // (e.g. createVehicle vehicles, test harness, etc.) because their
+                                // AI pilot groups are not initialised the same way. doMove is a
+                                // direct AI order that works regardless of vehicle origin. It is
+                                // re-issued every loop tick below to prevent the AI from ignoring
+                                // it on approach or after completing previous movement orders.
+                                _overshootPosAGL = ASLToAGL _overshootASL;
+                                // Use vehicle-level move command, not (driver) doMove.
+                                // doMove on a unit issues a walking order -- a seated pilot
+                                // cannot act on it and the heli gets no flight instruction.
+                                // _heli move issues the order directly to the vehicle AI.
+                                _heli move _overshootPosAGL;
+                                _heli flyInHeight PARADROP_HEIGHT;
+                                // Also set velocity toward target so AI has initial momentum
+                                private _toOvDir = _heliPos2D getDir _overshootPosAGL;
+                                _heli setVelocity [
+                                    50 * sin _toOvDir,
+                                    50 * cos _toOvDir,
+                                    2
+                                ];
+
+                                ["ML - heliParadropWatchdog: %1 Overshoot move issued. DZ=%2 overshoot=%3 (DZ+600m at %4m AGL). Cleared %5 old WPs.",
+                                    _tProfID, _destPos, _overshootPosAGL, PARADROP_HEIGHT, _wpCount] call ALiVE_fnc_dump;
                             };
 
                             // Enforce mission AI behaviour every iteration while in transit.
@@ -1571,14 +1611,27 @@ switch(_operation) do {
                                 _wpCountNow, _phaseTimer] call ALiVE_fnc_dump;
 
                             // Enforce minimum paradrop altitude every tick.
-                            // flyInHeight is advisory and loses to AI waypoint-approach descent,
-                            // hence why we also issue the overshoot WP on first activation --
-                            // this enforcement is a secondary safety net.
+                            // flyInHeight and doMove are advisory and lose to the AI's
+                            // forward-momentum descent path when the target has z=ground.
+                            // When below minimum height: use setPosASL to hard-correct altitude,
+                            // zero the vertical velocity component, and re-issue doMove.
+                            // This is deterministic and cannot be overridden by AI logic.
                             if (_heliAGL < PARADROP_MIN_DROP_HEIGHT) then {
+                                // Safety net: heli still below minimum after initial climb period.
+                                // Re-issue climb command and velocity kick.
+                                private _velNow = velocity _heli;
+                                _heli setVelocity [_velNow select 0, _velNow select 1, 15];
                                 _heli flyInHeight PARADROP_HEIGHT;
-                                _heli forceSpeed 50;
-                                ["ML - heliParadropWatchdog: %1 below min height (AGL=%2m < MIN=%3m), enforcing %4m AGL.",
-                                    _tProfID, round _heliAGL, PARADROP_MIN_DROP_HEIGHT, PARADROP_HEIGHT] call ALiVE_fnc_dump;
+                                if (count _overshootPosAGL > 0) then { _heli move _overshootPosAGL; };
+                                ["ML - heliParadropWatchdog: %1 below min AGL (%2m < %3m). Re-issuing climb command.",
+                                    _tProfID, round _heliAGL, PARADROP_MIN_DROP_HEIGHT] call ALiVE_fnc_dump;
+                            };
+
+                            // Re-issue vehicle move every tick toward the stored overshoot position.
+                            // Vehicle-level move keeps the flight AI on course.
+                            // Re-issuing every 2s prevents the AI treating the order as complete.
+                            if (count _overshootPosAGL > 0) then {
+                                _heli move _overshootPosAGL;
                             };
 
                             // Drop trigger logic with stuck-low fallback.
@@ -1647,7 +1700,11 @@ switch(_operation) do {
 
             if (_phase == 1) then {
                 private _tp2   = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
-                private _heli2 = if (!isNil "_tp2") then { _tp2 select 2 select 10 } else { objNull };
+                // Heli object lives in the vehicle profile, not the entity (crew) profile.
+                private _vp2   = if (_vProfID != "") then {
+                    [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler
+                } else { nil };
+                private _heli2 = if (!isNil "_vp2") then { _vp2 select 2 select 10 } else { objNull };
                 private _heliActive = (!isNull _heli2 && alive _heli2);
 
                 // Log full drop-entry state: position, altitude, velocity, active/virtual
@@ -1722,12 +1779,23 @@ switch(_operation) do {
                                     };
                                     private _dropPosASL = getPosASL _heli2;
                                     _dropPosASL set [2, (_dropPosASL select 2) - 8];
-                                    private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
+                                    private _para = createVehicle ["Steerable_Parachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
                                     _para allowDamage false;
                                     _para setPosASL _dropPosASL;
                                     _para setVelocity (velocity _heli2);
                                     _unit moveInDriver _para;
-                                    [_para] spawn { sleep 2; (_this select 0) allowDamage true; };
+                                    [_unit, _para] spawn {
+                                        params ["_u", "_p"];
+                                        _u allowDamage false;
+                                        // Wait until touching ground, para deleted, or 60s timeout
+                                        private _t = 0;
+                                        waitUntil {
+                                            sleep 0.5; _t = _t + 0.5;
+                                            isTouchingGround _u || isNull _p || _t > 60
+                                        };
+                                        sleep 2; // brief grace period after landing
+                                        if (alive _u) then { _u allowDamage true; };
+                                    };
                                     ["ML - heliParadropWatchdog: %1 unit %2 dropped in parachute. paraPos=[%3,%4] paraAGL=%5m heliVel=[%6,%7,%8]",
                                         _tProfID, _unit,
                                         round ((ASLToAGL _dropPosASL) select 0), round ((ASLToAGL _dropPosASL) select 1),
@@ -1763,7 +1831,10 @@ switch(_operation) do {
                                     sleep 0.2;
                                     _spawnWait = _spawnWait + 0.2;
                                     _tp3 = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
-                                    if (!isNil "_tp3") then { _heli3 = _tp3 select 2 select 10; };
+                                    private _vp3w = if (_vProfID != "") then {
+                                        [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler
+                                    } else { nil };
+                                    if (!isNil "_vp3w") then { _heli3 = _vp3w select 2 select 10; };
                                     (!isNull _heli3 && alive _heli3) || _spawnWait > 3
                                 };
                                 if (!isNull _heli3 && alive _heli3) then {
@@ -1787,12 +1858,22 @@ switch(_operation) do {
                                             };
                                             private _dropPosASL = getPosASL _heli3;
                                             _dropPosASL set [2, (_dropPosASL select 2) - 8];
-                                            private _para = createVehicle ["NonSteerableParachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
+                                            private _para = createVehicle ["Steerable_Parachute_F", ASLToAGL _dropPosASL, [], 0, "CAN_COLLIDE"];
                                             _para allowDamage false;
                                             _para setPosASL _dropPosASL;
                                             _para setVelocity (velocity _heli3);
                                             _unit moveInDriver _para;
-                                            [_para] spawn { sleep 2; (_this select 0) allowDamage true; };
+                                            [_unit, _para] spawn {
+                                                params ["_u", "_p"];
+                                                _u allowDamage false;
+                                                private _t = 0;
+                                                waitUntil {
+                                                    sleep 0.5; _t = _t + 0.5;
+                                                    isTouchingGround _u || isNull _p || _t > 60
+                                                };
+                                                sleep 2;
+                                                if (alive _u) then { _u allowDamage true; };
+                                            };
                                             if (_dbg) then {
                                                 ["ML - heliParadropWatchdog: %1 unit %2 dropped (force-spawn path)", _tProfID, _unit] call ALiVE_fnc_dump;
                                             };
@@ -2808,6 +2889,19 @@ switch(_operation) do {
                 // DEBUG -------------------------------------------------------------------------------------
 
 
+                // TEST BYPASS: ALIVE_ML_TEST_REQUEST=true skips the force pool check
+                // and injects a synthetic pool of 100 so the event always proceeds.
+                // TEST BYPASS: flag holds the eventID of the test request so concurrent
+                // events don't clobber each other. Check typeName to accept both legacy bool and ID string.
+                private _isTestRequest = (!isNil "ALIVE_ML_TEST_REQUEST") &&
+                    { typeName ALIVE_ML_TEST_REQUEST == "BOOL" && { ALIVE_ML_TEST_REQUEST } ||
+                      typeName ALIVE_ML_TEST_REQUEST == "STRING" && { ALIVE_ML_TEST_REQUEST != "" } };
+                if (_isTestRequest) then {
+                    if (typeName _forcePool != "SCALAR") then { _forcePool = 0; };
+                    _forcePool = _forcePool max 100;
+                    ["ML - TEST BYPASS: Force pool overridden to %1 for test request.", _forcePool] call ALiVE_fnc_dump;
+                };
+
                 // if there are still forces available
                 if(_forcePool > 0) then {
 
@@ -2989,6 +3083,13 @@ switch(_operation) do {
                         // store the event on the event queue
                         _eventQueue = [_logic, "eventQueue"] call MAINCLASS;
                         [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+
+                        // TEST BYPASS: promote flag from bool to event ID so concurrent events
+                        // don't interfere. Each test run owns its own event ID.
+                        if (_isTestRequest) then {
+                            ALIVE_ML_TEST_REQUEST = _eventID;
+                            ["ML - TEST BYPASS: Flag bound to event %1.", _eventID] call ALiVE_fnc_dump;
+                        };
 
 
                         // DEBUG -------------------------------------------------------------------------------------
@@ -3712,6 +3813,9 @@ switch(_operation) do {
                         // 8. Distance >= 1500m                     -> HELI_INSERT
                         // ---------------------------------------------------------------
 
+                        if (!isNil "ALIVE_ML_TEST_REQUEST" && { ALIVE_ML_TEST_REQUEST == _eventID }) then {
+                            ["ML - TEST BYPASS: Preserving requested eventType=%1, skipping delivery type decision.", _eventType] call ALiVE_fnc_dump;
+                        } else {
                         private _reserveCount = [_reinforcementAnalysis, "reserveCount", 99] call ALIVE_fnc_hashGet;
                         private _hasVehicles  = (_eventForceMechanised > 0 || _eventForceMotorised > 0);
                         private _hasArmour    = (_eventForceArmour > 0);
@@ -3785,12 +3889,35 @@ switch(_operation) do {
                             };
                         }; // end Rules 1-8
                         }; // end Rule 0 else
+                        }; // end if (!ALIVE_ML_TEST_REQUEST) delivery type decision
+
+                        // TEST BYPASS: pin departure and destination to the positions stored
+                        // on the event hash by the test script. Skip the supply network anchor
+                        // and destination scoring entirely so helis always fly the fixed route.
+                        private _testFromPos = [];
+                        private _testDestPos = [];
+                        if (!isNil "ALIVE_ML_TEST_REQUEST" && { ALIVE_ML_TEST_REQUEST == _eventID }) then {
+                            _testFromPos = [_event, "testFromPos", []] call ALIVE_fnc_hashGet;
+                            _testDestPos = [_event, "testDestPos", []] call ALIVE_fnc_hashGet;
+                            if (count _testFromPos > 0 && count _testDestPos > 0) then {
+                                _reinforcementPosition = _testFromPos;
+                                _eventPosition         = _testDestPos;
+                                _eventData set [0, _eventPosition];
+                                [_event, "data", _eventData] call ALIVE_fnc_hashSet;
+                                _remotePosition = _testFromPos; // heli spawn near departure
+                                private _fromName = [_testFromPos] call ALIVE_fnc_taskGetNearestLocationName;
+                                private _toName   = [_testDestPos] call ALIVE_fnc_taskGetNearestLocationName;
+                                ["ML - TEST BYPASS: Positions pinned. From=%1 at %2  To=%3 at %4",
+                                    _fromName, _testFromPos, _toName, _testDestPos] call ALiVE_fnc_dump;
+                            };
+                        };
 
                         // Both STANDARD and HELI_INSERT depart from a held objective.
                         // Anchor _reinforcementPosition to the nearest valid supply network
                         // node so that departure/destination distance calculations are always
                         // relative to the actual HQ, not whatever _reinforcementPrimaryObjective
                         // OPCOM dynamically assigned (which can be any held objective).
+                        if (count _testFromPos == 0) then {
                         _reinforcementPosition = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
 
                         if (!isNil "ALIVE_ML_supplyNetwork") then {
@@ -3824,6 +3951,7 @@ switch(_operation) do {
                                 };
                             };
                         };
+                        }; // end if (count _testFromPos == 0) -- supply network anchor
 
                         ["AI LOGCOM Side: %1 Type: %2 From: %3 To: %4 Dist: %5m Water: %6 Heavy: %7",
                             _side, _eventType, _reinforcementPosition, _eventPosition,
@@ -3865,7 +3993,10 @@ switch(_operation) do {
                         // 4. Override the delivery destination with the best scored
                         //    objective from findBestDeliveryObjective.
                         // -----------------------------------------------------------------
-                        if (_eventType == "HELI_INSERT") then {
+                        // TEST BYPASS: if positions are pinned skip the entire HELI_INSERT
+                        // departure base selection and destination scoring block. Positions
+                        // are already fixed; running this would override them.
+                        if (_eventType == "HELI_INSERT" && { count _testFromPos == 0 }) then {
 
                             // Get all friendly held objectives
                             private _allObjectives = [_logic, "objectives"] call MAINCLASS;
@@ -4148,14 +4279,19 @@ switch(_operation) do {
                                     [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
 
                                     // Apply PARADROP vs INSERT decision
-                                    if (_scoredEnemyCount > 0 || _scoredObjState in ["attack","capture"]) then {
-                                        _eventType = "HELI_PARADROP";
-                                        ["ML - HELI_PARADROP selected: enemy=%1 objState=%2 at destination.",
-                                            _scoredEnemyCount, _scoredObjState] call ALiVE_fnc_dump;
+                                    // TEST BYPASS: skip enemy scoring -- preserve requested type.
+                                    if (!isNil "ALIVE_ML_TEST_REQUEST" && { ALIVE_ML_TEST_REQUEST == _eventID }) then {
+                                        ["ML - TEST BYPASS: Preserving eventType=%1, skipping PARADROP/INSERT enemy score check.", _eventType] call ALiVE_fnc_dump;
                                     } else {
-                                        if (_debug) then {
-                                            ["ML - HELI_INSERT confirmed: enemy=%1 objState=%2 at destination. LZ clear.",
+                                        if (_scoredEnemyCount > 0 || _scoredObjState in ["attack","capture"]) then {
+                                            _eventType = "HELI_PARADROP";
+                                            ["ML - HELI_PARADROP selected: enemy=%1 objState=%2 at destination.",
                                                 _scoredEnemyCount, _scoredObjState] call ALiVE_fnc_dump;
+                                        } else {
+                                            if (_debug) then {
+                                                ["ML - HELI_INSERT confirmed: enemy=%1 objState=%2 at destination. LZ clear.",
+                                                    _scoredEnemyCount, _scoredObjState] call ALiVE_fnc_dump;
+                                            };
                                         };
                                     };
 
@@ -4268,6 +4404,9 @@ switch(_operation) do {
                                     };
                                 };
                             } forEach (_eventQueue select 2);
+                        if (!isNil "ALIVE_ML_TEST_REQUEST" && { ALIVE_ML_TEST_REQUEST == _eventID }) then {
+                            ["ML - TEST BYPASS: Skipping heli throttle check for test request."] call ALiVE_fnc_dump;
+                        } else {
                             if (_activeHeliEvents >= 2) then {
                                 _heliThrottleExceeded = true;
                                 if (_debug) then {
@@ -4275,7 +4414,8 @@ switch(_operation) do {
                                         _activeHeliEvents, _eventID] call ALiVE_fnc_dump;
                                 };
                             };
-                        };
+                        }; // end test bypass else
+                        }; // end if (_eventType in ["HELI_INSERT","HELI_PARADROP"])
 
                         // Slingload concurrency throttle: if MAX_SLINGLOAD_CONCURRENT vehicle
                         // slingload operations are already in flight, downgrade vehicle transport
@@ -5335,6 +5475,12 @@ switch(_operation) do {
                                     _totalCount] call ALiVE_fnc_dump;
                             } forEach [[_eventType, _reinforcementPosition, _eventPosition]];
 
+                            // TEST BYPASS: clear only if this event owns the flag.
+                            if (!isNil "ALIVE_ML_TEST_REQUEST" && { ALIVE_ML_TEST_REQUEST == _eventID }) then {
+                                ALIVE_ML_TEST_REQUEST = "";
+                                ["ML - TEST BYPASS: ALIVE_ML_TEST_REQUEST cleared after dispatch of event %1.", _eventID] call ALiVE_fnc_dump;
+                            };
+
                             switch(_eventType) do {
                                 case "STANDARD": {
 
@@ -5454,7 +5600,7 @@ switch(_operation) do {
                     };
                 } forEach (_eventQueue select 2);
 
-                if (_activeHeliCount >= 2) exitWith {
+                if (_activeHeliCount >= 2 && { isNil "ALIVE_ML_TEST_REQUEST" || { ALIVE_ML_TEST_REQUEST != _eventID } }) exitWith {
                     // Stay in heliTransportStart - will retry next monitor cycle
                     if (_debug) then {
                         ["ML - heliTransportStart: Throttle - %1 events in flight, deferring event %2.",
@@ -7040,7 +7186,7 @@ switch(_operation) do {
                     };
                 } forEach (_eventQueue select 2);
 
-                if (_activeHeliCount >= 2) exitWith {
+                if (_activeHeliCount >= 2 && { isNil "ALIVE_ML_TEST_REQUEST" || { ALIVE_ML_TEST_REQUEST != _eventID } }) exitWith {
                     if (_debug) then {
                         ["ML - heliParadropStart: Throttle - %1 heli events in flight, deferring %2.",
                             _activeHeliCount, _eventID] call ALiVE_fnc_dump;
@@ -7265,6 +7411,9 @@ switch(_operation) do {
                                         private _cmdProf = [ALIVE_profileHandler, "getProfile", _inCommand select 0] call ALIVE_fnc_profileHandler;
                                         if (!isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
                                     };
+                                    // Clear vehicleAssignments before destroy to prevent
+                                    // fnc_removeProfileVehicleAssignment _indexes error in ALiVE core.
+                                    [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
                                     [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                                 };
                                 _anyActive = _anyActive + 1;
@@ -7274,6 +7423,8 @@ switch(_operation) do {
                                     private _cmdProf = [ALIVE_profileHandler, "getProfile", _inCommand select 0] call ALIVE_fnc_profileHandler;
                                     if (!isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
                                 };
+                                // Clear vehicleAssignments before destroy to prevent ALiVE core _indexes error.
+                                [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
                                 [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                             };
                         };
