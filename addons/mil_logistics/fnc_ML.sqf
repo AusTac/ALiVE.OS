@@ -1409,62 +1409,57 @@ switch(_operation) do {
     // OPERATION: spawnHeliParadropWatchdog
     // ============================================================
     case "spawnHeliParadropWatchdog": {
-
-        private _tProfID     = _args select 0;
-        private _vProfID     = _args select 1;
-        private _destPos     = _args select 2;
-        private _returnPos   = _args select 3;
+        private _tProfID = _args select 0;
+        private _vProfID = _args select 1;
+        private _destPos = _args select 2;
+        private _returnPos = _args select 3;
         private _infantryIDs = _args select 4;
-        private _dropHeight  = _args select 5;
-        private _dbg         = _args select 6;
+        private _dropHeight = _args select 5;
+        private _dbg = _args select 6;
 
         [_tProfID, _vProfID, _destPos, _returnPos, _infantryIDs, _dropHeight, _dbg] spawn {
-
-            private _tProfID     = _this select 0;
-            private _vProfID     = _this select 1;
-            private _destPos     = _this select 2;
-            private _returnPos   = _this select 3;
+            private _tProfID = _this select 0;
+            private _vProfID = _this select 1;
+            private _destPos = _this select 2;
+            private _returnPos = _this select 3;
             private _infantryIDs = _this select 4;
-            private _dropHeight  = _this select 5;
-            private _dbg         = _this select 6;
+            private _dropHeight = _this select 5;
+            private _dbg = _this select 6;
 
-            private _dropRadius     = 350;
+            private _dropRadius = 350;
             private _transitTimeout = 900;
-            private _phaseTimer     = 0;
-            private _phase          = 0;
-            private _dropped        = false;
-
+            private _phaseTimer = 0;
+            private _phase = 0;
+            private _dropped = false;
             // Loop runs every 2s instead of 5s so altitude enforcement fires more
             // frequently and keeps pace with the AI's continuous descent on approach.
-            private _loopInterval   = 2;
-
+            private _loopInterval = 2;
             // Set true on the first loop tick where the heli is active (spawned).
             // Used to detect the virtual->active transition and apply one-time fixes.
-            private _wasActive      = false;
-
+            private _wasActive = false;
             // Accumulates seconds the heli has spent within _dropRadius but below
             // PARADROP_MIN_DROP_HEIGHT. After 30s a forced drop fires regardless of
             // altitude to prevent the heli hovering indefinitely at the DZ.
-            private _stuckLowTimer  = 0;
-
+            private _stuckLowTimer = 0;
             // Stores the AGL overshoot position set by the first-activation block.
             // Re-issued via doMove every loop tick so the AI never runs out of movement
             // orders. addWaypoint is unreliable on vehicles not created by the ALiVE
             // placement system; doMove is the safe alternative.
             private _overshootPosAGL = [];
-
             ["ML - heliParadropWatchdog: %1 STARTED. dest=%2 groups=%3 dropHeight=%4m dropRadius=%5m loopInterval=%6s",
                 _tProfID, _destPos, count _infantryIDs, _dropHeight, _dropRadius, _loopInterval] call ALiVE_fnc_dump;
 
             // Hit EH: paradrop helis fly at 500m AGL and must not be diverted by ground fire.
             // Attach on first activation, remove once drops are complete.
-            private _paradropHitEH    = -1;
+            private _paradropHitEH = -1;
             private _paradropHitEHObj = objNull;
 
             while { _phase == 0 } do {
                 sleep _loopInterval;
                 _phaseTimer = _phaseTimer + _loopInterval;
+
                 private _tp = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
+
                 if (isNil "_tp") then {
                     ["ML - heliParadropWatchdog: %1 profile gone at %2s. Aborting.", _tProfID, _phaseTimer] call ALiVE_fnc_dump;
                     _phase = 2;
@@ -1479,6 +1474,7 @@ switch(_operation) do {
                         private _vp = if (_vProfID != "") then {
                             [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler
                         } else { nil };
+
                         private _heli = if (!isNil "_vp") then { _vp select 2 select 10 } else { objNull };
 
                         // Diagnostic: log vehicle profile / heli object status every 10s
@@ -1488,31 +1484,54 @@ switch(_operation) do {
                                 (!isNull _heli && alive _heli), _phaseTimer] call ALiVE_fnc_dump;
                         };
 
-                        if (!isNull _heli && alive _heli) then {
+                        // _heliCanFly guards against helis that have lost rotors/engines
+                        // but are still alive. alive returns true for a rotor-less heli,
+                        // so without this check flyInHeight/setVelocity keep it airborne
+                        // as a flying wreck indefinitely.
+                        private _heliCanFly = false;
+                        if (!isNull _heli && {alive _heli}) then {
+                            // Check main rotor and tail rotor damage + engine status
+                            private _mainRotorDamage = _heli getHitPointDamage "HitHRotor"; // main rotor (most important)
+                            private _tailRotorDamage = _heli getHitPointDamage "HitVRotor"; // tail rotor
+                            private _engineDamage    = _heli getHitPointDamage "HitEngine";
 
+                            _heliCanFly = (_mainRotorDamage < 0.9) &&
+                                          (_tailRotorDamage < 0.9) &&
+                                          (_engineDamage < 0.9) &&
+                                          (isEngineOn _heli || canMove _heli);
+                        };
+
+                        if (!isNull _heli && {alive _heli && !_heliCanFly}) then {
+                            // Heli is alive but can no longer fly (rotors/engines destroyed).
+                            // Stop issuing flight commands -- let it fall and treat as lost.
+                            ["ML - heliParadropWatchdog: %1 alive but _heliCanFly=false (rotor/engine loss). Treating as destroyed. Aborting.",
+                                _tProfID] call ALiVE_fnc_dump;
+                            _phase = 2;
+                        };
+
+                        if (_heliCanFly) then {
                             // -------------------------------------------------------
                             // FIRST-ACTIVATION CORRECTION
                             // When a profile transitions virtual->active, the vehicle
                             // spawns at its stored profile position which has z=0
                             // (ground level). We detect the first tick where the heli
                             // is active and immediately:
-                            //  (a) Teleport the heli to PARADROP_HEIGHT AGL so the AI
-                            //      starts at the correct altitude.
-                            //  (b) Clear the native Arma waypoints (which were
-                            //      converted from the profile waypoint at z=0 or
-                            //      z=PARADROP_HEIGHT but the AI descends into anyway)
-                            //      and replace with a single overshoot waypoint 600m
-                            //      PAST the DZ at PARADROP_HEIGHT. The AI then flies
-                            //      THROUGH the drop zone at altitude rather than
-                            //      decelerating and descending into it.
+                            // (a) Teleport the heli to PARADROP_HEIGHT AGL so the AI
+                            // starts at the correct altitude.
+                            // (b) Clear the native Arma waypoints (which were
+                            // converted from the profile waypoint at z=0 or
+                            // z=PARADROP_HEIGHT but the AI descends into anyway)
+                            // and replace with a single overshoot waypoint 600m
+                            // PAST the DZ at PARADROP_HEIGHT. The AI then flies
+                            // THROUGH the drop zone at altitude rather than
+                            // decelerating and descending into it.
                             // -------------------------------------------------------
+
                             if (!_wasActive) then {
                                 _wasActive = true;
-
-                                private _posASL   = getPosASL _heli;
+                                private _posASL = getPosASL _heli;
                                 private _terrainH = getTerrainHeightASL [_posASL select 0, _posASL select 1];
-                                private _curAGL   = (_heli modelToWorldVisual [0,0,0]) select 2;
-
+                                private _curAGL = (_heli modelToWorldVisual [0,0,0]) select 2;
                                 ["ML - heliParadropWatchdog: %1 FIRST ACTIVATION. spawnAGL=%2m terrainASL=%3m. Applying altitude correction to %4m AGL.",
                                     _tProfID, round _curAGL, round _terrainH, PARADROP_HEIGHT] call ALiVE_fnc_dump;
 
@@ -1523,6 +1542,7 @@ switch(_operation) do {
                                 private _curVel = velocity _heli;
                                 _heli setVelocity [_curVel select 0, _curVel select 1, 15];
                                 _heli flyInHeight PARADROP_HEIGHT;
+
                                 // Extended climb window: suppress drop trigger for 30s so the
                                 // heli has time to reach altitude before we start checking dist.
                                 _phaseTimer = 0;
@@ -1531,7 +1551,7 @@ switch(_operation) do {
                                 // The AI overflies the DZ on the way to the overshoot point,
                                 // maintaining altitude across the entire drop zone.
                                 private _heliPos2D = [_posASL select 0, _posASL select 1, 0];
-                                private _dzDir     = _heliPos2D getDir _destPos;
+                                private _dzDir = _heliPos2D getDir _destPos;
                                 private _overshoot = _destPos getPos [600, _dzDir];
                                 private _overshootASL = AGLToASL _overshoot;
                                 _overshootASL set [2, (_terrainH + PARADROP_HEIGHT)];
@@ -1551,12 +1571,14 @@ switch(_operation) do {
                                 // re-issued every loop tick below to prevent the AI from ignoring
                                 // it on approach or after completing previous movement orders.
                                 _overshootPosAGL = ASLToAGL _overshootASL;
+
                                 // Use vehicle-level move command, not (driver) doMove.
                                 // doMove on a unit issues a walking order -- a seated pilot
                                 // cannot act on it and the heli gets no flight instruction.
                                 // _heli move issues the order directly to the vehicle AI.
                                 _heli move _overshootPosAGL;
                                 _heli flyInHeight PARADROP_HEIGHT;
+
                                 // Also set velocity toward target so AI has initial momentum
                                 private _toOvDir = _heliPos2D getDir _overshootPosAGL;
                                 _heli setVelocity [
@@ -1583,20 +1605,40 @@ switch(_operation) do {
                             if (_paradropHitEH < 0 && isNull _paradropHitEHObj) then {
                                 _paradropHitEHObj = _heli;
                                 _paradropHitEH = _heli addEventHandler ["HitPart", {
-                                    private _vehicle = (_this select 0) select 0;
-                                    private _g = group (driver _vehicle);
-                                    _g setBehaviour "CARELESS";
-                                    _g allowFleeing 0;
-                                    _g setCombatMode "BLUE";
-                                    _g setSpeedMode "FULL";
-                                    { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
-                                    // Re-enforce altitude immediately on hit so AI doesn't dive
-                                    _vehicle flyInHeight PARADROP_HEIGHT;
+                                    params ["_event"];
+                                    private _vehicle = _event select 0;
+
+                                    // Guard: _heliCanFly=false means rotors/engines are gone.
+                                    // Do not issue flight commands to a rotor-less heli --
+                                    // it would be held airborne as a flying wreck.
+                                    if (!isNull _vehicle) then {
+                                        // Check main rotor and tail rotor damage + engine status
+                                        private _mainRotorDamage = _vehicle getHitPointDamage "HitHRotor"; // main rotor (most important)
+                                        private _tailRotorDamage = _vehicle getHitPointDamage "HitVRotor"; // tail rotor
+                                        private _engineDamage    = _vehicle getHitPointDamage "HitEngine";
+
+                                        private _canStillFly = (_mainRotorDamage < 0.9) &&
+                                                               (_tailRotorDamage < 0.9) &&
+                                                               (_engineDamage < 0.9) &&
+                                                               (isEngineOn _vehicle || canMove _vehicle);
+
+                                        if (alive _vehicle && _canStillFly) then {
+                                            private _g = group (driver _vehicle);
+                                            _g setBehaviour "CARELESS";
+                                            _g allowFleeing 0;
+                                            _g setCombatMode "BLUE";
+                                            _g setSpeedMode "FULL";
+                                            { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
+
+                                            // Re-enforce altitude immediately on hit so AI doesn't dive
+                                            _vehicle flyInHeight PARADROP_HEIGHT;
+                                        };
+                                    };
                                 }];
                                 ["ML - heliParadropWatchdog: %1 transit hit EH attached.", _tProfID] call ALiVE_fnc_dump;
                             };
 
-                            private _dist    = _heli distance2D _destPos;
+                            private _dist = _heli distance2D _destPos;
                             private _heliAGL = (_heli modelToWorldVisual [0,0,0]) select 2;
                             private _heliSpd = round (speed _heli);
                             private _heliPos = getPosASL _heli;
@@ -1609,16 +1651,13 @@ switch(_operation) do {
                                 _wpCountNow, _phaseTimer] call ALiVE_fnc_dump;
 
                             // Enforce minimum paradrop altitude every tick.
-                            // flyInHeight and doMove are advisory and lose to the AI's
-                            // forward-momentum descent path when the target has z=ground.
-                            // When below minimum height: use setPosASL to hard-correct altitude,
-                            // zero the vertical velocity component, and re-issue doMove.
-                            // This is deterministic and cannot be overridden by AI logic.
+                            // flyInHeight is advisory but loses to the AI's natural descent
+                            // on approach. Re-issue every tick to keep the order active.
+                            // NOTE: no setVelocity kick here -- applying a vertical kick every
+                            // 2s causes the AI to pitch nose-up, bleed all forward airspeed,
+                            // and oscillate between climbing and descending without making
+                            // progress toward the DZ. The kick belongs only in first-activation.
                             if (_heliAGL < PARADROP_MIN_DROP_HEIGHT) then {
-                                // Safety net: heli still below minimum after initial climb period.
-                                // Re-issue climb command and velocity kick.
-                                private _velNow = velocity _heli;
-                                _heli setVelocity [_velNow select 0, _velNow select 1, 15];
                                 _heli flyInHeight PARADROP_HEIGHT;
                                 if (count _overshootPosAGL > 0) then { _heli move _overshootPosAGL; };
                                 ["ML - heliParadropWatchdog: %1 below min AGL (%2m < %3m). Re-issuing climb command.",
@@ -1626,9 +1665,17 @@ switch(_operation) do {
                             };
 
                             // Re-issue vehicle move every tick toward the stored overshoot position.
-                            // Vehicle-level move keeps the flight AI on course.
-                            // Re-issuing every 2s prevents the AI treating the order as complete.
+                            // ALSO clear native waypoints every tick: the ALiVE profile system
+                            // re-adds the original profile waypoint (z=ground) each simulation
+                            // cycle. The AI prioritises its native WP queue over _heli move, so
+                            // if that ground-level WP is present the heli decelerates, descends,
+                            // and hovers stationary rather than flying to the overshoot point.
+                            // Deleting it every 2s ensures _heli move always has clear authority.
                             if (count _overshootPosAGL > 0) then {
+                                private _grpTick = group (driver _heli);
+                                while { count (waypoints _grpTick) > 0 } do {
+                                    deleteWaypoint [_grpTick, 0];
+                                };
                                 _heli move _overshootPosAGL;
                             };
 
@@ -1647,6 +1694,7 @@ switch(_operation) do {
                                     _stuckLowTimer = _stuckLowTimer + _loopInterval;
                                     ["ML - heliParadropWatchdog: %1 STUCK-LOW: dist=%2m AGL=%3m < MIN=%4m. stuckLowTimer=%5s/30s.",
                                         _tProfID, round _dist, round _heliAGL, PARADROP_MIN_DROP_HEIGHT, _stuckLowTimer] call ALiVE_fnc_dump;
+
                                     if (_stuckLowTimer >= 30) then {
                                         ["ML - heliParadropWatchdog: %1 STUCK-LOW FORCED DROP after %2s. dist=%3m AGL=%4m. Dropping at sub-optimal altitude.",
                                             _tProfID, _stuckLowTimer, round _dist, round _heliAGL] call ALiVE_fnc_dump;
@@ -1666,10 +1714,11 @@ switch(_operation) do {
                             // Log every tick unconditionally so the RPT shows full position
                             // history and the virtual->active transition is precisely locatable.
                             private _profPos = _tp select 2 select 2;
-                            private _dist2D  = if (count _profPos > 1) then { _profPos distance2D _destPos } else { -1 };
+                            private _dist2D = if (count _profPos > 1) then { _profPos distance2D _destPos } else { -1 };
                             private _profPosStr = if (count _profPos > 1) then {
                                 format ["[%1,%2]", round (_profPos select 0), round (_profPos select 1)]
                             } else { "unknown" };
+
                             ["ML - heliParadropWatchdog: %1 TRANSIT virtual. profPos=%2 dist=%3m t=%4s",
                                 _tProfID, _profPosStr, round _dist2D, _phaseTimer] call ALiVE_fnc_dump;
 
