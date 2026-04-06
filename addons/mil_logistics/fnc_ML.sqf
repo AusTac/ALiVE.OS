@@ -1492,7 +1492,7 @@ switch(_operation) do {
                         // but are still alive. alive returns true for a rotor-less heli,
                         // so without this check flyInHeight/setVelocity keep it airborne
                         // as a flying wreck indefinitely.
-                        private _heliCanFly = (!isNull _heli && alive _heli && canFly _heli);
+                        private _heliCanFly = (!isNull _heli && { alive _heli } && { canFly _heli });
 
                         if (!isNull _heli && alive _heli && !_heliCanFly) then {
                             // Heli is alive but can no longer fly (rotors/engines destroyed).
