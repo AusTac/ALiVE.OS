@@ -1492,14 +1492,21 @@ switch(_operation) do {
                         // but are still alive. alive returns true for a rotor-less heli,
                         // so without this check flyInHeight/setVelocity keep it airborne
                         // as a flying wreck indefinitely.
-                        private _heliCanFly = (!isNull _heli && { alive _heli } && { canFly _heli });
+                        private _heliCanFly = false;
+                        if (!isNull _heli) then {
+                            if (alive _heli) then {
+                                _heliCanFly = canFly _heli;
+                            };
+                        };
 
-                        if (!isNull _heli && alive _heli && !_heliCanFly) then {
-                            // Heli is alive but can no longer fly (rotors/engines destroyed).
-                            // Stop issuing flight commands -- let it fall and treat as lost.
-                            ["ML - heliParadropWatchdog: %1 alive but canFly=false (rotor/engine loss). Treating as destroyed. Aborting.",
-                                _tProfID] call ALiVE_fnc_dump;
-                            _phase = 2;
+                        if (!isNull _heli) then {
+                            if (alive _heli && !_heliCanFly) then {
+                                // Heli is alive but can no longer fly (rotors/engines destroyed).
+                                // Stop issuing flight commands -- let it fall and treat as lost.
+                                ["ML - heliParadropWatchdog: %1 alive but canFly=false (rotor/engine loss). Treating as destroyed. Aborting.",
+                                    _tProfID] call ALiVE_fnc_dump;
+                                _phase = 2;
+                            };
                         };
 
                         if (_heliCanFly) then {
@@ -1601,15 +1608,17 @@ switch(_operation) do {
                                     // Guard: canFly=false means rotors/engines are gone.
                                     // Do not issue flight commands to a rotor-less heli --
                                     // it would be held airborne as a flying wreck.
-                                    if (!isNull _vehicle && alive _vehicle && canFly _vehicle) then {
-                                        private _g = group (driver _vehicle);
-                                        _g setBehaviour "CARELESS";
-                                        _g allowFleeing 0;
-                                        _g setCombatMode "BLUE";
-                                        _g setSpeedMode "FULL";
-                                        { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
-                                        // Re-enforce altitude immediately on hit so AI doesn't dive
-                                        _vehicle flyInHeight PARADROP_HEIGHT;
+                                    if (!isNull _vehicle) then {
+                                        if (alive _vehicle && canFly _vehicle) then {
+                                            private _g = group (driver _vehicle);
+                                            _g setBehaviour "CARELESS";
+                                            _g allowFleeing 0;
+                                            _g setCombatMode "BLUE";
+                                            _g setSpeedMode "FULL";
+                                            { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
+                                            // Re-enforce altitude immediately on hit so AI doesn't dive
+                                            _vehicle flyInHeight PARADROP_HEIGHT;
+                                        };
                                     };
                                 }];
                                 ["ML - heliParadropWatchdog: %1 transit hit EH attached.", _tProfID] call ALiVE_fnc_dump;
