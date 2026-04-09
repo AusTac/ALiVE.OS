@@ -3756,12 +3756,59 @@ switch(_operation) do {
 
         }else{
 
-            _eventForceInfantry = _eventForceMakeup select 0;
-            _eventForceMotorised = _eventForceMakeup select 1;
+            _eventForceInfantry   = _eventForceMakeup select 0;
+            _eventForceMotorised  = _eventForceMakeup select 1;
             _eventForceMechanised = _eventForceMakeup select 2;
-            _eventForceArmour = _eventForceMakeup select 3;
-            _eventForcePlane = _eventForceMakeup select 4;
-            _eventForceHeli = _eventForceMakeup select 5;
+            _eventForceArmour     = _eventForceMakeup select 3;
+            _eventForcePlane      = _eventForceMakeup select 4;
+            _eventForceHeli       = _eventForceMakeup select 5;
+
+            // -----------------------------------------------------------------
+            // FIX: Apply the same allow-checks and MAX_GROUPS_PER_REQUEST cap
+            // here in monitorEvent that LOGCOM_REQUEST applies at receipt time.
+            // Without this, AI-generated events bypass both guards: armour can
+            // arrive even when allowArmourReinforcement=false, and OPCOM can
+            // request unreasonably large reinforcements (tanks on parachutes
+            // incident: OPCOM sent multiple TankPlatoon groups that exceeded
+            // slingload capacity and fell from the air without helicopters).
+            // -----------------------------------------------------------------
+            private _monAllowInfantry   = [_logic, "allowInfantryReinforcement"]  call MAINCLASS;
+            private _monAllowMotorised  = [_logic, "allowMotorisedReinforcement"] call MAINCLASS;
+            private _monAllowMechanised = [_logic, "allowMechanisedReinforcement"] call MAINCLASS;
+            private _monAllowArmour     = [_logic, "allowArmourReinforcement"]    call MAINCLASS;
+            private _monAllowPlane      = [_logic, "allowPlaneReinforcement"]     call MAINCLASS;
+            private _monAllowHeli       = [_logic, "allowHeliReinforcement"]      call MAINCLASS;
+
+            if (!_monAllowInfantry)   then { _eventForceMakeup set [0, 0]; };
+            if (!_monAllowMotorised)  then { _eventForceMakeup set [1, 0]; };
+            if (!_monAllowMechanised) then { _eventForceMakeup set [2, 0]; };
+            if (!_monAllowArmour)     then { _eventForceMakeup set [3, 0]; };
+            if (!_monAllowPlane)      then { _eventForceMakeup set [4, 0]; };
+            if (!_monAllowHeli)       then { _eventForceMakeup set [5, 0]; };
+
+            // Cap each force type to MAX_GROUPS_PER_REQUEST
+            private _monCapApplied = false;
+            for "_monCapIdx" from 0 to ((count _eventForceMakeup) - 1) do {
+                private _monCapVal = _eventForceMakeup select _monCapIdx;
+                if (_monCapVal > MAX_GROUPS_PER_REQUEST) then {
+                    _eventForceMakeup set [_monCapIdx, MAX_GROUPS_PER_REQUEST];
+                    _monCapApplied = true;
+                };
+            };
+
+            // Re-read after allow + cap
+            _eventForceInfantry   = _eventForceMakeup select 0;
+            _eventForceMotorised  = _eventForceMakeup select 1;
+            _eventForceMechanised = _eventForceMakeup select 2;
+            _eventForceArmour     = _eventForceMakeup select 3;
+            _eventForcePlane      = _eventForceMakeup select 4;
+            _eventForceHeli       = _eventForceMakeup select 5;
+
+            if (_monCapApplied && _debug) then {
+                ["ML - monitorEvent: Force makeup capped to max %1 per type. Capped makeup: %2",
+                    MAX_GROUPS_PER_REQUEST, _eventForceMakeup] call ALiVE_fnc_dump;
+            };
+            // -----------------------------------------------------------------
 
         };
 
@@ -4675,6 +4722,27 @@ switch(_operation) do {
 
                                             // _slingloadProfile call ALIVE_fnc_inspectHash;
 
+                                            // -----------------------------------------------------------------
+                                            // FIX: Pre-spawn objectType guard.
+                                            // Tanks and other non-slingloadable types (Tank, APC, Plane, Ship)
+                                            // must never enter the slingload path -- ALIVE_fnc_profileVehicle
+                                            // fires a _slingloadClass trap at attach time but by then both the
+                                            // heli and cargo profiles are already spawned in the air.  Catch
+                                            // unslingloadable objectTypes here and fall back to STANDARD before
+                                            // any profiles are created. This guards against mis-categorised
+                                            // faction configs (e.g. TankPlatoon groups returned by a Motorized
+                                            // config query) as well as deliberate armour-in-motorised cases.
+                                            // -----------------------------------------------------------------
+                                            private _objType = _slingLoadProfile select 2 select 6;
+                                            private _unslingloadableTypes = ["Tank", "APC", "Plane", "Ship"];
+                                            if (_objType in _unslingloadableTypes) exitWith {
+                                                if (_debug) then {
+                                                    ["ML - HELI_INSERT slingload: vehicle %1 objectType=%2 is not slingloadable. Falling back to STANDARD for event %3.",
+                                                        _x, _objType, _eventID] call ALiVE_fnc_dump;
+                                                };
+                                                _requiresStandardDelivery = true;
+                                            };
+
                                             _payloadWeight = [(_slingLoadProfile select 2 select 11)] call ALIVE_fnc_getObjectWeight;
 
                                             // Select helicopter that can slingload the vehicle
@@ -5233,9 +5301,13 @@ switch(_operation) do {
 
                             _position = _reinforcementPosition getPos [random(200), random(360)];
 
-                            if(_paraDrop) then {
-                                _position set [2,PARADROP_HEIGHT];
-                            };
+                            // FIX: Armour is ground-only (STANDARD delivery). Never elevate
+                            // armour profiles to PARADROP_HEIGHT even when _paraDrop=true.
+                            // _paraDrop only signals that players are near the departure base;
+                            // setting z=PARADROP_HEIGHT on a tank profile with no helicopter
+                            // or parachute assigned is exactly what causes the falling-tanks
+                            // visual. Armour always spawns at ground level (z=0).
+                            _position set [2, 0];
 
                             if!(surfaceIsWater _position) then {
 
@@ -5323,6 +5395,22 @@ switch(_operation) do {
                                     {
                                         if ([_x,"vehicle"] call CBA_fnc_find != -1) then {
                                             _slingLoadProfile = [ALiVE_ProfileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+
+                                            // FIX: Pre-spawn objectType guard (mirrors motorised path).
+                                            // Mechanised groups can contain APCs/IFVs that look slingloadable
+                                            // by weight but hit the _slingloadClass trap at attach time.
+                                            // Catch them here and fall back to STANDARD before any profiles
+                                            // are spawned in the air.
+                                            private _mechObjType = _slingLoadProfile select 2 select 6;
+                                            private _mechUnslingloadable = ["Tank", "APC", "Plane", "Ship"];
+                                            if (_mechObjType in _mechUnslingloadable) exitWith {
+                                                if (_debug) then {
+                                                    ["ML - HELI_INSERT mechanised slingload: vehicle %1 objectType=%2 is not slingloadable. Mechanised groups will travel by ground. Event: %3.",
+                                                        _x, _mechObjType, _eventID] call ALiVE_fnc_dump;
+                                                };
+                                                _requiresStandardDelivery = true;
+                                            };
+
                                             _payloadWeight = [(_slingLoadProfile select 2 select 11)] call ALIVE_fnc_getObjectWeight;
                                             _vehicleClass = "";
                                             _currentDiff = 15000;
