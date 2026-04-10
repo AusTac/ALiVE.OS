@@ -38,7 +38,7 @@ if (isNull _unit || {!alive _unit}) exitWith {};
 // is needed. A single handler body is defined as a named code variable
 // to avoid duplication across the two original separate branches.
 // =========================================================================
-if (side _unit != civilian) then {
+if (side _unit != civilian) exitWith {
 
     if !(_unit getVariable ["ALiVE_advciv_firedEH", false]) then {
         _unit setVariable ["ALiVE_advciv_firedEH", true];
@@ -106,8 +106,6 @@ if (side _unit != civilian) then {
         _unit addEventHandler ["FiredMan", _firedManHandler];
     };
 
-    // Exit regardless — non-civs never receive civilian brain initialisation
-    exitWith {};
 };
 
 
