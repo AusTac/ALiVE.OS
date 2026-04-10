@@ -231,12 +231,10 @@ class FSM
                          "            _agent setVariable [""ALiVE_Crowd_Fleeing"", false, false];" \n
                          "       };" \n
                          "" \n
-                         "       // Reset crowd leader" \n
-                         "       if ((_agent getVariable [""ALIVE_CIV_ACTION"", ""None""]) == ""Crowd"") then {" \n
-                         "            _notCrowding = true;" \n
-                         "            _crowdChoice = false;" \n
-                         "            _crowdTarget = objNull;" \n
-                         "            _crowdPos = [];" \n
+                         "       // Reset crowd leader � Issue #5: remove this crowd from _activeCrowds collection" \n
+                         "       if ((_agent getVariable [""ALIVE_CIV_ACTION"", ""None""]) == ""Crowd"" && " \n
+                         "           {_agent getVariable [""ALiVE_Crowd_Leader"", false]}) then {" \n
+                         "            _activeCrowds = _activeCrowds select {!(_x select 2 == _agent)};" \n
                          "       };" \n
                          "" \n
                          "	// Reset Crowd" \n
@@ -330,7 +328,18 @@ class FSM
                          "       // Choose an action" \n
                          "       _action = selectRandomWeighted _chances;" \n
                          "" \n
-                         "       If (_crowdChoice || (!_notCrowding && {_agent distance _crowdPos < 60}) ) then {" \n
+                         "       // Issue #5: find nearest active crowd within join radius" \n
+                         "       private _nearestCrowd = [];" \n
+                         "       private _nearestCrowdDist = 9999;" \n
+                         "       {" \n
+                         "           private _d = _agent distance (_x select 0);" \n
+                         "           if (_d < 60 && _d < _nearestCrowdDist) then {" \n
+                         "               _nearestCrowd = _x;" \n
+                         "               _nearestCrowdDist = _d;" \n
+                         "           };" \n
+                         "       } forEach _activeCrowds;" \n
+                         "       private _crowdChoice = (count _activeCrowds == 0) && (random 1 > 0.9);" \n
+                         "       If (_crowdChoice || (count _nearestCrowd > 0)) then {" \n
                          "" \n
                          "            _action = ""Crowd"";" \n
                          "" \n
@@ -348,6 +357,11 @@ class FSM
                          "       switch (_action) do {" \n
                          "" \n
                          "            case ""Crowd"" : {" \n
+                         "                 // Issue #5: shared crowd position/target resolved before leader/follower split" \n
+                         "                 private _crowdPos = [];" \n
+                         "                 private _crowdTarget = objNull;" \n
+                         "                 private _followPos = [];" \n
+                         "                 private _followTarget = objNull;" \n
                          "                 if (_crowdChoice) then {" \n
                          "" \n
                          "                      // This is the leader" \n
@@ -355,7 +369,7 @@ class FSM
                          "                      if ((_clusterHostilityLevel > 50 || random 1 > 0.6) && count _player > 0) then {" \n
                          "                           // Crowd player" \n
                          "                           _crowdtarget = selectRandom _player;" \n
-                         "                           _crowdPos = _crowdTarget getpos [2 + random 5, random 360];" \n
+                         "                           _crowdPos = _crowdTarget getpos [8 + random 7, random 360];" \n
                          "                      } else {" \n
                          "                           private _nearHouses = _position nearObjects [""House"",50];" \n
                          "                           private _nearSpecialPlaces = [];" \n
@@ -374,7 +388,7 @@ class FSM
                          "                           } else {" \n
                          "                                if(count _player > 0) then {" \n
                          "                                     _crowdtarget = selectRandom _player;" \n
-                         "                                     _crowdPos = _crowdTarget getpos [2 + random 5, random 360];" \n
+                         "                                     _crowdPos = _crowdTarget getpos [8 + random 7, random 360];" \n
                          "                                } else {" \n
                          "                                     _crowdtarget = _agent;" \n
                          "                                     _crowdPos = position _agent;" \n
@@ -383,19 +397,23 @@ class FSM
                          "                      };" \n
                          "                      // Play crowd noise based on protesting or not" \n
                          "			" \n
-                         "                      _notCrowding = false;" \n
+                         "                      // Issue #5: push new crowd entry onto collection" \n
+                         "                      private _newCrowd = [_crowdPos, _crowdTarget, _agent, time + 110];" \n
+                         "                      _activeCrowds pushBack _newCrowd;" \n
                          "                      _agent setVariable [""ALiVE_Crowd_Leader"", true, false];" \n
                          "                      _agent setVariable [""ALiVE_Crowd_Busy"", (time + 110), false];" \n
-                         "                      _crowdChoice = false;" \n
                          "                      _position = _crowdPos;" \n
                          "                 } else {" \n
-                         "                      _position = _crowdPos getpos [random 5, random 180];" \n
+                         "                      // Issue #5: follower reads position from nearest crowd entry" \n
+                         "                      private _followPos = if (count _nearestCrowd > 0) then {_nearestCrowd select 0} else {position _agent};" \n
+                         "                      private _followTarget = if (count _nearestCrowd > 0) then {_nearestCrowd select 1} else {objNull};" \n
+                         "                      _position = _followPos getpos [3 + random 8, random 360];" \n
                          "                      _agent setVariable [""ALiVE_Crowd_Busy"", (time + 120), false];" \n
                          "                 };" \n
                          "			_agent setVariable [""ALiVE_Crowd_Crowding"", true, false];" \n
                          "			_agent setVariable  [""ALiVE_Crowd_Pos"",_position, false];" \n
-                         "			_agent doTarget _crowdTarget;" \n
-                         "                 _agent lookAt _crowdTarget;" \n
+                         "			if !(isNull _followTarget) then {_agent doTarget _followTarget;};" \n
+                         "                 if !(isNull _followTarget) then {_agent lookAt _followTarget;};" \n
                          "            };" \n
                          "" \n
                          "            case ""Move"" : {" \n
@@ -560,9 +578,9 @@ class FSM
                          "" \n
                          "private _noCombat = time;" \n
                          "private _protesting = false;" \n
-                         "private _crowdPos = [];" \n
-                         "private _crowdTarget = objNull;" \n
-                         "private _notCrowding = true;" \n
+                         "// Issue #5: replaced single-crowd scalars with _activeCrowds collection." \n
+                         "// Each entry: [crowdPos, crowdTarget, leaderAgent, expireTime]" \n
+                         "private _activeCrowds = [];" \n
                          "" \n
                          "private _activeAgents = [];" \n
                          "private _activeBuildings = [];" \n
@@ -1362,7 +1380,9 @@ class FSM
                                         precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
                                         condition=/*%FSM<CONDITION""">*/"((_countToDespawn == 0) && (_analysisComplete))"/*%FSM</CONDITION""">*/;
                                         action=/*%FSM<ACTION""">*/"private _count = 0;" \n
-                                         "private _crowdChoice = (random 1 > 0.9) && _notCrowding;"/*%FSM</ACTION""">*/;
+                                         "// Issue #5: _crowdChoice retired; crowd eligibility now evaluated per-agent in MOVE" \n
+                                         "// Remove expired crowds from _activeCrowds each cycle before MOVE begins" \n
+                                         "_activeCrowds = _activeCrowds select {time < (_x select 3)};"/*%FSM</ACTION""">*/;
                                 };
                                 /*%FSM</LINK>*/
                         };
@@ -1395,11 +1415,9 @@ class FSM
                          "          deleteMarker (_agent getVariable [""CP_Marker"",""""]);" \n
                          "            };" \n
                          "" \n
-                         "       // End crowding if leader despawns" \n
+                         "       // Issue #5: remove crowd from collection when leader despawns" \n
                          "       if (_agent getVariable [""ALiVE_Crowd_Leader"",false]) then {" \n
-                         "            _notCrowding = true;" \n
-                         "            _crowdTarget = objNull;" \n
-                         "            _crowdPos = [];" \n
+                         "            _activeCrowds = _activeCrowds select {!(_x select 2 == _agent)};" \n
                          "       };" \n
                          "" \n
                          "            deleteVehicle _agent;" \n
