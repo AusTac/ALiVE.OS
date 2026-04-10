@@ -1773,6 +1773,15 @@
 <!-- ============================================================ -->
 
 <!-- General -->
+<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER">
+    <English></English>
+</Key>
+<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER_COMMENT">
+    <English>The following parameters apply only when Enable Advanced Civilians is set to Yes.</English>
+</Key>
+<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER_VALUE">
+    <English>-- Advanced Civilians Settings --</English>
+</Key>
 <Key ID="STR_ALIVE_ADVCIV_ENABLED">
     <English>Enable Advanced Civilians:</English>
 </Key>

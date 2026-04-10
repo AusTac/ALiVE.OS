@@ -53,6 +53,10 @@ if(isServer) then {
 
     // ----------------------------------------------------------------
     //  Advanced Civilians - read module args and set globals
+    //
+    //  Note: advciv_section_header is a display-only dummy argument used
+    //  as a visual divider in the Eden module UI. It is intentionally not
+    //  read or published here.
     // ----------------------------------------------------------------
     private _advciv_enabled          = (_logic getVariable ["advciv_enabled",          "true"]) isEqualTo "true";
     private _advciv_debug            = (_logic getVariable ["advciv_debug",            "false"]) isEqualTo "true";

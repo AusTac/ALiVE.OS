@@ -278,6 +278,25 @@ class CfgVehicles {
             // ----------------------------------------------------------------
             //  Advanced Civilians - General
             // ----------------------------------------------------------------
+
+            // Dummy read-only parameter used as a visual section divider.
+            // The single fixed value cannot be changed by the user; the init
+            // function reads it and discards it. SystemInit must not parseNumber
+            // this key — it is intentionally a string label, not a numeric value.
+            class advciv_section_header
+            {
+                displayName = "$STR_ALIVE_ADVCIV_SECTION_HEADER";
+                description = "$STR_ALIVE_ADVCIV_SECTION_HEADER_COMMENT";
+                class Values
+                {
+                    class Header
+                    {
+                        name = "$STR_ALIVE_ADVCIV_SECTION_HEADER_VALUE";
+                        value = 0;
+                        default = 1;
+                    };
+                };
+            };
             class advciv_enabled
             {
                 displayName = "$STR_ALIVE_ADVCIV_ENABLED";
