@@ -1072,7 +1072,7 @@ switch(_operation) do {
                             !isTouchingGround _heli
                         ) then {
                             private _cargoCount = { alive _x && _x != driver _heli && _x != gunner _heli } count crew _heli;
-                            private _hasSlung = !isNull (vehicle _heli) && { count (attachedObjects _heli) > 0 };
+                            private _hasSlung = !isNull (getSlingLoad _heli); // setSlingLoad attachments are NOT in attachedObjects
                             if (_cargoCount == 0 && !_hasSlung) then {
                                 _hoverTicks = _hoverTicks + 1;
                             } else {
