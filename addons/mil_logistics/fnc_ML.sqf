@@ -9300,9 +9300,8 @@ switch(_operation) do {
             // Allow time for units to dismount and OPCOM to pick them up normally
             sleep 120;
 
-            private _checkInterval   = 60;
-            private _maxChecks       = 5;
-            private _movementThreshold = 50; // metres - less than this = stalled
+            private _checkInterval = 60;
+            private _maxChecks    = 5;
 
             for "_check" from 1 to _maxChecks do {
 
