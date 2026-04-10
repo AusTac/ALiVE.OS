@@ -185,9 +185,11 @@ if (isServer) then {
 //  CLIENT INITIALIZATION
 // ==============================================
 if (hasInterface) then {
-    // Use CBA_fnc_waitUntilAndExecute instead of waitUntil to avoid suspending errors
+    // Use CBA_fnc_waitUntilAndExecute instead of waitUntil to avoid suspending errors.
+    // Guard on both isValidCiv (published by SystemInit) and ALiVE_advciv_enabled to
+    // ensure the system actually completed initialisation before adding order menus.
     [{
-        !isNil "ALiVE_fnc_advciv_isValidCiv"
+        !isNil "ALiVE_fnc_advciv_isValidCiv" && { !isNil "ALiVE_advciv_enabled" } && { ALiVE_advciv_enabled } && { !isNil "ALiVE_advciv_enabled" && { ALiVE_advciv_enabled } }
     }, {
         // Add order menus to existing civilians
         {

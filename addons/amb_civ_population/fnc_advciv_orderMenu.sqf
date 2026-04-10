@@ -3,12 +3,13 @@ Function: ALIVE_fnc_advciv_orderMenu
 Description:
     Adds the AdvCiv player order action menu to a civilian unit. Attaches
     addAction entries for all available direct commands: Follow Me, Stay Here,
-    Go Home, Hands Up, Get Down, Calm Down, and Kneel. Additionally checks for
-    nearby driveable vehicles at init time and adds a contextual Get In action
-    for each. If the ALiVE civilian interaction handler is present, appends
-    a visual separator and an ALiVE Interact dialog option. All actions are
-    range-gated by ALiVE_advciv_orderMenuRange and are only visible when the
-    civilian is alive.
+    Go Home, Hands Up, Get Down, Calm Down, Kneel, and Get In Nearby Vehicle.
+    The Get In action uses a dynamic condition evaluated each time the action
+    menu is displayed, so it accurately reflects vehicles that arrive, depart,
+    or change occupancy after the menu was first attached. If the ALiVE civilian
+    interaction handler is present, appends a visual separator and an ALiVE
+    Interact dialog option. All actions are range-gated by
+    ALiVE_advciv_orderMenuRange and are only visible when the civilian is alive.
 Parameters:
     _this select 0: OBJECT - The civilian unit to attach actions to
 Returns:
@@ -142,38 +143,48 @@ _unit addAction [
     _range
 ];
 
-// --- GET IN VEHICLE (dynamic, only if a suitable vehicle is nearby at init time) ---
-// Only vehicles with a free driver or cargo seat are shown. The vehicle
-// reference is passed via the action's _args so react can assign the correct seat.
-private _nearVehicles = nearestObjects [_unit, ["Car", "Truck", "Helicopter", "Plane", "Ship"], 10];
-_nearVehicles = _nearVehicles select {
-    alive _x && {
-        (_x emptyPositions "cargo" > 0) ||
-        (_x emptyPositions "driver" > 0)
-    }
-};
-
-if (count _nearVehicles > 0) then {
+// --- GET IN NEARBY VEHICLE (dynamic) ---
+// The condition string is re-evaluated every time the player's action menu
+// is displayed, so the action appears and disappears as vehicles arrive, are
+// destroyed, driven off, or become occupied — unlike a static init-time scan
+// which goes stale the moment anything changes. The callback picks the closest
+// qualifying vehicle at the moment of the click. Qualification criteria are
+// kept consistent with the vehicle escape check in fnc_advciv_brainTick.
+_unit addAction [
+    "<t color='#00FF00'>Get In Nearby Vehicle</t>",
     {
-        private _veh = _x;
-        private _vehName = getText (configFile >> "CfgVehicles" >> typeOf _veh >> "displayName");
-        _unit addAction [
-            format ["<t color='#00FF00'>Get in %1</t>", _vehName],
-            {
-                params ["_target", "_caller", "_id", "_args"];
-                _args params ["_vehicle"];
-                [_target, "GETIN", _vehicle] call ALiVE_fnc_advciv_react;
-            },
-            [_veh],
-            6,
-            true,
-            true,
-            "",
-            format ["alive _target && _this distance _target < %1", _range],
-            _range
-        ];
-    } forEach _nearVehicles;
-};
+        params ["_target", "_caller"];
+        private _vehicles = nearestObjects [_target, ["Car","Truck","Motorcycle","Helicopter","Plane","Ship"], 15];
+        _vehicles = _vehicles select {
+            alive _x
+            && {canMove _x}
+            && {locked _x < 2}
+            && {isNull driver _x}
+            && {speed _x < 1}
+            && {fuel _x > 0}
+            && {!([_x] call ALiVE_fnc_advciv_isVehicleProtected)}
+        };
+        if (count _vehicles > 0) then {
+            _vehicles = [_vehicles, [], { _target distance _x }, "ASCEND"] call BIS_fnc_sortBy;
+            [_target, "GETIN", (_vehicles select 0)] call ALiVE_fnc_advciv_react;
+        };
+    },
+    [],
+    6,
+    true,
+    true,
+    "",
+    // Condition: visible only when a qualifying vehicle is actually within range
+    format [
+        "alive _target && {_this distance _target < %1} && {
+            private _v = nearestObjects [_target, ['Car','Truck','Motorcycle','Helicopter','Plane','Ship'], 15];
+            _v = _v select { alive _x && {canMove _x} && {locked _x < 2} && {isNull driver _x} && {speed _x < 1} && {fuel _x > 0} };
+            count _v > 0
+        }",
+        _range
+    ],
+    _range
+];
 
 // =================================================================
 // ALiVE INTERACT OPTION (appended if the interaction handler exists)

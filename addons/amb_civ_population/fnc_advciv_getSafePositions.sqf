@@ -10,8 +10,9 @@ Description:
 Parameters:
     _this select 0: OBJECT - The building to query
     _this select 1: NUMBER - Maximum relative height above building base (default: 3.5)
-    _this select 2: OBJECT - The unit requesting positions (used to exclude self
-                             from intersection checks)
+    _this select 2: OBJECT - The unit requesting positions (excluded from ray
+                             intersection checks so the unit cannot occlude its
+                             own query)
 Returns:
     ARRAY - Array of AGL positions [x, y, z] that pass the shelter filter,
             or an empty array if the building is null or has no positions
@@ -54,8 +55,8 @@ private _filtered = [];
         private _surfaces = lineIntersectsSurfaces [
             AGLToASL _above,
             AGLToASL _high,
-            _building,    // Ignore the building geometry itself when casting
-            objNull,
+            _building,    // Ignore the building geometry when casting
+            _unit,        // Ignore the querying unit so it cannot occlude its own ray
             true,
             1,
             "GEOM",

@@ -575,11 +575,23 @@ switch (_state) do {
             _unit disableAI "PATH";
             _unit setBehaviour "AWARE";
             _unit setSpeedMode "LIMITED";
+            // Apply posture once on state entry — re-setting it every tick is
+            // redundant and causes visible jitter when the unit shifts slightly.
+            if (vehicle _unit == _unit) then {
+                _unit setUnitPos (selectRandom ["DOWN","DOWN","MIDDLE"]);
+            };
         };
 
-        // Drive hiding body posture/animations each tick via react
-        if (vehicle _unit == _unit) then {
-            [_unit, "HIDING"] call ALiVE_fnc_advciv_react;
+        // Re-watch the danger source every tick so the unit tracks movement
+        // (e.g. a vehicle slowly driving past). Cheap enough to run per-tick.
+        private _source = _unit getVariable ["ALiVE_advciv_panicSource", [0,0,0]];
+        if !(_source isEqualTo [0,0,0]) then { _unit doWatch _source; };
+
+        // Occasional ambient hiding voice — low chance, long cooldown
+        private _lastVoice = _unit getVariable ["ALiVE_advciv_lastVoice", 0];
+        if (ALiVE_advciv_voiceEnabled && {time - _lastVoice > 20} && {random 1 < 0.15}) then {
+            [_unit, selectRandom ALiVE_advciv_voiceLines_hiding] remoteExec ["say3D", 0];
+            _unit setVariable ["ALiVE_advciv_lastVoice", time];
         };
 
         if (_timer > 0 && {time > _timer}) then {

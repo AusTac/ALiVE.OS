@@ -206,6 +206,11 @@ class cfgFunctions {
                 file = "\x\alive\addons\amb_civ_population\fnc_advciv_react.sqf";
                 RECOMPILE;
             };
+            class advciv_convertAgentAndFollow {
+                description = "AdvCiv server-side agent-to-unit conversion for FOLLOW order";
+                file = "\x\alive\addons\amb_civ_population\fnc_advciv_convertAgentAndFollow.sqf";
+                RECOMPILE;
+            };
             class advciv_findHouse {
                 description = "AdvCiv find house";
                 file = "\x\alive\addons\amb_civ_population\fnc_advciv_findHouse.sqf";

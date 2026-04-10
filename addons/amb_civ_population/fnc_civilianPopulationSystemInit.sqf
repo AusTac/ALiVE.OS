@@ -76,7 +76,8 @@ if(isServer) then {
     private _advciv_dropChance       = parseNumber (_logic getVariable ["advciv_dropChance",       "0.25"]);
     private _advciv_freezeChance     = parseNumber (_logic getVariable ["advciv_freezeChance",     "0.15"]);
     private _advciv_screamChance     = parseNumber (_logic getVariable ["advciv_screamChance",     "0.15"]);
-    private _advciv_crawlChance      = parseNumber (_logic getVariable ["advciv_crawlChance",      "0.15"]);
+    // crawlChance is the implicit fallback in fnc_advciv_react: whatever probability remains
+    // after the four explicit chances is assigned to CRAWL. It is not configurable at runtime.
     private _advciv_hideTimeMin      = parseNumber (_logic getVariable ["advciv_hideTimeMin",      "60"]);
     private _advciv_hideTimeMax      = parseNumber (_logic getVariable ["advciv_hideTimeMax",      "180"]);
     private _advciv_preferBuildings  = (_logic getVariable ["advciv_preferBuildings",  "true"])  isEqualTo "true";
@@ -118,7 +119,6 @@ if(isServer) then {
     ALiVE_advciv_dropChance       = _advciv_dropChance;       publicVariable "ALiVE_advciv_dropChance";
     ALiVE_advciv_freezeChance     = _advciv_freezeChance;     publicVariable "ALiVE_advciv_freezeChance";
     ALiVE_advciv_screamChance     = _advciv_screamChance;     publicVariable "ALiVE_advciv_screamChance";
-    ALiVE_advciv_crawlChance      = _advciv_crawlChance;      publicVariable "ALiVE_advciv_crawlChance";
     ALiVE_advciv_hideTimeMin      = _advciv_hideTimeMin;      publicVariable "ALiVE_advciv_hideTimeMin";
     ALiVE_advciv_hideTimeMax      = _advciv_hideTimeMax;      publicVariable "ALiVE_advciv_hideTimeMax";
     ALiVE_advciv_preferBuildings  = _advciv_preferBuildings;  publicVariable "ALiVE_advciv_preferBuildings";

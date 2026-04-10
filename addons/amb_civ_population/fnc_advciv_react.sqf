@@ -271,60 +271,13 @@ switch (_type) do {
         if (isNull (group _unit)) then {
             // --- Agent conversion path ---
             // This unit was spawned via createAgent and has no group.
-            // We must replace it with a createUnit-spawned equivalent.
-            if (ALiVE_advciv_debug) then {
-                systemChat format ["[AdvCiv] Converting agent %1 to unit for group membership", name _unit];
-            };
-
-            private _pos   = getPosATL _unit;
-            private _dir   = direction _unit;
-            private _class = typeOf _unit;
-
-            // Capture AdvCiv state variables to carry over to the replacement unit
-            private _advCivActive = _unit getVariable ["ALiVE_advciv_active", false];
-            private _advCivState  = _unit getVariable ["ALiVE_advciv_state", "CALM"];
-            private _nearShots    = _unit getVariable ["ALiVE_advciv_nearShots", 0];
-            private _panicLevel   = _unit getVariable ["ALiVE_advciv_panicLevel", 0];
-
-            // Spawn the replacement unit into a new auto-deleting group
-            private _grp     = createGroup [civilian, true];
-            private _newUnit = _grp createUnit [_class, _pos, [], 0, "NONE"];
-            _newUnit setDir _dir;
-            _newUnit setPosATL _pos;
-
-            _newUnit disableAI "FSM";
-            _newUnit setBehaviour "CARELESS";
-            _newUnit setSpeedMode "LIMITED";
-
-            // Restore AdvCiv variables on the new unit
-            _newUnit setVariable ["ALiVE_advciv_active", _advCivActive, true];
-            _newUnit setVariable ["ALiVE_advciv_state", "ORDERED", true];
-            _newUnit setVariable ["ALiVE_advciv_order", "FOLLOW", true];
-            _newUnit setVariable ["ALiVE_advciv_orderTarget", player, true];
-            _newUnit setVariable ["ALiVE_advciv_nearShots", 0, true];
-            _newUnit setVariable ["ALiVE_advciv_hidingPos", [], true];
-            _newUnit setVariable ["ALiVE_advciv_panicLevel", _panicLevel];
-
-            // Swap the old agent for the new unit in the active units array
-            private _idx = ALiVE_advciv_activeUnits find _unit;
-            if (_idx >= 0) then {
-                ALiVE_advciv_activeUnits set [_idx, _newUnit];
-            };
-
-            deleteVehicle _unit;   // Remove the original agent
-
-            // Now the replacement unit has a real group — join the player's group
-            [_newUnit] joinSilent (group player);
-            _newUnit setUnitPos "AUTO";
-            _newUnit enableAI "MOVE";
-            _newUnit enableAI "PATH";
-            _newUnit setSpeedMode "NORMAL";
-
-            [_newUnit] call ALiVE_fnc_advciv_orderMenu;
-
-            if (ALiVE_advciv_debug) then {
-                systemChat format ["[AdvCiv] Conversion complete: %1 now following in group %2", name _newUnit, group _newUnit];
-            };
+            // createGroup/createUnit must always run on the server, but this
+            // function may be called from a client addAction callback.
+            // The requesting player object is captured here (client-side, where
+            // 'player' is valid) and passed to the server conversion function so
+            // it is not evaluated as objNull on a dedicated server.
+            private _requestingPlayer = player;
+            [_unit, _requestingPlayer] remoteExecCall ["ALiVE_fnc_advciv_convertAgentAndFollow", 2];
 
         } else {
             // --- Standard unit path (already has a real group) ---

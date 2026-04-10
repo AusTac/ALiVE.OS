@@ -65,18 +65,14 @@ if (ALiVE_advciv_noStealUsed && {!_protected}) then {
 // -----------------------------------------------------------------------
 // Check 3: Loaded cargo protection
 // Protects vehicles carrying significant gear above the configured threshold,
-// preventing civilians from inadvertently driving off with mission equipment
+// preventing civilians from inadvertently driving off with mission equipment.
+// weaponCargo, magazineCargo, and itemCargo always return arrays, never nil,
+// so no nil guards are required.
 // -----------------------------------------------------------------------
 if (ALiVE_advciv_noStealLoaded && {!_protected}) then {
-    private _cargo   = magazineCargo _veh;
-    private _items   = itemCargo _veh;
-    private _weapons = weaponCargo _veh;
-
-    if (isNil "_cargo")   then { _cargo = []; };
-    if (isNil "_items")   then { _items = []; };
-    if (isNil "_weapons") then { _weapons = []; };
-
-    private _total = (count _cargo) + (count _items) + (count _weapons);
+    private _total = (count weaponCargo _veh)
+                   + (count magazineCargo _veh)
+                   + (count itemCargo _veh);
     if (_total > ALiVE_advciv_loadedThreshold) then {
         _protected = true;
     };

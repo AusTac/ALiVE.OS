@@ -1,16 +1,20 @@
 /* ----------------------------------------------------------------------------
 Function: ALIVE_fnc_advciv_initUnit
 Description:
-    Initialises a single civilian unit into the AdvCiv system. Sets all
-    required state variables, configures AI flags, and attaches the Hit and
-    Deleted event handlers. The Hit handler manages vehicle-escape, hit-react
-    animations, and state transitions on damage. The Deleted handler removes
-    the unit from the active units array and cleans up its order menu remote
-    exec channel. Also registers FiredMan event handlers on players and other
-    non-civilian units to feed shot events into the reaction system. Finishes
-    by adding the order menu and starting the brain loop for the unit.
+    Initialises a single unit into the AdvCiv system.
+
+    Non-civilian units (including players of any non-civilian side):
+        Registers a FiredMan event handler that routes gunshot and explosive
+        events into the civilian reaction pipeline, then exits. No further
+        initialisation is performed.
+
+    Civilian units (server-side only):
+        Sets all required state variables, configures AI behaviour flags, and
+        attaches Hit and Deleted event handlers. Finishes by adding the order
+        menu and registering the unit in the brain loop.
+
 Parameters:
-    _this select 0: OBJECT - The civilian unit to initialise
+    _this select 0: OBJECT - The unit to initialise
 Returns:
     Nil
 See Also:
@@ -27,143 +31,94 @@ params [["_unit", objNull, [objNull]]];
 if (isNull _unit || {!alive _unit}) exitWith {};
 
 // =========================================================================
-// FiredMan event handlers on players and non-civilian units.
-// These feed gunshot positions into the civilian reaction system.
-// Registered here so they're set up at the same time as the civilian itself.
+// Non-civilian path: register FiredMan EH and exit.
+//
+// Covers both players and AI on any non-civilian side. The outer check
+// on side already excludes civilian-side units, so no inner player guard
+// is needed. A single handler body is defined as a named code variable
+// to avoid duplication across the two original separate branches.
 // =========================================================================
+if (side _unit != civilian) then {
 
-if (isPlayer _unit) exitWith {
-    if (side _unit == civilian) exitWith {};   // Don't add to civilian players
-    if (_unit getVariable ["ALiVE_advciv_firedEH", false]) exitWith {};   // Already registered
-    _unit setVariable ["ALiVE_advciv_firedEH", true];
+    if !(_unit getVariable ["ALiVE_advciv_firedEH", false]) then {
+        _unit setVariable ["ALiVE_advciv_firedEH", true];
 
-    _unit addEventHandler ["FiredMan", {
-        params ["_firer", "_weapon", "_muzzle", "_mode", "_ammo", "_magazine", "_projectile"];
+        private _firedManHandler = {
+            params ["_firer", "_weapon", "_muzzle", "_mode", "_ammo", "_magazine", "_projectile"];
 
-        // Rate-limit to avoid flooding the reaction system from automatic fire
-        private _lastFired = _firer getVariable ["ALiVE_advciv_lastFiredTime", 0];
-        if (time - _lastFired < 0.25) exitWith {};
-        _firer setVariable ["ALiVE_advciv_lastFiredTime", time];
+            // Rate-limit: suppress repeat calls from automatic fire
+            private _lastFired = _firer getVariable ["ALiVE_advciv_lastFiredTime", 0];
+            if (time - _lastFired < 0.25) exitWith {};
+            _firer setVariable ["ALiVE_advciv_lastFiredTime", time];
 
-        private _veh         = vehicle _firer;
-        private _isInVehicle = (_veh != _firer);
-        private _pos = if (_isInVehicle) then { getPos _veh } else { getPos _firer };
+            private _veh         = vehicle _firer;
+            private _isInVehicle = (_veh != _firer);
+            private _pos = if (_isInVehicle) then { getPos _veh } else { getPos _firer };
 
-        // Detect suppressor by checking whether a muzzle accessory is fitted
-        private _hasSuppressor = false;
-        if (!_isInVehicle && {_weapon != ""}) then {
-            private _curWeapon = currentWeapon _firer;
-            if (_weapon == _curWeapon) then {
-                private _acc = _firer weaponAccessories _weapon;
-                if (count _acc > 0) then {
-                    private _muzzleItem = _acc select 0;
-                    if (typeName _muzzleItem == "STRING" && {_muzzleItem != ""}) then {
-                        _hasSuppressor = true;
+            // Detect suppressor: check the muzzle slot of the fired weapon
+            private _hasSuppressor = false;
+            if (!_isInVehicle && {_weapon != ""}) then {
+                if (_weapon == currentWeapon _firer) then {
+                    private _acc = _firer weaponAccessories _weapon;
+                    if (count _acc > 0) then {
+                        private _muzzleItem = _acc select 0;
+                        if (typeName _muzzleItem == "STRING" && {_muzzleItem != ""}) then {
+                            _hasSuppressor = true;
+                        };
                     };
                 };
             };
-        };
 
-        // Explosive ammo (rockets, grenades, etc.) is handled by handleExplosion
-        // via a projectile tracker rather than handleFired
-        private _isExplosive = false;
-        private _ammoConfig = configFile >> "CfgAmmo" >> _ammo;
-        if (isClass _ammoConfig) then {
-            private _ammoSim = getText (_ammoConfig >> "simulation");
-            if (_ammoSim in ["shotShell","shotRocket","shotMissile","shotGrenade","shotMine"]) then {
-                _isExplosive = true;
-            };
-        };
-
-        if (_isExplosive) then {
-            if (!isNull _projectile) then {
-                // Track the projectile and trigger handleExplosion at impact point
-                private _trackData = [_projectile, _firer, time + 30, getPos _projectile];
-                [{
-                    params ["_args", "_handle"];
-                    _args params ["_proj", "_src", "_timeout", "_lastPos"];
-                    if (!isNull _proj) then {
-                        _args set [3, getPos _proj];   // Update last known position each frame
-                    } else {
-                        // Projectile gone — fire explosion handler at last tracked position
-                        [_lastPos, _src] remoteExecCall ["ALiVE_fnc_advciv_handleExplosion", 2];
-                        [_handle] call CBA_fnc_removePerFrameHandler;
-                    };
-                    if (time > _timeout) then {
-                        [_handle] call CBA_fnc_removePerFrameHandler;
-                    };
-                }, 0.1, _trackData] call CBA_fnc_addPerFrameHandler;
-            };
-        } else {
-            [_pos, _firer, _hasSuppressor] remoteExecCall ["ALiVE_fnc_advciv_handleFired", 2];
-        };
-    }];
-};
-
-if (side _unit != civilian) exitWith {
-    if (_unit getVariable ["ALiVE_advciv_firedEH", false]) exitWith {};
-    _unit setVariable ["ALiVE_advciv_firedEH", true];
-
-    _unit addEventHandler ["FiredMan", {
-        params ["_firer", "_weapon", "_muzzle", "_mode", "_ammo", "_magazine", "_projectile"];
-
-        private _lastFired = _firer getVariable ["ALiVE_advciv_lastFiredTime", 0];
-        if (time - _lastFired < 0.25) exitWith {};
-        _firer setVariable ["ALiVE_advciv_lastFiredTime", time];
-
-        private _veh         = vehicle _firer;
-        private _isInVehicle = (_veh != _firer);
-        private _pos = if (_isInVehicle) then { getPos _veh } else { getPos _firer };
-
-        private _hasSuppressor = false;
-        if (!_isInVehicle && {_weapon != ""}) then {
-            private _curWeapon = currentWeapon _firer;
-            if (_weapon == _curWeapon) then {
-                private _acc = _firer weaponAccessories _weapon;
-                if (count _acc > 0) then {
-                    private _muzzleItem = _acc select 0;
-                    if (typeName _muzzleItem == "STRING" && {_muzzleItem != ""}) then {
-                        _hasSuppressor = true;
-                    };
+            // Classify ammo: explosives are routed through handleExplosion
+            // via a per-frame projectile tracker; everything else through handleFired
+            private _isExplosive = false;
+            private _ammoConfig = configFile >> "CfgAmmo" >> _ammo;
+            if (isClass _ammoConfig) then {
+                private _ammoSim = getText (_ammoConfig >> "simulation");
+                if (_ammoSim in ["shotShell","shotRocket","shotMissile","shotGrenade","shotMine"]) then {
+                    _isExplosive = true;
                 };
             };
-        };
 
-        private _isExplosive = false;
-        private _ammoConfig = configFile >> "CfgAmmo" >> _ammo;
-        if (isClass _ammoConfig) then {
-            private _ammoSim = getText (_ammoConfig >> "simulation");
-            if (_ammoSim in ["shotShell","shotRocket","shotMissile","shotGrenade","shotMine"]) then {
-                _isExplosive = true;
+            if (_isExplosive) then {
+                if (!isNull _projectile) then {
+                    // Track the projectile each frame; fire handleExplosion at impact
+                    private _trackData = [_projectile, _firer, time + 30, getPos _projectile];
+                    [{
+                        params ["_args", "_handle"];
+                        _args params ["_proj", "_src", "_timeout", "_lastPos"];
+                        if (!isNull _proj) then {
+                            _args set [3, getPos _proj];
+                        } else {
+                            [_lastPos, _src] remoteExecCall ["ALiVE_fnc_advciv_handleExplosion", 2];
+                            [_handle] call CBA_fnc_removePerFrameHandler;
+                        };
+                        if (time > _timeout) then {
+                            [_handle] call CBA_fnc_removePerFrameHandler;
+                        };
+                    }, 0.1, _trackData] call CBA_fnc_addPerFrameHandler;
+                };
+            } else {
+                [_pos, _firer, _hasSuppressor] remoteExecCall ["ALiVE_fnc_advciv_handleFired", 2];
             };
         };
 
-        if (_isExplosive) then {
-            if (!isNull _projectile) then {
-                private _trackData = [_projectile, _firer, time + 30, getPos _projectile];
-                [{
-                    params ["_args", "_handle"];
-                    _args params ["_proj", "_src", "_timeout", "_lastPos"];
-                    if (!isNull _proj) then {
-                        _args set [3, getPos _proj];
-                    } else {
-                        [_lastPos, _src] remoteExecCall ["ALiVE_fnc_advciv_handleExplosion", 2];
-                        [_handle] call CBA_fnc_removePerFrameHandler;
-                    };
-                    if (time > _timeout) then {
-                        [_handle] call CBA_fnc_removePerFrameHandler;
-                    };
-                }, 0.1, _trackData] call CBA_fnc_addPerFrameHandler;
-            };
-        } else {
-            [_pos, _firer, _hasSuppressor] remoteExecCall ["ALiVE_fnc_advciv_handleFired", 2];
-        };
-    }];
+        _unit addEventHandler ["FiredMan", _firedManHandler];
+    };
+
+    // Exit regardless — non-civs never receive civilian brain initialisation
+    exitWith {};
 };
 
+
+// =========================================================================
+// Civilian path: server-side initialisation only from here
+// =========================================================================
 if (!isServer) exitWith {};
-if (_unit getVariable ["ALiVE_advciv_active", false]) exitWith {};         // Already initialised
-if ([_unit] call ALiVE_fnc_advciv_isMissionCritical) exitWith {};          // Protected unit
+if (isPlayer _unit) exitWith {};
+if (_unit getVariable ["ALiVE_advciv_active", false]) exitWith {};     // Already initialised
+if ([_unit] call ALiVE_fnc_advciv_isMissionCritical) exitWith {};      // Protected unit
+
 
 // =========================================================================
 // State variable initialisation
@@ -183,7 +138,7 @@ _unit setVariable ["ALiVE_advciv_hidingBuilding", objNull, true];
 _unit setVariable ["ALiVE_advciv_hitReacting", false, true];
 _unit setVariable ["ALiVE_advciv_hitReactStart", 0];
 _unit setVariable ["ALiVE_advciv_panicRunStart", 0];
-_unit setVariable ["ALiVE_advciv_lastAction", time + 20 + random 40];   // Staggered start to spread load
+_unit setVariable ["ALiVE_advciv_lastAction", time + 20 + random 40];  // Staggered start to spread load
 _unit setVariable ["ALiVE_advciv_actionType", "NONE", true];
 _unit setVariable ["ALiVE_advciv_lastVoice", 0];
 _unit setVariable ["ALiVE_advciv_vehicleEscaping", false, true];
@@ -210,8 +165,8 @@ _unit addEventHandler ["Hit", {
 
     if (isNull _unit || {!alive _unit}) exitWith {};
     if (isPlayer _unit) exitWith {};
-    if (_damage < 0.01) exitWith {};                                            // Ignore negligible hits
-    if (_unit getVariable ["ALiVE_advciv_hitReacting", false]) exitWith {};     // Already reacting
+    if (_damage < 0.01) exitWith {};                                           // Ignore negligible hits
+    if (_unit getVariable ["ALiVE_advciv_hitReacting", false]) exitWith {};    // Already reacting
 
     _unit setVariable ["ALiVE_advciv_order", "NONE", true];
     _unit setVariable ["ALiVE_advciv_lastShotTime", time];
