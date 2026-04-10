@@ -1962,6 +1962,22 @@ switch(_operation) do {
 
             // Signal completion only after a successful drop
             if (_dropped) then {
+
+                // Issue RTB waypoints to the transport heli now that the drop is complete.
+                // The transit loop kept clearing native waypoints every 2s and re-issuing
+                // _heli move to the overshoot position -- without an explicit RTB order here
+                // the heli has no movement orders when the loop exits and will hover or drift.
+                // Mirror the same approach used by spawnHeliDeliveryWatchdog case 2->3.
+                private _tpRTB = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
+                if (!isNil "_tpRTB") then {
+                    private _wpRTB = [_returnPos, 400, "MOVE", "FULL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                    [_tpRTB, "clearWaypoints"] call ALIVE_fnc_profileEntity;
+                    [_tpRTB, "addWaypoint", _wpRTB] call ALIVE_fnc_profileEntity;
+                    ["ML - heliParadropWatchdog: %1 RTB waypoints issued to %2.", _tProfID, _returnPos] call ALiVE_fnc_dump;
+                } else {
+                    ["ML - heliParadropWatchdog: %1 WARNING - transport profile nil at RTB, heli may drift.", _tProfID] call ALiVE_fnc_dump;
+                };
+
                 if (isNil "ALIVE_ML_paradropComplete") then { ALIVE_ML_paradropComplete = []; };
                 ALIVE_ML_paradropComplete pushBackUnique _tProfID;
                 ["ML - heliParadropWatchdog: %1 paradropComplete signalled. Watchdog exiting.", _tProfID] call ALiVE_fnc_dump;
