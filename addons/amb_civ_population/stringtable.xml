@@ -1777,7 +1777,7 @@
     <English>Enable Advanced Civilians:</English>
 </Key>
 <Key ID="STR_ALIVE_ADVCIV_ENABLED_COMMENT">
-    <English>Enable the Advanced Civilian behaviour system. Civilians will react to gunfire, panic, flee and hide.</English>
+    <English>Enable the Advanced Civilian behaviour system. When set to No, all Advanced Civilians parameters below this one are ignored and the system has zero runtime cost.</English>
 </Key>
 <Key ID="STR_ALIVE_ADVCIV_DEBUG">
     <English>Advanced Civilians Debug:</English>
