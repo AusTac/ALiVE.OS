@@ -24,6 +24,10 @@ Tupolov
 
 params ["_unit", "_firer", "_distance"];
 
+// Issue #15: isServer guard must be the first substantive check so FSM variable
+// writes and doStop/moveTo commands are never executed on clients.
+if (!isServer) exitWith {};
+
 if (side group _firer == civilian) exitWith {};
 
 // Set the crowd system to stop spawning due to combat in the area
@@ -61,7 +65,7 @@ if (_distance < 15 && !(_unit getVariable ["alreadyPissedOff", false])) then {
 	_unit setVariable ["alreadyPissedOff", true, false];
 };
 
-if (isnil "_unit" || {!isServer}) exitwith {};
+if (isnil "_unit") exitWith {};
 
 if !(_unit getVariable ["ALiVE_Crowd_Fleeing", false]) then {
 

@@ -179,8 +179,8 @@ switch (_type) do {
                 _unit setSpeedMode "FULL";
                 private _source = _unit getVariable ["ALiVE_advciv_panicSource", [0,0,0]];
                 if !(_source isEqualTo [0,0,0]) then {
-                    // Run away from source (180° direction = opposite), then panic
-                    _unit doMove (_unit getPos [30 + random 20, _source getDir (getPos _unit) + 180]);
+                    // Run away from source: bearing from unit to source + 180 degrees
+                    _unit doMove (_unit getPos [30 + random 20, (_unit getDir _source) + 180]);
                 };
                 [{
                     params ["_u"];
@@ -199,7 +199,7 @@ switch (_type) do {
                 _unit setSpeedMode "FULL";
                 private _source = _unit getVariable ["ALiVE_advciv_panicSource", [0,0,0]];
                 if !(_source isEqualTo [0,0,0]) then {
-                    _unit doMove (_unit getPos [15 + random 10, _source getDir (getPos _unit)]);
+                    _unit doMove (_unit getPos [15 + random 10, _unit getDir _source]);
                 };
                 [{
                     params ["_u"];

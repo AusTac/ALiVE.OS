@@ -34,16 +34,19 @@ private _killerSide = str(side (group _killer));
 
 // Hostility will increase towards killer's faction
 
-// log event
+// log event and update hostility
+// Issue #14: original code had blocks swapped — the else branch called
+// position _unit when _unit was nil, causing a guaranteed crash.
+// Hostility update and event log both belong in the not-nil branch.
 if !(isNil "_unit") then {
 	private _position = getPosASL _unit;
 	private _faction = faction _unit;
 	private _side = side group _unit;
 
+	[position _unit,[_killerSide], +10] call ALiVE_fnc_updateSectorHostility;
+
 	private _event = ['AGENT_KILLED', [_position,_faction,_side,_killerSide],"Agent"] call ALIVE_fnc_event;
 	private _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
-} else {
-	[position _unit,[_killerSide], +10] call ALiVE_fnc_updateSectorHostility;
 };
 
 // Make any crowds nearby flee
@@ -55,4 +58,21 @@ if !(isNil "_unit") then {
 			[_x, _killer, 50] call ALiVE_fnc_crowdFiredNearEventHandler;
 		};
 	} foreach _nearCivs;
+};
+
+// Issue #16: prune dead agent from FSM _activeAgents immediately.
+// Without this, dead agents remain in the array until the next out-of-range
+// despawn cycle, causing the array to grow unbounded in sustained combat.
+if (isServer && {!isNil "_unit"}) then {
+	private _crowdFSM = [ALIVE_civilianPopulationSystem, "crowd_FSM"] call ALiVE_fnc_HashGet;
+	if (!isNil "_crowdFSM") then {
+		private _agents = _crowdFSM getFSMVariable "_activeAgents";
+		if (!isNil "_agents" && {_agents isEqualType []}) then {
+			private _idx = _agents find _unit;
+			if (_idx > -1) then {
+				_agents set [_idx, -1];
+				_crowdFSM setFSMVariable ["_activeAgents", _agents - [-1]];
+			};
+		};
+	};
 };

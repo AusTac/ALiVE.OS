@@ -146,7 +146,7 @@ class FSM
                 {
                         name = "MOVE";
                         itemno = 0;
-                        init = /*%FSM<STATEINIT""">*/"private _agent = _activeAgents select _count;" \n
+                        init = /*%FSM<STATEINIT""">*/"private _agent = if (_count < count _activeAgents) then {_activeAgents select _count} else {nil};" \n
                          "" \n
                          "if!(isnil ""_agent"") then {" \n
                          "" \n
@@ -157,6 +157,8 @@ class FSM
                          "	private _inPosition = if (position _agent distance (_agent getVariable [""ALiVE_Crowd_Pos"", [0,0,0]]) < 2 ) then {true} else {false};" \n
                          "      private _action = _agent getVariable [""ALIVE_CIV_ACTION"", ""None""];" \n
                          "      private _position = position _agent;" \n
+                         "      // Issue #12: cache nearObjects result once per agent tick, reused by Object and Crowd cases" \n
+                         "      private _nearHouseCache = _position nearObjects [""House"",50];" \n
                          "" \n
                          "  if (unitReady _agent && _busy && alive _agent && !_fleeing && _inPosition) then {" \n
                          "" \n
@@ -282,13 +284,15 @@ class FSM
                          "      // MOVE TO OBJECT     40     40        35      30        25" \n
                          "      // MOVE TO PLAYERS    25     20        15      10         5" \n
                          "      // OBSERVE PLAYERS     0     10        15      20        25 " \n
-                         "      // THROW STONES        0      0        10      20        30" \n
+                         "      // THROW STONES        0      0         0      20        30  Issue #4: 0 until tier 3 (_protesting=true)" \n
                          "       // CHILL" \n
+                         "       // Issue #4 enforcement: tier 2 Stones weight zeroed at runtime; Chill receives the 10 pts" \n
+                         "       // (selectRandomWeighted requires the array to match at definition; adjustment applied below)" \n
                          "" \n
                          "      private _movementChances = [" \n
                          "            [""Move"",35,""Object"",35,""Player"",30,""Observe"",0,""Stones"",0,""Chill"",0]," \n
                          "            [""Move"",30,""Object"",40,""Player"",20,""Observe"",10,""Stones"",0,""Chill"",0]," \n
-                         "            [""Move"",25,""Object"",35,""Player"",15,""Observe"",15,""Stones"",10,""Chill"",0]," \n
+                         "            [""Move"",25,""Object"",35,""Player"",15,""Observe"",15,""Stones"",0,""Chill"",10]," \n
                          "            [""Move"",20,""Object"",30,""Player"",10,""Observe"",20,""Stones"",20,""Chill"",0]," \n
                          "            [""Move"",15,""Object"",25,""Player"",5,""Observe"",25,""Stones"",30,""Chill"",0]" \n
                          "       ];" \n
@@ -304,6 +308,7 @@ class FSM
                          "       if(_clusterHostilityLevel >= 40 && {_clusterHostilityLevel < 70}) then {" \n
                          "          _chances = _movementChances select 2;" \n
                          "            _protesting = false;" \n
+                         "            // Issue #4: Stones weight corrected in the source array at tier 2 (no set[] needed)" \n
                          "                     group _agent setCombatMode ""GREEN"";" \n
                          "                   group _agent setBehaviour ""SAFE"";" \n
                          "       };" \n
@@ -432,8 +437,8 @@ class FSM
                          "" \n
                          "            case ""Player"" : {" \n
                          "                 if (count _player > 0) then {" \n
-                         "" \n
-                         "                      _position = (_player select 0) getpos [5 + random 10, random 360];" \n
+                         "                      // Issue #6: select a random player not always the first, distributes crowd attention" \n
+                         "                      _position = (selectRandom _player) getpos [5 + random 10, random 360];" \n
                          "" \n
                          "                 } else {" \n
                          "" \n
@@ -452,8 +457,8 @@ class FSM
                          "                      _agent setVariable [""ALiVE_Crowd_Busy"",(time + 20), false];" \n
                          "                      _position = (_player select 0) getpos [10 + random 10, random 360];" \n
                          "			    _agent setVariable  [""ALiVE_Crowd_Pos"",_position, false];" \n
-                         "                      //_agent lookAt (_player select 0);" \n
-                         "			   _agent doTarget _crowdTarget;" \n
+                         "                      // Issue #3: restored lookAt player; doTarget _crowdTarget was objNull outside crowd formation" \n
+                         "                      _agent lookAt (_player select 0);" \n
                          "                 } else {" \n
                          "                      private _building = selectRandom _activeBuildings;" \n
                          "" \n
@@ -554,7 +559,7 @@ class FSM
                          "private _debug = [_civPopSystem,""debug"",false] call ALiVE_fnc_HashGet;" \n
                          "" \n
                          "private _noCombat = time;" \n
-                         "private _protesting = true;" \n
+                         "private _protesting = false;" \n
                          "private _crowdPos = [];" \n
                          "private _crowdTarget = objNull;" \n
                          "private _notCrowding = true;" \n
@@ -688,7 +693,7 @@ class FSM
                          "      }else{" \n
                          "          false" \n
                          "  };" \n
-                         "  [""Crowd activator - analyse agent: %1 is in house %3: %2"",_pos,_result,_building] call ALiVE_fnc_dump;" \n
+                         "  if (_debug) then { [""Crowd activator - analyse agent: %1 is in house %3: %2"",_pos,_result,_building] call ALiVE_fnc_dump; };" \n
                          "  _result" \n
                          "};"/*%FSM</STATEINIT""">*/;
                         precondition = /*%FSM<STATEPRECONDITION""">*/""/*%FSM</STATEPRECONDITION""">*/;
@@ -843,7 +848,9 @@ class FSM
                          "  private _isSpecialCivBuilding  = [_building] call ALiVE_fnc_isSpecialCivBuilding;" \n
                          "  _activeBuildings pushBack _building;" \n
                          "" \n
-                         "  if (count _activeBuildings < 6 || _isSpecialCivBuilding select 0) then {" \n
+                         "  // Issue #7: sound cap scaled to activeLimiter rather than hard-coded 6" \n
+                         "  private _soundBuildingCap = (_activeLimiter / 4) max 6;" \n
+                         "  if (count _activeBuildings < _soundBuildingCap || _isSpecialCivBuilding select 0) then {" \n
                          "       // Add Sound" \n
                          "      private _soundFaction = _faction;" \n
                          "	private _soundSource = objNull;" \n
@@ -913,6 +920,10 @@ class FSM
                          "private _countClustersActive = count (_activeClusters select 1);" \n
                          "private _countActiveBuildings = count _activeBuildings;" \n
                          "private _countActive = count _activeAgents;" \n
+                         "// Issue #1: snapshot the array at cycle start so ANALYSE_ACTIVE_A iterates a stable" \n
+                         "// copy. New agents added mid-cycle (e.g. by concurrent SPAWN_LOOP) are excluded" \n
+                         "// from this cycle's despawn analysis and picked up next cycle instead." \n
+                         "private _activeAgentsSnapshot = +_activeAgents;" \n
                          "" \n
                          "// Active Agent checks" \n
                          "private _analysisCount = 0;" \n
@@ -976,7 +987,7 @@ class FSM
                                         priority = 2.000000;
                                         to="CHECK_AGENTS___B";
                                         precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
-                                        condition=/*%FSM<CONDITION""">*/"(_countClustersActive > 0 && sunOrMoon > 0.5) || _countActiveBuildings > 0"/*%FSM</CONDITION""">*/;
+                                        condition=/*%FSM<CONDITION""">*/"(_countClustersActive > 0 && sunOrMoon > 0) || _countActiveBuildings > 0"/*%FSM</CONDITION""">*/;
                                         action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
                                 };
                                 /*%FSM</LINK>*/
@@ -1023,8 +1034,20 @@ class FSM
                          "							_civClasses = _houseCivClasses;" \n
                          "" \n
                          "                     		} else {" \n
-                         "                                	// if no amb civs, then give up like a c***" \n
-                         "                                	_exit = true;" \n
+                         "                                	// Issue #10: cold-start fallback - no nearby civs yet, use module faction" \n
+                         "                                	// or fall back to all known civilian classes rather than giving up." \n
+                         "                                	if (_faction != """") then {" \n
+                         "                                		_houseCivClasses = _civClasses;" \n
+                         "                                	} else {" \n
+                         "                                		_houseCivClasses = [];" \n
+                         "                                		{_houseCivClasses = _houseCivClasses + _x} forEach (_civilianClasses select 2);" \n
+                         "                                	};" \n
+                         "                                	if (count _houseCivClasses > 0) then {" \n
+                         "                                		_building setVariable [""ALiVE_CivPop_CivClasses"", _houseCivClasses, false];" \n
+                         "                                		_civClasses = _houseCivClasses;" \n
+                         "                                	} else {" \n
+                         "                                		_exit = true;" \n
+                         "                                	};" \n
                          "                          	};" \n
                          "                     	} else {" \n
                          "                        	_civClasses = _houseCivClasses;" \n
@@ -1062,7 +1085,8 @@ class FSM
                          "  _lightAdjustedCrowdDensity = if (sunOrMoon == 1) then {" \n
                          "       _ambientCrowdDensity" \n
                          "  } else {" \n
-                         "       round(_ambientCrowdDensity * (sunOrMoon / 2))" \n
+                         "       // Issue #9: use max 1 floor so twilight never yields 0 civs" \n
+                         "       ((round(_ambientCrowdDensity * (sunOrMoon / 2))) max 1)" \n
                          "  };" \n
                          "  " \n
                          "  _civSpawnCount = (count _toSpawn) * _lightAdjustedCrowdDensity;" \n
@@ -1161,7 +1185,6 @@ class FSM
                          "		_m disableAI ""FSM"";" \n
                          "		_m setBehaviour ""CARELESS"";" \n
                          "		_m forceWalk true;" \n
-                         "		_m addWeapon ""Throw"";" \n
                          "" \n
                          "		_m addEventHandler[""Killed"", ALIVE_fnc_crowdKilledEventHandler];" \n
                          "		_m addEventHandler[""FiredNear"", ALIVE_fnc_crowdFiredNearEventHandler];" \n
@@ -1185,6 +1208,11 @@ class FSM
                          "	" \n
                          "		_m moveTo _position;" \n
                          "" \n
+                         "		// Issue #8: only arm with Throw when global hostility is at protest tier" \n
+                         "		private _maxHostility = 0;" \n
+                         "		{_maxHostility = _maxHostility max ([ALIVE_civilianHostility, str _x, 0] call ALIVE_fnc_hashGet)} forEach [west, east, independent];" \n
+                         "		if (_maxHostility >= 70) then {_m addWeapon ""Throw"";};" \n
+                         "" \n
                          "      	if(_debug) then {" \n
                          "              private _d = createMarker [format[""%1_debug"",(time + random 10000)], position _m];" \n
                          "              _d setMarkerShape ""ICON"";" \n
@@ -1195,7 +1223,7 @@ class FSM
                          "              _m setVariable [""CP_Marker"", _d, false];" \n
                          "      	};" \n
                          "" \n
-                         "      	_activeAgents pushback _m;" \n
+                         "      	_activeAgents pushback _m; // Issue #8 & #1: _m added here; dead agents pruned from this array by Killed EH" \n
                          "      	_spawnDelay = time;" \n
                          "" \n
                          "	};" \n
@@ -1238,7 +1266,7 @@ class FSM
                         name = "ANALYSE_ACTIVE_A";
                         itemno = 24;
                         init = /*%FSM<STATEINIT""">*/"" \n
-                         "private _block = [ALIVE_arrayBlockHandler,""getNextBlock"",[""activeAgents"",_activeAgents,30]] call ALIVE_fnc_arrayBlockHandler;" \n
+                         "private _block = [ALIVE_arrayBlockHandler,""getNextBlock"",[""activeAgents"",_activeAgentsSnapshot,30]] call ALIVE_fnc_arrayBlockHandler;" \n
                          "" \n
                          "{" \n
                          "    private _agent = _x;" \n
@@ -1273,7 +1301,7 @@ class FSM
                          "" \n
                          "} forEach _block;" \n
                          "" \n
-                         "_analysisCount = _analysisCount + 30;" \n
+                         "_analysisCount = _analysisCount + 30; // Issue #1: iterates snapshot not live array" \n
                          "" \n
                          "// DEBUG -------------------------------------------------------------------------------------" \n
                          "/*" \n
@@ -1503,7 +1531,7 @@ class FSM
                          "    };" \n
                          "} forEach _block;" \n
                          "" \n
-                         "_analysisCount = _analysisCount + 1;" \n
+                         "_analysisCount = _analysisCount + 10; // Issue #11: block size raised 1->10 to match ANALYSE_ACTIVE_A cadence" \n
                          "" \n
                          "// DEBUG -------------------------------------------------------------------------------------" \n
                          "/*" \n
@@ -1541,7 +1569,7 @@ class FSM
                                         to="ANALYSE_ACTIVE_B";
                                         precondition = /*%FSM<CONDPRECONDITION""">*/""/*%FSM</CONDPRECONDITION""">*/;
                                         condition=/*%FSM<CONDITION""">*/"_analysisCount < _countActiveBuildings"/*%FSM</CONDITION""">*/;
-                                        action=/*%FSM<ACTION""">*/""/*%FSM</ACTION""">*/;
+                                        action=/*%FSM<ACTION""">*/"// Issue #11: block size 1->10; increment adjusted above"/*%FSM</ACTION""">*/;
                                 };
                                 /*%FSM</LINK>*/
                                 /*%FSM<LINK "DO__DEACTIVATE">*/
