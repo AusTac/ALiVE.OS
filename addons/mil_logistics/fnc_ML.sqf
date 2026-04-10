@@ -1537,7 +1537,7 @@ switch(_operation) do {
                                 private _terrainH = getTerrainHeightASL [_posASL select 0, _posASL select 1];
                                 private _curAGL = (_heli modelToWorldVisual [0,0,0]) select 2;
                                 ["ML - heliParadropWatchdog: %1 FIRST ACTIVATION. spawnAGL=%2m terrainASL=%3m. Applying altitude correction to %4m AGL.",
-                                    _tProfID, round _curAGL, round _terrainH, PARADROP_HEIGHT] call ALiVE_fnc_dump;
+                                    _tProfID, round _curAGL, round _terrainH, _dropHeight] call ALiVE_fnc_dump;
 
                                 // (a) Command the heli to climb to PARADROP_HEIGHT using flyInHeight.
                                 // This lets the AI climb smoothly rather than teleporting,
@@ -1545,7 +1545,7 @@ switch(_operation) do {
                                 // A strong upward velocity kick starts the climb immediately.
                                 private _curVel = velocity _heli;
                                 _heli setVelocity [_curVel select 0, _curVel select 1, 15];
-                                _heli flyInHeight PARADROP_HEIGHT;
+                                _heli flyInHeight _dropHeight;
 
                                 // Extended climb window: suppress drop trigger for 30s so the
                                 // heli has time to reach altitude before we start checking dist.
@@ -1558,7 +1558,7 @@ switch(_operation) do {
                                 private _dzDir = _heliPos2D getDir _destPos;
                                 private _overshoot = _destPos getPos [600, _dzDir];
                                 private _overshootASL = AGLToASL _overshoot;
-                                _overshootASL set [2, (_terrainH + PARADROP_HEIGHT)];
+                                _overshootASL set [2, (_terrainH + _dropHeight)];
 
                                 private _grpNow = group (driver _heli);
                                 // Clear any native waypoints inherited from profile system
@@ -1592,7 +1592,7 @@ switch(_operation) do {
                                 ];
 
                                 ["ML - heliParadropWatchdog: %1 Overshoot move issued. DZ=%2 overshoot=%3 (DZ+600m at %4m AGL). Cleared %5 old WPs.",
-                                    _tProfID, _destPos, _overshootPosAGL, PARADROP_HEIGHT, _wpCount] call ALiVE_fnc_dump;
+                                    _tProfID, _destPos, _overshootPosAGL, _dropHeight, _wpCount] call ALiVE_fnc_dump;
                             };
 
                             // Enforce mission AI behaviour every iteration while in transit.
@@ -1634,8 +1634,8 @@ switch(_operation) do {
                                             _g setSpeedMode "FULL";
                                             { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
 
-                                            // Re-enforce altitude immediately on hit so AI doesn't dive
-                                            _vehicle flyInHeight PARADROP_HEIGHT;
+                                            // Re-enforce altitude on hit so AI doesn't dive
+                                            _vehicle flyInHeight _dropHeight;
                                         };
                                     };
                                 }];
@@ -1662,7 +1662,7 @@ switch(_operation) do {
                             // and oscillate between climbing and descending without making
                             // progress toward the DZ. The kick belongs only in first-activation.
                             if (_heliAGL < PARADROP_MIN_DROP_HEIGHT) then {
-                                _heli flyInHeight PARADROP_HEIGHT;
+                                _heli flyInHeight _dropHeight;
                                 if (count _overshootPosAGL > 0) then { _heli move _overshootPosAGL; };
                                 ["ML - heliParadropWatchdog: %1 below min AGL (%2m < %3m). Re-issuing climb command.",
                                     _tProfID, round _heliAGL, PARADROP_MIN_DROP_HEIGHT] call ALiVE_fnc_dump;
@@ -7512,7 +7512,7 @@ switch(_operation) do {
 
                 [_event, "finalDestination", _eventPosition getPos [random(DESTINATION_VARIANCE), random(360)]] call ALIVE_fnc_hashSet;
 
-                private _paradropHeight = PARADROP_HEIGHT;
+                private _paradropHeight = PARADROP_HEIGHT; // passed to watchdog as _dropHeight; change here to override drop altitude
 
                 {
                     private _dropWPPos = +_eventPosition;
