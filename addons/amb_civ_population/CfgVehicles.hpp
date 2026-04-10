@@ -432,12 +432,7 @@ class CfgVehicles {
                 description = "$STR_ALIVE_ADVCIV_SCREAM_CHANCE_COMMENT";
                 defaultvalue = "0.15";
             };
-            class advciv_crawlChance
-            {
-                displayName = "$STR_ALIVE_ADVCIV_CRAWL_CHANCE";
-                description = "$STR_ALIVE_ADVCIV_CRAWL_CHANCE_COMMENT";
-                defaultvalue = "0.15";
-            };
+
             class advciv_hideTimeMin
             {
                 displayName = "$STR_ALIVE_ADVCIV_HIDE_TIME_MIN";

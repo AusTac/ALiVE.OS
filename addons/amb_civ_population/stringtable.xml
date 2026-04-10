@@ -1897,12 +1897,6 @@
 <Key ID="STR_ALIVE_ADVCIV_SCREAM_CHANCE_COMMENT">
     <English>Probability that a civilian screams when hit. Default: 0.15.</English>
 </Key>
-<Key ID="STR_ALIVE_ADVCIV_CRAWL_CHANCE">
-    <English>Crawl Chance (0-1):</English>
-</Key>
-<Key ID="STR_ALIVE_ADVCIV_CRAWL_CHANCE_COMMENT">
-    <English>Probability that a civilian crawls away when hit. Default: 0.15.</English>
-</Key>
 <Key ID="STR_ALIVE_ADVCIV_HIDE_TIME_MIN">
     <English>Min Hide Time (s):</English>
 </Key>
