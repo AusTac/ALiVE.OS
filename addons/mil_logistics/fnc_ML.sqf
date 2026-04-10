@@ -401,8 +401,10 @@ switch(_operation) do {
         private _searchRadius = if (count _args > 1) then {_args select 1} else {80};
         private _debug        = [_logic, "debug"] call MAINCLASS;
 
-        ["ML - prepareHelicopterLZ: Searching for clear LZ near %1 radius %2",
-            _centerPos, _searchRadius] call ALiVE_fnc_dump;
+        if (_debug) then {
+            ["ML - prepareHelicopterLZ: Searching for clear LZ near %1 radius %2",
+                _centerPos, _searchRadius] call ALiVE_fnc_dump;
+        };
 
         private _clearPos  = [];
         private _attempts  = 0;
@@ -568,8 +570,10 @@ switch(_operation) do {
         private _usedPositions = if (count _args > 3) then { _args select 3 } else { [] };
         private _debug         = [_logic, "debug"] call MAINCLASS;
 
-        ["ML - findHelicopterLandingPos: Searching near %1 min %2 max %3",
-            _centerPos, _minRadius, _maxRadius] call ALiVE_fnc_dump;
+        if (_debug) then {
+            ["ML - findHelicopterLandingPos: Searching near %1 min %2 max %3",
+                _centerPos, _minRadius, _maxRadius] call ALiVE_fnc_dump;
+        };
 
         private _foundPos = [];
 
@@ -645,7 +649,7 @@ switch(_operation) do {
                         if (count _foundPos == 2) then { _foundPos pushback 0; };
                         // Register in global tracker so other events avoid this spot
                         private _globalUsed = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
-                        _globalUsed = _globalUsed select { (time - (_x select 3)) < 600 };
+                        _globalUsed = _globalUsed select { count _x > 3 && (time - (_x select 3)) < 600 };
                         _globalUsed pushback (_foundPos + [time]);
                         missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed];
                         if (_debug) then {
@@ -713,7 +717,7 @@ switch(_operation) do {
                     _foundPos = _candidate;
                     // Register in global tracker
                     private _globalUsed2 = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
-                    _globalUsed2 = _globalUsed2 select { (time - (_x select 3)) < 600 };
+                    _globalUsed2 = _globalUsed2 select { count _x > 3 && (time - (_x select 3)) < 600 };
                     _globalUsed2 pushback (_foundPos + [time]);
                     missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed2];
                     if (_debug) then {
