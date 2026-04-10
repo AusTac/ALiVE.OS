@@ -1978,7 +1978,6 @@ switch(_operation) do {
                     ["ML - heliParadropWatchdog: %1 WARNING - transport profile nil at RTB, heli may drift.", _tProfID] call ALiVE_fnc_dump;
                 };
 
-                if (isNil "ALIVE_ML_paradropComplete") then { ALIVE_ML_paradropComplete = []; };
                 ALIVE_ML_paradropComplete pushBackUnique _tProfID;
                 ["ML - heliParadropWatchdog: %1 paradropComplete signalled. Watchdog exiting.", _tProfID] call ALiVE_fnc_dump;
             } else {
@@ -2005,6 +2004,12 @@ switch(_operation) do {
             _logic setVariable ["initialAnalysisComplete", false];
             _logic setVariable ["analysisInProgress", false];
             _logic setVariable ["eventQueue", [] call ALIVE_fnc_hashCreate];
+
+            // Initialise paradrop completion tracker here at module startup.
+            // Doing it in a spawned watchdog creates an init-race: two concurrent
+            // paradrop events can both pass the isNil check before either writes
+            // the array, causing one to silently overwrite the other's init.
+            if (isNil "ALIVE_ML_paradropComplete") then { ALIVE_ML_paradropComplete = []; };
 
             _debug = [_logic, "debug"] call MAINCLASS;
             _forcePool = [_logic, "forcePool"] call MAINCLASS;
