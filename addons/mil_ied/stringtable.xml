@@ -122,9 +122,21 @@
     <English>(Optional) Bomber Classes:</English>
 	<Chinesesimp>（可选）自杀式炸弹袭击者种类</Chinesesimp>
 </Key>
-<Key ID="STR_ALIVE_IED_Bomber_Type_COMMENT">
+<Key ID="STR_ALIVE_IED_BOMBER_TYPE_COMMENT">
     <English>Optionally specify a list of bomber classes here i.e. ["C_Nikos","C_Nikos_aged"]</English>
 	<Chinesesimp>在此选择性地指定一个自杀式炸弹袭击者种类列表</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_IED_Bomber_Vest">
+    <English>(Optional) Bomber Vest Class:</English>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_VEST_COMMENT">
+    <English>Vest class placed on suicide bombers. Accepts a single classname or a comma-separated list — one is chosen at random per bomber. Leave blank for the default ALiVE suicide vest. Example: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</English>
+</Key>
+<Key ID="STR_ALIVE_IED_AI_TRIGGER">
+    <English>AI Units Trigger IEDs:</English>
+</Key>
+<Key ID="STR_ALIVE_IED_AI_TRIGGER_COMMENT">
+    <English>When enabled, IEDs and suicide bombers will also be triggered by AI units (not just players). Enables immersive threat to virtual units and AI-controlled forces. Default: No (player-only, original behaviour)</English>
 </Key>
 <Key ID="STR_ALIVE_IED_Locs_IED">
     <English>IED/Bomber Locations:</English>

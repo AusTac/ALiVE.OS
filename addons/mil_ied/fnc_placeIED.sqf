@@ -45,29 +45,44 @@ if (_addroads) then {
     for "_i" from 0 to (_count - 1) do {
         private ["_chokepointData","_chokepointPos","_score"];
         _chokepointData = _chokepoints select _i;
-        _chokepointPos = _chokepointData select 0;
+        _chokepointPos = _chokepointData select 0;  // raw road centre
         _score = _chokepointData select 1;
         
-        // Store for later reference
+        // Store road centre for chokepoint overlap-checks
         _chokepointPositions pushBack _chokepointPos;
         
-        // Add chokepoints with weight based on score
-        // High-value chokepoints (score 80+) appear 6x
-        // Medium chokepoints (score 50-79) appear 4x
-        // Low chokepoints (score 20-49) appear 2x
-        private ["_weight"];
-        _weight = 2; // Default
-        if (_score >= 80) then {
-            _weight = 6; // Bridges and critical points
-        } else {
-            if (_score >= 50) then {
-                _weight = 4; // Important routes
-            };
+        // Generate roadside offsets for the chokepoint.
+        // Use four perpendicular directions at a distance that clears the
+        // carriageway. We don't have the road object here (only its position
+        // from the helpers), so use the conservative 6m half-width fallback
+        // (halfWidth=3 + 1m clear + up to 3m scatter = 4-7m from centre).
+        // This reliably clears any road type including main roads (~5m half-width).
+        private _fnChokePt = {
+            params ["_base", "_bearing", "_dist"];
+            private _rad = _bearing * (pi / 180);
+            [
+                (_base select 0) + (_dist * sin _rad),
+                (_base select 1) + (_dist * cos _rad),
+                _base select 2
+            ]
+        };
+
+        private _cpDist = 5.0 + random 3.0; // 5-8m from centre, clears all road types
+        private _offsetsCP = [
+            [_chokepointPos,   0, _cpDist] call _fnChokePt,
+            [_chokepointPos,  90, _cpDist] call _fnChokePt,
+            [_chokepointPos, 180, _cpDist] call _fnChokePt,
+            [_chokepointPos, 270, _cpDist] call _fnChokePt
+        ];
+
+        // Add offsets with weight based on score (same weighting as before)
+        private _weight = 2;
+        if (_score >= 80) then { _weight = 6; } else {
+            if (_score >= 50) then { _weight = 4; };
         };
         
-        // Add position multiple times for weight
         for "_w" from 1 to _weight do {
-            _candidateSpots pushBack _chokepointPos;
+            { _candidateSpots pushBack _x; } forEach _offsetsCP;
         };
     };
     
@@ -100,29 +115,72 @@ If (_addentrances) then {
 
 // Look for roads - Add regular roads (not chokepoints) with standard weight
 If (_addroads) then {
-    private ["_allRoads"];
-    _allRoads = _location nearRoads _size;
-    
+    private _allRoads = _location nearRoads _size;
+
     {
-        private ["_roadPos","_isChokepoint"];
-        _roadPos = getposATL _x;
-        
+        private _road    = _x;
+        private _roadPos = getposATL _road;
+
         // Check if this road is already a chokepoint
-        _isChokepoint = false;
+        private _isChokepoint = false;
         {
-            if (_roadPos distance _x < 15) exitWith {
-                _isChokepoint = true;
-            };
+            if (_roadPos distance _x < 15) exitWith { _isChokepoint = true; };
         } forEach _chokepointPositions;
-        
-        // If not a chokepoint, add with standard road weight (3x)
+
         if (!_isChokepoint) then {
-            _candidateSpots pushback _roadPos;
-            _candidateSpots pushback _roadPos;
-            _candidateSpots pushback _roadPos;
+            // Compute perpendicular offsets that clear the carriageway.
+            // Road segment centres are mid-carriageway; offsets must exceed
+            // the road half-width to land on the verge, not the tarmac.
+            //
+            // getRoadInfo returns [type, width, isPaved, isLimited, texture]
+            // We use the actual road width to set a minimum safe clearance.
+            // If getRoadInfo is unavailable/empty we fall back to 6m (safe for
+            // most Arma 3 road types).
+            private _roadInfo  = getRoadInfo _road;
+            private _roadWidth = if (count _roadInfo > 1) then { _roadInfo select 1 } else { 6 };
+            private _halfWidth = (_roadWidth / 2) max 3; // at least 3m half-width
+
+            // Verge band: halfWidth + 1m minimum clear, +0–3m random scatter
+            // This ensures the near edge of the IED is always off the road surface.
+            private _vergeMin  = _halfWidth + 1.0;
+            private _vergeMax  = _halfWidth + 4.0;
+
+            private _heading = direction _road;
+            private _perpL   = _heading + 90;
+            private _perpR   = _heading - 90;
+
+            private _fnOffset = {
+                params ["_base", "_bearing", "_dist"];
+                private _rad = _bearing * (pi / 180);
+                [
+                    (_base select 0) + (_dist * sin _rad),
+                    (_base select 1) + (_dist * cos _rad),
+                    _base select 2
+                ]
+            };
+
+            // Primary verge — fully clear of road, both sides (3x weight each)
+            private _offsetL1 = [_roadPos, _perpL, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset;
+            private _offsetR1 = [_roadPos, _perpR, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset;
+            for "_w" from 1 to 3 do {
+                _candidateSpots pushBack _offsetL1;
+                _candidateSpots pushBack _offsetR1;
+            };
+
+            // Outer verge — slightly further out for better concealment (2x weight each)
+            private _outerDist = _vergeMax + random 2.0;
+            private _offsetL2 = [_roadPos, _perpL, _outerDist] call _fnOffset;
+            private _offsetR2 = [_roadPos, _perpR, _outerDist] call _fnOffset;
+            _candidateSpots pushBack _offsetL2;
+            _candidateSpots pushBack _offsetL2;
+            _candidateSpots pushBack _offsetR2;
+            _candidateSpots pushBack _offsetR2;
+
+            // Road centre — absolute last resort, 1x weight only
+            _candidateSpots pushBack _roadPos;
         };
-        
-    } foreach _allRoads;
+
+    } forEach _allRoads;
 };
 
 // ============================================================================
@@ -131,7 +189,7 @@ If (_addroads) then {
 private ["_maxSlope","_minProximity","_minConcealmentScore"];
 
 _maxSlope = 15; // Maximum terrain slope in degrees
-_minProximity = 12; // Minimum distance between IEDs in meters
+_minProximity = 40; // Minimum distance between IEDs in metres — spreads them across the town
 
 // DYNAMIC CONCEALMENT SCORING - Adapts to terrain type
 // Check ALiVE map composition type and set appropriate minimum concealment
@@ -251,16 +309,16 @@ _scoredPositions = [];
     private ["_pos","_score"];
     _pos = _x;
     _score = ["getConcealmentScore", [_pos]] call ALIVE_fnc_IEDPlacementHelpers;
-    _scoredPositions pushBack [_pos, _score];
+    _scoredPositions pushBack [_score, _pos]; // score first so array sort uses score, not position X
 } forEach _goodspots;
 
-// Sort by score (highest first)
+// Sort by score descending (highest concealment first)
 _scoredPositions sort false;
 
-// Extract just the positions
+// Extract just the positions (index 1 now, since score is index 0)
 _goodspots = [];
 {
-    _goodspots pushBack (_x select 0);
+    _goodspots pushBack (_x select 1);
 } forEach _scoredPositions;
 
 // Debug output
@@ -275,14 +333,19 @@ if (ADDON getVariable ["debug", false]) then {
         count _goodspots
     ];
     
+    // Warn clearly if no candidates were found at all
+    if (count _candidateSpots == 0) then {
+        diag_log format ["ALIVE-IED placeIED: WARNING - zero candidate spots found at %1 (no roads/objects/entrances in range?)", _location];
+    };
+    
     // Log top 3 positions with concealment scores
     private ["_topCount"];
     _topCount = (count _scoredPositions) min 3;
     for "_i" from 0 to (_topCount - 1) do {
         private ["_data","_pos","_score"];
         _data = _scoredPositions select _i;
-        _pos = _data select 0;
-        _score = _data select 1;
+        _score = _data select 0;
+        _pos = _data select 1;
         diag_log format ["ALIVE-IED: Top position #%1: Concealment score %2 at %3", _i + 1, _score, _pos];
     };
 };

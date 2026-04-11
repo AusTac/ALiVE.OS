@@ -53,8 +53,16 @@ if (_IEDcount == 0) then {
         diag_log format ["ALIVE-%1 IED: Found %2 spots for IEDs",time, count _posloc];
     };
 
+    // Clamp numIEDs to available positions.
+    // Use (count _posloc) not (count _posloc) - 1 to avoid going negative.
+    // If posloc is empty the for-loop handles it naturally since 1 to 0 never executes.
     if (_numIEDs > (count _posloc)) then {
-        _numIEDs = (count _posloc) - 1;
+        _numIEDs = count _posloc;
+    };
+
+    // Bail out early with a clear debug message if there are no valid positions
+    if (_numIEDs == 0) exitWith {
+        diag_log format ["ALIVE-%1 IED: No valid positions found for IEDs at %2 - skipping", time, _town];
     };
 
     _IEDData = [] call ALiVE_fnc_hashCreate;
@@ -81,8 +89,12 @@ for "_j" from 1 to _numIEDs do {
         private ["_IEDskins","_near","_choice","_allIEDClasses"];
 
         // Check no other IEDs nearby - IMPROVED: increased from 3m to 12m for better spacing
-        _allIEDClasses = ([ADDON, "roadIEDClasses"] call MAINCLASS) + ([ADDON, "urbanIEDClasses"] call MAINCLASS);
-        _near = nearestObjects [_IEDpos, _allIEDClasses, 12];
+        // IMPORTANT: use only the actual ALIVE IED model classes here, NOT urbanIEDClasses.
+        // urbanIEDClasses includes clutter objects (Land_Sacks_heap_F etc.) which are also
+        // placed as camouflage by earlier iterations - using the full list causes false positives
+        // where the proximity check finds its own clutter and skips the IED placement.
+        private _realIEDClasses = ["ALIVE_IEDUrbanSmall_Remote_Ammo","ALIVE_IEDLandSmall_Remote_Ammo","ALIVE_IEDUrbanBig_Remote_Ammo","ALIVE_IEDLandBig_Remote_Ammo","ALIVE_DemoCharge_Remote_Ammo","ALIVE_SatchelCharge_Remote_Ammo"];
+        _near = nearestObjects [_IEDpos, _realIEDClasses, 12];
 
         // Exit THIS ITERATION if other IEDs are found or position is on water
         if (count _near > 0) then {
@@ -106,8 +118,8 @@ for "_j" from 1 to _numIEDs do {
         if (isOnRoad _IEDpos) then {
             _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
         } else {
-            // Check to see proximity to houses
-            if (count (_IEDpos nearObjects ["House_F", 40]) > 0) then {
+            // Check to see proximity to houses (use "House" base class to catch all map building types)
+            if (count (_IEDpos nearObjects ["House", 40]) > 0) then {
                 _IEDskins = [ADDON, "urbanIEDClasses"] call MAINCLASS;
 
                 // Add clutter nearby so its not so obvious that there is an IED
@@ -154,7 +166,7 @@ for "_j" from 1 to _numIEDs do {
         [_data, "IEDpos", getposATL _IED] call ALiVE_fnc_hashSet;
         [_data, "IEDtype", "IED"] call ALiVE_fnc_hashSet;
         [_data, "IEDDud", _dud] call ALiVE_fnc_hashSet;
-        [_IEDdata, _ID, _data] call ALiVE_fnc_hashSet;
+        [_IEDData, _ID, _data] call ALiVE_fnc_hashSet;
 
         }; // End of if (!_error) block - only create IED if no errors
 
@@ -194,7 +206,7 @@ for "_j" from 1 to _numIEDs do {
             if (isPlayer _killer) then { // GO BOOOOOOOOOOM AND AWARD PLAYER
 
                 if (ADDON getVariable "debug") then {
-                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3", time, _IED, _victim];
+                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3", time, _IED, _killer];
                     [_IED getvariable "Marker"] call cba_fnc_deleteEntity;
                 };
 
@@ -209,7 +221,8 @@ for "_j" from 1 to _numIEDs do {
             // Remove from store if damaged
             [ADDON, "removeIED", _IED] call ALiVE_fnc_IED;
 
-            // Delete all that shizzle if damaged
+            // Delete IED, charge, and ALL proximity/detection triggers to prevent double-detonation
+            // (armIED also creates triggers; deleting here stops them firing after EH detonation)
             detach _ied;
             deleteVehicle _IED;
             deletevehicle _charge;

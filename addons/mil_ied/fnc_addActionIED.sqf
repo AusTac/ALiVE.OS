@@ -4,7 +4,7 @@ SCRIPT(addActionIED);
 if (!(hasInterface)) exitWith {};
 
 // Add action to IED
-private _debug = (MOD(mil_ied) getVariable ["debug", 0]);
+private _debug = (MOD(mil_ied) getVariable ["debug", false]);
 
 if (isServer && _debug) then {["addActionIED running."] call ALiVE_fnc_dump};
 

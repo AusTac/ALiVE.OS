@@ -47,15 +47,37 @@ if (isNil "_bomber") then {
 
 if (isNil "_bomber") exitWith {};
 
+// Exclude bomber from AdvCiv brain loop so the ambient civilian AI
+// does not override the pursuit behaviour set below.
+// ALiVE_advciv_blacklist is the established mechanism used by both
+// isMissionCritical and isValidCiv - setting it prevents registration.
+_bomber setVariable ["ALiVE_advciv_blacklist", true, true];
+// Also remove from active units list if already registered before this ran
+if (!isNil "ALiVE_advciv_activeUnits") then {
+    ALiVE_advciv_activeUnits = ALiVE_advciv_activeUnits - [_bomber];
+};
+
 // Add radio, suicide vest and charge
+// Vest class is configurable via Bomber_Vest module parameter; falls back to default.
+// Accepts either a single classname or a comma-separated list e.g.
+// "V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr"
+// When multiple classes are provided one is chosen at random per bomber.
+private _vestRaw = ADDON getVariable ["Bomber_Vest", "V_ALiVE_Suicide_Vest"];
+if (isNil "_vestRaw" || _vestRaw == "") then { _vestRaw = "V_ALiVE_Suicide_Vest"; };
+private _vestList = [_vestRaw, " ", ""] call CBA_fnc_replace;   // strip spaces
+_vestList = [_vestList, ","] call CBA_fnc_split;               // split on comma
+private _vestClass = selectRandom _vestList;
 _bomber addweapon (selectRandom ["ItemRadio","ItemALiVEPhoneOld"]);
 removeVest _bomber;
-_bomber addVest "V_ALiVE_Suicide_Vest";
+_bomber addVest _vestClass;
 _bomber addItemToVest "DemoCharge_Remote_Mag";
 
-// Select victim
-_victim = (selectRandom (units (group _victim)));
-if (isNil "_victim") exitWith {    deletevehicle _bomber;};
+// Select victim - resolve to an actual infantry unit from the triggering group
+// _victim at this point is the first unit from thisList (may be a vehicle)
+// Unwrap to the actual person and pick a random squadmate
+private _victimUnit = if (vehicle _victim != _victim) then { driver (vehicle _victim) } else { _victim };
+_victim = selectRandom (units (group _victimUnit));
+if (isNil "_victim" || isNull _victim) exitWith { deletevehicle _bomber; };
 
 // Add debug marker
 if (_debug) then {
@@ -71,13 +93,21 @@ if (_debug) then {
     _pos = _this select 2;
     sleep (random 60);
 
+    // Enable combat behaviour so the bomber actively moves
+    _bomber setBehaviour "COMBAT";
+    _bomber setCombatMode "RED";
+    _bomber setUnitPos "MIDDLE";
+
     // Have bomber go after victim for up to 10 minutes
     _time = time + 600;
     _timer = time;
     waitUntil {
 
-        if (!isNil "_victim" && {time - _timer > 15}) then {
-            [_bomber, getposATL _victim] call ALiVE_fnc_doMoveRemote;
+        if (!isNil "_victim" && !isNull _victim && {time - _timer > 15}) then {
+            // doMove must execute on the machine where the bomber is local.
+            // remoteExec ensures the order reaches the correct locality.
+            [_bomber, getpos _victim] remoteExecCall ["doMove", _bomber];
+            diag_log format ["ALIVE-%1 Suicide Bomber: moving to %2", time, getpos _victim];
             if (ADDON getVariable ["debug",false]) then {
                 _marker = _bomber getVariable ["marker", nil];
                 if (isNil "_marker" || {!(_marker in allMapMarkers)}) then {
@@ -104,19 +134,27 @@ if (_debug) then {
     // Blow up bomber
     if ((_bomber distance _victim < 8) && (alive _bomber)) then {
         [_bomber, "Alive_Beep", 50] call CBA_fnc_globalSay3d;
-        _bomber addRating -2001;
+
+        // Immediately lock AI and strip the vest so the player cannot
+        // confiscate the charge during the detonation countdown.
+        // disableAI must happen before sleep.
+        _bomber disableAI "ANIM";
+        _bomber disableAI "MOVE";
+        _bomber disableAI "FSM";
+        removeVest _bomber;
+
         _bomber playMoveNow "AmovPercMstpSsurWnonDnon";
         sleep 5;
-        if ((random 100) > 10) then { // check if bomb goes off
-            _bomber disableAI "ANIM";
-            _bomber disableAI "MOVE";
-            _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[8,4,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
-            _shell createVehicle [(getpos _bomber) select 0, (getpos _bomber) select 1,0];
-            sleep 0.3;
-            deletevehicle _bomber;
-        } else { // Bomb malfunction
-            [_bomber, _pos] call ALiVE_fnc_doMoveRemote;
-        };
+
+        // Detonate regardless - the vest has already been stripped so
+        // there is nothing to confiscate. The 10% dud chance is removed:
+        // a bomber who reached the target and armed should always detonate.
+        _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[8,4,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
+        _shell createVehicle [(getpos _bomber) select 0, (getpos _bomber) select 1, 0];
+        diag_log format ["ALIVE-%1 Suicide Bomber: DETONATED at %2", time, getpos _bomber];
+        sleep 0.3;
+        deletevehicle _bomber;
+
         if (ADDON getVariable ["debug", false]) then {
             diag_log format ["BANG! Suicide Bomber %1", _bomber];
             [_marker] call CBA_fnc_deleteEntity;
@@ -128,13 +166,18 @@ if (_debug) then {
             _marker = _bomber getVariable ["marker", ""];
             [_marker] call CBA_fnc_deleteEntity;
         };
-        if ((random 100) > 50) then { // Dead man switch
+        if ((random 100) > 50) then {
+            // Dead man switch - bomber timed out or victim died, detonate anyway
             _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[8,4,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
             _shell createVehicle [(getpos _bomber) select 0, (getpos _bomber) select 1,0];
+            diag_log format ["ALIVE-%1 Suicide Bomber: dead man switch DETONATED at %2", time, getpos _bomber];
             sleep 0.3;
             deletevehicle _bomber;
-        } else { // Add bomb to bomber
-
+        } else {
+            // Bomb didn't go off - delete the bomber cleanly rather than
+            // leaving an armed civilian unit alive in the world indefinitely
+            diag_log format ["ALIVE-%1 Suicide Bomber: dead man switch FAILED, removing bomber at %2", time, getpos _bomber];
+            deletevehicle _bomber;
         };
     };
 };

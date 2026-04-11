@@ -127,7 +127,7 @@ switch(_operation) do {
         
         // Get nearby roads if we prefer road placement
         _roads = if (_preferRoads) then {
-            [_operation, [_center, _radius]] call ALIVE_fnc_IEDPlacementHelpers;
+            ["findNearbyRoads", [_center, _radius]] call ALIVE_fnc_IEDPlacementHelpers;
         } else {
             [];
         };
@@ -262,23 +262,24 @@ switch(_operation) do {
     };
     
     case "isPositionOutside": {
-        /*
-        Check if position is outside buildings (not inside)
-        Uses raycasting to detect if position is under a roof
-        Args: [position]
-        Returns: BOOL - true if outside, false if inside building
-        */
         private ["_pos","_abovePos","_hits","_isOutside"];
         
         _pos = _args select 0;
-        _abovePos = [_pos select 0, _pos select 1, (_pos select 2) + 50]; // 50m above position
+        // _pos arrives as ATL (above terrain level) from placeIED pipeline.
+        // Clamp Z to at minimum 0.1 before converting to ASL - road segments and
+        // building entrance positions can have slightly negative ATL Z values
+        // (sunken roads, basement floors) which would place the ray endpoint
+        // underground, causing the downward cast to miss building floors above.
+        private _posATLclamped = [_pos select 0, _pos select 1, ((_pos select 2) max 0.1)];
+        private _posASL  = ATLtoASL _posATLclamped;
+        private _abovePosASL = ATLtoASL [_pos select 0, _pos select 1, ((_pos select 2) max 0.1) + 50];
         
         _isOutside = true;
         
         // Cast ray downward from above position to check for roof
         _hits = lineIntersectsSurfaces [
-            AGLtoASL _abovePos,
-            AGLtoASL _pos,
+            _abovePosASL,
+            _posASL,
             objNull,
             objNull,
             true,

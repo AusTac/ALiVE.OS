@@ -4,7 +4,7 @@ SCRIPT(removeBomber);
 // Remove Suicide Bomber
 private ["_suic","_location","_debug"];
 
-_debug = MOD(mil_ied) getVariable ["debug", 0];
+_debug = MOD(mil_ied) getVariable ["debug", false];
 
 if !(isServer) exitWith {diag_log "RemoveBomber Not running on server!";};
 

@@ -207,6 +207,32 @@ class CfgVehicles {
                                 description = "$STR_ALIVE_IED_BOMBER_TYPE_COMMENT";
                                 defaultValue = "";
                         };
+                        class Bomber_Vest
+                        {
+                                displayName = "$STR_ALIVE_IED_Bomber_Vest";
+                                description = "$STR_ALIVE_IED_BOMBER_VEST_COMMENT";
+                                defaultValue = "V_ALiVE_Suicide_Vest";
+                        };
+                        class AI_Triggerable
+                        {
+                                displayName = "$STR_ALIVE_IED_AI_TRIGGER";
+                                description = "$STR_ALIVE_IED_AI_TRIGGER_COMMENT";
+                                typeName = "BOOL";
+                                class Values
+                                {
+                                        class No
+                                        {
+                                                name = "No";
+                                                value = 0;
+                                                default = 1;
+                                        };
+                                        class Yes
+                                        {
+                                                name = "Yes";
+                                                value = 1;
+                                        };
+                                };
+                        };
                         class VB_IED_Threat
                         {
                                 displayName = "$STR_ALIVE_ied_VB_IED_Threat";

@@ -57,7 +57,7 @@ nil
 // Arma 2 Classes
 DEFAULT_ROADIEDS ["Land_IED_v1_PMC","Land_IED_v2_PMC","Land_IED_v3_PMC","Land_IED_v4_PMC"];
 DEFAULT_URBANIEDS ["Land_IED_v1_PMC","Land_IED_v2_PMC","Land_IED_v3_PMC","Land_IED_v4_PMC","Land_IED_v1_PMC","Land_IED_v2_PMC","Land_IED_v3_PMC","Land_IED_v4_PMC","Land_Misc_Rubble_EP1","Land_Misc_Garb_Heap_EP1","Garbage_container","Misc_TyreHeapEP1","Misc_TyreHeap","Garbage_can","Land_bags_EP1"];
-DEFAULT_CLUTTER [Land_Misc_Rubble_EP1","Land_Misc_Garb_Heap_EP1","Garbage_container","Misc_TyreHeapEP1","Misc_TyreHeap","Garbage_can","Land_bags_EP1"]
+DEFAULT_CLUTTER ["Land_Misc_Rubble_EP1","Land_Misc_Garb_Heap_EP1","Garbage_container","Misc_TyreHeapEP1","Misc_TyreHeap","Garbage_can","Land_bags_EP1"]
 
 ---------------------------------------------------------------------------- */
 
@@ -137,7 +137,7 @@ switch(_operation) do {
 
                 if (isServer) then {
                     // and publicVariable to clients
-                    private ["_debug","_mapInfo","_center","_radius","_taor","_blacklist"];
+                    private ["_debug","_mapInfo","_center","_radius","_taor","_blacklist","_errorMessage","_error1","_error2"];
 
                     _errorMessage = "Please include the Requires ALiVE module! %1 %2";
                     _error1 = ""; _error2 = ""; //defaults
@@ -165,12 +165,13 @@ switch(_operation) do {
                     [ADDON, "urbanIEDClasses", _logic getVariable ["urbanIEDClasses", DEFAULT_URBANIEDS]] call MAINCLASS;
                     [ADDON, "clutterClasses", _logic getVariable ["clutterClasses", DEFAULT_CLUTTER]] call MAINCLASS;
                     [ADDON, "thirdParty", _logic getVariable ["thirdParty", false]] call MAINCLASS;
+                    [ADDON, "aiTriggerable", _logic getVariable ["AI_Triggerable", false]] call MAINCLASS;
 
                     publicVariable QUOTE(ADDON);
 
                     _debug = [_logic, "debug"] call MAINCLASS;
                     {_x setMarkerAlpha 0} foreach (_logic getVariable ["taor", DEFAULT_TAOR]);
-                    {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_TAOR]);
+                    {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_BLACKLIST]);
 
                     // Reset states with provided data;
                     if (_logic getvariable ["Persistence",false]) then {
@@ -206,9 +207,9 @@ switch(_operation) do {
 
                 } else {
                     [_logic, "taor", _logic getVariable ["taor", DEFAULT_TAOR]] call MAINCLASS;
-                    [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_TAOR]] call MAINCLASS;
+                    [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_BLACKLIST]] call MAINCLASS;
                     {_x setMarkerAlpha 0} foreach (_logic getVariable ["taor", DEFAULT_TAOR]);
-                    {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_TAOR]);
+                    {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_BLACKLIST]);
                 };
 
               TRACE_2("After module init",ADDON,ADDON getVariable "init");
@@ -313,7 +314,10 @@ switch(_operation) do {
             };
         };
         case "setupTriggers": {
-            private ["_iedThreat", "_startupIED", "_triggerType", "_locations", "_noIED"];
+            private ["_iedThreat", "_startupIED", "_triggerType", "_locations", "_noIED", "_debug"];
+            
+            // Fetch debug state at start of this case so it is defined even if called standalone
+            _debug = [_logic, "debug"] call MAINCLASS;
             
             _locations = _args select 0;
             _triggerType = _args select 1;
@@ -322,6 +326,28 @@ switch(_operation) do {
             } else {
                 _noIED = false;
             };
+
+            // Build trigger presence condition based on AI_Triggerable setting.
+            // Player-only (default): fires only when at least one player is on foot/vehicle nearby.
+            // AI-triggerable: fires when ANY physically spawned alive unit is nearby.
+            // Note: ALiVE profiled (virtual) units have no physical presence and cannot
+            // enter trigger areas. This setting only affects real spawned units.
+            private _aiTriggerable = [_logic, "aiTriggerable"] call MAINCLASS;
+
+            // _trgCondPresence is the inner count check embedded in trigger condition strings.
+            // For vehicles: crew members are in thislist; vehicle _x gets the hull;
+            // getposATL (vehicle _x) gives hull Z above terrain — checked against 25m.
+            private _trgCondPresence =
+                if (_aiTriggerable) then {
+                    // Any alive unit or vehicle crew at low altitude — players AND AI
+                    "({alive _x && ((getposATL (vehicle _x)) select 2 < 25)} count thislist > 0)"
+                } else {
+                    // Players only: check the person object is in thislist (not vehicle _x,
+                    // which is never in thislist for EmptyDetector triggers and would cause
+                    // the condition to always evaluate false for players inside vehicles,
+                    // immediately firing the exit/despawn code after IEDs spawn).
+                    "({_x in thisList && ((getposATL (vehicle _x)) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)"
+                };
 
 
             switch (_triggerType) do {
@@ -379,11 +405,11 @@ switch(_operation) do {
 
                     _faction = (selectRandom _factions);
 
-                    //Roll the dice
+                    //Roll the dice - use 0-100 range so threat values are true percentages
                     if (GVAR(Loaded)) then {
                         _fate = 0;
                     } else {
-                        _fate = random 33;
+                        _fate = random 100;
                     };
 
                     // Bombers
@@ -396,7 +422,7 @@ switch(_operation) do {
                         _trg setTriggerArea[(_size+250),(_size+250),0,false];
 
                         _trg setTriggerActivation["ANY","PRESENT",false];
-                        _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [[getpos thisTrigger,%1,'%2'],thisList] call ALIVE_fnc_createBomber", _size, _faction], ""];
+                        _trg setTriggerStatements[format["this && %1", _trgCondPresence], format ["null = [[getpos thisTrigger,%1,'%2'],thisList] call ALIVE_fnc_createBomber", _size, _faction], ""];
 
                         if (_debug) then {
                             diag_log format ["ALIVE-%1 Suicide Bomber Trigger: created at %2 (%3)", time, text _twn, mapgridposition  (getpos _twn)];
@@ -424,7 +450,7 @@ switch(_operation) do {
                         _trg setTriggerArea[(_size+250),(_size+250),0,false];
 
                         _trg setTriggerActivation["ANY","PRESENT",false];
-                        _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [getpos thisTrigger,%1] call ALIVE_fnc_placeVBIED",_size], ""];
+                        _trg setTriggerStatements[format["this && %1", _trgCondPresence], format ["null = [getpos thisTrigger,%1] call ALIVE_fnc_placeVBIED",_size], ""];
 
                         if (_debug) then {
                             diag_log format ["ALIVE-%1 VBIED Trigger: created at %2 (%3)", time, text _twn, mapgridposition  (getpos _twn)];
@@ -444,7 +470,7 @@ switch(_operation) do {
                     };
 
                     // IEDS
-                    if (_fate < (_iedThreat / 3) && !(_noIED)) then {
+                    if (_fate < _iedThreat && !(_noIED)) then {
                         // Place IED trigger
                         _trg = createTrigger["EmptyDetector",getpos _twn];
 
@@ -457,11 +483,11 @@ switch(_operation) do {
                             // Ensure minimum of 1 IED if threat > 0
                             if (_num < 1 && _iedThreat > 0) then {_num = 1;};
                             _trg setTriggerActivation["ANY","PRESENT",true]; // true = repeated
-                            _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [getpos thisTrigger,%1,""%2"",%3] call ALIVE_fnc_createIED",_size, text _twn, _num], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
+                            _trg setTriggerStatements[format["this && %1", _trgCondPresence], format ["null = [getpos thisTrigger,%1,""%2"",%3] call ALIVE_fnc_createIED",_size, text _twn, _num], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
                             [_logic, "storeTrigger", [_size,text _twn,getPos _twn, false,"IED",_num]] call MAINCLASS;
                         } else {
                             _trg setTriggerActivation["ANY","PRESENT",true]; // true = repeated
-                            _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [getpos thisTrigger,%1,""%2""] call ALIVE_fnc_createIED",_size, text _twn], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED", text _twn]];
+                            _trg setTriggerStatements[format["this && %1", _trgCondPresence], format ["null = [getpos thisTrigger,%1,""%2""] call ALIVE_fnc_createIED",_size, text _twn], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED", text _twn]];
                             [_logic, "storeTrigger", [_size,text _twn,getPos _twn, false, "IED"]] call MAINCLASS;
                         };
 
@@ -578,6 +604,9 @@ switch(_operation) do {
             _result = [_logic,_operation,_args,[]] call ALIVE_fnc_OOsimpleOperation;
         };
         case "thirdParty": {
+            _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
+        };
+        case "aiTriggerable": {
             _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
         };
         case "createMarkers": {
@@ -710,10 +739,17 @@ switch(_operation) do {
                     _twn = _key;
                 };
 
-                if (_num > 0) then {
-                    _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [getpos thisTrigger,%1,""%2"", %3] call ALIVE_fnc_createIED",_size, text _twn, _num], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
+                // Respect AI_Triggerable setting when rebuilding persisted triggers
+                private _restoredCond = if ([_logic, "aiTriggerable"] call MAINCLASS) then {
+                    "({alive _x && ((getposATL (vehicle _x)) select 2 < 25)} count thislist > 0)"
                 } else {
-                    _trg setTriggerStatements["this && ({(vehicle _x in thisList) && ((getposATL _x) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)", format ["null = [getpos thisTrigger,%1,""%2""] call ALIVE_fnc_createIED",_size, text _twn], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
+                    "({_x in thisList && ((getposATL (vehicle _x)) select 2 < 25)} count ([] call BIS_fnc_listPlayers) > 0)"
+                };
+
+                if (_num > 0) then {
+                    _trg setTriggerStatements[format["this && %1", _restoredCond], format ["null = [getpos thisTrigger,%1,""%2"", %3] call ALIVE_fnc_createIED",_size, text _twn, _num], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
+                } else {
+                    _trg setTriggerStatements[format["this && %1", _restoredCond], format ["null = [getpos thisTrigger,%1,""%2""] call ALIVE_fnc_createIED",_size, text _twn], format ["null = [getpos thisTrigger,""%1""] call ALIVE_fnc_removeIED",text _twn]];
                 };
 
                 if (_logic getVariable["debug",false]) then {

@@ -9,7 +9,7 @@ params [
 if (!(hasInterface)) exitWith {};
 
 // Add action to IED
-private _debug = (ADDON getVariable ["debug", 0]);
+private _debug = (ADDON getVariable ["debug", false]);
 
 if (_debug) then {diag_log "removeActionIED running.";};
 

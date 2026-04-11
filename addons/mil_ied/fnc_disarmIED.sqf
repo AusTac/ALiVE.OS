@@ -35,59 +35,62 @@ if ((random 1) > 0.90) then {
 
     noesckey = (findDisplay 1600) displayAddEventHandler ["KeyDown", "if ((_this select 1) == 1) then { true }"];
 
-    waitUntil {sleep 0.3; tup_ied_wire != ""};
+    // Spawn a scheduled thread to wait for dialog result and resolve disarm
+    // (sleep cannot be used in an unscheduled addAction callback context)
+    [_IED, _id, _wire, _caller] spawn {
+        params ["_IED","_id","_wire","_caller"];
+        private ["_success","_selectedWire","_shell","_trgr","_IEDCharge"];
+        _IEDCharge = _IED getVariable ["charge", nil];
 
-    // Accept input
-    _selectedWire = tup_ied_wire;
+        waitUntil {sleep 0.3; tup_ied_wire != ""};
 
-    // Check success
-    if (_selectedWire == _wire) then {
-        _success = true;
-    } else {
-        _success = false;
-    };
+        // Accept input
+        _selectedWire = tup_ied_wire;
 
-    If  !(_success) then {
-        private "_shell";
-        // Failure to disarm results in detonation
-        _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[4,8,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
-        _shell createVehicle getposATL (_this select 0);
-        // Remove triggers
-
-        _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
-        {
-            deleteVehicle _x;
-        } foreach _trgr;
-
-        // Update Sector Hostility
-    	[[position _IED, [str(side group player)], +10] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
-
-        [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
-
-        deleteVehicle _IEDCharge;
-        deleteVehicle _IED;
-
-    } else {
-
-        // Remove triggers
-
-        _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
-        {
-            deleteVehicle _x;
-        } foreach _trgr;
-
-        if !(isNil "_IEDCharge") then {
-            _IEDCharge removeEventHandler ["handleDamage", _IED getVariable "ehID"];
+        // Check success
+        if (_selectedWire == _wire) then {
+            _success = true;
+        } else {
+            _success = false;
         };
 
-        // Update Sector Hostility
-    	[[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
+        If  !(_success) then {
+            // Failure to disarm results in detonation
+            _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[4,8,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
+            _shell createVehicle getposATL _IED;
 
-        [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
+            _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
+            {
+                deleteVehicle _x;
+            } foreach _trgr;
 
-        hint "You guessed correct! IED is disarmed";
+            [[position _IED, [str(side group player)], +10] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
+            [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
 
-    };
+            deleteVehicle _IEDCharge;
+            deleteVehicle _IED;
+
+        } else {
+
+            _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
+            {
+                deleteVehicle _x;
+            } foreach _trgr;
+
+            if !(isNil "_IEDCharge") then {
+                _IEDCharge removeEventHandler ["handleDamage", _IED getVariable "ehID"];
+            };
+
+            [[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
+            [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
+
+            deleteVehicle _IEDCharge;
+            deleteVehicle _IED;
+
+            hint "You guessed correct! IED is disarmed";
+
+        };
+    }; // end spawn
 
 } else {
     // Tell unit that IED is disarmed
@@ -114,6 +117,9 @@ if ((random 1) > 0.90) then {
     [[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
 
     [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
+
+    deleteVehicle _IEDCharge;
+    deleteVehicle _IED;
 
      hint "IED is disarmed";
 };
