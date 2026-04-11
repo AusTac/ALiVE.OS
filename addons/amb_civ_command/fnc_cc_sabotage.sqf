@@ -52,7 +52,17 @@ switch (_state) do {
 
         _agent setVariable ["ALIVE_agentBusy", true, false];
         _agent setVariable ["ALIVE_Insurgent", true, false];
-        _agent addVest "V_ALiVE_Suicide_Vest";
+        // Vest class drawn from global override if set; falls back to default ALiVE vest.
+        // Set ALIVE_civCommandSuicideVest in mission init or via amb_civ_population to customise.
+        // Accepts a comma-separated list for random selection e.g. "V_ALiVE_Suicide_Vest,V_Chestrig_khk"
+        private _vestRaw = if (isNil "ALIVE_civCommandSuicideVest" || {ALIVE_civCommandSuicideVest == ""}) then {
+            "V_ALiVE_Suicide_Vest"
+        } else {
+            ALIVE_civCommandSuicideVest
+        };
+        private _vestList = [_vestRaw, " ", ""] call CBA_fnc_replace;
+        _vestList = [_vestList, ","] call CBA_fnc_split;
+        _agent addVest (selectRandom _vestList);
         _agent addMagazines ["DemoCharge_Remote_Mag", 2];
 
         private _agentClusterID = _agentData select 2 select 9;

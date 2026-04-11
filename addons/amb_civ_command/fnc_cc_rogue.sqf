@@ -185,7 +185,9 @@ switch (_state) do {
             };
 
             if(_agent distance _target > 20) then {
-                _agent addRating -10000;
+                // Do NOT use addRating with extreme negative values — driving below -2000
+                // flips the unit's effective side in Arma, causing loss of hostile intent.
+                // Combat mode + behaviour is sufficient to make the agent engage.
                 [_agent] call ALIVE_fnc_agentSelectSpeedMode;
                 [_agent, getPosASL _target] call ALiVE_fnc_doMoveRemote;
             }else{

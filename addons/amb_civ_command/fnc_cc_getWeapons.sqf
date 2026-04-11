@@ -107,7 +107,16 @@ switch (_state) do {
 
                 if (alive _agent) then {
                     _agent setVariable ["ALIVE_Insurgent", true, false];
-                    _agent addVest "V_ALiVE_Suicide_Vest";
+                    // Vest class drawn from global override if set; falls back to default ALiVE vest.
+                    // Accepts a comma-separated list for random selection.
+                    private _vestRaw = if (isNil "ALIVE_civCommandSuicideVest" || {ALIVE_civCommandSuicideVest == ""}) then {
+                        "V_ALiVE_Suicide_Vest"
+                    } else {
+                        ALIVE_civCommandSuicideVest
+                    };
+                    private _vestList = [_vestRaw, " ", ""] call CBA_fnc_replace;
+                    _vestList = [_vestList, ","] call CBA_fnc_split;
+                    _agent addVest (selectRandom _vestList);
                     _agent addMagazines ["DemoCharge_Remote_Mag", 2];
                 };
 
