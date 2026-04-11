@@ -479,6 +479,102 @@ class CfgVehicles {
                                 typeName = "NUMBER";
                                 defaultValue = 2;
                         };
+                        class asymForceLimit
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT";
+                                description = "$STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = -1;
+                        };
+                        class recruitCycleMin
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN";
+                                description = "$STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 30;
+                        };
+                        class recruitCycleMax
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX";
+                                description = "$STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 60;
+                        };
+                        class recruitAttemptLimit
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT";
+                                description = "$STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 0;
+                        };
+                        class recruitSuccessChance
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE";
+                                description = "$STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 50;
+                        };
+                        class hostilityPresenceMultiplier
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER";
+                                description = "$STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 1;
+                        };
+                        class hostilityInstallationMultiplier
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER";
+                                description = "$STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 1;
+                        };
+                        class hostilityInstallationInterval
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL";
+                                description = "$STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL_COMMENT";
+                                typeName = "NUMBER";
+                                defaultValue = 10;
+                        };
+                        class taskProfileCountOverrides
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES";
+                                description = "$STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES_COMMENT";
+                                defaultValue = "";
+                        };
+                        class taskProfileTypeOverrides
+                        {
+                                displayName = "$STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES";
+                                description = "$STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES_COMMENT";
+                                defaultValue = "";
+                        };
+                        class civicRecruitmentMultiplier
+                        {
+                                displayName = "Civic Pressure Recruitment Multiplier";
+                                description = "Scales how strongly the civic-state model slows insurgent recruitment in contested settlements.";
+                                typeName = "NUMBER";
+                                defaultValue = 1;
+                        };
+                        class civicInstallationMultiplier
+                        {
+                                displayName = "Civic Pressure Installation Multiplier";
+                                description = "Scales how strongly civic pressure weakens installation-driven hostility drift toward insurgents.";
+                                typeName = "NUMBER";
+                                defaultValue = 1;
+                        };
+                        class civicRetaliationChance
+                        {
+                                displayName = "Civic Retaliation Chance";
+                                description = "Base percent chance for insurgent retaliation after Hearts and Minds success in improving settlements. Whole numbers are treated as percents; legacy fractional values below 1 are still accepted as 0-1 scalars. Use 0 to disable.";
+                                typeName = "NUMBER";
+                                defaultValue = 0;
+                        };
+                        class civicRetaliationIntensity
+                        {
+                                displayName = "Civic Retaliation Intensity";
+                                description = "Scales the severity of insurgent backlash against improving settlements.";
+                                typeName = "NUMBER";
+                                defaultValue = 1;
+                        };
                 };
                 class ModuleDescription
                 {
@@ -488,7 +584,7 @@ class CfgVehicles {
                             "",
                             "$STR_ALIVE_OPCOM_USAGE"
                     };
-                    sync[] = {"ALiVE_civ_placement","ALiVE_mil_placement","ALiVE_mil_intelligence","ALiVE_mil_logistics"}; // Array of synced entities (can contain base classes)
+                    sync[] = {"ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement","ALiVE_mil_intelligence","ALiVE_mil_logistics"}; // Array of synced entities (can contain base classes)
 
                     class ALiVE_civ_placement
                     {
@@ -496,6 +592,18 @@ class CfgVehicles {
                             "$STR_ALIVE_CP_COMMENT",
                             "",
                             "$STR_ALIVE_CP_USAGE"
+                        };
+                        position = 0; // Position is taken into effect
+                        direction = 0; // Direction is taken into effect
+                        optional = 1; // Synced entity is optional
+                        duplicate = 1; // Multiple entities of this type can be synced
+                    };
+                    class ALiVE_civ_placement_custom
+                    {
+                        description[] = { // Multi-line descriptions are supported
+                            "$STR_ALIVE_CPC_COMMENT",
+                            "",
+                            "$STR_ALIVE_CPC_USAGE"
                         };
                         position = 0; // Position is taken into effect
                         direction = 0; // Direction is taken into effect

@@ -146,7 +146,7 @@ switch (_operation) do {
 		//-- Exit if the menu has been closed
 		if (isNull findDisplay 923) exitWith {};
 
-		_arguments params ["_objectiveInstallations","_objectiveActions","_civInfo","_hostileCivInfo"];
+		_arguments params ["_objectiveInstallations","_objectiveActions","_civInfo","_hostileCivInfo",["_intelQuality", [0,1,0,"Stabilize",10,0], [[]]]];
 
 		_logic = MOD(civInteractHandler);
 
@@ -160,6 +160,7 @@ switch (_operation) do {
 		[_civData, "Actions", _objectiveActions] call ALiVE_fnc_hashSet;			//-- [_ambush,_sabotage,_ied,_suicide]
 		[_civData, "CivInfo", _civInfo] call ALiVE_fnc_hashSet;				//-- [_homePos, _individualHostility, _townHostility]
 		[_civData, "HostileCivInfo", _hostileCivInfo] call ALiVE_fnc_hashSet;			//-- [_civ,_homePos,_activeCommands]
+		[_civData, "IntelQuality", _intelQuality] call ALiVE_fnc_hashSet;				//-- [chanceBonus, radiusMultiplier, markerDurationBonus, phase, exactMarkerChance, deceptionChance]
 		[_civData, "AnswersGiven", _answersGiven] call ALiVE_fnc_hashSet;			//-- Default []
 		[_civData, "Asked", 0] call ALiVE_fnc_hashSet;					//-- Default - 0
 		[_logic, "CivData", _civData] call ALiVE_fnc_hashSet;
@@ -348,7 +349,82 @@ switch (_operation) do {
 
 		if (count _hostileCivInfo > 0) then {_hostileCivInfo = _hostileCivInfo call BIS_fnc_selectRandom};	//-- Ensure random hostile civ is picked if there are multiple
 
-		_civData = [_objectiveInstallations, _objectiveActions, _civInfo,_hostileCivInfo];
+		private _askingSide = str (side (group _player));
+		if !(_askingSide in ["EAST","WEST","GUER"]) then {_askingSide = "WEST"};
+
+		private _supportPhase = "Stabilize";
+		private _supportValue = 0;
+		private _intelQuality = [0,1,0,_supportPhase,10,0];
+
+		if !(isNil "_cluster") then {
+			private _hostilityHash = [_cluster, "hostility", []] call ALIVE_fnc_hashGet;
+			private _hostility = [_hostilityHash, _askingSide, 100] call ALIVE_fnc_hashGet;
+
+			if (_hostility <= 0) then {
+				_supportPhase = "Consolidate";
+			} else {
+				if (_hostility <= 25) then {
+					_supportPhase = "Build";
+				} else {
+					if (_hostility <= 65) then {
+						_supportPhase = "Engage";
+					};
+				};
+			};
+
+			if !(isNil "ALIVE_fnc_taskGetCivilianSupportState") then {
+				private _supportState = [_cluster, _askingSide] call ALIVE_fnc_taskGetCivilianSupportState;
+				if !(_supportState isEqualTo []) then {
+					_supportValue = [_supportState, "support", 0] call ALIVE_fnc_hashGet;
+					_supportPhase = [_supportState, "phase", _supportPhase] call ALIVE_fnc_hashGet;
+				};
+			};
+
+			_supportValue = (_supportValue max 0) min 100;
+
+			private _phaseBonus = switch (_supportPhase) do {
+				case "Consolidate": {20};
+				case "Build": {12};
+				case "Engage": {6};
+				default {0};
+			};
+			private _supportBonus = round (_supportValue * 0.1);
+			private _chanceBonus = (_phaseBonus + _supportBonus) min 35;
+
+			private _precisionMultiplier = switch (_supportPhase) do {
+				case "Consolidate": {0.45};
+				case "Build": {0.65};
+				case "Engage": {0.8};
+				default {1};
+			};
+			_precisionMultiplier = (_precisionMultiplier - (_supportValue * 0.002)) max 0.35;
+
+			private _durationBonus = switch (_supportPhase) do {
+				case "Consolidate": {30};
+				case "Build": {20};
+				case "Engage": {10};
+				default {0};
+			};
+			private _exactMarkerChance = switch (_supportPhase) do {
+				case "Consolidate": {55};
+				case "Build": {35};
+				case "Engage": {20};
+				default {8};
+			};
+			_exactMarkerChance = (_exactMarkerChance + round (_supportValue * 0.2)) min 85;
+
+			private _deceptionChance = switch (_supportPhase) do {
+				case "Consolidate": {0};
+				case "Build": {5};
+				case "Engage": {12};
+				default {20};
+			};
+			_deceptionChance = (_deceptionChance + round ((100 - _supportValue) * 0.1)) min 35;
+
+			_intelQuality = [_chanceBonus, _precisionMultiplier, _durationBonus, _supportPhase, _exactMarkerChance, _deceptionChance];
+		};
+
+		_civData = [_objectiveInstallations, _objectiveActions, _civInfo,_hostileCivInfo,_intelQuality];
 
 		// _civData call ALiVE_fnc_inspectArray;
 

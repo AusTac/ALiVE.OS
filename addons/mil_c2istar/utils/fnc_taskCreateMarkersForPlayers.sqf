@@ -105,6 +105,10 @@ switch(_taskType) do {
 
         _markerDefinition = [_taskPosition,_taskID,_colour,"Target Vehicle",_icon,[1,1],1,"ICON"];
     };
+    case "civilian":{
+
+        _markerDefinition = [_taskPosition,_taskID,_colour,_type,"c_unknown",[1,1],1,"ICON"];
+    };
     case "entity":{
 
         _icon = format["%1_inf",_typePrefix];

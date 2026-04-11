@@ -283,13 +283,13 @@ switch(_operation) do {
 
                         _mod = (synchronizedObjects _logic) select _i;
 
-                        if ((typeof _mod) in ["ALiVE_mil_placement","ALiVE_civ_placement"]) then {
+                        if ((typeof _mod) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom"]) then {
                             waituntil {_mod getVariable ["startupComplete", false]};
 
                             _obj = [_mod,"objectives",objNull,[]] call ALIVE_fnc_OOsimpleOperation;
                             _objectives = _objectives + _obj;
 
-                            {_collection pushback [([_x,"center"] call ALiVE_fnc_HashGet), ([_x,"size"] call ALiVE_fnc_HashGet)]} foreach _objectives;
+                            {_collection pushback [([_x,"center"] call ALiVE_fnc_HashGet), ([_x,"size"] call ALiVE_fnc_HashGet)]} foreach _obj;
 
                             ["CQB Houses loaded from MIL/CIV Placement module!"] call ALiVE_fnc_dump;
                         };
@@ -1317,7 +1317,12 @@ switch(_operation) do {
                 if !(isNull _module) then {
                  _CQB_patrolSearchChance = (_module getVariable ['CQB_patrol_searchchance', 0.3]);
                 };
-                if (random 1 <= _CQB_patrolSearchChance) then {this call CBA_fnc_searchNearby};
+                if (random 1 <= _CQB_patrolSearchChance) then {
+                    private _group = group this;
+                    if (!isNull this && {alive this} && {_group != grpNull} && {count (units _group) > 0}) then {
+                        [this] call CBA_fnc_searchNearby;
+                    };
+                };
                 "
                 , [_CQB_patrolMinWaitTime, _CQB_patrolMidWaitTime, _CQB_patrolMaxWaitTime]] call CBA_fnc_taskPatrol;
             } else { 

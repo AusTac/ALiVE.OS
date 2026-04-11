@@ -83,8 +83,8 @@
     <Chinesesimp>AI指挥官将控制这个派别。可以多选!</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_USAGE">
-    <English>Place a Military AI Commander module in the editor and select a faction from the dropdown. Custom factions can be entered in the “override default faction” box. Choose the Control Type in the drop down menu. By default, the AI Commander will take command of all available virtual units (profiles) for its faction. Therefore, it requires a minimum of one synced Placement Module and the Virtual AI module.</English>
-    <Chinesesimp>在编辑器中放置一个军事AI指挥官模块,并从下拉列表中选择一个势力。可以在“覆盖默认势力”框中输入自定义势力。在下拉菜单中选择控制类型。默认情况下,AI指挥官将指挥其势力的所有可用虚拟单位(配置文件)。因此,它至少需要一个同步的放置模块和虚拟AI模块。</Chinesesimp>
+    <English>Place a Military AI Commander module in the editor and select a faction from the dropdown. Custom factions can be entered in the "override default faction" box. Choose the Control Type in the drop down menu. By default, the AI Commander will take command of all available virtual units (profiles) for its faction. Therefore, it requires a minimum of one synced Placement Module and the Virtual AI module.</English>
+    <Chinesesimp>在编辑器中放置一个军事AI指挥官模块,并从下拉列表中选择一个势力。可以在"覆盖默认势力"框中输入自定义势力。在下拉菜单中选择控制类型。默认情况下,AI指挥官将指挥其势力的所有可用虚拟单位(配置文件)。因此,它至少需要一个同步的放置模块和虚拟AI模块。</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_INTELCHANCE">
     <English>INTEL:</English>
@@ -117,5 +117,85 @@
 <Key ID="STR_ALIVE_OPCOM_MINAGENTS_COMMENT">
     <English>Minimum of ALiVE civilians needed per objective for a recruitment center to be set up (Asymmetric Warfare only)!</English>
     <Chinesesimp>每个目标需要最少ALiVE平民才能建立招募中心(仅限于非对称战争)!</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT">
+    <English>Asymmetric force cap:</English>
+    <Chinesesimp>非对称部队上限:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT_COMMENT">
+    <English>Maximum number of insurgent profiles allowed for this asymmetric commander. Set to -1 for no cap.</English>
+    <Chinesesimp>此非对称指挥官允许的 insurgent profile 最大数量。设为 -1 表示不限制。</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN">
+    <English>Recruit cycle min (mins):</English>
+    <Chinesesimp>招募周期最小值(分钟):</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN_COMMENT">
+    <English>Minimum delay in minutes between asymmetric recruitment attempts.</English>
+    <Chinesesimp>非对称招募尝试之间的最小延迟(分钟)。</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX">
+    <English>Recruit cycle max (mins):</English>
+    <Chinesesimp>招募周期最大值(分钟):</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX_COMMENT">
+    <English>Maximum delay in minutes between asymmetric recruitment attempts.</English>
+    <Chinesesimp>非对称招募尝试之间的最大延迟(分钟)。</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT">
+    <English>Recruit attempt limit:</English>
+    <Chinesesimp>招募尝试上限:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT_COMMENT">
+    <English>Number of timed recruitment attempts each HQ gets after setup. Set to 0 for one attempt per attached civilian (default behavior), or -1 for unlimited attempts while the HQ survives.</English>
+    <Chinesesimp>每个招募总部建立后可进行的定时招募尝试次数。设为 0 表示每个关联平民进行一次尝试（默认行为），设为 -1 表示总部存活期间无限尝试。</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE">
+    <English>Recruit success chance (%):</English>
+    <Chinesesimp>招募成功率(%):</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE_COMMENT">
+    <English>Chance per recruitment attempt that a new insurgent group is successfully created. Use 0 to disable recruitment spawns or 100 to make every attempt succeed.</English>
+    <Chinesesimp>每次招募尝试成功创建一个新 insurgent 小组的概率。设为 0 可禁用招募生成，设为 100 则每次尝试都成功。</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER">
+    <English>Hostility presence multiplier:</English>
+    <Chinesesimp>Hostility presence multiplier:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER_COMMENT">
+    <English>Multiplier applied to asymmetric hostility shifts caused by insurgent presence and actions. Use 1 for default behavior or 0 to disable these shifts.</English>
+    <Chinesesimp>Multiplier applied to asymmetric hostility shifts caused by insurgent presence and actions. Use 1 for default behavior or 0 to disable these shifts.</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER">
+    <English>Hostility install multiplier:</English>
+    <Chinesesimp>Hostility install multiplier:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER_COMMENT">
+    <English>Multiplier applied to periodic asymmetric hostility shifts caused by active insurgent installations. Use 1 for default behavior.</English>
+    <Chinesesimp>Multiplier applied to periodic asymmetric hostility shifts caused by active insurgent installations. Use 1 for default behavior.</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL">
+    <English>Hostility install tick (mins):</English>
+    <Chinesesimp>Hostility install tick (mins):</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL_COMMENT">
+    <English>Minutes between periodic asymmetric hostility shifts from active insurgent installations. Lower values speed up hostility drift.</English>
+    <Chinesesimp>Minutes between periodic asymmetric hostility shifts from active insurgent installations. Lower values speed up hostility drift.</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES">
+    <English>Task profile count overrides:</English>
+    <Chinesesimp>Task profile count overrides:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES_COMMENT">
+    <English>Optional SQF array of [taskName,count] pairs for overriding how many profiles each task can use. Supports attack, defend and reserve for conventional OPCOMs, plus assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks and recruit for asymmetric actions. Recon and capture fall back to attack. Example: [["attack",6],["reserve",0],["ambush",1]].</English>
+    <Chinesesimp>Optional SQF array of [taskName,count] pairs for overriding how many profiles each task can use. Supports attack, defend and reserve for conventional OPCOMs, plus assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks and recruit for asymmetric actions. Recon and capture fall back to attack. Example: [["attack",6],["reserve",0],["ambush",1]].</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES">
+    <English>Task profile type overrides:</English>
+    <Chinesesimp>Task profile type overrides:</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES_COMMENT">
+    <English>Optional SQF array of [taskName,[types...]] pairs for overriding profile categories per task. Valid types are infantry, motorized, mechanized, armored, artillery, AAA, air and sea. Supports the same task names as the count override. Example: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</English>
+    <Chinesesimp>Optional SQF array of [taskName,[types...]] pairs for overriding profile categories per task. Valid types are infantry, motorized, mechanized, armored, artillery, AAA, air and sea. Supports the same task names as the count override. Example: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</Chinesesimp>
 </Key>
 </Container></Package></Project>

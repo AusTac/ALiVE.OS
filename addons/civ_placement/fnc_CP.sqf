@@ -30,6 +30,8 @@ See Also:
 Author:
 Wolffy
 ARJay
+Javen
+Jman
 ---------------------------------------------------------------------------- */
 
 #define SUPERCLASS ALIVE_fnc_baseClass
@@ -95,7 +97,7 @@ switch(_operation) do {
     };
     case "state": {
         private["_state","_data","_nodes","_simple_operations"];
-        _simple_operations = ["targets", "size","type","faction"];
+        _simple_operations = ["targets", "size","type","faction","asymmetricInstallationCountOverrides"];
 
         if(typeName _args != "ARRAY") then {
             _state = [] call CBA_fnc_hashCreate;
@@ -161,12 +163,12 @@ switch(_operation) do {
     case "customSpecOpsCount": {
         _result = [_logic,_operation,_args,DEFAULT_NO_TEXT] call ALIVE_fnc_OOsimpleOperation;
     };
+    case "asymmetricInstallationCountOverrides": {
+        _result = [_logic,_operation,_args,DEFAULT_NO_TEXT] call ALIVE_fnc_OOsimpleOperation;
+    };
     // Determine force faction
     case "faction": {
         _result = [_logic,_operation,_args,DEFAULT_FACTION,[] call ALiVE_fnc_configGetFactions] call ALIVE_fnc_OOsimpleOperation;
-    };
-    case "guardProbability": {
-        _result = [_logic,_operation,_args,DEFAULT_AMBIENT_GUARD_AMOUNT] call ALIVE_fnc_OOsimpleOperation;
     };
     case "guardRadius": {
         _result = [_logic,_operation,_args,DEFAULT_AMBIENT_GUARD_RADIUS] call ALIVE_fnc_OOsimpleOperation;
@@ -362,14 +364,6 @@ switch(_operation) do {
                     [_message] call ALIVE_fnc_dump;
                     //_error = true;
                 };
-
-                /*
-                if (!(isnil "_message") && {isnil QGVAR(CLUSTERWARNING_DISPLAYED)}) then {
-                    GVAR(CLUSTERWARNING_DISPLAYED) = true;
-                    //[_message] spawn BIS_fnc_guiMessage;
-                    [[_message],"BIS_fnc_guiMessage",nil,true] spawn BIS_fnc_MP;
-                };
-                */
             };
 
             if!(_error) then {
@@ -550,27 +544,13 @@ switch(_operation) do {
                     if !(isnil "ALIVE_clustersCivMarine") then {
                         private _marineClusters = ALIVE_clustersCivMarine select 2;
 
-                        //["CP [%1] - Marine Clusters Count: %2",_faction, count _marineClusters] call ALiVE_fnc_dump;
-
                         _marineClusters = [_marineClusters,0,_priorityFilter] call ALIVE_fnc_copyClusters;
-
-                        //["CP [%1] - Marine Clusters Filtered Count: %2 - Size: %3 - Prio: %4",_faction, count _marineClusters, _sizeFilter, _priorityFilter] call ALiVE_fnc_dump;
-
                         _marineClusters = [_marineClusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-
-                        //["CP [%1] - Marine Clusters TAOR Count: %2",_faction, count _marineClusters] call ALiVE_fnc_dump;
-
                         _marineClusters = [_marineClusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
 
-                        /*
-                        {
-                            [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                        } forEach _marineClusters;
-                        */
                         [_logic, "objectivesMarine", _marineClusters] call MAINCLASS;
                     };
                 };
-
 
 
                 // DEBUG -------------------------------------------------------------------------------------
@@ -629,8 +609,8 @@ switch(_operation) do {
                             _roadBlocks = parsenumber([_logic, "roadBlocks"] call MAINCLASS);
                             _debug = [_logic, "debug"] call MAINCLASS;
 
-                            if (_debug) then { ["TOTAL VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump }; 
-														  
+                            if (_debug) then { ["TOTAL VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump };
+											  
                             while {count GVAR(ROADBLOCK_LOCATIONS) > 0} do {
                                 private ["_timer"];
 
@@ -656,11 +636,11 @@ switch(_operation) do {
 
                                             if (_spawn) then {
                                                 _thisroadblockResult = [_position, _size + 150, ceil(_roadblocks / 30), _debug] call ALiVE_fnc_createRoadblock;
-                                                if (_debug) then { ["_thisroadblockResult: %1, count: %2", _thisroadblockResult, count _thisroadblockResult] call ALiVE_fnc_dump }; 
+                                                if (_debug) then { ["_thisroadblockResult: %1, count: %2", _thisroadblockResult, count _thisroadblockResult] call ALiVE_fnc_dump };
                                                  if (count _thisroadblockResult > 0)  then {
                                                    GVAR(ROADBLOCK_LOCATIONS) set [_foreachIndex, -1];
                                                  };
-                                                if (_debug) then { ["VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump }; 
+                                                if (_debug) then { ["VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump };
                                             };
                                         };
                                     };
@@ -710,9 +690,6 @@ switch(_operation) do {
                 [true] call ALIVE_fnc_timer;
             };
             // DEBUG -------------------------------------------------------------------------------------
-
-
-            //waituntil {sleep 5; (!(isnil {([_logic, "objectives"] call MAINCLASS)}) && {count ([_logic, "objectives"] call MAINCLASS) > 0})};
 
             _clusters = [_logic, "objectives"] call MAINCLASS;
 
@@ -973,7 +950,6 @@ switch(_operation) do {
             // DEBUG -------------------------------------------------------------------------------------
 
 
-
             // Position and create groups
             _groupCount = count _groups;
             _clusterCount = count _clusters;
@@ -1058,7 +1034,7 @@ switch(_operation) do {
                 
                 // DEBUG -------------------------------------------------------------------------------------
                 if(_debug) then {
-                  ["CP [%1] - Garrison _guardProbabilityCount: %2", _faction, _guardProbabilityCount] call ALiVE_fnc_dump;           
+                  ["CP [%1] - Garrison _guardProbabilityCount: %2", _faction, _guardProbabilityCount] call ALIVE_fnc_dump;           
                 };
                 // DEBUG -------------------------------------------------------------------------------------
                     
@@ -1105,13 +1081,6 @@ switch(_operation) do {
                             } else {
                                 _command = "ALIVE_fnc_ambientMovement";
                                 _radius = [_guardRadius,"SAFE",[0,0,0]];
-                                
-                                // DEBUG -------------------------------------------------------------------------------------
-                                if(_debug) then {
-                                 ["CP %2 - No more empty buildings (CP-01), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
-                                };
-                                // DEBUG -------------------------------------------------------------------------------------
-                                
                             };
 
                             if (isnil "_garrisonPos") then {
@@ -1145,12 +1114,6 @@ switch(_operation) do {
                         } else {
                             _command = "ALIVE_fnc_ambientMovement";
                             _radius = [_guardRadius,"SAFE",[0,0,0]];
-                            
-                            // DEBUG -------------------------------------------------------------------------------------
-                             if(_debug) then {
-                              ["CP %2 - No more empty buildings (CP-02), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
-                             };
-                            // DEBUG -------------------------------------------------------------------------------------
                         };
 
                         if (isnil "_garrisonPos") then {

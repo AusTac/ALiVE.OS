@@ -551,6 +551,9 @@ switch (_operation) do {
                         _commandState = [_logic,"commandState"] call MAINCLASS;
 
                         _interfaceType = [_commandState,"commandInterface"] call ALIVE_fnc_hashGet;
+                        // hashGet returns nil for missing keys — guard before switch to avoid
+                        // "Undefined variable" error on first tablet open before interface type is set
+                        if (isNil "_interfaceType") then { _interfaceType = ""; };
 
                         switch(_interfaceType) do {
 

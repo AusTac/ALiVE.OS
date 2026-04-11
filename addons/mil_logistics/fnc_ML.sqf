@@ -401,10 +401,8 @@ switch(_operation) do {
         private _searchRadius = if (count _args > 1) then {_args select 1} else {80};
         private _debug        = [_logic, "debug"] call MAINCLASS;
 
-        if (_debug) then {
-            ["ML - prepareHelicopterLZ: Searching for clear LZ near %1 radius %2",
-                _centerPos, _searchRadius] call ALiVE_fnc_dump;
-        };
+        ["ML - prepareHelicopterLZ: Searching for clear LZ near %1 radius %2",
+            _centerPos, _searchRadius] call ALiVE_fnc_dump;
 
         private _clearPos  = [];
         private _attempts  = 0;
@@ -570,10 +568,8 @@ switch(_operation) do {
         private _usedPositions = if (count _args > 3) then { _args select 3 } else { [] };
         private _debug         = [_logic, "debug"] call MAINCLASS;
 
-        if (_debug) then {
-            ["ML - findHelicopterLandingPos: Searching near %1 min %2 max %3",
-                _centerPos, _minRadius, _maxRadius] call ALiVE_fnc_dump;
-        };
+        ["ML - findHelicopterLandingPos: Searching near %1 min %2 max %3",
+            _centerPos, _minRadius, _maxRadius] call ALiVE_fnc_dump;
 
         private _foundPos = [];
 
@@ -649,7 +645,7 @@ switch(_operation) do {
                         if (count _foundPos == 2) then { _foundPos pushback 0; };
                         // Register in global tracker so other events avoid this spot
                         private _globalUsed = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
-                        _globalUsed = _globalUsed select { count _x > 3 && (time - (_x select 3)) < 600 };
+                        _globalUsed = _globalUsed select { (time - (_x select 3)) < 600 };
                         _globalUsed pushback (_foundPos + [time]);
                         missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed];
                         if (_debug) then {
@@ -717,7 +713,7 @@ switch(_operation) do {
                     _foundPos = _candidate;
                     // Register in global tracker
                     private _globalUsed2 = missionNamespace getVariable ["ALIVE_ML_usedLZPositions", []];
-                    _globalUsed2 = _globalUsed2 select { count _x > 3 && (time - (_x select 3)) < 600 };
+                    _globalUsed2 = _globalUsed2 select { (time - (_x select 3)) < 600 };
                     _globalUsed2 pushback (_foundPos + [time]);
                     missionNamespace setVariable ["ALIVE_ML_usedLZPositions", _globalUsed2];
                     if (_debug) then {
@@ -1076,7 +1072,7 @@ switch(_operation) do {
                             !isTouchingGround _heli
                         ) then {
                             private _cargoCount = { alive _x && _x != driver _heli && _x != gunner _heli } count crew _heli;
-                            private _hasSlung = !isNull (getSlingLoad _heli); // setSlingLoad attachments are NOT in attachedObjects
+                            private _hasSlung = !isNull (vehicle _heli) && { count (attachedObjects _heli) > 0 };
                             if (_cargoCount == 0 && !_hasSlung) then {
                                 _hoverTicks = _hoverTicks + 1;
                             } else {
@@ -1537,7 +1533,7 @@ switch(_operation) do {
                                 private _terrainH = getTerrainHeightASL [_posASL select 0, _posASL select 1];
                                 private _curAGL = (_heli modelToWorldVisual [0,0,0]) select 2;
                                 ["ML - heliParadropWatchdog: %1 FIRST ACTIVATION. spawnAGL=%2m terrainASL=%3m. Applying altitude correction to %4m AGL.",
-                                    _tProfID, round _curAGL, round _terrainH, _dropHeight] call ALiVE_fnc_dump;
+                                    _tProfID, round _curAGL, round _terrainH, PARADROP_HEIGHT] call ALiVE_fnc_dump;
 
                                 // (a) Command the heli to climb to PARADROP_HEIGHT using flyInHeight.
                                 // This lets the AI climb smoothly rather than teleporting,
@@ -1545,7 +1541,7 @@ switch(_operation) do {
                                 // A strong upward velocity kick starts the climb immediately.
                                 private _curVel = velocity _heli;
                                 _heli setVelocity [_curVel select 0, _curVel select 1, 15];
-                                _heli flyInHeight _dropHeight;
+                                _heli flyInHeight PARADROP_HEIGHT;
 
                                 // Extended climb window: suppress drop trigger for 30s so the
                                 // heli has time to reach altitude before we start checking dist.
@@ -1558,7 +1554,7 @@ switch(_operation) do {
                                 private _dzDir = _heliPos2D getDir _destPos;
                                 private _overshoot = _destPos getPos [600, _dzDir];
                                 private _overshootASL = AGLToASL _overshoot;
-                                _overshootASL set [2, (_terrainH + _dropHeight)];
+                                _overshootASL set [2, (_terrainH + PARADROP_HEIGHT)];
 
                                 private _grpNow = group (driver _heli);
                                 // Clear any native waypoints inherited from profile system
@@ -1592,7 +1588,7 @@ switch(_operation) do {
                                 ];
 
                                 ["ML - heliParadropWatchdog: %1 Overshoot move issued. DZ=%2 overshoot=%3 (DZ+600m at %4m AGL). Cleared %5 old WPs.",
-                                    _tProfID, _destPos, _overshootPosAGL, _dropHeight, _wpCount] call ALiVE_fnc_dump;
+                                    _tProfID, _destPos, _overshootPosAGL, PARADROP_HEIGHT, _wpCount] call ALiVE_fnc_dump;
                             };
 
                             // Enforce mission AI behaviour every iteration while in transit.
@@ -1634,8 +1630,8 @@ switch(_operation) do {
                                             _g setSpeedMode "FULL";
                                             { _x disableAI "AUTOTARGET"; _x disableAI "TARGET"; _x setSkill ["courage", 1]; } forEach (units _g);
 
-                                            // Re-enforce altitude on hit so AI doesn't dive
-                                            _vehicle flyInHeight _dropHeight;
+                                            // Re-enforce altitude immediately on hit so AI doesn't dive
+                                            _vehicle flyInHeight PARADROP_HEIGHT;
                                         };
                                     };
                                 }];
@@ -1662,7 +1658,7 @@ switch(_operation) do {
                             // and oscillate between climbing and descending without making
                             // progress toward the DZ. The kick belongs only in first-activation.
                             if (_heliAGL < PARADROP_MIN_DROP_HEIGHT) then {
-                                _heli flyInHeight _dropHeight;
+                                _heli flyInHeight PARADROP_HEIGHT;
                                 if (count _overshootPosAGL > 0) then { _heli move _overshootPosAGL; };
                                 ["ML - heliParadropWatchdog: %1 below min AGL (%2m < %3m). Re-issuing climb command.",
                                     _tProfID, round _heliAGL, PARADROP_MIN_DROP_HEIGHT] call ALiVE_fnc_dump;
@@ -1966,22 +1962,7 @@ switch(_operation) do {
 
             // Signal completion only after a successful drop
             if (_dropped) then {
-
-                // Issue RTB waypoints to the transport heli now that the drop is complete.
-                // The transit loop kept clearing native waypoints every 2s and re-issuing
-                // _heli move to the overshoot position -- without an explicit RTB order here
-                // the heli has no movement orders when the loop exits and will hover or drift.
-                // Mirror the same approach used by spawnHeliDeliveryWatchdog case 2->3.
-                private _tpRTB = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
-                if (!isNil "_tpRTB") then {
-                    private _wpRTB = [_returnPos, 400, "MOVE", "FULL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
-                    [_tpRTB, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                    [_tpRTB, "addWaypoint", _wpRTB] call ALIVE_fnc_profileEntity;
-                    ["ML - heliParadropWatchdog: %1 RTB waypoints issued to %2.", _tProfID, _returnPos] call ALiVE_fnc_dump;
-                } else {
-                    ["ML - heliParadropWatchdog: %1 WARNING - transport profile nil at RTB, heli may drift.", _tProfID] call ALiVE_fnc_dump;
-                };
-
+                if (isNil "ALIVE_ML_paradropComplete") then { ALIVE_ML_paradropComplete = []; };
                 ALIVE_ML_paradropComplete pushBackUnique _tProfID;
                 ["ML - heliParadropWatchdog: %1 paradropComplete signalled. Watchdog exiting.", _tProfID] call ALiVE_fnc_dump;
             } else {
@@ -2008,12 +1989,6 @@ switch(_operation) do {
             _logic setVariable ["initialAnalysisComplete", false];
             _logic setVariable ["analysisInProgress", false];
             _logic setVariable ["eventQueue", [] call ALIVE_fnc_hashCreate];
-
-            // Initialise paradrop completion tracker here at module startup.
-            // Doing it in a spawned watchdog creates an init-race: two concurrent
-            // paradrop events can both pass the isNil check before either writes
-            // the array, causing one to silently overwrite the other's init.
-            if (isNil "ALIVE_ML_paradropComplete") then { ALIVE_ML_paradropComplete = []; };
 
             _debug = [_logic, "debug"] call MAINCLASS;
             _forcePool = [_logic, "forcePool"] call MAINCLASS;
@@ -3781,59 +3756,12 @@ switch(_operation) do {
 
         }else{
 
-            _eventForceInfantry   = _eventForceMakeup select 0;
-            _eventForceMotorised  = _eventForceMakeup select 1;
+            _eventForceInfantry = _eventForceMakeup select 0;
+            _eventForceMotorised = _eventForceMakeup select 1;
             _eventForceMechanised = _eventForceMakeup select 2;
-            _eventForceArmour     = _eventForceMakeup select 3;
-            _eventForcePlane      = _eventForceMakeup select 4;
-            _eventForceHeli       = _eventForceMakeup select 5;
-
-            // -----------------------------------------------------------------
-            // FIX: Apply the same allow-checks and MAX_GROUPS_PER_REQUEST cap
-            // here in monitorEvent that LOGCOM_REQUEST applies at receipt time.
-            // Without this, AI-generated events bypass both guards: armour can
-            // arrive even when allowArmourReinforcement=false, and OPCOM can
-            // request unreasonably large reinforcements (tanks on parachutes
-            // incident: OPCOM sent multiple TankPlatoon groups that exceeded
-            // slingload capacity and fell from the air without helicopters).
-            // -----------------------------------------------------------------
-            private _monAllowInfantry   = [_logic, "allowInfantryReinforcement"]  call MAINCLASS;
-            private _monAllowMotorised  = [_logic, "allowMotorisedReinforcement"] call MAINCLASS;
-            private _monAllowMechanised = [_logic, "allowMechanisedReinforcement"] call MAINCLASS;
-            private _monAllowArmour     = [_logic, "allowArmourReinforcement"]    call MAINCLASS;
-            private _monAllowPlane      = [_logic, "allowPlaneReinforcement"]     call MAINCLASS;
-            private _monAllowHeli       = [_logic, "allowHeliReinforcement"]      call MAINCLASS;
-
-            if (!_monAllowInfantry)   then { _eventForceMakeup set [0, 0]; };
-            if (!_monAllowMotorised)  then { _eventForceMakeup set [1, 0]; };
-            if (!_monAllowMechanised) then { _eventForceMakeup set [2, 0]; };
-            if (!_monAllowArmour)     then { _eventForceMakeup set [3, 0]; };
-            if (!_monAllowPlane)      then { _eventForceMakeup set [4, 0]; };
-            if (!_monAllowHeli)       then { _eventForceMakeup set [5, 0]; };
-
-            // Cap each force type to MAX_GROUPS_PER_REQUEST
-            private _monCapApplied = false;
-            for "_monCapIdx" from 0 to ((count _eventForceMakeup) - 1) do {
-                private _monCapVal = _eventForceMakeup select _monCapIdx;
-                if (_monCapVal > MAX_GROUPS_PER_REQUEST) then {
-                    _eventForceMakeup set [_monCapIdx, MAX_GROUPS_PER_REQUEST];
-                    _monCapApplied = true;
-                };
-            };
-
-            // Re-read after allow + cap
-            _eventForceInfantry   = _eventForceMakeup select 0;
-            _eventForceMotorised  = _eventForceMakeup select 1;
-            _eventForceMechanised = _eventForceMakeup select 2;
-            _eventForceArmour     = _eventForceMakeup select 3;
-            _eventForcePlane      = _eventForceMakeup select 4;
-            _eventForceHeli       = _eventForceMakeup select 5;
-
-            if (_monCapApplied && _debug) then {
-                ["ML - monitorEvent: Force makeup capped to max %1 per type. Capped makeup: %2",
-                    MAX_GROUPS_PER_REQUEST, _eventForceMakeup] call ALiVE_fnc_dump;
-            };
-            // -----------------------------------------------------------------
+            _eventForceArmour = _eventForceMakeup select 3;
+            _eventForcePlane = _eventForceMakeup select 4;
+            _eventForceHeli = _eventForceMakeup select 5;
 
         };
 
@@ -4747,27 +4675,6 @@ switch(_operation) do {
 
                                             // _slingloadProfile call ALIVE_fnc_inspectHash;
 
-                                            // -----------------------------------------------------------------
-                                            // FIX: Pre-spawn objectType guard.
-                                            // Tanks and other non-slingloadable types (Tank, APC, Plane, Ship)
-                                            // must never enter the slingload path -- ALIVE_fnc_profileVehicle
-                                            // fires a _slingloadClass trap at attach time but by then both the
-                                            // heli and cargo profiles are already spawned in the air.  Catch
-                                            // unslingloadable objectTypes here and fall back to STANDARD before
-                                            // any profiles are created. This guards against mis-categorised
-                                            // faction configs (e.g. TankPlatoon groups returned by a Motorized
-                                            // config query) as well as deliberate armour-in-motorised cases.
-                                            // -----------------------------------------------------------------
-                                            private _objType = _slingLoadProfile select 2 select 6;
-                                            private _unslingloadableTypes = ["Tank", "APC", "Plane", "Ship"];
-                                            if (_objType in _unslingloadableTypes) exitWith {
-                                                if (_debug) then {
-                                                    ["ML - HELI_INSERT slingload: vehicle %1 objectType=%2 is not slingloadable. Falling back to STANDARD for event %3.",
-                                                        _x, _objType, _eventID] call ALiVE_fnc_dump;
-                                                };
-                                                _requiresStandardDelivery = true;
-                                            };
-
                                             _payloadWeight = [(_slingLoadProfile select 2 select 11)] call ALIVE_fnc_getObjectWeight;
 
                                             // Select helicopter that can slingload the vehicle
@@ -5326,13 +5233,9 @@ switch(_operation) do {
 
                             _position = _reinforcementPosition getPos [random(200), random(360)];
 
-                            // FIX: Armour is ground-only (STANDARD delivery). Never elevate
-                            // armour profiles to PARADROP_HEIGHT even when _paraDrop=true.
-                            // _paraDrop only signals that players are near the departure base;
-                            // setting z=PARADROP_HEIGHT on a tank profile with no helicopter
-                            // or parachute assigned is exactly what causes the falling-tanks
-                            // visual. Armour always spawns at ground level (z=0).
-                            _position set [2, 0];
+                            if(_paraDrop) then {
+                                _position set [2,PARADROP_HEIGHT];
+                            };
 
                             if!(surfaceIsWater _position) then {
 
@@ -5420,22 +5323,6 @@ switch(_operation) do {
                                     {
                                         if ([_x,"vehicle"] call CBA_fnc_find != -1) then {
                                             _slingLoadProfile = [ALiVE_ProfileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
-
-                                            // FIX: Pre-spawn objectType guard (mirrors motorised path).
-                                            // Mechanised groups can contain APCs/IFVs that look slingloadable
-                                            // by weight but hit the _slingloadClass trap at attach time.
-                                            // Catch them here and fall back to STANDARD before any profiles
-                                            // are spawned in the air.
-                                            private _mechObjType = _slingLoadProfile select 2 select 6;
-                                            private _mechUnslingloadable = ["Tank", "APC", "Plane", "Ship"];
-                                            if (_mechObjType in _mechUnslingloadable) exitWith {
-                                                if (_debug) then {
-                                                    ["ML - HELI_INSERT mechanised slingload: vehicle %1 objectType=%2 is not slingloadable. Mechanised groups will travel by ground. Event: %3.",
-                                                        _x, _mechObjType, _eventID] call ALiVE_fnc_dump;
-                                                };
-                                                _requiresStandardDelivery = true;
-                                            };
-
                                             _payloadWeight = [(_slingLoadProfile select 2 select 11)] call ALIVE_fnc_getObjectWeight;
                                             _vehicleClass = "";
                                             _currentDiff = 15000;
@@ -7512,7 +7399,7 @@ switch(_operation) do {
 
                 [_event, "finalDestination", _eventPosition getPos [random(DESTINATION_VARIANCE), random(360)]] call ALIVE_fnc_hashSet;
 
-                private _paradropHeight = PARADROP_HEIGHT; // passed to watchdog as _dropHeight; change here to override drop altitude
+                private _paradropHeight = PARADROP_HEIGHT;
 
                 {
                     private _dropWPPos = +_eventPosition;
@@ -9309,8 +9196,9 @@ switch(_operation) do {
             // Allow time for units to dismount and OPCOM to pick them up normally
             sleep 120;
 
-            private _checkInterval = 60;
-            private _maxChecks    = 5;
+            private _checkInterval   = 60;
+            private _maxChecks       = 5;
+            private _movementThreshold = 50; // metres - less than this = stalled
 
             for "_check" from 1 to _maxChecks do {
 

@@ -36,10 +36,333 @@ See Also:
 
 Author:
 Highhead
+Javen
 
-Peer reviewed:
-nil
 ---------------------------------------------------------------------------- */
+
+ALiVE_fnc_INS_getOpcomByObjective = {
+                params [["_objective",[]]];
+
+                if (_objective isEqualTo []) exitwith {nil};
+
+                private _opcomID = [_objective,"opcomID",""] call ALiVE_fnc_HashGet;
+                if (_opcomID == "") exitwith {nil};
+
+                private _opcom = nil;
+
+                {
+                    if (([_x,"opcomID",""] call ALiVE_fnc_HashGet) == _opcomID) exitwith {
+                        _opcom = _x;
+                    };
+                } foreach (missionNameSpace getVariable ["OPCOM_instances",[]]);
+
+                _opcom
+};
+
+ALiVE_fnc_INS_getHostilitySetting = {
+                params [["_objective",[]],["_key",""],["_default",0]];
+
+                private _opcom = [_objective] call ALiVE_fnc_INS_getOpcomByObjective;
+                if (isnil "_opcom") exitwith {_default};
+
+                [_opcom,_key,_default] call ALiVE_fnc_HashGet
+};
+
+ALiVE_fnc_INS_getNearestObjectiveByPosition = {
+                params [
+                    ["_pos",[],[[]]],
+                    ["_radius",2500,[0]],
+                    ["_friendlySide","",["", east]],
+                    ["_requiredControlType","",[""]]
+                ];
+
+                if (_pos isEqualTo []) exitwith {[]};
+
+                private _friendlySideText = "";
+                if (_friendlySide isEqualType east) then {
+                    _friendlySideText = [[_friendlySide] call ALiVE_fnc_sideObjectToNumber] call ALiVE_fnc_sideNumberToText;
+                } else {
+                    if (_friendlySide isEqualType "") then {
+                        _friendlySideText = toUpper _friendlySide;
+                        if (_friendlySideText == "RESISTANCE") then {_friendlySideText = "GUER"};
+                    };
+                };
+
+                private _requiredControlTypeText = toLower _requiredControlType;
+                private _nearestObjective = [];
+                private _closestDistance = _radius max 0;
+
+                {
+                    private _opcom = _x;
+                    private _controlType = toLower ([_opcom, "controltype", ""] call ALiVE_fnc_HashGet);
+                    private _sidesEnemy = [[_opcom, "sidesenemy", []] call ALiVE_fnc_HashGet] call ALiVE_fnc_INS_normalizeHostilitySides;
+
+                    if (
+                        (_requiredControlTypeText == "" || {_controlType == _requiredControlTypeText})
+                        && {(_friendlySideText == "") || {_friendlySideText in _sidesEnemy}}
+                    ) then {
+                        {
+                            private _center = [_x,"center",[]] call ALiVE_fnc_HashGet;
+                            if !(_center isEqualTo []) then {
+                                private _distance = _pos distance2D _center;
+                                if (_distance <= _closestDistance) then {
+                                    _closestDistance = _distance;
+                                    _nearestObjective = _x;
+                                };
+                            };
+                        } foreach ([_opcom, "objectives", []] call ALIVE_fnc_HashGet);
+                    };
+                } foreach (missionNameSpace getVariable ["OPCOM_instances",[]]);
+
+                _nearestObjective
+};
+ALiVE_fnc_INS_updateHostilityByPresence = {
+                params ["_timeTaken","_pos","_insurgentSides",["_baseShift",20],["_allSides",["EAST","WEST","GUER"]],["_objective",[]]];
+
+                _allSides = [_allSides] call ALiVE_fnc_INS_normalizeHostilitySides;
+                _insurgentSides = [_insurgentSides] call ALiVE_fnc_INS_normalizeHostilitySides;
+
+                if (count _insurgentSides == 0) exitwith {};
+
+                private _elapsed = (time - _timeTaken) max 0;
+                private _durationMultiplier = ((floor (_elapsed / 120)) max 1) min 4;
+                private _presenceMultiplier = ([_objective,"hostilityPresenceMultiplier",1] call ALiVE_fnc_INS_getHostilitySetting) max 0;
+                private _shift = (_baseShift * _presenceMultiplier) * _durationMultiplier;
+
+                // Sustained insurgent activity slowly normalizes support for the insurgency
+                // and makes the remaining combatant sides less welcome in the same area.
+                [_pos,_insurgentSides,-_shift] call ALiVE_fnc_updateSectorHostility;
+                [_pos,_allSides - _insurgentSides,_shift] call ALiVE_fnc_updateSectorHostility;
+};
+
+ALiVE_fnc_INS_normalizeHostilitySides = {
+                params [["_sides",[]],["_validSides",["EAST","WEST","GUER"]]];
+
+                if !(_sides isEqualType []) then {
+                    _sides = [_sides];
+                };
+
+                private _normalized = [];
+
+                {
+                    private _sideText = "";
+
+                    if (_x isEqualType east) then {
+                        _sideText = ([[_x] call ALiVE_fnc_sideObjectToNumber] call ALiVE_fnc_sideNumberToText);
+                    } else {
+                        if (_x isEqualType "") then {
+                            _sideText = toUpper _x;
+                            if (_sideText == "RESISTANCE") then {_sideText = "GUER"};
+                        };
+                    };
+
+                    if (_sideText in _validSides) then {
+                        _normalized pushBackUnique _sideText;
+                    };
+                } forEach _sides;
+
+                _normalized
+};
+
+ALiVE_fnc_INS_getHostilityPhase = {
+                params [["_hostility",0,[0]]];
+
+                private _phase = "Stabilize";
+
+                if (_hostility <= 0) then {
+                    _phase = "Consolidate";
+                } else {
+                    if (_hostility <= 25) then {
+                        _phase = "Build";
+                    } else {
+                        if (_hostility <= 65) then {
+                            _phase = "Engage";
+                        };
+                    };
+                };
+
+                _phase
+};
+
+ALiVE_fnc_INS_getHeartsAndMindsPressure = {
+                params [
+                    ["_pos", [], [[]]],
+                    ["_insurgentSide", "", ["", east]],
+                    ["_radius", 1200, [0]]
+                ];
+
+                if (
+                    _pos isEqualTo [] ||
+                    {isNil "ALIVE_clusterHandler"} ||
+                    {isNil "ALIVE_clustersCivSettlement"}
+                ) exitwith {[0, "Stabilize", ""]};
+
+                private _insurgentSideText = "";
+                if (_insurgentSide isEqualType east) then {
+                    _insurgentSideText = [[_insurgentSide] call ALiVE_fnc_sideObjectToNumber] call ALiVE_fnc_sideNumberToText;
+                } else {
+                    if (_insurgentSide isEqualType "") then {
+                        _insurgentSideText = toUpper _insurgentSide;
+                        if (_insurgentSideText == "RESISTANCE") then {_insurgentSideText = "GUER"};
+                    };
+                };
+
+                if !(_insurgentSideText in ["EAST","WEST","GUER"]) then {
+                    _insurgentSideText = "EAST";
+                };
+
+                private _cluster = nil;
+                private _closestDistance = _radius max 0;
+
+                {
+                    private _candidateCluster = [ALIVE_clusterHandler, "getCluster", _x] call ALIVE_fnc_clusterHandler;
+
+                    if !(isNil "_candidateCluster") then {
+                        private _center = [_candidateCluster, "center", []] call ALIVE_fnc_hashGet;
+
+                        if !(_center isEqualTo []) then {
+                            private _distance = _pos distance2D _center;
+
+                            if (_distance <= _closestDistance) then {
+                                _closestDistance = _distance;
+                                _cluster = _candidateCluster;
+                            };
+                        };
+                    };
+                } foreach (ALIVE_clustersCivSettlement select 1);
+
+                if (isNil "_cluster") exitwith {[0, "Stabilize", ""]};
+
+                private _heartsAndMinds = if ("heartsAndMinds" in (_cluster select 1)) then {
+                    [_cluster, "heartsAndMinds", []] call ALIVE_fnc_hashGet
+                } else {
+                    []
+                };
+
+                private _hostilityHash = [_cluster, "hostility", []] call ALIVE_fnc_hashGet;
+                private _bestPressure = 0;
+                private _bestPhase = "Stabilize";
+
+                {
+                    if (_x != _insurgentSideText) then {
+                        private _hostility = [_hostilityHash, _x, 0] call ALIVE_fnc_hashGet;
+                                                private _phase = [_hostility] call ALiVE_fnc_INS_getHostilityPhase;
+                        private _support = 0;
+                        private _supportState = [];
+
+                        if !(_heartsAndMinds isEqualTo []) then {
+                            if (_x in (_heartsAndMinds select 1)) then {
+                                _supportState = [_heartsAndMinds, _x, []] call ALIVE_fnc_hashGet;
+                                if !(_supportState isEqualTo []) then {
+                                    _phase = [_supportState, "phase", _phase] call ALIVE_fnc_hashGet;
+                                    if (missionNamespace getVariable ["ALIVE_civicStateEnabled", false]) then {
+                                        private _insurgentPressure = [_supportState, "insurgentPressure", 100] call ALIVE_fnc_hashGet;
+                                        _support = 100 - ((_insurgentPressure max 0) min 100);
+                                    } else {
+                                        _support = [_supportState, "support", 0] call ALIVE_fnc_hashGet;
+                                    };
+                                };
+                            };
+                        };
+
+                        _support = (_support max 0) min 100;
+
+                        private _phaseWeight = switch (_phase) do {
+                            case "Consolidate": {40};
+                            case "Build": {28};
+                            case "Engage": {14};
+                            default {0};
+                        };
+
+                        private _pressure = ((_support * 0.6) + _phaseWeight) min 100;
+
+                        if (_pressure > _bestPressure) then {
+                            _bestPressure = _pressure;
+                            _bestPhase = _phase;
+                        };
+                    };
+                } foreach ["EAST","WEST","GUER"];
+
+                [round _bestPressure, _bestPhase, [_cluster, "clusterID", ""] call ALIVE_fnc_hashGet]
+};
+ALiVE_fnc_INS_updateHostilityByInstallations = {
+                params [
+                    "_objective",
+                    "_pos",
+                    "_insurgentSides",
+                    ["_installations",[]],
+                    ["_currentHostility",0],
+                    ["_interval",600],
+                    ["_allSides",["EAST","WEST","GUER"]]
+                ];
+
+                _allSides = [_allSides] call ALiVE_fnc_INS_normalizeHostilitySides;
+                _insurgentSides = [_insurgentSides] call ALiVE_fnc_INS_normalizeHostilitySides;
+
+                if (count _insurgentSides == 0) exitwith {0};
+
+                private _installationMultiplier = ([_objective,"hostilityInstallationMultiplier",1] call ALiVE_fnc_INS_getHostilitySetting) max 0;
+                private _effectiveInterval = ([_objective,"hostilityInstallationInterval",_interval] call ALiVE_fnc_INS_getHostilitySetting) max 0;
+
+                private _covertWeight = 0;
+                private _overtWeight = 0;
+
+                {
+                    _x params [["_type",""],["_installation",objNull]];
+
+                    if (alive _installation) then {
+                        switch (toLower _type) do {
+                            case "factory": {_covertWeight = _covertWeight + 2;};
+                            case "ied";
+                            case "sabotage": {_covertWeight = _covertWeight + 1;};
+                            case "hq": {_overtWeight = _overtWeight + 2;};
+                            case "depot";
+                            case "roadblocks": {_overtWeight = _overtWeight + 1;};
+                        };
+                    };
+                } forEach _installations;
+
+                if ((_covertWeight + _overtWeight) <= 0) exitwith {
+                    [_objective,"presenceHostilityTick"] call ALiVE_fnc_HashRem;
+                    0
+                };
+
+                private _lastUpdate = [_objective,"presenceHostilityTick",-1] call ALiVE_fnc_HashGet;
+                if (_lastUpdate < 0) exitwith {
+                    [_objective,"presenceHostilityTick",time] call ALiVE_fnc_HashSet;
+                    0
+                };
+
+                if (time - _lastUpdate < _effectiveInterval) exitwith {0};
+
+                [_objective,"presenceHostilityTick",time] call ALiVE_fnc_HashSet;
+
+                                private _supportWeight = if (_currentHostility > 0) then {
+                    // Hostile populations only soften through lower-signature insurgent activity.
+                    (_covertWeight * 2) min 4
+                } else {
+                    (_covertWeight + _overtWeight) min 4
+                };
+
+                private _civicInstallationMultiplier = ([_objective,"civicInstallationMultiplier",1] call ALiVE_fnc_INS_getHostilitySetting) max 0;
+                if (_civicInstallationMultiplier > 0) then {
+                    private _pressureSide = if (count _insurgentSides > 0) then {_insurgentSides select 0} else {"EAST"};
+                    private _hmPressureData = [_pos,_pressureSide,1200] call ALiVE_fnc_INS_getHeartsAndMindsPressure;
+                    _hmPressureData params [["_hmPressure",0]];
+                    private _civicDampening = ((_hmPressure / 100) * (0.8 * _civicInstallationMultiplier)) min 0.95;
+                    _supportWeight = round (_supportWeight * ((1 - _civicDampening) max 0));
+                };
+
+                if (_supportWeight <= 0) exitwith {0};
+
+                private _insurgentShift = -(_supportWeight * _installationMultiplier);
+                private _otherShift = ((ceil (_supportWeight / 2)) min 2) * _installationMultiplier;
+
+                [_pos,_insurgentSides,_insurgentShift] call ALiVE_fnc_updateSectorHostility;
+                [_pos,_allSides - _insurgentSides,_otherShift] call ALiVE_fnc_updateSectorHostility;
+
+                _insurgentShift
+};
 
 ALiVE_fnc_INS_assault = {
                 private ["_timeTaken","_pos","_id","_size","_faction","_sides","_agents","_building","_objective","_event","_eventID"];
@@ -71,8 +394,7 @@ ALiVE_fnc_INS_assault = {
                 _event = ['OPCOM_CAPTURE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos,_allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_ambush = {
@@ -121,8 +443,7 @@ ALiVE_fnc_INS_ambush = {
                 _event = ['OPCOM_RECON',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos,_allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 
                 // Wait 15 minutes for any enemy vehicles to pass before reassigning
                 _timeTaken = time; waituntil {time - _timeTaken > 900};
@@ -172,8 +493,7 @@ ALiVE_fnc_INS_retreat = {
                 [_objective,"actionsFulfilled",[]] call ALiVE_fnc_HashSet;
 
                 // Reduce hostility level after retreat
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 
                 _event = ['OPCOM_DEFEND',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
@@ -195,8 +515,10 @@ ALiVE_fnc_INS_factory = {
                 _allSides = ["EAST","WEST","GUER"];
                 _objective = [[],"getobjectivebyid",_id] call ALiVE_fnc_OPCOM;
 
-                // Convert to data that can be persistet
-                _factory = [[],"convertObject",_factory] call ALiVE_fnc_OPCOM;
+                // Startup can hand us either a persisted [pos, class] ref or the live building object.
+                if !(_factory isEqualType objNull) then {
+                    _factory = [[],"convertObject",_factory] call ALiVE_fnc_OPCOM;
+                };
 
                 // Convert CQB modules
                 {_CQB set [_foreachIndex,[[],"convertObject",_x] call ALiVE_fnc_OPCOM]} foreach _CQB;
@@ -240,8 +562,7 @@ ALiVE_fnc_INS_factory = {
                 _event = ['OPCOM_TERRORIZE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_ied = {
@@ -300,8 +621,7 @@ ALiVE_fnc_INS_ied = {
                 _event = ['OPCOM_TERRORIZE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_suicide = {
@@ -356,8 +676,7 @@ ALiVE_fnc_INS_suicide = {
                 _event = ['OPCOM_TERRORIZE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_sabotage = {
@@ -399,11 +718,118 @@ ALiVE_fnc_INS_sabotage = {
                 _event = ['OPCOM_TERRORIZE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 
                 // Wait 15 minutes for Sabotage to happen
                 _timeTaken = time; waituntil {time - _timeTaken > 900};
+};
+
+ALiVE_fnc_INS_getRoadblockActionObject = {
+                params [["_roadblockSource", objNull, [objNull, []]]];
+
+                private _roadblockPos = if (_roadblockSource isEqualType objNull) then {
+                    getPosATL _roadblockSource
+                } else {
+                    _roadblockSource
+                };
+
+                private _actionObject = objNull;
+                private _barGates = nearestObjects [_roadblockPos, ["Land_BarGate_F"], 10];
+
+                if !(_barGates isEqualTo []) then {
+                    _actionObject = _barGates select 0;
+                } else {
+                    private _helpers = (nearestObjects [_roadblockPos, ["RoadCone_L_F", "Box_FIA_Wps_F"], 12]) select {
+                        _x getVariable [QGVAR(ROADBLOCK_HELPER), false]
+                    };
+                    private _coneHelpers = _helpers select {typeOf _x == "RoadCone_L_F"};
+
+                    if !(_coneHelpers isEqualTo []) then {
+                        _actionObject = _coneHelpers deleteAt 0;
+                    };
+
+                    {
+                        deleteVehicle _x;
+                    } forEach (_helpers - [_actionObject]);
+
+                    if (isNull _actionObject) then {
+                        private _nearRoads = _roadblockPos nearRoads 10;
+                        private _anchorPos = +_roadblockPos;
+                        private _direction = 0;
+
+                        if !(_nearRoads isEqualTo []) then {
+                            private _road = _nearRoads select 0;
+                            private _connectedRoads = roadsConnectedTo _road;
+
+                            if !(_connectedRoads isEqualTo []) then {
+                                _direction = _road getDir (_connectedRoads select 0);
+                            };
+
+                            _anchorPos = getPosATL _road;
+                        };
+
+                        _actionObject = createVehicle ["RoadCone_L_F", _anchorPos, [], 0, "CAN_COLLIDE"];
+                        _actionObject allowDamage false;
+                        _actionObject enableSimulationGlobal false;
+                        _actionObject setDir _direction;
+                        _actionObject setPosATL (_anchorPos getPos [6, _direction + 90]);
+                        _actionObject setVectorUp (surfaceNormal (getPosWorld _actionObject));
+                        _actionObject setVariable [QGVAR(ROADBLOCK_HELPER), true, true];
+                    };
+                };
+
+                _actionObject
+};
+
+ALiVE_fnc_INS_addRoadblockHoldAction = {
+                params [["_roadblockSource", objNull, [objNull, []]]];
+
+                private _actionObject = [_roadblockSource] call ALiVE_fnc_INS_getRoadblockActionObject;
+                if (isNull _actionObject) exitwith {};
+
+                if (_actionObject getVariable [QGVAR(ROADBLOCK_DISABLED), false]) exitwith {};
+
+                private _chargePos = if (_roadblockSource isEqualType objNull) then {
+                    getPosATL _roadblockSource
+                } else {
+                    _roadblockSource
+                };
+
+                private _charge = createVehicle ["ALIVE_DemoCharge_Remote_Ammo", _chargePos, [], 0, "CAN_COLLIDE"];
+                _charge hideObjectGlobal true;
+                _charge allowDamage false;
+
+                [
+                    _actionObject,
+                    "disable the roadblock!",
+                    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
+                    "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
+                    "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
+                    "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
+                    {},
+                    {},
+                    {
+                        params ["_target", "_caller", "_ID", "_arguments"];
+
+                        private _charge = _arguments select 0;
+
+                        _target setVariable [QGVAR(ROADBLOCK_DISABLED), true, true];
+                        [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
+
+                        [getPosATL _charge, 30] remoteExec ["ALiVE_fnc_RemoveComposition", 2];
+
+                        ["Nice Job", format ["%1 disabled the roadblock at grid %2!", name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle", side (group _caller)];
+
+                        if (_target getVariable [QGVAR(ROADBLOCK_HELPER), false]) then {
+                            deleteVehicle _target;
+                        };
+
+                        deleteVehicle _charge;
+                    },
+                    {},
+                    [_charge],
+                    15
+                ] remoteExec ["BIS_fnc_holdActionAdd", 0, _actionObject];
 };
 
 ALiVE_fnc_INS_roadblocks = {
@@ -447,67 +873,7 @@ ALiVE_fnc_INS_roadblocks = {
 
                     // Create disable action on newly created roadblocks
                     {
-                        private ["_charge","_actionObjects","_actionObject","_nearRoads","_road","_roadConnectedTo","_connectedRoad","_direction","_roadSidePos"];
-                        _charge = createVehicle ["ALIVE_DemoCharge_Remote_Ammo", position _x, [], 0, "CAN_COLLIDE"];
-                        _charge hideObjectGlobal true;
-                        _charge allowDamage false;
-
-                        // Check if bargate is withing spawned composition
-                        _actionObjects = nearestObjects [_x, ["Land_BarGate_F"], 10];
-
-                        // Check if bargate was found. If not we'll spawn a crate.
-                        if (count _actionObjects > 0) then {
-                            
-                            // Select the bargate.
-                            _actionObject = _actionObjects select 0;
-                        } else {
-                            // Check for roads near composition creation position
-                           _nearRoads = position _x nearRoads 10;
-
-                            // Check if near roads were found. If they were, we get direction.
-                            if(count _nearRoads > 0) then {
-                                _road = _nearRoads select 0;
-                                _roadConnectedTo = roadsConnectedTo _road;
-                                _connectedRoad = _roadConnectedTo select 0;
-                                if!(isNil '_connectedRoad') then {
-                                    _direction = _road getRelDir _connectedRoad;
-                                };
-                            };
-
-                            // Create the crate and set its position and move it sideways to be on the roadside. (Works Okay for now)
-                            _actionObject = createVehicle ["Box_FIA_Wps_F", position _road, [], 0, "CAN_COLLIDE"];
-                            _actionObject allowDamage false;
-                            _actionObject setDir _direction;
-                            _objectLocation = getPos _actionObject;
-                            _roadSidePos = [(_objectLocation select 0) - 6, (_objectLocation select 1) + 6];
-                            _actionObject setPos _roadSidePos;
-                            _actionObject setVectorUp [0,0,1];
-                        };
-
-                        [
-                            _actionObject,
-                            "disable the roadblock!",
-                            "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-                            "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-                            "_this distance2D _target < 3",
-                            "_caller distance2D _target < 3",
-                            {},
-                            {},
-                            {
-                                params ["_target", "_caller", "_ID", "_arguments"];
-
-                                private _charge = _arguments select 0;
-
-                                [getpos _charge,30] remoteExec  ["ALiVE_fnc_RemoveComposition",2];
-
-                                ["Nice Job", format ["%1 disabled the roadblock at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
-
-                                deletevehicle _charge;
-                            },
-                            {},
-                            [_charge],
-                            15
-                        ] remoteExec ["BIS_fnc_holdActionAdd", 0,true];
+                        [_x] call ALiVE_fnc_INS_addRoadblockHoldAction;
                     } foreach _roads;
                 };
 
@@ -517,8 +883,7 @@ ALiVE_fnc_INS_roadblocks = {
                 _event = ['OPCOM_RESERVE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos, _sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos, _allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_depot = {
@@ -540,8 +905,10 @@ ALiVE_fnc_INS_depot = {
                 // Store center position
                 _center = _pos;
 
-                // Convert to data that can be persistet
-                _depot = [[],"convertObject",_depot] call ALiVE_fnc_OPCOM;
+                // Startup can hand us either a persisted [pos, class] ref or the live building object.
+                if !(_depot isEqualType objNull) then {
+                    _depot = [[],"convertObject",_depot] call ALiVE_fnc_OPCOM;
+                };
 
                 // Convert CQB modules
                 {_CQB set [_foreachIndex,[[],"convertObject",_x] call ALiVE_fnc_OPCOM]} foreach _CQB;
@@ -576,12 +943,11 @@ ALiVE_fnc_INS_depot = {
                 _event = ['OPCOM_RESERVE',[_side,_objective],"OPCOM"] call ALIVE_fnc_event;
                 _eventID = [ALIVE_eventLog, "addEvent",_event] call ALIVE_fnc_eventLog;
 
-                [_pos,_sides, 20] call ALiVE_fnc_updateSectorHostility;
-                [_pos,_allSides - _sides, -20] call ALiVE_fnc_updateSectorHostility;
+                [_timeTaken,_pos,[_side],20,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
 };
 
 ALiVE_fnc_INS_recruit = {
-                private ["_timeTaken","_pos","_id","_size","_faction","_sides","_agents","_HQ","_CQB","_objective"];
+                private ["_timeTaken","_pos","_id","_size","_faction","_sides","_agents","_HQ","_CQB","_objective","_center","_opcom","_forceLimit","_recruitCycleMin","_recruitCycleMax","_recruitAttemptLimit","_recruitSuccessChance","_opcomFactions","_civicRecruitmentMultiplier"];
 
                 _timeTaken = _this select 0;
                 _pos = _this select 1;
@@ -595,12 +961,35 @@ ALiVE_fnc_INS_recruit = {
                 _side = _faction call ALiVE_fnc_factionSide;
                 _allSides = ["EAST","WEST","GUER"];
                 _objective = [[],"getobjectivebyid",_id] call ALiVE_fnc_OPCOM;
+                _opcom = [_objective] call ALiVE_fnc_INS_getOpcomByObjective;
+                _forceLimit = -1;
+                _recruitCycleMin = 1800;
+                _recruitCycleMax = 3600;
+                _recruitAttemptLimit = 0;
+                _recruitSuccessChance = 0.5;
+                _opcomFactions = [_faction];
+                _civicRecruitmentMultiplier = 1;
+
+                if !(isnil "_opcom") then {
+                    _forceLimit = floor ([_opcom,"asymForceLimit",-1] call ALiVE_fnc_HashGet);
+                    _recruitCycleMin = (([_opcom,"recruitCycleMin",30] call ALiVE_fnc_HashGet) max 0) * 60;
+                    _recruitCycleMax = (([_opcom,"recruitCycleMax",60] call ALiVE_fnc_HashGet) max 0) * 60;
+                    _recruitAttemptLimit = floor ([_opcom,"recruitAttemptLimit",0] call ALiVE_fnc_HashGet);
+                    _recruitAttemptLimit = _recruitAttemptLimit max -1;
+                    _recruitSuccessChance = ((([_opcom,"recruitSuccessChance",50] call ALiVE_fnc_HashGet) max 0) min 100) / 100;
+                    _opcomFactions = [_opcom,"factions",[_faction]] call ALiVE_fnc_HashGet;
+                    _civicRecruitmentMultiplier = ([_opcom,"civicRecruitmentMultiplier",1] call ALiVE_fnc_HashGet) max 0;
+                };
+
+                if (_recruitCycleMax < _recruitCycleMin) then {_recruitCycleMax = _recruitCycleMin};
 
                 // Store center position
                 _center = _pos;
 
-                // Convert to data that can be persistet
-                _HQ = [[],"convertObject",_HQ] call ALiVE_fnc_OPCOM;
+                // Startup can hand us either a persisted [pos, class] ref or the live building object.
+                if !(_HQ isEqualType objNull) then {
+                    _HQ = [[],"convertObject",_HQ] call ALiVE_fnc_OPCOM;
+                };
 
                 // Convert CQB modules
                 {_CQB set [_foreachIndex,[[],"convertObject",_x] call ALiVE_fnc_OPCOM]} foreach _CQB;
@@ -638,40 +1027,80 @@ ALiVE_fnc_INS_recruit = {
                 // Add CQB
                 [_pos,_size,_CQB] call ALiVE_fnc_addCQBpositions;
 
-                // Recruit 5 times
-                [_pos,_size,_id,_faction,_HQ,_sides,_agents] spawn {
-                    private ["_pos","_size","_id","_faction","_targetBuilding","_sides","_agents","_created"];
+                // Run recruitment attempts while the HQ survives.
+                [_timeTaken,_pos,_size,_id,_faction,_HQ,_sides,_agents,_forceLimit,_recruitCycleMin,_recruitCycleMax,_recruitAttemptLimit,_recruitSuccessChance,_opcomFactions,_civicRecruitmentMultiplier,_side,_objective] spawn {
+                    private ["_timeTaken","_pos","_size","_id","_faction","_targetBuilding","_sides","_agents","_forceLimit","_recruitCycleMin","_recruitCycleMax","_recruitAttemptLimit","_recruitSuccessChance","_opcomFactions","_civicRecruitmentMultiplier","_currentForce","_attemptsRemaining","_side","_objective"];
 
-                    _pos = _this select 0;
-                    _size = _this select 1;
-                    _id = _this select 2;
-                    _faction = _this select 3;
-                    _HQ = _this select 4;
-                    _sides = _this select 5;
-                    _agents = _this select 6;
+                    _timeTaken = _this select 0;
+                    _pos = _this select 1;
+                    _size = _this select 2;
+                    _id = _this select 3;
+                    _faction = _this select 4;
+                    _HQ = _this select 5;
+                    _sides = _this select 6;
+                    _agents = _this select 7;
+                    _forceLimit = _this select 8;
+                    _recruitCycleMin = _this select 9;
+                    _recruitCycleMax = _this select 10;
+                    _recruitAttemptLimit = _this select 11;
+                    _recruitSuccessChance = _this select 12;
+                    _opcomFactions = _this select 13;
+                    _civicRecruitmentMultiplier = _this select 14;
+                    _side = _this select 15;
+                    _objective = _this select 16;
                     _allSides = ["EAST","WEST","GUER"];
 
-                    _created = 0;
+                    _attemptsRemaining = if (_recruitAttemptLimit == 0) then {count _agents} else {_recruitAttemptLimit};
 
-                    for "_i" from 1 to (count _agents) do {
+                    while {alive _HQ && {_attemptsRemaining != 0}} do {
 
-                        // Delay 30-60 mins before a recruitment takes place.
-                        sleep (1800 + random 1800);
+                        private _hmPressureData = [_pos,_side,(_size + 600) max 900] call ALiVE_fnc_INS_getHeartsAndMindsPressure;
+                        _hmPressureData params [["_hmPressure",0],["_hmPhase","Stabilize"]];
 
-                        // Only recruit if there is an HQ existing and up to 5 groups at max to not spam the map
-                        if (!alive _HQ || {_created >= 5}) exitwith {};
+                        private _effectivePressure = ((_hmPressure * _civicRecruitmentMultiplier) max 0) min 100;
+                        private _delayMultiplier = 1 + (0.01 * _effectivePressure);
+                        private _adjustedCycleMin = _recruitCycleMin * _delayMultiplier;
+                        private _adjustedCycleMax = _recruitCycleMax * _delayMultiplier;
 
-                        // 50/50 chance the agent turns into insurgents
-                        if (random 1 < 0.5) then {
-	                        _group = ["Infantry",_faction] call ALIVE_fnc_configGetRandomGroup;
-	                        _recruits = [_group, [_pos,10,_size,1,0,0,0,[],[_pos]] call BIS_fnc_findSafePos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
-	                        {[_x, "setActiveCommand", ["ALIVE_fnc_ambientMovement","spawn",[_size + 200,"SAFE",[0,0,0]]]] call ALIVE_fnc_profileEntity} foreach _recruits;
+                        // Delay between recruitment attempts.
+                        sleep (_adjustedCycleMin + random ((_adjustedCycleMax - _adjustedCycleMin) max 0));
 
-	                        [_pos,_sides, 10] call ALiVE_fnc_updateSectorHostility;
-	                        [_pos,_allSides - _sides, -10] call ALiVE_fnc_updateSectorHostility;
+                        // Only recruit while the HQ still exists.
+                        if (!alive _HQ) exitwith {};
 
-	                        _created = _created + 1;
-                         };
+                        // Positive values are finite attempt counts, negative values are unlimited.
+                        if (_attemptsRemaining > 0) then {
+                            _attemptsRemaining = _attemptsRemaining - 1;
+                        };
+
+                        _currentForce = -1;
+                        if (_forceLimit > -1 && {!isnil "ALIVE_profileHandler"}) then {
+                            _currentForce = 0;
+                            {
+                                _currentForce = _currentForce + count ([ALIVE_profileHandler, "getProfilesByFaction",_x] call ALIVE_fnc_profileHandler);
+                            } foreach _opcomFactions;
+                        };
+
+                        if !(_forceLimit > -1 && {_currentForce >= _forceLimit}) then {
+                            private _phaseChanceMultiplier = switch (_hmPhase) do {
+                                case "Consolidate": {0.35};
+                                case "Build": {0.5};
+                                case "Engage": {0.75};
+                                default {1};
+                            };
+                            private _pressureChanceMultiplier = (1 - (0.007 * _effectivePressure)) max 0.2;
+                            private _effectiveRecruitChance = (_recruitSuccessChance * _phaseChanceMultiplier * _pressureChanceMultiplier) min 1;
+
+                            // Use the configured chance for a successful recruitment spawn.
+                            if (random 1 < _effectiveRecruitChance) then {
+	                            _group = ["Infantry",_faction] call ALIVE_fnc_configGetRandomGroup;
+	                            _recruits = [_group, [_pos,10,_size,1,0,0,0,[],[_pos]] call BIS_fnc_findSafePos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+	                            {[_x, "setActiveCommand", ["ALIVE_fnc_ambientMovement","spawn",[_size + 200,"SAFE",[0,0,0]]]] call ALIVE_fnc_profileEntity} foreach _recruits;
+
+	                            [_timeTaken,_pos,[_side],10,_allSides,_objective] call ALiVE_fnc_INS_updateHostilityByPresence;
+
+                            };
+                        };
                     };
                 };
 
@@ -802,14 +1231,15 @@ ALiVE_fnc_INS_spawnIEDfactory = {
         "disable the IED factory!",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {isnil {_this getvariable 'ALiVE_MIL_OPCOM_FACTORY_DISABLED'}}",
-        "_caller distance2D _target < 3",
+        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_FACTORY_DISABLED', false])}",
+        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_FACTORY_DISABLED', false])}",
         {},
         {},
         {
             params ["_target", "_caller", "_ID", "_arguments"];
 
             _target setVariable [QGVAR(FACTORY_DISABLED),true,true];
+            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
 
             [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
 
@@ -818,7 +1248,7 @@ ALiVE_fnc_INS_spawnIEDfactory = {
         {},
         [],
         10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0, true];
+    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
 
     [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
 };
@@ -839,14 +1269,15 @@ ALiVE_fnc_INS_spawnHQ = {
         "disable the Recruitment HQ!",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {isnil {_this getvariable 'ALiVE_MIL_OPCOM_HQ_DISABLED'}}",
-        "_caller distance2D _target < 3",
+        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_HQ_DISABLED', false])}",
+        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_HQ_DISABLED', false])}",
         {},
         {},
         {
             params ["_target", "_caller", "_ID", "_arguments"];
 
             _target setVariable [QGVAR(HQ_DISABLED),true,true];
+            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
             [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
 
             ["Congratulations", format ["%1 disabled the Recruitment HQ at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
@@ -854,7 +1285,7 @@ ALiVE_fnc_INS_spawnHQ = {
         {},
         [],
         10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0,true];
+    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
 
     [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
     [_building,true,true,false] call ALiVE_fnc_spawnFurniture;
@@ -876,14 +1307,15 @@ ALiVE_fnc_INS_spawnDepot = {
         "disable the weapons depot!",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
         "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {isnil {_this getvariable 'ALiVE_MIL_OPCOM_DEPOT_DISABLED'}}",
-        "_caller distance2D _target < 3",
+        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_DEPOT_DISABLED', false])}",
+        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_DEPOT_DISABLED', false])}",
         {},
         {},
         {
             params ["_target", "_caller", "_ID", "_arguments"];
 
             _target setVariable [QGVAR(DEPOT_DISABLED),true,true];
+            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
             [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
 
             ["Good work", format ["%1 disabled the weapons depot at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
@@ -891,7 +1323,7 @@ ALiVE_fnc_INS_spawnDepot = {
         {},
         [],
         10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0,true];
+    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
 
     [_building,true,false,true] call ALiVE_fnc_spawnFurniture;
 };
@@ -970,11 +1402,11 @@ ALIVE_fnc_INS_buildingKilledEH = {
     } foreach OPCOM_instances;
 
     if !(isnil "_opcom") then {
-        _enemy = [_opcom,"sidesenemy",[]] call ALiVE_fnc_HashGet;
-        _friendly = [_opcom,"sidesfriendly",[]] call ALiVE_fnc_HashGet;
+        private _opcomSide = [_opcom,"side",""] call ALiVE_fnc_HashGet;
+        private _allSides = ["EAST","WEST","GUER"];
 
-        [_pos,_friendly, 50] call ALiVE_fnc_updateSectorHostility;
-        [_pos,_enemy, -50] call ALiVE_fnc_updateSectorHostility;
+        [_pos,[_opcomSide], 50] call ALiVE_fnc_updateSectorHostility;
+        [_pos,_allSides - [_opcomSide], -50] call ALiVE_fnc_updateSectorHostility;
     };
 };
 
@@ -1039,4 +1471,3 @@ ALiVE_fnc_INS_filterObjectiveBuildings = {
 
     _buildings;
 };
-
