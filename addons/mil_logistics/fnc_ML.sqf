@@ -10131,6 +10131,37 @@ switch(_operation) do {
                             [_pilotProf, "spawnType", []] call ALIVE_fnc_hashSet;
                         };
                     };
+                    // Physically release the sling on the live heli object.
+                    // The profile is virtual (_active=false) but the heli is still
+                    // physically spawned due to preventDespawn. Without this the truck
+                    // remains attached and the delivery watchdog never sees slungAttached=false.
+                    private _heliObjInactive = _vehicleProfile select 2 select 10;
+                    if (!isNull _heliObjInactive && alive _heliObjInactive) then {
+                        private _slungObjInactive = getSlingLoad _heliObjInactive;
+                        if (!isNull _slungObjInactive) then {
+                            // Attach parachute if truck is still at altitude
+                            private _truckAGL = (getPosATL _slungObjInactive) select 2;
+                            if (_truckAGL > 5) then {
+                                private _para = createVehicle ["B_Parachute_02_F", getPosATL _slungObjInactive, [], 0, "FLY"];
+                                _para setPosASL (getPosASL _slungObjInactive);
+                                _para setVelocity (velocity _heliObjInactive);
+                                _slungObjInactive attachTo [_para, [0,0,0]];
+                                [_para, _slungObjInactive] spawn {
+                                    private _p = _this select 0; private _v = _this select 1;
+                                    waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                    detach _v; deleteVehicle _p;
+                                };
+                            };
+                            _heliObjInactive setSlingLoad objNull;
+                        };
+                        // Issue RTB via flyInHeight + move toward departure origin
+                        // so the heli climbs and departs rather than hovering after release.
+                        _heliObjInactive flyInHeight 150;
+                        private _rtbWP = [_vehicleProfile, "despawnPosition", getPos _heliObjInactive] call ALIVE_fnc_hashGet;
+                        _heliObjInactive move _rtbWP;
+                        ["ML - unloadTransportHelicopter: Inactive PAYLOAD - released sling from %1, RTB to %2",
+                            _heliObjInactive, _rtbWP] call ALiVE_fnc_dump;
+                    };
 
                 };
 
