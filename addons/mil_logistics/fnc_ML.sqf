@@ -6054,27 +6054,25 @@ switch(_operation) do {
                                 };
                             };
 
-                    // Slingload watchdog signal: when the watchdog reaches the
-                    // destination it sets alive_ml_sling_ready on the entity profile hash.
-                    // Checked OUTSIDE the _heliActive guard so it fires even when no
-                    // players are near enough to keep the heli spawned. The heli is
-                    // physically present anyway (preventDespawn), so unloadTransportHelicopter
-                    // must run regardless of player proximity.
-                    private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
-                    if (!_completed && _slingReady) then {
-                        private _heliObjSR = _profile select 2 select 10;
-                        private _alreadyActive = if (!isNull _heliObjSR) then {
-                            _heliObjSR getVariable ["alive_ml_sling_unload_active", false]
-                        } else { false };
-                        if (!_alreadyActive) then {
-                            _completed = true;
-                            // Clear the flag immediately to prevent duplicate calls on
-                            // subsequent monitor loop cycles before the profile is destroyed.
-                            [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
-                            private _heliActiveSR = _profile select 2 select 1;
-                            ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
-                                _x, _heliActiveSR, isNull _heliObjSR] call ALiVE_fnc_dump;
-                                    };
+                            // Slingload watchdog signal: when the watchdog reaches the
+                            // destination it sets alive_ml_sling_ready on the entity profile hash.
+                            // Checked OUTSIDE the _heliActive guard so it fires even when no
+                            // players are near enough to keep the heli spawned. The heli is
+                            // physically present anyway (preventDespawn), so unloadTransportHelicopter
+                            // must run regardless of player proximity.
+                            private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
+                            if (!_completed && _slingReady) then {
+                                private _heliObjSR = _profile select 2 select 10;
+                                private _alreadyActive = if (!isNull _heliObjSR) then {
+                                    _heliObjSR getVariable ["alive_ml_sling_unload_active", false]
+                                } else { false };
+                                if (!_alreadyActive) then {
+                                    _completed = true;
+                                    // Clear the flag immediately to prevent duplicate calls on
+                                    // subsequent monitor loop cycles before the profile is destroyed.
+                                    [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                                    ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
+                                        _x, (_profile select 2 select 1), isNull _heliObjSR] call ALiVE_fnc_dump;
                                 };
                             };
 
