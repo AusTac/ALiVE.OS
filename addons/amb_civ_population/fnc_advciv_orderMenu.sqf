@@ -25,11 +25,13 @@ Peer Reviewed:
 params [["_unit", objNull, [objNull]]];
 
 if (isNull _unit || {!alive _unit}) exitWith {};
+if (_unit getVariable ["ALiVE_advciv_blacklist", false]) exitWith {};
 if (_unit getVariable ["ALiVE_advciv_orderMenuAdded", false]) exitWith {};   // Don't double-add
 
 _unit setVariable ["ALiVE_advciv_orderMenuAdded", true];
 
 private _range = ALiVE_advciv_orderMenuRange;
+private _baseCondition = format ["alive _target && !(_target getVariable ['ALiVE_advciv_blacklist', false]) && _this distance _target < %1", _range];
 
 // --- FOLLOW ME ---
 _unit addAction [
@@ -43,7 +45,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -59,7 +61,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -75,7 +77,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -91,7 +93,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -107,7 +109,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -123,7 +125,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -139,7 +141,7 @@ _unit addAction [
     true,
     true,
     "",
-    format ["alive _target && _this distance _target < %1", _range],
+    _baseCondition,
     _range
 ];
 
@@ -176,7 +178,7 @@ _unit addAction [
     "",
     // Condition: visible only when a qualifying vehicle is actually within range
     format [
-        "alive _target && {_this distance _target < %1} && {
+        "alive _target && {!(_target getVariable ['ALiVE_advciv_blacklist', false])} && {_this distance _target < %1} && {
             private _v = nearestObjects [_target, ['Car','Truck','Motorcycle','Helicopter','Plane','Ship'], 15];
             _v = _v select { alive _x && {canMove _x} && {locked _x < 2} && {isNull driver _x} && {speed _x < 1} && {fuel _x > 0} };
             count _v > 0
@@ -215,7 +217,7 @@ if (!isNil "ALiVE_civInteractHandler") then {
         true,
         true,
         "",
-        format ["alive _target && _this distance _target < %1", _range],
+        _baseCondition,
         _range
     ];
 };

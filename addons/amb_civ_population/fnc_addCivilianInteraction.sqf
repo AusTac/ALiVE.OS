@@ -21,7 +21,7 @@ params ["_unit"];
 
 // Only proceed if the global interaction handler has been initialised and
 // the unit is actually a civilian
-if (!isNil "ALiVE_civInteractHandler" && {side _unit == CIVILIAN}) then {
+if (!isNil "ALiVE_civInteractHandler" && {side _unit == CIVILIAN} && {!(_unit getVariable ["ALiVE_advciv_blacklist", false])}) then {
     private _hasAdvCiv = _unit getVariable ["ALiVE_advciv_active", false];
 
     if (!_hasAdvCiv) then {
@@ -42,7 +42,7 @@ if (!isNil "ALiVE_civInteractHandler" && {side _unit == CIVILIAN}) then {
             true,
             false,
             "",
-            format ["alive _target && _this distance _target < %1", _range],
+            format ["alive _target && !(_target getVariable ['ALiVE_advciv_blacklist', false]) && _this distance _target < %1", _range],
             _range
         ];
     };

@@ -27,6 +27,10 @@ params [["_unit", objNull, [objNull]]];
 
 if (isNull _unit || {!alive _unit} || {isPlayer _unit}) exitWith {};
 if (!(_unit getVariable ["ALiVE_advciv_active", false])) exitWith {};
+if ((_unit getVariable ["ALiVE_advciv_blacklist", false]) || {[_unit] call ALiVE_fnc_advciv_isMissionCritical}) exitWith {
+    _unit setVariable ["ALiVE_advciv_active", false, true];
+    ALiVE_advciv_activeUnits = ALiVE_advciv_activeUnits - [_unit];
+};
 
 // If the unit's side has changed (e.g. killed and replaced), deregister it
 if (side _unit != civilian) exitWith {

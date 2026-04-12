@@ -140,6 +140,7 @@ switch (_taskState) do {
         _sourceContact setCaptive true;
         _sourceContact setBehaviour "CARELESS";
         _sourceContact setDir random 360;
+        _sourceContact setVariable ["ALiVE_advciv_blacklist", true, true];
         _sourceContact setVariable ["ALiVE_advciv_active", false, true];
 
         private _destinationContactGroup = createGroup [civilian, true];
@@ -153,6 +154,7 @@ switch (_taskState) do {
         _destinationContact setCaptive true;
         _destinationContact setBehaviour "CARELESS";
         _destinationContact setDir random 360;
+        _destinationContact setVariable ["ALiVE_advciv_blacklist", true, true];
         _destinationContact setVariable ["ALiVE_advciv_active", false, true];
 
         private _aidVehicle = createVehicle ["C_Van_01_box_F", _aidVehiclePosition, [], 0, "NONE"];

@@ -40,6 +40,7 @@ params [["_unit", objNull, [objNull]], ["_type", "GUNFIRE", [""]], ["_extraParam
 
 if (isNull _unit || {!alive _unit}) exitWith {};
 if (isPlayer _unit) exitWith {};
+if (_unit getVariable ["ALiVE_advciv_blacklist", false]) exitWith {};
 if (vehicle _unit != _unit && {_type == "HIT"}) exitWith {};   // Don't react to HIT while in a vehicle
 
 private _inVehicle = (vehicle _unit != _unit);

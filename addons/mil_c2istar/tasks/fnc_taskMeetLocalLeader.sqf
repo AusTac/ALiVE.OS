@@ -87,6 +87,7 @@ switch (_taskState) do {
         _leader setCaptive true;
         _leader setBehaviour "CARELESS";
         _leader setDir random 360;
+        _leader setVariable ["ALiVE_advciv_blacklist", true, true];
         _leader setVariable ["ALiVE_advciv_active", false, true];
         private _completionVar = format ["ALIVE_Task_%1_LeaderMet", _taskID];
         _leader setVariable [_completionVar, false, true];

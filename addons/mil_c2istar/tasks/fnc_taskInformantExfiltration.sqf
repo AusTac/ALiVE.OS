@@ -219,6 +219,7 @@ switch (_taskState) do {
         _vip setCaptive true;
         _vip setBehaviour "CARELESS";
         _vip setDir random 360;
+        _vip setVariable ["ALiVE_advciv_blacklist", true, true];
         _vip setVariable ["ALiVE_advciv_active", false, true];
 
         _vip setVariable ["ALIVE_Task_VIPPicked", false, true];
