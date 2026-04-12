@@ -1,5 +1,14 @@
 class CfgVehicles {
-    class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 2;
@@ -12,193 +21,50 @@ class CfgVehicles {
                 author = MODULE_AUTHOR;
                 class ModuleDescription
                 {
-                        description = "This module allows you to persist mission data to an external database as well as enabling data storage for all other modules. This module is required for statistics too."; // Short description, will be formatted as structured text
+                        description = "This module allows you to persist mission data to an external database as well as enabling data storage for all other modules. This module is required for statistics too.";
                 };
-                class Arguments
+                class Attributes : AttributesBase
                 {
-                        class debug
+                        class debug : Combo { property = "ALiVE_sys_data_debug"; displayName = "$STR_ALIVE_data_DEBUG"; tooltip = "$STR_ALIVE_data_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class source : Combo
                         {
-                                displayName = "$STR_ALIVE_data_DEBUG";
-                                description = "$STR_ALIVE_data_DEBUG_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class source
-                        {
+                                property = "ALiVE_sys_data_source";
                                 displayName = "$STR_ALIVE_data_SOURCE";
-                                description = "$STR_ALIVE_data_SOURCE_COMMENT";
+                                tooltip = "$STR_ALIVE_data_SOURCE_COMMENT";
+                                defaultValue = """CouchDB""";
                                 class Values
                                 {
-                                        class COUCHDB
-                                        {
-                                                name = "Cloud";
-                                                value = "CouchDB";
-                                                default = 1;
-                                        };
-                                        class pns
-                                        {
-                                                name = "Local";
-                                                value = "pns";
-                                        };
+                                    class COUCHDB { name = "Cloud"; value = "CouchDB"; default = 1; };
+                                    class pns { name = "Local"; value = "pns"; };
                                 };
                         };
-                        class saveDateTime
+                        class saveDateTime : Combo { property = "ALiVE_sys_data_saveDateTime"; displayName = "$STR_ALIVE_data_SAVEDATETIME"; tooltip = "$STR_ALIVE_data_SAVEDATETIME_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class saveCompositions : Combo { property = "ALiVE_sys_data_saveCompositions"; displayName = "$STR_ALIVE_data_SAVECOMPOSITIONS"; tooltip = "$STR_ALIVE_data_SAVECOMPOSITIONS_COMMENT"; defaultValue = """true"""; class Values { class Yes{name="Yes";value=true;default=1;}; class No{name="No";value=false;}; }; };
+                        class killFeed : Combo
                         {
-                                displayName = "$STR_ALIVE_data_SAVEDATETIME";
-                                description = "$STR_ALIVE_data_SAVEDATETIME_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class saveCompositions
-                        {
-                                displayName = "$STR_ALIVE_data_SAVECOMPOSITIONS";
-                                description = "$STR_ALIVE_data_SAVECOMPOSITIONS_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-
-                                        };
-                                };
-                        };
-                        class killFeed
-                        {
+                                property = "ALiVE_sys_data_killFeed";
                                 displayName = "$STR_ALIVE_data_killFeed";
-                                description = "$STR_ALIVE_data_killFeed_COMMENT";
+                                tooltip = "$STR_ALIVE_data_killFeed_COMMENT";
+                                defaultValue = """None""";
                                 class Values
                                 {
-                                        class Group
-                                        {
-                                                name = "Group";
-                                                value = "group";
-                                        };
-                                        class Yes
-                                        {
-                                                name = "Side";
-                                                value = "side";
-                                        };
-                                        class None
-                                        {
-                                                name = "None";
-                                                value = "None";
-                                                default = 1;
-                                        };
+                                    class Group { name = "Group"; value = "group"; };
+                                    class Yes { name = "Side"; value = "side"; };
+                                    class None { name = "None"; value = "None"; default = 1; };
                                 };
                         };
-                        class disableStats
+                        class disableStats : Combo { property = "ALiVE_sys_data_disableStats"; displayName = "$STR_ALIVE_data_disableStats"; tooltip = "$STR_ALIVE_data_disableStats_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class disableAAR : Combo { property = "ALiVE_sys_data_disableAAR"; displayName = "$STR_ALIVE_data_disableAAR"; tooltip = "$STR_ALIVE_data_disableAAR_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class disablePerf : Combo { property = "ALiVE_sys_data_disablePerf"; displayName = "$STR_ALIVE_data_disablePerf"; tooltip = "$STR_ALIVE_data_disablePerf_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class disablePerfMon : Combo { property = "ALiVE_sys_data_disablePerfMon"; displayName = "$STR_ALIVE_data_disablePerfMon"; tooltip = "$STR_ALIVE_data_disablePerfMon_COMMENT"; defaultValue = """true"""; class Values { class Yes{name="Yes";value=true;default=1;}; class No{name="No";value=false;}; }; };
+                        class customPerfMonCode : Edit
                         {
-                                displayName = "$STR_ALIVE_data_disableStats";
-                                description = "$STR_ALIVE_data_disableStats_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class disableAAR
-                        {
-                                displayName = "$STR_ALIVE_data_disableAAR";
-                                description = "$STR_ALIVE_data_disableAAR_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class disablePerf
-                        {
-                                displayName = "$STR_ALIVE_data_disablePerf";
-                                description = "$STR_ALIVE_data_disablePerf_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class disablePerfMon
-                        {
-                                displayName = "$STR_ALIVE_data_disablePerfMon";
-                                description = "$STR_ALIVE_data_disablePerfMon_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
-                                };
-                        };
-                        class customPerfMonCode
-                        {
+                                property = "ALiVE_sys_data_customPerfMonCode";
                                 displayName = "$STR_ALIVE_data_customPerfMonCode";
-                                description = "$STR_ALIVE_data_customPerfMonCode_COMMENT";
-                                defaultValue = "[[''entities'',150],[''vehicles'',300],[''agents'',450],[''allDead'',600],[''objects'',750],[''triggers'',900], [''activeScripts'',1050]]";
+                                tooltip = "$STR_ALIVE_data_customPerfMonCode_COMMENT";
+                                defaultValue = """[['entities',150],['vehicles',300],['agents',450],['allDead',600],['objects',750],['triggers',900],['activeScripts',1050]]""";
                         };
+                        class ModuleDescription : ModuleDescription {};
                 };
         };
 };

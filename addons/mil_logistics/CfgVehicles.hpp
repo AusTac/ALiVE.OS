@@ -1,6 +1,23 @@
 class CfgVehicles
 {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase
+        {
+            class Edit;
+            class Combo;
+            class ModuleDescription;
+        };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase
+        {
+            class ALiVE_ModuleSubTitle;
+        };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 2;
@@ -11,466 +28,253 @@ class CfgVehicles
                 isGlobal = 1;
                 icon = "x\alive\addons\mil_logistics\icon_mil_ML.paa";
                 picture = "x\alive\addons\mil_logistics\icon_mil_ML.paa";
-                class Arguments
+                class Attributes : AttributesBase
                 {
-                        class debug
+                        // ---- General --------------------------------------------------------
+                        class HDR_GENERAL : ALiVE_ModuleSubTitle { property = "ALiVE_mil_logistics_HDR_GENERAL"; displayName = "GENERAL"; };
+                        class debug : Combo
                         {
+                                property = "ALiVE_mil_logistics_debug";
                                 displayName = "$STR_ALIVE_ML_DEBUG";
-                                description = "$STR_ALIVE_ML_DEBUG_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_DEBUG_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
+                                    class Yes { name = "Yes"; value = true; };
+                                    class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-                        class persistent
+                        class persistent : Combo
                         {
+                                property = "ALiVE_mil_logistics_persistent";
                                 displayName = "$STR_ALIVE_ML_PERSISTENT";
-                                description = "$STR_ALIVE_ML_PERSISTENT_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_PERSISTENT_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
+                                    class No { name = "No"; value = false; default = 1; };
+                                    class Yes { name = "Yes"; value = true; };
                                 };
                         };
-                        class type
+                        class type : Combo
                         {
+                                property = "ALiVE_mil_logistics_type";
                                 displayName = "$STR_ALIVE_ML_TYPE";
-                                description = "$STR_ALIVE_ML_TYPE_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_TYPE_COMMENT";
+                                defaultValue = """DYNAMIC""";
                                 class Values
                                 {
-                                        class Dynamic
-                                        {
-                                                name = "$STR_ALIVE_ML_TYPE_DYNAMIC";
-                                                value = "DYNAMIC";
-                                                default = 1;
-                                        };
-                                        class FP1000
-                                        {
-                                                name = "$STR_ALIVE_ML_TYPE_STATIC";
-                                                value = "STATIC";
-                                        };
+                                    class Dynamic { name = "$STR_ALIVE_ML_TYPE_DYNAMIC"; value = "DYNAMIC"; default = 1; };
+                                    class FP1000 { name = "$STR_ALIVE_ML_TYPE_STATIC"; value = "STATIC"; };
                                 };
                         };
-                        class forcePool
+                        class forcePool : Combo
                         {
+                                property = "ALiVE_mil_logistics_forcePool";
                                 displayName = "$STR_ALIVE_ML_FORCE_POOL";
-                                description = "$STR_ALIVE_ML_FORCE_POOL_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_FORCE_POOL_COMMENT";
+                                defaultValue = """1000""";
                                 class Values
                                 {
-                                        class Dynamic
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_DYNAMIC";
-                                                value = "10";
-                                        };
-                                        class FPInfinite
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_INFINITE";
-                                                value = "100000";
-                                        };
-                                        class FP20000
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_20000";
-                                                value = "20000";
-                                        };
-                                        class FP10000
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_10000";
-                                                value = "10000";
-                                        };
-                                        class FP5000
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_5000";
-                                                value = "5000";
-                                        };
-                                        class FP2500
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_2500";
-                                                value = "2500";
-                                        };
-                                        class FP1000
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_1000";
-                                                value = "1000";
-                                                default = 1;
-                                        };
-                                        class FP500
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_500";
-                                                value = "500";
-                                        };
-                                        class FP200
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_200";
-                                                value = "200";
-                                        };
-                                        class FP100
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_100";
-                                                value = "100";
-                                        };
-                                        class FP50
-                                        {
-                                                name = "$STR_ALIVE_ML_FORCE_POOL_50";
-                                                value = "50";
-                                        };
+                                    class Dynamic { name = "$STR_ALIVE_ML_FORCE_POOL_DYNAMIC"; value = "10"; };
+                                    class FPInfinite { name = "$STR_ALIVE_ML_FORCE_POOL_INFINITE"; value = "100000"; };
+                                    class FP20000 { name = "$STR_ALIVE_ML_FORCE_POOL_20000"; value = "20000"; };
+                                    class FP10000 { name = "$STR_ALIVE_ML_FORCE_POOL_10000"; value = "10000"; };
+                                    class FP5000 { name = "$STR_ALIVE_ML_FORCE_POOL_5000"; value = "5000"; };
+                                    class FP2500 { name = "$STR_ALIVE_ML_FORCE_POOL_2500"; value = "2500"; };
+                                    class FP1000 { name = "$STR_ALIVE_ML_FORCE_POOL_1000"; value = "1000"; default = 1; };
+                                    class FP500 { name = "$STR_ALIVE_ML_FORCE_POOL_500"; value = "500"; };
+                                    class FP200 { name = "$STR_ALIVE_ML_FORCE_POOL_200"; value = "200"; };
+                                    class FP100 { name = "$STR_ALIVE_ML_FORCE_POOL_100"; value = "100"; };
+                                    class FP50 { name = "$STR_ALIVE_ML_FORCE_POOL_50"; value = "50"; };
                                 };
                         };
-                        class allowInfantryReinforcement
+                        // ---- Reinforcement Types --------------------------------------------
+                        class HDR_REINF : ALiVE_ModuleSubTitle { property = "ALiVE_mil_logistics_HDR_REINF"; displayName = "REINFORCEMENT TYPES"; };
+                        class allowInfantryReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowInfantryReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_INF";
-                                description = "$STR_ALIVE_ML_ALLOW_INF_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_INF_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowMechanisedReinforcement
+                        class allowMechanisedReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowMechanisedReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_MECH";
-                                description = "$STR_ALIVE_ML_ALLOW_MECH_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_MECH_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowMotorisedReinforcement
+                        class allowMotorisedReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowMotorisedReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_MOT";
-                                description = "$STR_ALIVE_ML_ALLOW_MOT_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_MOT_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowArmourReinforcement
+                        class allowArmourReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowArmourReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_ARM";
-                                description = "$STR_ALIVE_ML_ALLOW_ARM_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_ARM_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowHeliReinforcement
+                        class allowHeliReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowHeliReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_HELI";
-                                description = "$STR_ALIVE_ML_ALLOW_HELI_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_HELI_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowPlaneReinforcement
+                        class allowPlaneReinforcement : Combo
                         {
+                                property = "ALiVE_mil_logistics_allowPlaneReinforcement";
                                 displayName = "$STR_ALIVE_ML_ALLOW_PLANE";
-                                description = "$STR_ALIVE_ML_ALLOW_PLANE_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_ALLOW_PLANE_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class enableAirTransport
+                        class enableAirTransport : Combo
                         {
-                            displayName = "$STR_ALIVE_ML_ENABLE_AIR_TRANSPORT";
-                            description = "$STR_ALIVE_ML_ENABLE_AIR_TRANSPORT_COMMENT";
-                            class Values
-                            {
-                                class Yes
+                                property = "ALiVE_mil_logistics_enableAirTransport";
+                                displayName = "$STR_ALIVE_ML_ENABLE_AIR_TRANSPORT";
+                                tooltip = "$STR_ALIVE_ML_ENABLE_AIR_TRANSPORT_COMMENT";
+                                defaultValue = """true""";
+                                class Values
                                 {
-                                    name = "Yes";
-                                    value = true;
-                                    default = 1;
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
-                                class No
-                                {
-                                    name = "No";
-                                    value = false;
-                                };
-                            };
                         };
-                        class limitTransportToFaction
+                        class limitTransportToFaction : Combo
                         {
+                                property = "ALiVE_mil_logistics_limitTransportToFaction";
                                 displayName = "$STR_ALIVE_ML_LIMIT";
-                                description = "$STR_ALIVE_ML_LIMIT_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_LIMIT_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class No
-                                        {
-                                                name = "Side and Faction";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                        class Yes
-                                        {
-                                                name = "Faction Only";
-                                                value = true;
-                                        };
+                                    class No { name = "Side and Faction"; value = false; default = 1; };
+                                    class Yes { name = "Faction Only"; value = true; };
                                 };
                         };
-                        class startForceStrengthInc
+                        // ---- Starting Force Strength ----------------------------------------
+                        class HDR_STRENGTH : ALiVE_ModuleSubTitle { property = "ALiVE_mil_logistics_HDR_STRENGTH"; displayName = "STARTING FORCE STRENGTH"; };
+                        class startForceStrengthInc : Combo
                         {
+                                property = "ALiVE_mil_logistics_startForceStrengthInc";
                                 displayName = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC";
-                                description = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                	class No
-                                	{
-                                		name = "No";
-                                		value = false;
-                                		default = 1;
-                                	};
-                                	class Yes
-                                	{
-                                		name = "Yes";
-                                		value = true;
-                                	};
+                                    class No { name = "No"; value = false; default = 1; };
+                                    class Yes { name = "Yes"; value = true; };
                                 };
                         };
-                        class startForceStrengthIncFactor
+                        class startForceStrengthIncFactor : Combo
                         {
+                                property = "ALiVE_mil_logistics_startForceStrengthIncFactor";
                                 displayName = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC_FACTOR";
-                                description = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC_FACTOR_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_START_FORCE_STRENGTH_INC_FACTOR_COMMENT";
+                                defaultValue = """1""";
                                 class Values
                                 {
-                                        class LOWEST
-                                        {
-                                                name = "1%";
-                                                value = "1";
-                                                default = 1;
-                                        };
-                                        class LOW
-                                        {
-                                                name = "4%";
-                                                value = "4";
-                                        };
-                                        class MEDIUM
-                                        {
-                                                name = "6%";
-                                                value = "6";
-                                        };
-                                        class HIGH
-                                        {
-                                                name = "8%";
-                                                value = "8";
-                                        };
-                                        class VHIGH
-                                        {
-                                                name = "10%";
-                                                value = "10";
-                                        };
+                                    class LOWEST { name = "1%"; value = "1"; default = 1; };
+                                    class LOW { name = "4%"; value = "4"; };
+                                    class MEDIUM { name = "6%"; value = "6"; };
+                                    class HIGH { name = "8%"; value = "8"; };
+                                    class VHIGH { name = "10%"; value = "10"; };
                                 };
                         };
-                        class startForceStrengthDec
+                        class startForceStrengthDec : Combo
                         {
+                                property = "ALiVE_mil_logistics_startForceStrengthDec";
                                 displayName = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC";
-                                description = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                	class No
-                                	{
-                                		name = "No";
-                                		value = false;
-                                		default = 1;
-                                	};
-                                	class Yes
-                                	{
-                                		name = "Yes";
-                                		value = true;
-                                	};
+                                    class No { name = "No"; value = false; default = 1; };
+                                    class Yes { name = "Yes"; value = true; };
                                 };
                         };
-                        class startForceStrengthDecFactor
+                        class startForceStrengthDecFactor : Combo
                         {
+                                property = "ALiVE_mil_logistics_startForceStrengthDecFactor";
                                 displayName = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_FACTOR";
-                                description = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_FACTOR_COMMENT";
+                                tooltip = "$STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_FACTOR_COMMENT";
+                                defaultValue = """1""";
                                 class Values
                                 {
-                                        class LOWEST
-                                        {
-                                                name = "1%";
-                                                value = "1";
-                                                default = 1;
-                                        };
-                                        class LOW
-                                        {
-                                                name = "4%";
-                                                value = "4";
-                                        };
-                                        class MEDIUM
-                                        {
-                                                name = "6%";
-                                                value = "6";
-                                        };
-                                        class HIGH
-                                        {
-                                                name = "8%";
-                                                value = "8";
-                                        };
-                                        class VHIGH
-                                        {
-                                                name = "10%";
-                                                value = "10";
-                                        };
+                                    class LOWEST { name = "1%"; value = "1"; default = 1; };
+                                    class LOW { name = "4%"; value = "4"; };
+                                    class MEDIUM { name = "6%"; value = "6"; };
+                                    class HIGH { name = "8%"; value = "8"; };
+                                    class VHIGH { name = "10%"; value = "10"; };
                                 };
-                        }; 
+                        };
+                        class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription
                 {
-                    //description = "$STR_ALIVE_OPCOM_COMMENT"; // Short description, will be formatted as structured text
-                    description[] = {
-                            "$STR_ALIVE_ML_COMMENT",
-                            "",
-                            "$STR_ALIVE_ML_USAGE"
-                    };
-                    sync[] = {"ALiVE_mil_OPCOM"}; // Array of synced entities (can contain base classes)
-
+                    description[] = {"$STR_ALIVE_ML_COMMENT","","$STR_ALIVE_ML_USAGE"};
+                    sync[] = {"ALiVE_mil_OPCOM"};
                     class ALiVE_mil_OPCOM
                     {
-                        description[] = { // Multi-line descriptions are supported
-                            "$STR_ALIVE_OPCOM_COMMENT",
-                            "",
-                            "$STR_ALIVE_OPCOM_USAGE"
-                        };
-                        position = 0; // Position is taken into effect
-                        direction = 0; // Direction is taken into effect
-                        optional = 1; // Synced entity is optional
-                        duplicate = 1; // Multiple entities of this type can be synced
+                        description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"};
+                        position = 0; direction = 0; optional = 1; duplicate = 1;
                     };
-
                 };
         };
-
         class NATO_Box_Base;
         class IND_Box_Base;
         class EAST_Box_Base;
-        class Box_IND_AmmoVeh_F : IND_Box_Base
-        {
-            class Eventhandlers;
-        };
-        class Box_NATO_AmmoVeh_F : NATO_Box_Base
-        {
-            class Eventhandlers;
-        };
-        class Box_East_AmmoVeh_F : EAST_Box_Base
-        {
-            class Eventhandlers;
-        };
+        class Box_IND_AmmoVeh_F : IND_Box_Base { class Eventhandlers; };
+        class Box_NATO_AmmoVeh_F : NATO_Box_Base { class Eventhandlers; };
+        class Box_East_AmmoVeh_F : EAST_Box_Base { class Eventhandlers; };
         class ALIVE_O_supplyCrate_F : Box_East_AmmoVeh_F
         {
-            transportSoldier = 3;
-            scope = 1;
-            mass = 650;
-            class EventHandlers : Eventhandlers
-            {
-                class ADDON
-                {
-                    init = "(_this select 0) setMass 650";
-                };
-            };
+            transportSoldier = 3; scope = 1; mass = 650;
+            class EventHandlers : Eventhandlers { class ADDON { init = "(_this select 0) setMass 650"; }; };
         };
         class ALIVE_I_supplyCrate_F : Box_IND_AmmoVeh_F
         {
-            transportSoldier = 3;
-            scope = 1;
-            mass = 650;
-            class EventHandlers : Eventhandlers
-            {
-                class ADDON
-                {
-                    init = "(_this select 0) setMass 650";
-                };
-            };
+            transportSoldier = 3; scope = 1; mass = 650;
+            class EventHandlers : Eventhandlers { class ADDON { init = "(_this select 0) setMass 650"; }; };
         };
         class ALIVE_B_supplyCrate_F : Box_NATO_AmmoVeh_F
         {
-            transportSoldier = 3;
-            scope = 1;
-            mass = 650;
-            class EventHandlers : Eventhandlers
-            {
-                class ADDON
-                {
-                    init = "(_this select 0) setMass 650";
-                };
-            };
+            transportSoldier = 3; scope = 1; mass = 650;
+            class EventHandlers : Eventhandlers { class ADDON { init = "(_this select 0) setMass 650"; }; };
         };
 };

@@ -141,6 +141,13 @@ switch(_operation) do {
         _result = [_logic,_operation,_args,DEFAULT_NO_TEXT] call ALIVE_fnc_OOsimpleOperation;
     };
 
+    case "onEachSpawn": {
+        _result = [_logic, _operation, _args, ""] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "onEachSpawnOnce": {
+        _result = [_logic, _operation, _args, true] call ALIVE_fnc_OOsimpleOperation;
+    };
+
     case "faction": {
         _result = [_logic,_operation,_args,DEFAULT_FACTION,[] call ALiVE_fnc_configGetFactions] call ALIVE_fnc_OOsimpleOperation;
     };
@@ -365,6 +372,9 @@ switch(_operation) do {
             private _size = [_logic, "size"] call MAINCLASS;
             
             
+            private _onEachSpawn = [_logic, "onEachSpawn"] call MAINCLASS;
+            private _onEachSpawnOnce = [_logic, "onEachSpawnOnce"] call MAINCLASS;
+
             private _guardProbabilityCount = [_countInfantry,[_logic, "guardProbability"] call MAINCLASS] call ALIVE_fnc_infantryGuardProbabilityCount;
             // DEBUG -------------------------------------------------------------------------------------
             if(_debug) then {
@@ -580,7 +590,7 @@ switch(_operation) do {
                 if (count _infantryGroups > 0 && _guardProbabilityCount > 0) then {
                     for "_i" from 0 to _guardProbabilityCount -1 do {
                         _guardGroup = (selectRandom _infantryGroups);
-                        _guards = [_guardGroup, [_position, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                        _guards = [_guardGroup, [_position, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
                         // DEBUG -------------------------------------------------------------------------------------
                         if(_debug) then {
@@ -628,7 +638,7 @@ switch(_operation) do {
 
                     if !(surfaceIsWater _position) then {
 
-                        private _profiles = [_group, _position, random(360), false, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                        private _profiles = [_group, _position, random(360), false, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
                         {
                             if (([_x,"type"] call ALiVE_fnc_HashGet) == "entity") then {

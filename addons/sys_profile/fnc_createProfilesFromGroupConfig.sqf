@@ -40,7 +40,9 @@ params [
     ["_prefix", ""],
     ["_busy", false],
     ["_isSPE", false],
-    ["_aiBehaviour", "STEALTH"]
+    ["_aiBehaviour", "STEALTH"],
+    ["_onEachSpawn", ""],
+    ["_onEachSpawnOnce", true]
 ];
 
 private _groupProfiles = [];
@@ -145,6 +147,8 @@ if(count _config > 0) then {
     [_profileEntity, "busy", _busy] call ALIVE_fnc_profileEntity;
     [_profileEntity, "isSPE", _isSPE] call ALIVE_fnc_profileEntity;
     [_profileEntity, "aiBehaviour", _aiBehaviour] call ALIVE_fnc_profileEntity;
+    [_profileEntity, "onEachSpawn", _onEachSpawn] call ALIVE_fnc_profileEntity;
+    [_profileEntity, "onEachSpawnOnce", _onEachSpawnOnce] call ALIVE_fnc_profileEntity;
     
     if!(_spawnGoodPosition) then {
         [_profileEntity, "despawnPosition", _position] call ALIVE_fnc_profileEntity;

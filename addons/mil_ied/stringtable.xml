@@ -47,7 +47,7 @@
 	<Chinesesimp>TAOR 标记：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_TAOR_COMMENT">
-    <English>Tactical Area Operation Responsibility Marker</English>
+    <English>Restricts IED and bomber placement to objectives inside this marker (or markers). Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2. Leave blank to use the entire map.</English>
 	<Chinesesimp>战术区作战责任标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_BLACKLIST">
@@ -55,7 +55,7 @@
 	<Chinesesimp>黑名单标记：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_BLACKLIST_COMMENT">
-    <English>Exclusion Marker</English>
+    <English>Excludes areas inside this marker (or markers) from IED and bomber placement. Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2.</English>
 	<Chinesesimp>排除标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_Roadblocks">
@@ -183,7 +183,7 @@
 	<Chinesesimp>杂物对象种类</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_Classes_COMMENT">
-    <English>Define the classes used for IEDs and clutter objects</English>
+    <English>Classnames of objects used for IEDs and clutter. Separate multiple classnames with commas, no spaces, no quotes — e.g. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. IED classnames must be valid ammo box or object classnames that function as proximity mines.</English>
 	<Chinesesimp>定义用于简易爆炸装置和杂物对象的种类</Chinesesimp>
 </Key>
 </Container></Package></Project>

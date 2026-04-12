@@ -1,199 +1,51 @@
 class CfgVehicles {
-        class ModuleAliveBase;
-
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
             scope = 1;
-        displayName = "$STR_ALIVE_LOGISTICS";
-        function = "ALIVE_fnc_emptyInit";
-        functionPriority = 45;
-        isGlobal = 2;
-        icon = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
-        picture = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
-        author = MODULE_AUTHOR;
+            displayName = "$STR_ALIVE_LOGISTICS";
+            function = "ALIVE_fnc_emptyInit";
+            functionPriority = 45;
+            isGlobal = 2;
+            icon = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
+            picture = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
+            author = MODULE_AUTHOR;
         };
-
         class ALiVE_SYS_LOGISTICSDISABLE : ModuleAliveBase
         {
-        scope = 2;
-        displayName = "$STR_ALIVE_LOGISTICSDISABLE";
-        function = "ALIVE_fnc_logisticsDisable";
-        functionPriority = 10;
-        isGlobal = 2;
-        icon = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
-        picture = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
-        author = MODULE_AUTHOR;
-
-                class ModuleDescription
-        {
-            description[] = {
-                    "$STR_ALIVE_LOGISTICSDISABLE_COMMENT",
-                    "",
-                    "$STR_ALIVE_LOGISTICSDISABLE_USAGE"
+            scope = 2;
+            displayName = "$STR_ALIVE_LOGISTICSDISABLE";
+            function = "ALIVE_fnc_logisticsDisable";
+            functionPriority = 10;
+            isGlobal = 2;
+            icon = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
+            picture = "x\alive\addons\sys_logistics\icon_sys_logistics.paa";
+            author = MODULE_AUTHOR;
+            class ModuleDescription
+            {
+                description[] = {"$STR_ALIVE_LOGISTICSDISABLE_COMMENT","","$STR_ALIVE_LOGISTICSDISABLE_USAGE"};
             };
-        };
-
-                class Arguments
-                {
-
-                        class DEBUG
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DEBUG";
-                                description = "$STR_ALIVE_LOGISTICS_DEBUG_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLELOG
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLELOG";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLELOG_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLEPERSISTENCE
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLEPERSISTENCE";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLEPERSISTENCE_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLELOAD
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLELOAD";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLELOAD_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLETOW
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLETOW";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLETOW_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLELIFT
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLELIFT";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLELIFT_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLECARRY
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLECARRY";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLECARRY_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class DISABLE3D
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_DISABLE3D";
-                                description = "$STR_ALIVE_LOGISTICS_DISABLE3D_COMMENT";
-                                class Values
-                                {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
-                                };
-                        };
-                        class BLACKLIST
-                        {
-                                displayName = "$STR_ALIVE_LOGISTICS_BLACKLIST";
-                                description = "$STR_ALIVE_LOGISTICS_BLACKLIST_COMMENT";
-                                defaultValue = "";
-                        };
-                };
+            class Attributes : AttributesBase
+            {
+                    class DEBUG : Combo { property = "ALiVE_sys_logistics_DEBUG"; displayName = "$STR_ALIVE_LOGISTICS_DEBUG"; tooltip = "$STR_ALIVE_LOGISTICS_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLELOG : Combo { property = "ALiVE_sys_logistics_DISABLELOG"; displayName = "$STR_ALIVE_LOGISTICS_DISABLELOG"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLELOG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLEPERSISTENCE : Combo { property = "ALiVE_sys_logistics_DISABLEPERSISTENCE"; displayName = "$STR_ALIVE_LOGISTICS_DISABLEPERSISTENCE"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLEPERSISTENCE_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLELOAD : Combo { property = "ALiVE_sys_logistics_DISABLELOAD"; displayName = "$STR_ALIVE_LOGISTICS_DISABLELOAD"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLELOAD_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLETOW : Combo { property = "ALiVE_sys_logistics_DISABLETOW"; displayName = "$STR_ALIVE_LOGISTICS_DISABLETOW"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLETOW_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLELIFT : Combo { property = "ALiVE_sys_logistics_DISABLELIFT"; displayName = "$STR_ALIVE_LOGISTICS_DISABLELIFT"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLELIFT_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLECARRY : Combo { property = "ALiVE_sys_logistics_DISABLECARRY"; displayName = "$STR_ALIVE_LOGISTICS_DISABLECARRY"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLECARRY_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class DISABLE3D : Combo { property = "ALiVE_sys_logistics_DISABLE3D"; displayName = "$STR_ALIVE_LOGISTICS_DISABLE3D"; tooltip = "$STR_ALIVE_LOGISTICS_DISABLE3D_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                    class BLACKLIST : Edit { property = "ALiVE_sys_logistics_BLACKLIST"; displayName = "$STR_ALIVE_LOGISTICS_BLACKLIST"; tooltip = "$STR_ALIVE_LOGISTICS_BLACKLIST_COMMENT"; defaultValue = """"""; };
+                    class ModuleDescription : ModuleDescription {};
+            };
         };
 };

@@ -176,6 +176,12 @@ switch(_operation) do {
     case "guardPatrolPercentage": {
         _result = [_logic,_operation,_args,DEFAULT_AMBIENT_GUARD_PATROL_PERCENT] call ALIVE_fnc_OOsimpleOperation;
     };
+    case "onEachSpawn": {
+        _result = [_logic, _operation, _args, ""] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "onEachSpawnOnce": {
+        _result = [_logic, _operation, _args, true] call ALIVE_fnc_OOsimpleOperation;
+    };
     // Return TAOR marker
     case "taor": {
         if(typeName _args == "STRING") then {
@@ -313,6 +319,8 @@ switch(_operation) do {
 
             _debug = [_logic, "debug"] call MAINCLASS;
             _faction = [_logic, "faction"] call MAINCLASS;
+            private _onEachSpawn = [_logic, "onEachSpawn"] call MAINCLASS;
+            private _onEachSpawnOnce = [_logic, "onEachSpawnOnce"] call MAINCLASS;
 
             if(_debug) then {
                 ["----------------------------------------------------------------------------------------"] call ALIVE_fnc_dump;
@@ -994,7 +1002,7 @@ switch(_operation) do {
                             //chance of sea patrol
                             if ((random 1) < _placeSeaPatrols) then {
                                 // Create a sea patrol profile (mark it busy)
-                                private _seaPatrol = [_seaPatrolGroup, _pos, random(360), true, _faction, true] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                private _seaPatrol = [_seaPatrolGroup, _pos, random(360), true, _faction, true, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
                                 // Set Waypoints for patrol
                                 {
@@ -1046,7 +1054,7 @@ switch(_operation) do {
                      for "_i" from 0 to _guardProbabilityCount -1 do {
                      	
                         _guardGroup = (selectRandom _infantryGroups);
-                        _guards = [_guardGroup, [_center, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                        _guards = [_guardGroup, [_center, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
                         
                         // DEBUG -------------------------------------------------------------------------------------
                         if(_debug) then {
@@ -1090,7 +1098,7 @@ switch(_operation) do {
                             };
 
                             if!(surfaceIsWater _position) then {
-                                _profiles = [_group, _position, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
                                 {
                                     if (([_x,"type"] call ALiVE_fnc_HashGet) == "entity") then {
                                         [_x, "setActiveCommand", [_command,"spawn",_radius]] call ALIVE_fnc_profileEntity;
@@ -1123,7 +1131,7 @@ switch(_operation) do {
                         };
 
                         if!(surfaceIsWater _position) then {
-                            _profiles = [_group, _position, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                            _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
                             {
                                 if (([_x,"type"] call ALiVE_fnc_HashGet) == "entity") then {
                                     [_x, "setActiveCommand", [_command,"spawn",_radius]] call ALIVE_fnc_profileEntity;

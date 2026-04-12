@@ -1,5 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 2;
@@ -10,97 +19,26 @@ class CfgVehicles {
                 isGlobal = 2;
                 icon = "x\alive\addons\sup_cas\icon_sup_cas.paa";
                 picture = "x\alive\addons\sup_cas\icon_sup_cas.paa";
-                class Arguments
+                class Attributes : AttributesBase
                 {
-                        class artillery_callsign
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_CALLSIGN";
-                                description = "$STR_ALIVE_ARTILLERY_CALLSIGN_DESC";
-                                defaultValue ="FOX SEVEN";
-                        };
-
-                        class artillery_type
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_TYPE";
-                                description = "$STR_ALIVE_ARTILLERY_TYPE_DESC";
-                                defaultValue ="B_MBT_01_arty_F";
-                        };
-                        class artillery_he
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_HE";
-                                description = "$STR_ALIVE_ARTILLERY_HE_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_illum
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_ILLUM";
-                                description = "$STR_ALIVE_ARTILLERY_ILLUM_DESC";
-                                defaultValue= 30;
-                        };
-                         class artillery_smoke
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_SMOKE";
-                                description = "$STR_ALIVE_ARTILLERY_SMOKE_DESC";
-                                defaultValue= 30;
-                        };
-                         class artillery_wp
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_WP";
-                                description = "$STR_ALIVE_ARTILLERY_WP_DESC";
-                                defaultValue= 0;
-                        };
-                        class artillery_guided
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_GUIDED";
-                                description = "$STR_ALIVE_ARTILLERY_GUIDED_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_cluster
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_CLUSTER";
-                                description = "$STR_ALIVE_ARTILLERY_CLUSTER_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_lg
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_LG";
-                                description = "$STR_ALIVE_ARTILLERY_LG_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_mine
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_MINE";
-                                description = "$STR_ALIVE_ARTILLERY_MINE_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_atmine
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_ATMINE";
-                                description = "$STR_ALIVE_ARTILLERY_ATMINE_DESC";
-                                defaultValue= 30;
-                        };
-                        class artillery_rockets
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_ROCKETS";
-                                description = "$STR_ALIVE_ARTILLERY_ROCKETS_DESC";
-                                defaultValue= 16;
-                        };
-
-                        class artillery_code
-                        {
-                                displayName = "$STR_ALIVE_ARTILLERY_CODE";
-                                description = "$STR_ALIVE_ARTILLERY_CODE_DESC";
-                                defaultValue = "";
-                        };
+                        class artillery_callsign : Edit { property = "ALiVE_sup_artillery_artillery_callsign"; displayName = "$STR_ALIVE_ARTILLERY_CALLSIGN"; tooltip = "$STR_ALIVE_ARTILLERY_CALLSIGN_DESC"; defaultValue = """FOX SEVEN"""; };
+                        class artillery_type : Edit { property = "ALiVE_sup_artillery_artillery_type"; displayName = "$STR_ALIVE_ARTILLERY_TYPE"; tooltip = "$STR_ALIVE_ARTILLERY_TYPE_DESC"; defaultValue = """B_MBT_01_arty_F"""; };
+                        class artillery_he : Edit { property = "ALiVE_sup_artillery_artillery_he"; displayName = "$STR_ALIVE_ARTILLERY_HE"; tooltip = "$STR_ALIVE_ARTILLERY_HE_DESC"; defaultValue = """30"""; };
+                        class artillery_illum : Edit { property = "ALiVE_sup_artillery_artillery_illum"; displayName = "$STR_ALIVE_ARTILLERY_ILLUM"; tooltip = "$STR_ALIVE_ARTILLERY_ILLUM_DESC"; defaultValue = """30"""; };
+                        class artillery_smoke : Edit { property = "ALiVE_sup_artillery_artillery_smoke"; displayName = "$STR_ALIVE_ARTILLERY_SMOKE"; tooltip = "$STR_ALIVE_ARTILLERY_SMOKE_DESC"; defaultValue = """30"""; };
+                        class artillery_wp : Edit { property = "ALiVE_sup_artillery_artillery_wp"; displayName = "$STR_ALIVE_ARTILLERY_WP"; tooltip = "$STR_ALIVE_ARTILLERY_WP_DESC"; defaultValue = """0"""; };
+                        class artillery_guided : Edit { property = "ALiVE_sup_artillery_artillery_guided"; displayName = "$STR_ALIVE_ARTILLERY_GUIDED"; tooltip = "$STR_ALIVE_ARTILLERY_GUIDED_DESC"; defaultValue = """30"""; };
+                        class artillery_cluster : Edit { property = "ALiVE_sup_artillery_artillery_cluster"; displayName = "$STR_ALIVE_ARTILLERY_CLUSTER"; tooltip = "$STR_ALIVE_ARTILLERY_CLUSTER_DESC"; defaultValue = """30"""; };
+                        class artillery_lg : Edit { property = "ALiVE_sup_artillery_artillery_lg"; displayName = "$STR_ALIVE_ARTILLERY_LG"; tooltip = "$STR_ALIVE_ARTILLERY_LG_DESC"; defaultValue = """30"""; };
+                        class artillery_mine : Edit { property = "ALiVE_sup_artillery_artillery_mine"; displayName = "$STR_ALIVE_ARTILLERY_MINE"; tooltip = "$STR_ALIVE_ARTILLERY_MINE_DESC"; defaultValue = """30"""; };
+                        class artillery_atmine : Edit { property = "ALiVE_sup_artillery_artillery_atmine"; displayName = "$STR_ALIVE_ARTILLERY_ATMINE"; tooltip = "$STR_ALIVE_ARTILLERY_ATMINE_DESC"; defaultValue = """30"""; };
+                        class artillery_rockets : Edit { property = "ALiVE_sup_artillery_artillery_rockets"; displayName = "$STR_ALIVE_ARTILLERY_ROCKETS"; tooltip = "$STR_ALIVE_ARTILLERY_ROCKETS_DESC"; defaultValue = """16"""; };
+                        class artillery_code : Edit { property = "ALiVE_sup_artillery_artillery_code"; displayName = "$STR_ALIVE_ARTILLERY_CODE"; tooltip = "$STR_ALIVE_ARTILLERY_CODE_DESC"; defaultValue = """"""; };
+                        class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription
                 {
-                    //description = "$STR_ALIVE_ARTILLERY_COMMENT"; // Short description, will be formatted as structured text
-                    description[] = {
-                        "$STR_ALIVE_ARTILLERY_COMMENT",
-                        "",
-                        "$STR_ALIVE_ARTILLERY_USAGE"
-                    };
+                    description[] = {"$STR_ALIVE_ARTILLERY_COMMENT","","$STR_ALIVE_ARTILLERY_USAGE"};
                 };
         };
 };

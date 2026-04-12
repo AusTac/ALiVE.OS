@@ -1,5 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 1;
@@ -12,192 +21,126 @@ class CfgVehicles {
                 author = MODULE_AUTHOR;
                 class ModuleDescription
                 {
-                        description = "This module allows you to persist player state between reconnects and server restarts."; // Short description, will be formatted as structured text
+                        description = "This module allows you to persist player state between reconnects and server restarts.";
                 };
-                class Arguments
+                class Attributes : AttributesBase
                 {
-
-                        class allowReset
+                        class allowReset : Combo
                         {
+                                property = "ALiVE_sys_player_allowReset";
                                 displayName = "$STR_ALIVE_player_allowReset";
-                                description = "$STR_ALIVE_player_allowReset_COMMENT";
+                                tooltip = "$STR_ALIVE_player_allowReset_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-
-                        class allowManualSave
+                        class allowManualSave : Combo
                         {
+                                property = "ALiVE_sys_player_allowManualSave";
                                 displayName = "$STR_ALIVE_player_allowManualSave";
-                                description = "$STR_ALIVE_player_allowManualSave_COMMENT";
+                                tooltip = "$STR_ALIVE_player_allowManualSave_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class allowDiffClass
+                        class allowDiffClass : Combo
                         {
+                                property = "ALiVE_sys_player_allowDiffClass";
                                 displayName = "$STR_ALIVE_player_allowDiffClass";
-                                description = "$STR_ALIVE_player_allowDiffClass_COMMENT";
+                                tooltip = "$STR_ALIVE_player_allowDiffClass_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
+                                    class Yes { name = "Yes"; value = true; };
+                                    class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-                        class saveLoadout
+                        class saveLoadout : Combo
                         {
+                                property = "ALiVE_sys_player_saveLoadout";
                                 displayName = "$STR_ALIVE_player_SAVELOADOUT";
-                                description = "$STR_ALIVE_player_SAVELOADOUT_COMMENT";
+                                tooltip = "$STR_ALIVE_player_SAVELOADOUT_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class saveAmmo
+                        class saveAmmo : Combo
                         {
+                                property = "ALiVE_sys_player_saveAmmo";
                                 displayName = "$STR_ALIVE_player_SAVEAMMO";
-                                description = "$STR_ALIVE_player_SAVEAMMO_COMMENT";
+                                tooltip = "$STR_ALIVE_player_SAVEAMMO_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class saveHealth
+                        class saveHealth : Combo
                         {
+                                property = "ALiVE_sys_player_saveHealth";
                                 displayName = "$STR_ALIVE_player_SAVEHEALTH";
-                                description = "$STR_ALIVE_player_SAVEHEALTH_COMMENT";
+                                tooltip = "$STR_ALIVE_player_SAVEHEALTH_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class savePosition
+                        class savePosition : Combo
                         {
+                                property = "ALiVE_sys_player_savePosition";
                                 displayName = "$STR_ALIVE_player_SAVEPOSITION";
-                                description = "$STR_ALIVE_player_SAVEPOSITION_COMMENT";
+                                tooltip = "$STR_ALIVE_player_SAVEPOSITION_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class saveScores
+                        class saveScores : Combo
                         {
+                                property = "ALiVE_sys_player_saveScores";
                                 displayName = "$STR_ALIVE_player_SAVESCORES";
-                                description = "$STR_ALIVE_player_SAVESCORES_COMMENT";
+                                tooltip = "$STR_ALIVE_player_SAVESCORES_COMMENT";
+                                defaultValue = """true""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                                default = 1;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                        };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
                         };
-                        class storeToDB
+                        class storeToDB : Combo
                         {
+                                property = "ALiVE_sys_player_storeToDB";
                                 displayName = "$STR_ALIVE_player_storeToDB";
-                                description = "$STR_ALIVE_player_storeToDB_COMMENT";
+                                tooltip = "$STR_ALIVE_player_storeToDB_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
+                                    class Yes { name = "Yes"; value = true; };
+                                    class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-
-                        class autoSaveTime
+                        class autoSaveTime : Edit
                         {
+                                property = "ALiVE_sys_player_autoSaveTime";
                                 displayName = "$STR_ALIVE_player_autoSaveTime";
-                                description = "$STR_ALIVE_player_autoSaveTime_COMMENT";
-                                defaultValue = "0";
+                                tooltip = "$STR_ALIVE_player_autoSaveTime_COMMENT";
+                                defaultValue = """0""";
                         };
+                        class ModuleDescription : ModuleDescription {};
                 };
-
         };
 };

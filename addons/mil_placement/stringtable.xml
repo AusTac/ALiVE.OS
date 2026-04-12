@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Project name="Arma3">
 <Package name="ALiVE">
 <Container name="STR_DN">
@@ -23,7 +23,7 @@
     <Chinesesimp>随机营地</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_RANDOMCAMPS_COMMENT">
-    <English>Level of random camps</English>
+    <English>Spawns random field camps in flat open terrain within the TAOR, spaced at the specified minimum distance (metres). Use to add unpredictable forward operating bases beyond fixed military objectives.</English>
     <Chinesesimp>随机营地等级</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_TAOR">
@@ -31,7 +31,7 @@
     <Chinesesimp>TAOR标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_TAOR_COMMENT">
-    <English>Tactical Area Operation Responsibility Marker</English>
+    <English>Restricts placement to objectives inside this marker (or markers). Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2. Leave blank to use the entire map.</English>
     <Chinesesimp>战术区作战责任标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_BLACKLIST">
@@ -39,8 +39,8 @@
     <Chinesesimp>黑名单标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_BLACKLIST_COMMENT">
-    <English>Exclusion Marker</English>
-    <Chinesesimp>清除标记</Chinesesimp>
+    <English>Excludes objectives inside this marker (or markers) from placement. Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2.</English>
+    <Chinesesimp>排除标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER">
     <English>Objective Size Filter:</English>
@@ -107,7 +107,7 @@
     <Chinesesimp>准备就绪</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_READINESS_LEVEL_COMMENT">
-    <English>The amount of troops that will be on duty and patrolling</English>
+    <English>The proportion of the force that will be actively on duty and patrolling at mission start. Lower values leave more units in reserve.</English>
     <Chinesesimp>执勤和巡逻的部队数量</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT">
@@ -115,7 +115,7 @@
     <Chinesesimp>放置单位</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT_COMMENT">
-    <English>Place units or objectives only</English>
+    <English>Place Units: spawns both units and registers objectives. Objectives Only: registers objectives for an AI Commander without placing any units — useful when OPCOM manages forces separately.</English>
     <Chinesesimp>仅放置单元或目标</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT_YES">
@@ -131,7 +131,7 @@
     <Chinesesimp>武力等级</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_COMMENT">
-    <English>Number of units to be placed</English>
+    <English>Total number of virtual unit slots to fill across all objectives. Distributed proportionally between objectives based on their size and priority.</English>
     <Chinesesimp>要放置的单元数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_BNx3">
@@ -167,7 +167,7 @@
     <Chinesesimp>武力权重</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_COMMENT">
-    <English>The preferred type of force deployed</English>
+    <English>Preferred composition of the force. Weighted towards the selected type but not exclusive — other unit types will still appear in smaller numbers.</English>
     <Chinesesimp>部署的首选部队类型</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_RANDOM">
@@ -203,55 +203,55 @@
     <Chinesesimp>操控士兵</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_INFANTRY_COUNT_COMMENT">
-    <English>Set a custom count of Infantry groups to be spawned, leave blank for no change, set to 0 for none</English>
-    <Chinesesimp>设置要生成的步兵组的自定义计数,留空表示无更改,设置为0表示无更改</Chinesesimp>
+    <English>Override the calculated infantry group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no infantry groups.</English>
+    <Chinesesimp>设置要生成的步兵组的自定义计数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MOTORISED_COUNT">
     <English>Override Motorised:</English>
     <Chinesesimp>操控摩托化</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MOTORISED_COUNT_COMMENT">
-    <English>Set a custom count of Motorised groups to be spawned, leave blank for no change, set to 0 for none</English>
-    <Chinesesimp>设置要生成的摩托化组的自定义计数,留空表示无更改,设置为0表示无更改</Chinesesimp>
+    <English>Override the calculated motorised group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no motorised groups.</English>
+    <Chinesesimp>设置要生成的摩托化组的自定义计数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MECHANISED_COUNT">
     <English>Override Mechanised:</English>
     <Chinesesimp>操控机械化</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MECHANISED_COUNT_COMMENT">
-    <English>Set a custom count of Mechanised groups to be spawned, leave blank for no change, set to 0 for none</English>
-    <Chinesesimp>设置要生成的机械化组的自定义计数,留空表示无更改,设置为0表示无更改</Chinesesimp>
+    <English>Override the calculated mechanised group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no mechanised groups.</English>
+    <Chinesesimp>设置要生成的机械化组的自定义计数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_ARMOUR_COUNT">
     <English>Override Armour:</English>
     <Chinesesimp>操控装甲</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_ARMOUR_COUNT_COMMENT">
-    <English>Set a custom count of Armour groups to be spawned, leave blank for no change, set to 0 for none</English>
-    <Chinesesimp>设置要生成的装甲组的自定义计数,留空表示无更改,设置为0表示无更改</Chinesesimp>
+    <English>Override the calculated armour group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no armour groups.</English>
+    <Chinesesimp>设置要生成的装甲组的自定义计数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_SPECOPS_COUNT">
     <English>Override SpecOps:</English>
     <Chinesesimp>操控支援</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_SPECOPS_COUNT_COMMENT">
-    <English>Set a custom count of SpecOps groups to be spawned, leave blank for no change, set to 0 for none</English>
-    <Chinesesimp>设置要生成的支援组的自定义计数,留空表示无更改,设置为0表示无更改</Chinesesimp>
+    <English>Override the calculated spec ops group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no spec ops groups.</English>
+    <Chinesesimp>设置要生成的支援组的自定义计数</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_FACTION">
     <English>Force Faction:</English>
     <Chinesesimp>武力派别</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_FACTION_COMMENT">
-    <English>Faction of the units to be placed (BLU_F, OPF_F, IND_F, BLU_G_F)</English>
-    <Chinesesimp>要放置的单位因子</Chinesesimp>
+    <English>The faction whose unit roster this module will draw from. Enter a single faction classname — e.g. OPF_F. For multiple factions on the same side use the Override Factions field on the synced AI Commander instead.</English>
+    <Chinesesimp>要放置的单位阵营</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_HQ">
     <English>Create HQ:</English>
     <Chinesesimp>创建总部</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_HQ_COMMENT">
-    <English>Selects HQ objective close to the module</English>
+    <English>Selects a suitable HQ building near the module and garrisons it. Also marks the location as highest priority for the AI Commander.</English>
     <Chinesesimp>选择靠近模块的总部目标</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_FIELDHQ">
@@ -259,7 +259,7 @@
     <Chinesesimp>创建现场总部</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_FIELDHQ_COMMENT">
-    <English>Places a Field HQ close to the module</English>
+    <English>Places a Field HQ composition (tents, vehicles) near the module in flat terrain. Supplements the main HQ as a forward command post.</English>
     <Chinesesimp>将现场总部靠近模块</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_HELI">
@@ -267,7 +267,7 @@
     <Chinesesimp>放置空中单位</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_HELI_COMMENT">
-    <English>Place air units in objectives</English>
+    <English>Spawns helicopters and fixed-wing aircraft at helipads and hangars within military objectives. Requires suitable landing infrastructure to exist at objectives.</English>
     <Chinesesimp>将空中单位放置在目标中</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_SUPPLIES">
@@ -275,7 +275,7 @@
     <Chinesesimp>放置物品</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_SUPPLIES_COMMENT">
-    <English>Place supply boxes in objectives</English>
+    <English>Places faction-appropriate supply boxes inside storage buildings at objectives. Does not affect the AI logistics system — for AI resupply use the Military Logistics module.</English>
     <Chinesesimp>在目标中放置物资箱</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT">
@@ -283,7 +283,7 @@
     <Chinesesimp>放置周围车辆</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_COMMENT">
-    <English>Place ambient vehicles in locations</English>
+    <English>Spawns parked vehicles at objectives to add visual density. These are uncrewed and static — they do not patrol or respond to combat.</English>
     <Chinesesimp>将周围车辆放置在适当位置</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_NONE">
@@ -307,8 +307,8 @@
     <Chinesesimp>驻防步兵组</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_COMMENT">
-    <English>Infantry groups to guard locations(None if no infantry groups)</English>
-    <Chinesesimp>步兵小组守卫地点（如果没有步兵小组则无）</Chinesesimp>
+    <English>Number of infantry groups assigned to garrison and patrol buildings within each objective. Has no effect if no infantry groups are spawned.</English>
+    <Chinesesimp>步兵小组守卫地点</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_NONE">
     <English>None</English>
@@ -331,7 +331,7 @@
     <Chinesesimp>驻防步兵半径</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_RADIUS_COMMENT">
-    <English>Radial range (metres) to search for enterable buildings</English>
+    <English>Radius in metres within which garrison groups search for enterable buildings to occupy. Increase for large spread-out objectives.</English>
     <Chinesesimp>搜索可进入建筑物的径向范围(米)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_PATROL_PERCENT">
@@ -339,7 +339,7 @@
     <Chinesesimp>驻防步兵建筑巡逻</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_PATROL_PERCENT_COMMENT">
-    <English>Percentage of units to patrol buildings within guard radius</English>
+    <English>Percentage of garrison groups that will actively patrol between buildings rather than remaining static. Higher values create more visible activity but increase CPU load.</English>
     <Chinesesimp>在警戒半径内巡逻建筑物的单位百分比</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_NONE">
@@ -361,6 +361,18 @@
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_ALL">
     <English>100%</English>
     <Chinesesimp>100%</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_MP_ON_EACH_SPAWN">
+    <English>On unit spawn (SQF):</English>
+</Key>
+<Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_COMMENT">
+    <English>SQF code executed each time a unit from this module spawns. _this = [unit, profileID, side, faction]. Runs server-side in a scheduled thread. To affect all clients use remoteExec or publicVariable. hint and player commands will have no effect. Example: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</English>
+</Key>
+<Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_ONCE">
+    <English>Run once per unit:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_ONCE_COMMENT">
+    <English>Yes: the SQF hook runs only on the first spawn of each unit profile — useful for one-time setup like adding event handlers. No: runs every time the profile re-spawns after being virtual.</English>
 </Key>
 <Key ID="STR_ALIVE_MP_USAGE">
     <English>Place the Military Placement module in the editor, select the desired Size, Weighting and Faction from the drop down. Custom factions can be entered in the text box (separated by a comma). These will overwrite the default factions in the drop down.</English>

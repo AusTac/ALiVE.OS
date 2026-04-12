@@ -149,6 +149,13 @@ switch(_operation) do {
         _result = _args;
     };
 
+    case "onEachSpawn": {
+        _result = [_logic, _operation, _args, ""] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "onEachSpawnOnce": {
+        _result = [_logic, _operation, _args, true] call ALIVE_fnc_OOsimpleOperation;
+    };
+
     case "faction": {
         _result = [_logic,_operation,_args,DEFAULT_FACTION,[] call ALiVE_fnc_configGetFactions] call ALIVE_fnc_OOsimpleOperation;
     };
@@ -260,6 +267,9 @@ switch(_operation) do {
                 [true] call ALIVE_fnc_timer;
             };
             // DEBUG -------------------------------------------------------------------------------------
+
+            private _onEachSpawn = [_logic, "onEachSpawn"] call MAINCLASS;
+            private _onEachSpawnOnce = [_logic, "onEachSpawnOnce"] call MAINCLASS;
 
             private _infantryClass = [_logic, "speInfantryClass"] call MAINCLASS;
             private _aiBehaviour = [_logic, "speInfantryBehaviour"] call MAINCLASS;
@@ -440,7 +450,7 @@ switch(_operation) do {
                     if (_i == 0 && {count _infantryGroups > 0}) then {
 
 	                    private _group = _groups select _i;
-	                    private _guards = [_group, _position, _direction, true, _faction, false, true, _aiBehaviour] call ALIVE_fnc_createProfilesFromGroupConfig;
+	                    private _guards = [_group, _position, _direction, true, _faction, false, true, _aiBehaviour, _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
 	                   // Spawn static virtual group and get them to defend
 	                    {

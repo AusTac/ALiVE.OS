@@ -10,7 +10,24 @@ class CfgSFX
 };
 class CfgVehicles
 {
-    class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase
+        {
+            class Edit;
+            class Combo;
+            class ModuleDescription;
+        };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase
+        {
+            class ALiVE_ModuleSubTitle;
+        };
+        class ModuleDescription;
+    };
     class ADDON : ModuleAliveBase
     {
         scope = 2;
@@ -21,333 +38,207 @@ class CfgVehicles
         isGlobal = 1;
         icon = "x\alive\addons\mil_ato\icon_mil_ATO.paa";
         picture = "x\alive\addons\mil_ato\icon_mil_ATO.paa";
-        class Arguments
+        class Attributes : AttributesBase
         {
-                class debug
+                // ---- General --------------------------------------------------------
+                class HDR_GENERAL : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ato_HDR_GENERAL"; displayName = "GENERAL"; };
+                class debug : Combo
                 {
+                        property = "ALiVE_mil_ato_debug";
                         displayName = "$STR_ALIVE_ATO_DEBUG";
-                        description = "$STR_ALIVE_ATO_DEBUG_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_DEBUG_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
+                            class Yes { name = "Yes"; value = true; };
+                            class No { name = "No"; value = false; default = 1; };
                         };
                 };
-                class persistent
+                class persistent : Combo
                 {
+                        property = "ALiVE_mil_ato_persistent";
                         displayName = "$STR_ALIVE_ATO_PERSISTENT";
-                        description = "$STR_ALIVE_ATO_PERSISTENT_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_PERSISTENT_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
+                            class No { name = "No"; value = false; default = 1; };
+                            class Yes { name = "Yes"; value = true; };
                         };
                 };
-                class faction
+                class faction : Edit
                 {
+                        property = "ALiVE_mil_ato_faction";
                         displayName = "$STR_ALIVE_ATO_FACTION";
-                        description = "$STR_ALIVE_ATO_FACTION_COMMENT";
-                        defaultValue = "OPF_F";
+                        tooltip = "$STR_ALIVE_ATO_FACTION_COMMENT";
+                        defaultValue = """OPF_F""";
                 };
-                class types
+                // ---- Air Operations ------------------------------------------------
+                class HDR_OPS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ato_HDR_OPS"; displayName = "AIR OPERATIONS"; };
+                class types : Edit
                 {
+                        property = "ALiVE_mil_ato_types";
                         displayName = "$STR_ALIVE_ATO_TYPES";
-                        description = "$STR_ALIVE_ATO_TYPES_COMMENT";
-                        defaultValue = "[''CAP'',''DCA'',''SEAD'',''CAS'',''Strike'',''Recce'']";
+                        tooltip = "$STR_ALIVE_ATO_TYPES_COMMENT";
+                        defaultValue = """['CAP','DCA','SEAD','CAS','Strike','Recce']""";
                 };
-
-                class airspace
+                class airspace : Edit
                 {
+                        property = "ALiVE_mil_ato_airspace";
                         displayName = "$STR_ALIVE_ATO_AIRSPACE";
-                        description = "$STR_ALIVE_ATO_AIRSPACE_COMMENT";
-                        defaultValue = "";
+                        tooltip = "$STR_ALIVE_ATO_AIRSPACE_COMMENT";
+                        defaultValue = """""";
                 };
-                class createHQ
+                class createHQ : Combo
                 {
+                        property = "ALiVE_mil_ato_createHQ";
                         displayName = "$STR_ALIVE_ATO_CREATE_HQ";
-                        description = "$STR_ALIVE_ATO_CREATE_HQ_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_CREATE_HQ_COMMENT";
+                        defaultValue = """true""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                        default = 1;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                };
+                            class Yes { name = "Yes"; value = true; default = 1; };
+                            class No { name = "No"; value = false; };
                         };
                 };
-                class placeAir
+                class placeAir : Combo
                 {
+                        property = "ALiVE_mil_ato_placeAir";
                         displayName = "$STR_ALIVE_ATO_PLACE_AIR";
-                        description = "$STR_ALIVE_ATO_PLACE_AIR_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_PLACE_AIR_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
+                            class Yes { name = "Yes"; value = true; };
+                            class No { name = "No"; value = false; default = 1; };
                         };
                 };
-                class placeAA
+                class placeAA : Combo
                 {
+                        property = "ALiVE_mil_ato_placeAA";
                         displayName = "$STR_ALIVE_ATO_PLACE_AA";
-                        description = "$STR_ALIVE_ATO_PLACE_AA_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_PLACE_AA_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
+                            class Yes { name = "Yes"; value = true; };
+                            class No { name = "No"; value = false; default = 1; };
                         };
                 };
-                class generateTasks
+                class generateTasks : Combo
                 {
+                        property = "ALiVE_mil_ato_generateTasks";
                         displayName = "$STR_ALIVE_ATO_GENERATE_TASKS";
-                        description = "$STR_ALIVE_ATO_GENERATE_TASKS_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_GENERATE_TASKS_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
+                            class No { name = "No"; value = false; default = 1; };
+                            class Yes { name = "Yes"; value = true; };
                         };
                 };
-                class generateSEADTasks
+                class generateSEADTasks : Combo
                 {
+                        property = "ALiVE_mil_ato_generateSEADTasks";
                         displayName = "$STR_ALIVE_ATO_GENERATE_SEADTASKS";
-                        description = "$STR_ALIVE_ATO_GENERATE_SEADTASKS_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_GENERATE_SEADTASKS_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
+                            class No { name = "No"; value = false; default = 1; };
+                            class Yes { name = "Yes"; value = true; };
                         };
                 };
-                class Resupply
+                class Resupply : Combo
                 {
+                        property = "ALiVE_mil_ato_Resupply";
                         displayName = "$STR_ALIVE_ATO_RESUPPLY";
-                        description = "$STR_ALIVE_ATO_RESUPPLY_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_RESUPPLY_COMMENT";
+                        defaultValue = """false""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                        default = 1;
-                                };
+                            class Yes { name = "Yes"; value = true; };
+                            class No { name = "No"; value = false; default = 1; };
                         };
                 };
-                class broadcastOnRadio
+                class broadcastOnRadio : Combo
                 {
+                        property = "ALiVE_mil_ato_broadcastOnRadio";
                         displayName = "$STR_ALIVE_ATO_BROADCASTONRADIO";
-                        description = "$STR_ALIVE_ATO_BROADCASTONRADIO_COMMENT";
+                        tooltip = "$STR_ALIVE_ATO_BROADCASTONRADIO_COMMENT";
+                        defaultValue = """true""";
                         class Values
                         {
-                                class Yes
-                                {
-                                        name = "Yes";
-                                        value = true;
-                                        default = 1;
-                                };
-                                class No
-                                {
-                                        name = "No";
-                                        value = false;
-                                };
+                            class Yes { name = "Yes"; value = true; default = 1; };
+                            class No { name = "No"; value = false; };
                         };
                 };
-                class pilotbuilding
+                // ---- Runway Configuration ------------------------------------------
+                class HDR_RUNWAY : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ato_HDR_RUNWAY"; displayName = "RUNWAY CONFIGURATION"; };
+                class pilotbuilding : Edit
                 {
+                        property = "ALiVE_mil_ato_pilotbuilding";
                         displayName = "$STR_ALIVE_ATO_PILOTBUILDING";
-                        description = "$STR_ALIVE_ATO_PILOTBUILDING_COMMENT";
-                        defaultValue = "";
+                        tooltip = "$STR_ALIVE_ATO_PILOTBUILDING_COMMENT";
+                        defaultValue = """""";
                         typeName = "STRING";
                 };
-                class runwaystartpos
+                class runwaystartpos : Edit
                 {
+                        property = "ALiVE_mil_ato_runwaystartpos";
                         displayName = "$STR_ALIVE_ATO_RUNWAYSTARTPOS";
-                        description = "$STR_ALIVE_ATO_RUNWAYSTARTPOS_COMMENT";
-                        defaultValue = "";
+                        tooltip = "$STR_ALIVE_ATO_RUNWAYSTARTPOS_COMMENT";
+                        defaultValue = """""";
                 };
-                class runwayendpos
+                class runwayendpos : Edit
                 {
+                        property = "ALiVE_mil_ato_runwayendpos";
                         displayName = "$STR_ALIVE_ATO_RUNWAYENDPOS";
-                        description = "$STR_ALIVE_ATO_RUNWAYENDPOS_COMMENT";
-                        defaultValue = "";
+                        tooltip = "$STR_ALIVE_ATO_RUNWAYENDPOS_COMMENT";
+                        defaultValue = """""";
                 };
-                class runwaywidth
+                class runwaywidth : Edit
                 {
+                        property = "ALiVE_mil_ato_runwaywidth";
                         displayName = "$STR_ALIVE_ATO_RUNWAYWIDTH";
-                        description = "$STR_ALIVE_ATO_RUNWAYWIDTH_COMMENT";
-                        defaultValue = "";
-                };    
+                        tooltip = "$STR_ALIVE_ATO_RUNWAYWIDTH_COMMENT";
+                        defaultValue = """""";
+                };
+                class ModuleDescription : ModuleDescription {};
         };
         class ModuleDescription
         {
-            //description = "$STR_ALIVE_OPCOM_COMMENT"; // Short description, will be formatted as structured text
-            description[] = {
-                    "$STR_ALIVE_ATO_COMMENT",
-                    "",
-                    "$STR_ALIVE_ATO_USAGE"
-            };
-            sync[] = {"ALiVE_mil_OPCOM"}; // Array of synced entities (can contain base classes)
-
+            description[] = {"$STR_ALIVE_ATO_COMMENT","","$STR_ALIVE_ATO_USAGE"};
+            sync[] = {"ALiVE_mil_OPCOM"};
             class ALiVE_mil_OPCOM
             {
-                description[] = { // Multi-line descriptions are supported
-                    "$STR_ALIVE_OPCOM_COMMENT",
-                    "",
-                    "$STR_ALIVE_OPCOM_USAGE"
-                };
-                position = 1; // Position is taken into effect
-                direction = 0; // Direction is taken into effect
-                optional = 1; // Synced entity is optional
-                duplicate = 1; // Multiple entities of this type can be synced
+                description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"};
+                position = 1; direction = 0; optional = 1; duplicate = 1;
             };
-
         };
     };
     class StaticMGWeapon;
-    class AAA_System_01_base_F : StaticMGWeapon
-    {
-        class textureSources
-        {
-            class Sand
-            {
-                factions[] = {"BLU_F","OPF_F"};
-            };
-        };
-    };
-    class B_AAA_System_01_F : AAA_System_01_base_F
-    {
-        class EventHandlers;
-    };
+    class AAA_System_01_base_F : StaticMGWeapon { class textureSources { class Sand { factions[] = {"BLU_F","OPF_F"}; }; }; };
+    class B_AAA_System_01_F : AAA_System_01_base_F { class EventHandlers; };
     class O_AAA_System_01_F : B_AAA_System_01_F
     {
-        class EventHandlers: EventHandlers {
-            init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};";
-        };
-        crew = "O_UAV_AI";
-        faction = "OPF_F";
-        side = 0;
-        typicalCargo[] = {"O_UAV_AI"};
-        textureList[] = {"Sand",1};
+        class EventHandlers: EventHandlers { init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};"; };
+        crew = "O_UAV_AI"; faction = "OPF_F"; side = 0; typicalCargo[] = {"O_UAV_AI"}; textureList[] = {"Sand",1};
     };
-    class SAM_System_01_base_F : StaticMGWeapon
-    {
-
-        class textureSources
-        {
-            class Sand
-            {
-                factions[] = {"BLU_F","OPF_F"};
-            };
-        };
-    };
-    class SAM_System_02_base_F : StaticMGWeapon
-    {
-        class textureSources
-        {
-            class Sand
-            {
-                factions[] = {"BLU_F","OPF_F"};
-            };
-        };
-    };
-    class B_SAM_System_01_F : SAM_System_01_base_F
-    {
-        class EventHandlers;
-    };
+    class SAM_System_01_base_F : StaticMGWeapon { class textureSources { class Sand { factions[] = {"BLU_F","OPF_F"}; }; }; };
+    class SAM_System_02_base_F : StaticMGWeapon { class textureSources { class Sand { factions[] = {"BLU_F","OPF_F"}; }; }; };
+    class B_SAM_System_01_F : SAM_System_01_base_F { class EventHandlers; };
     class O_SAM_System_01_F : B_SAM_System_01_F
     {
-        class EventHandlers: EventHandlers {
-            init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};";
-        };
-        crew = "O_UAV_AI";
-        faction = "OPF_F";
-        side = 0;
-        typicalCargo[] = {"O_UAV_AI"};
-        textureList[] = {"Sand",1};
+        class EventHandlers: EventHandlers { init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};"; };
+        crew = "O_UAV_AI"; faction = "OPF_F"; side = 0; typicalCargo[] = {"O_UAV_AI"}; textureList[] = {"Sand",1};
     };
-    class B_SAM_System_02_F : SAM_System_02_base_F
-    {
-        class EventHandlers;
-    };
+    class B_SAM_System_02_F : SAM_System_02_base_F { class EventHandlers; };
     class O_SAM_System_02_F : B_SAM_System_02_F
     {
-        class EventHandlers: EventHandlers {
-            init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};";
-        };
-        crew = "O_UAV_AI";
-        faction = "OPF_F";
-        side = 0;
-        typicalCargo[] = {"O_UAV_AI"};
-        textureList[] = {"Sand",1};
+        class EventHandlers: EventHandlers { init = "if (local (_this select 0)) then {[(_this select 0), """", false, false] call bis_fnc_initVehicle;};"; };
+        crew = "O_UAV_AI"; faction = "OPF_F"; side = 0; typicalCargo[] = {"O_UAV_AI"}; textureList[] = {"Sand",1};
     };
     class Sound;
-    class Sound_AirRaidSiren : Sound
-    {
-        author = "ALiVE Team";
-        displayName = "Air Raid Siren";
-        scope = 2;
-        sound = "AirRaidSiren";
-    };
+    class Sound_AirRaidSiren : Sound { author = "ALiVE Team"; displayName = "Air Raid Siren"; scope = 2; sound = "AirRaidSiren"; };
 };
-

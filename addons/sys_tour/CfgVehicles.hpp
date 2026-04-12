@@ -1,5 +1,14 @@
 class CfgVehicles {
-    class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
     class ADDON: ModuleAliveBase {
         scope = 2;
         displayName = "$STR_ALIVE_TOUR";
@@ -9,27 +18,21 @@ class CfgVehicles {
         isGlobal = 1;
         icon = "x\alive\addons\sys_tour\icon_sys_tour.paa";
         picture = "x\alive\addons\sys_tour\icon_sys_tour.paa";
-        class Arguments
+        class Attributes : AttributesBase
         {
-            class debug
+            class debug : Combo
             {
+                    property = "ALiVE_sys_tour_debug";
                     displayName = "$STR_ALIVE_TOUR_DEBUG";
-                    description = "$STR_ALIVE_TOUR_DEBUG_COMMENT";
+                    tooltip = "$STR_ALIVE_TOUR_DEBUG_COMMENT";
+                    defaultValue = """true""";
                     class Values
                     {
-                            class Yes
-                            {
-                                    name = "Yes";
-                                    value = true;
-                                    default = 1;
-                            };
-                            class No
-                            {
-                                    name = "No";
-                                    value = false;
-                            };
+                        class Yes { name = "Yes"; value = true; default = 1; };
+                        class No { name = "No"; value = false; };
                     };
             };
+            class ModuleDescription : ModuleDescription {};
         };
     };
 };

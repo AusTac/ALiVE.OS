@@ -55,7 +55,7 @@
     <Chinesesimp>派系:</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_FACTIONS_COMMENT">
-    <English>Chooses the factions of CQB units</English>
+    <English>Faction(s) to use when Placement is set to Static. Enter a single classname or multiple separated by commas, no spaces, no quotes — e.g. OPF_F,OPF_G_F. All factions must be on the same side. Has no effect when Placement is set to Dominant.</English>
     <Chinesesimp>选择CQB单位的派系</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_TYPE">
@@ -103,16 +103,16 @@
     <Chinesesimp>黑名单标记:</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_BLACKLIST_COMMENT">
-    <English>Markers where no CQB will be present (optional)</English>
-    <Chinesesimp>不存在CQB的标记(可选)</Chinesesimp>
+    <English>Excludes buildings inside this marker (or markers) from CQB. Enter marker names separated by commas, no spaces, no quotes — e.g. marker1,marker2. Leave blank for no exclusions.</English>
+    <Chinesesimp>不存在CQB的标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_WHITELIST">
     <English>TAOR Marker:</English>
     <Chinesesimp>TAOR标记:</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_WHITELIST_COMMENT">
-    <English>Markers where CQB will be present (optional, opposite to Blacklist)</English>
-    <Chinesesimp>CQB将出现的标记(可选,与黑名单相对)</Chinesesimp>
+    <English>Restricts CQB to buildings inside this marker (or markers). Enter marker names separated by commas, no spaces, no quotes — e.g. marker1,marker2. Leave blank for no restriction. Overridden if this module is synced to a Placement module.</English>
+    <Chinesesimp>CQB将出现的标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_USEDOMINANTFACTION">
     <English>Placement:</English>
@@ -247,7 +247,7 @@
     <Chinesesimp>静态武器类别名称:</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_STATICWEAPONS_CLASSNAMES_COMMENT">
-    <English>Static weapons that can spawn</English>
+    <English>Classnames of static weapons eligible to spawn in CQB areas. Separate multiple classnames with commas, no spaces, no quotes — e.g. B_HMG_01_high_F,O_Mortar_01_F. Defaults to a mix of HMG and mortar classnames.</English>
     <Chinesesimp>可以生成的静态武器</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_UNIT_BLACKLIST">
@@ -255,8 +255,21 @@
     <Chinesesimp>黑名单单位:</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CQB_UNIT_BLACKLIST_COMMENT">
-    <English>Blacklist Units from this CQB module (optional)</English>
-    <Chinesesimp>本CQB模块的黑名单单位(可选)</Chinesesimp>
+    <English>Prevents specific unit group classnames from being used by this CQB module. Enter group classnames separated by commas, no spaces, no quotes — e.g. OPF_G_Inf_AT_F,OPF_G_Inf_AA_F.</English>
+    <Chinesesimp>本CQB模块的黑名单单位</Chinesesimp>
 </Key>
 
+<Key ID="STR_ALIVE_CQB_ON_EACH_SPAWN">
+    <English>On unit spawn (SQF):</English>
+</Key>
+<Key ID="STR_ALIVE_CQB_ON_EACH_SPAWN_COMMENT">
+    <English>SQF code executed each time a CQB unit spawns. _this = [unit, profileID, side, faction]. Runs server-side in a scheduled thread. To affect all clients use remoteExec or publicVariable. hint and player commands will have no effect. Example: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</English>
+</Key>
+<Key ID="STR_ALIVE_CQB_ON_EACH_SPAWN_ONCE">
+    <English>Run once per unit:</English>
+</Key>
+<Key ID="STR_ALIVE_CQB_ON_EACH_SPAWN_ONCE_COMMENT">
+    <English>Yes: the SQF hook runs only on the first spawn of each unit — useful for one-time setup like adding event handlers. No: runs every time the unit re-spawns.</English>
+</Key>
 </Container></Package></Project>
+

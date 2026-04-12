@@ -71,7 +71,7 @@
     <Chinesesimp>阵营</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_FACTION_COMMENT">
-    <English>Select the faction for air taskings.</English>
+    <English>The faction whose air assets this module will command. Enter a single faction classname — e.g. OPF_F. Must match the faction used on the synced AI Commander.</English>
     <Chinesesimp>选择空中任务的势力</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_TYPES">
@@ -79,7 +79,7 @@
     <Chinesesimp>可用的ATO</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_TYPES_COMMENT">
-    <English>Select the type of air tasking orders, in order of priority. Choices are SEAD, DCA, CAP, CAS, Strike, Recce</English>
+    <English>SQF array of air tasking order types, in priority order. Valid values: CAP, DCA, SEAD, CAS, Strike, Recce. Example: ['CAP','DCA','SEAD','CAS','Strike','Recce']. Remove types to disable them. Order determines priority when multiple tasks are available.</English>
     <Chinesesimp>按优先级顺序选择空中任务指令的类型。选择有SEAD、DCA、CAP、CAS、Strike、Recce</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_AIRSPACE">
@@ -87,7 +87,7 @@
     <Chinesesimp>空域标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_AIRSPACE_COMMENT">
-    <English>Enter the marker names representing the airspace managed by this module</English>
+    <English>Markers defining the airspace managed by this module. Enter marker names separated by commas, no spaces, no quotes — e.g. marker1,marker2. Aircraft will conduct CAP and DCA within these boundaries. Leave blank to use the full map.</English>
     <Chinesesimp>输入表示此模块管理的空域的标记名称</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ATO_USAGE">

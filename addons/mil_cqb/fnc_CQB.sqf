@@ -220,6 +220,13 @@ switch(_operation) do {
             if (_useDominantFaction isEqualType "") then {_useDominantFaction = (_useDominantFaction == "true")};
             _logic setVariable ["CQB_UseDominantFaction", _useDominantFaction];
 
+            private _CQB_onEachSpawn = _logic getvariable ["onEachSpawn", ""];
+            _logic setVariable ["onEachSpawn", _CQB_onEachSpawn];
+
+            private _CQB_onEachSpawnOnce = _logic getvariable ["onEachSpawnOnce", true];
+            if (_CQB_onEachSpawnOnce isEqualType "") then {_CQB_onEachSpawnOnce = (_CQB_onEachSpawnOnce == "true")};
+            _logic setVariable ["onEachSpawnOnce", _CQB_onEachSpawnOnce];
+
             private _CQB_Locations = _logic getvariable ["CQB_LOCATIONTYPE","towns"];
 
             if (isnil QMOD(smoothSpawn)) then {MOD(smoothSpawn) = 0.3};
@@ -1279,6 +1286,22 @@ switch(_operation) do {
 
             [_logic, "addGroup", [_house, _grp]] call ALiVE_fnc_CQB;
             [_logic, "addStaticWeapons", [_house, _staticWeaponsIntensity]] call ALiVE_fnc_CQB;
+
+            // Execute onEachSpawn hook if defined
+            private _cqbOnEachSpawn = _logic getvariable ["onEachSpawn", ""];
+            if (_cqbOnEachSpawn != "") then {
+                private _cqbOnEachSpawnOnce = _logic getvariable ["onEachSpawnOnce", true];
+                {
+                    private _unit = _x;
+                    private _profileID = _unit getvariable ["profileID", ""];
+                    private _side = side (group _unit);
+                    private _faction = _unit getvariable ["faction", ""];
+                    if (!_cqbOnEachSpawnOnce || {!(_unit getvariable ["ALIVE_hookFired", false])}) then {
+                        _unit setVariable ["ALIVE_hookFired", true];
+                        [_unit, _profileID, _side, _faction] spawn (compile _cqbOnEachSpawn);
+                    };
+                } forEach (units _grp);
+            };
 
             {
                 private _unit = _x;

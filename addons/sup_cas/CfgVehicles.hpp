@@ -1,5 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 2;
@@ -10,42 +19,17 @@ class CfgVehicles {
                 isGlobal = 2;
                 icon = "x\alive\addons\sup_cas\icon_sup_cas.paa";
                 picture = "x\alive\addons\sup_cas\icon_sup_cas.paa";
-                class Arguments
+                class Attributes : AttributesBase
                 {
-                        class cas_callsign
-                        {
-                                displayName = "$STR_ALIVE_CAS_CALLSIGN";
-                                description = "$STR_ALIVE_CAS_CALLSIGN_DESC";
-                                defaultValue ="EAGLE ONE";
-                        };
-
-                        class cas_type
-                        {
-                                displayName = "$STR_ALIVE_CAS_TYPE";
-                                description = "$STR_ALIVE_CAS_TYPE_DESC";
-                                defaultValue ="B_Heli_Attack_01_F";
-                        };
-                        class cas_height
-                        {
-                                displayName = "$STR_ALIVE_CAS_HEIGHT";
-                                description = "$STR_ALIVE_CAS_HEIGHT_DESC";
-                                defaultValue=0;
-                        };
-                        class cas_code
-                        {
-                                displayName = "$STR_ALIVE_CAS_CODE";
-                                description = "$STR_ALIVE_CAS_CODE_DESC";
-                                defaultValue="";
-                        };
+                        class cas_callsign : Edit { property = "ALiVE_sup_cas_cas_callsign"; displayName = "$STR_ALIVE_CAS_CALLSIGN"; tooltip = "$STR_ALIVE_CAS_CALLSIGN_DESC"; defaultValue = """EAGLE ONE"""; };
+                        class cas_type : Edit { property = "ALiVE_sup_cas_cas_type"; displayName = "$STR_ALIVE_CAS_TYPE"; tooltip = "$STR_ALIVE_CAS_TYPE_DESC"; defaultValue = """B_Heli_Attack_01_F"""; };
+                        class cas_height : Edit { property = "ALiVE_sup_cas_cas_height"; displayName = "$STR_ALIVE_CAS_HEIGHT"; tooltip = "$STR_ALIVE_CAS_HEIGHT_DESC"; defaultValue = """0"""; };
+                        class cas_code : Edit { property = "ALiVE_sup_cas_cas_code"; displayName = "$STR_ALIVE_CAS_CODE"; tooltip = "$STR_ALIVE_CAS_CODE_DESC"; defaultValue = """"""; };
+                        class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription
                 {
-                        //description = "$STR_ALIVE_CAS_COMMENT"; // Short description, will be formatted as structured text
-                        description[] = {
-                                "$STR_ALIVE_CAS_COMMENT",
-                                "",
-                                "$STR_ALIVE_CAS_USAGE"
-                        };
+                        description[] = {"$STR_ALIVE_CAS_COMMENT","","$STR_ALIVE_CAS_USAGE"};
                 };
         };
 };

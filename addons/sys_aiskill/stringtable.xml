@@ -27,7 +27,7 @@
 	<Chinesesimp>招募派系：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_RECRUIT_COMMENT">
-    <English>Faction units will be given recruit skill level, seperate multiple factions with commas (BLU_F,OPF_F,IND_F,BLU_G_F)</English>
+    <English>Faction units will be given recruit skill level. Separate multiple factions with commas, no spaces, no quotes — e.g. BLU_F,OPF_F</English>
 	<Chinesesimp>派系单位将获得招募技能等级,用逗号分隔多个派系(BLU_F,OPF_F,IND_F,BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_REGULAR">
@@ -35,7 +35,7 @@
 	<Chinesesimp>常规派系：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_REGULAR_COMMENT">
-    <English>Faction units will be given regular skill level, seperate multiple factions with commas (BLU_F,OPF_F,IND_F,BLU_G_F)</English>
+    <English>Faction units will be given regular skill level. Separate multiple factions with commas, no spaces, no quotes — e.g. BLU_F,OPF_F</English>
 	<Chinesesimp>派系单位将获得常规技能等级,用逗号分隔多个派系(BLU_F,OPF_F,IND_F,BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_VETERAN">
@@ -43,7 +43,7 @@
 	<Chinesesimp>资深派系：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_VETERAN_COMMENT">
-    <English>Faction units will be given veteran skill level, seperate multiple factions with commas (BLU_F,OPF_F,IND_F,BLU_G_F)</English>
+    <English>Faction units will be given veteran skill level. Separate multiple factions with commas, no spaces, no quotes — e.g. BLU_F,OPF_F</English>
 	<Chinesesimp>派系单位将获得资深技能等级,用逗号分隔多个派系(BLU_F,OPF_F,IND_F,BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_EXPERT">
@@ -51,7 +51,7 @@
 	<Chinesesimp>专家派系：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_EXPERT_COMMENT">
-    <English>Faction units will be given expert skill level, seperate multiple factions with commas (BLU_F,OPF_F,IND_F,BLU_G_F)</English>
+    <English>Faction units will be given expert skill level. Separate multiple factions with commas, no spaces, no quotes — e.g. BLU_F,OPF_F</English>
 	<Chinesesimp>派系单位将获得专家技能等级,用逗号分隔多个派系(BLU_F,OPF_F,IND_F,BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM">
@@ -59,7 +59,7 @@
 	<Chinesesimp>自定义技能：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_COMMENT">
-    <English>Factions that will have the following custom skill settings, seperate multiple factions with commas (BLU_F,OPF_F,IND_F,BLU_G_F)</English>
+    <English>Factions that will receive the custom skill values below. Separate multiple factions with commas, no spaces, no quotes — e.g. BLU_F,OPF_F</English>
 	<Chinesesimp>将具有以下自定义技能设置的派系,用逗号分隔多个派系(BLU_F,OPF_F,IND_F,BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_ABILITY_MIN">
@@ -67,7 +67,7 @@
 	<Chinesesimp>最低能力：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_ABILITY_MIN_COMMENT">
-    <English>Minimum Ability</English>
+    <English>Minimum general ability (0.0–1.0). Combined with maximum to give each unit a random ability value within the range. Lower = weaker AI overall.</English>
 	<Chinesesimp>最低能力</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_ABILITY_MAX">
@@ -75,7 +75,7 @@
 	<Chinesesimp>最大能力：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_ABILITY_MAX_COMMENT">
-    <English>Maximum Ability</English>
+    <English>Maximum general ability (0.0–1.0). Combined with minimum to give each unit a random ability value within the range. Higher = stronger AI overall.</English>
 	<Chinesesimp>最大能力</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_ACCURACY">
@@ -83,7 +83,7 @@
 	<Chinesesimp>瞄准精度：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_ACCURACY_COMMENT">
-    <English>Aim Accuracy</English>
+    <English>How accurately the unit aims (0.0–1.0). Lower values cause more scatter. Works alongside Aim Shake and Aim Speed.</English>
 	<Chinesesimp>瞄准精度</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_SHAKE">
@@ -91,11 +91,11 @@
 	<Chinesesimp>瞄准摇晃：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_SHAKE_COMMENT">
-    <English>Aim Shake</English>
+    <English>How much the unit's aim wobbles between shots (0.0–1.0). Higher values increase weapon sway. Works alongside Aim Accuracy.</English>
 	<Chinesesimp>瞄准摇晃</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_SPEED">
-    <English>Aim Speed</English>
+    <English>How quickly the unit acquires and tracks targets (0.0–1.0). Higher values mean faster target acquisition.</English>
 	<Chinesesimp>瞄准速度</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_AIM_SPEED_COMMENT">
@@ -107,7 +107,7 @@
 	<Chinesesimp>耐力：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_ENDURANCE_COMMENT">
-    <English>Endurance</English>
+    <English>Unit stamina and fatigue resistance (0.0–1.0). Higher values allow the unit to run longer before becoming fatigued.</English>
 	<Chinesesimp>耐力</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_SPOT_DISTANCE">
@@ -115,7 +115,7 @@
 	<Chinesesimp>发现距离：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_SPOT_DISTANCE_COMMENT">
-    <English>Spot Distance</English>
+    <English>Maximum detection range multiplier (0.0–1.0). Higher values allow the unit to spot enemies at greater distances.</English>
 	<Chinesesimp>发现距离</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_SPOT_TIME">
@@ -123,7 +123,7 @@
 	<Chinesesimp>发现时间：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_SPOT_TIME_COMMENT">
-    <English>Spot Time</English>
+    <English>How quickly the unit spots a detected enemy (0.0–1.0). Lower values mean the unit is slower to confirm and react to contacts.</English>
 	<Chinesesimp>发现时间</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_COURAGE">
@@ -131,7 +131,7 @@
 	<Chinesesimp>勇气：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_COURAGE_COMMENT">
-    <English>Courage</English>
+    <English>Unit willingness to advance and engage under fire (0.0–1.0). Lower values make units more likely to fall back or suppress rather than assault.</English>
 	<Chinesesimp>勇气</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_FLEEING">
@@ -148,7 +148,7 @@
 	<Chinesesimp>装填：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_RELOAD_COMMENT">
-    <English>Reload</English>
+    <English>How quickly the unit attempts to reload after firing (0.0–1.0). Higher values reduce reload time.</English>
 	<Chinesesimp>装填</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_COMMANDING">
@@ -156,7 +156,7 @@
 	<Chinesesimp>指挥：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_COMMANDING_COMMENT">
-    <English>Commanding</English>
+    <English>Quality of the unit's command decisions when acting as a group leader (0.0–1.0). Higher values improve squad-level tactics and target prioritisation.</English>
 	<Chinesesimp>指挥</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_GENERAL">
@@ -164,7 +164,7 @@
 	<Chinesesimp>将军：</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AISKILL_CUSTOM_GENERAL_COMMENT">
-    <English>General</English>
+    <English>Overall AI skill multiplier (0.0–1.0). Acts as a global modifier affecting all other skill traits. Set lower to broadly weaken a faction without adjusting individual values.</English>
 	<Chinesesimp>将军</Chinesesimp>
 </Key>
 </Container></Package></Project>

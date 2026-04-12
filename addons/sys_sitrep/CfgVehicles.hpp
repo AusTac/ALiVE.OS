@@ -1,6 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
-
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 1;
@@ -12,5 +20,4 @@ class CfgVehicles {
                 picture = "x\alive\addons\sys_sitrep\icon_sys_sitrep.paa";
                 author = MODULE_AUTHOR;
         };
-
 };

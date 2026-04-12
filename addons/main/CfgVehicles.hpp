@@ -3,6 +3,12 @@
 
 // Add a game logic which does nothing except requires the addon in the mission.
 
+// 3DEN UI macros - required for ATTRIBUTE_TITLE_W, ATTRIBUTE_CONTENT_W, GRID_W, GRID_H, SIZE_M
+#include "\a3\3DEN\UI\macros.inc"
+
+// Inherit A3 base edit control
+class ctrlEdit;
+
 class CfgFactionClasses {
     class Alive {
         displayName = "$STR_ALIVE_MODULE";
@@ -25,18 +31,26 @@ class Cfg3DEN
             };
         }; // Template with full-width single line title and space for content below it
 
-        // Your attribute class
+        // SubTitle header used by all ALiVE modules for section grouping
         class ALiVE_ModuleSubTitle: TitleWide
         {
-            // List of controls, structure is the same as with any other controls group
             class Controls: Controls
             {
                 class Title: Title
                 {
                     style = 2;
                     colorText[] = {1,1,1,0.4};
-                }; // Inherit existing title control. Text of any control with class Title will be changed to attribute displayName
+                };
             };
+        };
+
+        class EditMulti3; // Forward declaration of native A3 multiline edit control
+
+        // Multiline SQF code input — used for onEachSpawn hook fields across all placement modules.
+        // Inherits the native EditMulti3 control directly.
+        // A fully custom taller variant can be revisited once geometry is resolved.
+        class ALiVE_EditMultilineSQF: EditMulti3
+        {
         };
     };
     // Configuration of all objects
@@ -125,6 +139,11 @@ class CfgVehicles {
             class ALiVE_EditMulti5 : Default
             {
                 control = "EditMulti5";
+                defaultValue = "''";
+            };
+            class ALiVE_EditMultilineSQF : Default
+            {
+                control = "ALiVE_EditMultilineSQF";
                 defaultValue = "''";
             };
         };

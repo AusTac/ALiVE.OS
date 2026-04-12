@@ -1,5 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; class ALiVE_EditMultilineSQF; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 2;
@@ -10,165 +19,93 @@ class CfgVehicles {
                 isGlobal = 1;
                 icon = "x\alive\addons\mil_placement_spe\icon_mil_SPEMP.paa";
                 picture = "x\alive\addons\mil_placement_spe\icon_mil_SPEMP.paa";
-                class Arguments
+                class Attributes : AttributesBase
                 {
-                        class debug
+                        class debug : Combo
                         {
+                                property = "ALiVE_mil_placement_spe_debug";
                                 displayName = "$STR_ALIVE_SPEMP_DEBUG";
-                                description = "$STR_ALIVE_SPEMP_DEBUG_COMMENT";
+                                tooltip = "$STR_ALIVE_SPEMP_DEBUG_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
+                                    class Yes { name = "Yes"; value = true; };
+                                    class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-                        class faction
+                        class faction : Edit { property = "ALiVE_mil_placement_spe_faction"; displayName = "$STR_ALIVE_SPEMP_FACTION"; tooltip = "$STR_ALIVE_SPEMP_FACTION_COMMENT"; defaultValue = """BLU_F"""; };
+                        class priority : Edit { property = "ALiVE_mil_placement_spe_priority"; displayName = "$STR_ALIVE_SPEMP_PRIORITY"; tooltip = "$STR_ALIVE_SPEMP_PRIORITY_COMMENT"; defaultValue = """50"""; };
+                        class size : Edit { property = "ALiVE_mil_placement_spe_size"; displayName = "$STR_ALIVE_SPEMP_SIZE"; tooltip = "$STR_ALIVE_SPEMP_SIZE_COMMENT"; defaultValue = """50"""; };
+                        class speInfantryClass : Edit { property = "ALiVE_mil_placement_spe_speInfantryClass"; displayName = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS"; tooltip = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS_COMMENT"; defaultValue = """"""; };
+                        class speInfantryBehaviour : Combo
                         {
-                                displayName = "$STR_ALIVE_SPEMP_FACTION";
-                                description = "$STR_ALIVE_SPEMP_FACTION_COMMENT";
-                                defaultValue = "BLU_F";
-                        };
-                        class priority
-                        {
-                                displayName = "$STR_ALIVE_SPEMP_PRIORITY";
-                                description = "$STR_ALIVE_SPEMP_PRIORITY_COMMENT";
-                                defaultValue = "50";
-                        };
-                        class size
-                        {
-                                displayName = "$STR_ALIVE_SPEMP_SIZE";
-                                description = "$STR_ALIVE_SPEMP_SIZE_COMMENT";
-                                defaultValue = "50";
-                        };
-                        class speInfantryClass
-                        {
-                                displayName = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS";
-                                description = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS_COMMENT";
-                                defaultValue = "";
-                        };
-                        class speInfantryBehaviour
-                        {
+                                property = "ALiVE_mil_placement_spe_speInfantryBehaviour";
                                 displayName = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_BEHAVIOUR";
-                                description = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_BEHAVIOUR_COMMENT";
+                                tooltip = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_BEHAVIOUR_COMMENT";
+                                defaultValue = """AWARE""";
                                 class Values
                                 {
-                                        class AWARE
-                                        {
-                                                name = "Aware";
-                                                value = "AWARE";
-                                                default = 1;
-                                        };
-                                        class COMBAT
-                                        {
-                                                name = "Combat";
-                                                value = "COMBAT";
-                                        };
-                                        class STEALTH
-                                        {
-                                                name = "Stealth";
-                                                value = "STEALTH";
-                                        };
-                                        class SAFE
-                                        {
-                                                name = "Safe";
-                                                value = "SAFE";
-                                        };
-                                        class CARELESS
-                                        {
-                                                name = "Careless";
-                                                value = "CARELESS";
-                                        };
-      
+                                    class AWARE { name = "Aware"; value = "AWARE"; default = 1; };
+                                    class COMBAT { name = "Combat"; value = "COMBAT"; };
+                                    class STEALTH { name = "Stealth"; value = "STEALTH"; };
+                                    class SAFE { name = "Safe"; value = "SAFE"; };
+                                    class CARELESS { name = "Careless"; value = "CARELESS"; };
                                 };
                         };
-                        class speVehicleClass
+                        class speVehicleClass : Edit { property = "ALiVE_mil_placement_spe_speVehicleClass"; displayName = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_CLASS"; tooltip = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_CLASS_COMMENT"; defaultValue = """"""; };
+                        class speVehicleEmpty : Combo
                         {
-                                displayName = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_CLASS";
-                                description = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_CLASS_COMMENT";
-                                defaultValue = "";
-                        };
-                        class speVehicleEmpty
-                        {
+                                property = "ALiVE_mil_placement_spe_speVehicleEmpty";
                                 displayName = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_EMPTY";
-                                description = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_EMPTY_COMMENT";
+                                tooltip = "$STR_ALIVE_SPEMP_CUSTOM_VEHICLE_EMPTY_COMMENT";
+                                defaultValue = """false""";
                                 class Values
                                 {
-                                        class Yes
-                                        {
-                                                name = "Yes";
-                                                value = true;
-                                        };
-                                        class No
-                                        {
-                                                name = "No";
-                                                value = false;
-                                                default = 1;
-                                        };
+                                    class Yes { name = "Yes"; value = true; };
+                                    class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-                        class allowPlayerTasking
+                        class allowPlayerTasking : Combo
                         {
-                            displayName = "$STR_ALIVE_SPEMP_ALLOW_PLAYER_TASK";
-                            description = "$STR_ALIVE_SPEMP_ALLOW_PLAYER_TASK_COMMENT";
-                            class Values
-                            {
-                                class Yes
+                                property = "ALiVE_mil_placement_spe_allowPlayerTasking";
+                                displayName = "$STR_ALIVE_SPEMP_ALLOW_PLAYER_TASK";
+                                tooltip = "$STR_ALIVE_SPEMP_ALLOW_PLAYER_TASK_COMMENT";
+                                defaultValue = """true""";
+                                class Values
                                 {
-                                    name = "Yes";
-                                    value = true;
-                                    default = 1;
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
                                 };
-                                class No
-                                {
-                                    name = "No";
-                                    value = false;
-                                };
-                            };
                         };
+                        // ---- On Spawn Hook --------------------------------------------------
+                        class HDR_HOOK : ALiVE_ModuleSubTitle { property = "ALiVE_mil_placement_spe_HDR_HOOK"; displayName = "ON SPAWN HOOK"; };
+                        class onEachSpawn : ALiVE_EditMultilineSQF
+                        {
+                                property = "ALiVE_mil_placement_spe_onEachSpawn";
+                                displayName = "$STR_ALIVE_MP_ON_EACH_SPAWN";
+                                tooltip = "$STR_ALIVE_MP_ON_EACH_SPAWN_COMMENT";
+                                defaultValue = """""";
+                        };
+                        class onEachSpawnOnce : Combo
+                        {
+                                property = "ALiVE_mil_placement_spe_onEachSpawnOnce";
+                                displayName = "$STR_ALIVE_MP_ON_EACH_SPAWN_ONCE";
+                                tooltip = "$STR_ALIVE_MP_ON_EACH_SPAWN_ONCE_COMMENT";
+                                defaultValue = """true""";
+                                class Values
+                                {
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                    class No { name = "No"; value = false; };
+                                };
+                        };
+                        class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription
                 {
-                    //description = "$STR_ALIVE_OPCOM_COMMENT"; // Short description, will be formatted as structured text
-                    description[] = {
-                            "$STR_ALIVE_SPEMP_COMMENT",
-                            "",
-                            "$STR_ALIVE_SPEMP_USAGE"
-                    };
-                    sync[] = {"ALiVE_mil_OPCOM","ALiVE_mil_CQB"}; // Array of synced entities (can contain base classes)
-
-                    class ALiVE_mil_OPCOM
-                    {
-                        description[] = { // Multi-line descriptions are supported
-                            "$STR_ALIVE_OPCOM_COMMENT",
-                            "",
-                            "$STR_ALIVE_OPCOM_USAGE"
-                        };
-                        position = 1; // Position is taken into effect
-                        direction = 1; // Direction is taken into effect
-                        optional = 1; // Synced entity is optional
-                        duplicate = 1; // Multiple entities of this type can be synced
-                    };
-                    class ALiVE_mil_CQB
-                    {
-                        description[] = { // Multi-line descriptions are supported
-                            "$STR_ALIVE_CQB_COMMENT",
-                            "",
-                            "$STR_ALIVE_CQB_USAGE"
-                        };
-                        position = 1; // Position is taken into effect
-                        direction = 1; // Direction is taken into effect
-                        optional = 1; // Synced entity is optional
-                        duplicate = 1; // Multiple entities of this type can be synced
-                    };
+                    description[] = {"$STR_ALIVE_SPEMP_COMMENT","","$STR_ALIVE_SPEMP_USAGE"};
+                    sync[] = {"ALiVE_mil_OPCOM","ALiVE_mil_CQB"};
+                    class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=1; direction=1; optional=1; duplicate=1; };
+                    class ALiVE_mil_CQB { description[] = {"$STR_ALIVE_CQB_COMMENT","","$STR_ALIVE_CQB_USAGE"}; position=1; direction=1; optional=1; duplicate=1; };
                 };
         };
 };

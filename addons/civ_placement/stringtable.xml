@@ -23,7 +23,7 @@
     <Chinesesimp>战术作战责任区标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_TAOR_COMMENT">
-    <English>Tactical Area Operation Responsibility Marker</English>
+    <English>Restricts placement to objectives inside this marker (or markers). Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2. Leave blank to use the entire map.</English>
     <Chinesesimp>战术作战责任区标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_BLACKLIST">
@@ -31,7 +31,7 @@
     <Chinesesimp>黑名单标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_BLACKLIST_COMMENT">
-    <English>Exclusion Marker</English>
+    <English>Excludes objectives inside this marker (or markers) from placement. Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2.</English>
     <Chinesesimp>排除标记</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_CLUSTER_TYPE">
@@ -281,7 +281,7 @@
     <Chinesesimp>武装力量阵营</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_FACTION_COMMENT">
-    <English>Faction of the units to be placed (BLU_F, OPF_F, IND_F, BLU_G_F)</English>
+    <English>The faction whose unit roster this module will draw from. Enter a single faction classname — e.g. OPF_F. For multiple factions on the same side use the Override Factions field on the synced AI Commander instead.</English>
     <Chinesesimp>放置单位的阵营(BLU_F, OPF_F, IND_F, BLU_G_F)</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_CP_USAGE">
@@ -371,5 +371,17 @@
 <Key ID="STR_ALIVE_CP_CUSTOM_PATROL_PERCENT_ALL">
     <English>100%</English>
     <Chinesesimp>100%</Chinesesimp>
+</Key>
+<Key ID="STR_ALIVE_CP_ON_EACH_SPAWN">
+    <English>On unit spawn (SQF):</English>
+</Key>
+<Key ID="STR_ALIVE_CP_ON_EACH_SPAWN_COMMENT">
+    <English>SQF code executed each time a unit from this module spawns. _this = [unit, profileID, side, faction]. Runs server-side in a scheduled thread. To affect all clients use remoteExec or publicVariable. hint and player commands will have no effect. Example: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</English>
+</Key>
+<Key ID="STR_ALIVE_CP_ON_EACH_SPAWN_ONCE">
+    <English>Run once per unit:</English>
+</Key>
+<Key ID="STR_ALIVE_CP_ON_EACH_SPAWN_ONCE_COMMENT">
+    <English>Yes: the SQF hook runs only on the first spawn of each unit profile — useful for one-time setup like adding event handlers. No: runs every time the profile re-spawns after being virtual.</English>
 </Key>
 </Container></Package></Project>

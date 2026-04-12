@@ -201,12 +201,10 @@ switch(_operation) do {
             [_logic,"busy",false] call ALIVE_fnc_hashSet;               // select 2 select 33
             [_logic,"pendingWaypointPaths", []] call ALiVE_fnc_hashSet; // select 2 select 34
             [_logic,"isSPE",false] call ALIVE_fnc_hashSet;              // select 2 select 35
-            [_logic,"aiBehaviour","SAFE"] call ALIVE_fnc_hashSet;       // select 2 select 36 
+            [_logic,"aiBehaviour","SAFE"] call ALIVE_fnc_hashSet;       // select 2 select 36
+            [_logic,"onEachSpawn",""] call ALIVE_fnc_hashSet;             // select 2 select 37
+            [_logic,"onEachSpawnOnce",true] call ALIVE_fnc_hashSet;       // select 2 select 38
         };
-
-        /*
-        VIEW - purely visual
-        */
 
         /*
         CONTROLLER  - coordination
@@ -403,6 +401,22 @@ switch(_operation) do {
             [_logic,"aiBehaviour", _args] call ALIVE_fnc_hashSet;
         } else {
             _result = [_logic,"aiBehaviour"] call ALIVE_fnc_hashGet;
+        };
+    };
+
+    case "onEachSpawn": {
+        if (_args isEqualType "") then {
+            [_logic,"onEachSpawn", _args] call ALIVE_fnc_hashSet;
+        } else {
+            _result = [_logic,"onEachSpawn"] call ALIVE_fnc_hashGet;
+        };
+    };
+
+    case "onEachSpawnOnce": {
+        if (_args isEqualType true) then {
+            [_logic,"onEachSpawnOnce", _args] call ALIVE_fnc_hashSet;
+        } else {
+            _result = [_logic,"onEachSpawnOnce"] call ALIVE_fnc_hashGet;
         };
     };
     
@@ -1203,6 +1217,27 @@ switch(_operation) do {
 
             // profile is fully spawned and cannot be corrupted -> allow damage again
             {_x allowDamage true} foreach _units;
+
+            // --- onEachSpawn hook ---
+            // Run mission-maker code on each spawned unit.
+            // Inside the code block: _this = [unit, profileID, side, faction]
+            // Executes in a spawned (scheduled) thread - sleep/waitUntil are safe.
+            // Per-unit guard variable ALIVE_spawnCode_run prevents re-fire on
+            // re-spawn when onEachSpawnOnce = true (default behaviour).
+            private _spawnCode = [_logic, "onEachSpawn", ""] call ALIVE_fnc_hashGet;
+            if (_spawnCode != "") then {
+                private _spawnCodeCompiled = compile _spawnCode;
+                private _spawnOnce = [_logic, "onEachSpawnOnce", true] call ALIVE_fnc_hashGet;
+                private _hookFaction = [_logic, "faction", ""] call ALIVE_fnc_hashGet;
+                {
+                    private _unit = _x;
+                    if (!_spawnOnce || {!(_unit getVariable ["ALIVE_spawnCode_run", false])}) then {
+                        _unit setVariable ["ALIVE_spawnCode_run", true, true];
+                        [_unit, _profileID, _side, _hookFaction] spawn _spawnCodeCompiled;
+                    };
+                } forEach _units;
+            };
+            // --- end onEachSpawn hook ---
 
             if(_debug) then {
                 [_logic,"debug", true] call MAINCLASS;

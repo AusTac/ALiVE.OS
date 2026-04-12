@@ -168,6 +168,12 @@ switch(_operation) do {
     case "guardPatrolPercentage": {
         _result = [_logic,_operation,_args,DEFAULT_AMBIENT_GUARD_PATROL_PERCENT] call ALIVE_fnc_OOsimpleOperation;
     };
+    case "onEachSpawn": {
+        _result = [_logic, _operation, _args, ""] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "onEachSpawnOnce": {
+        _result = [_logic, _operation, _args, true] call ALIVE_fnc_OOsimpleOperation;
+    };
 
     
 
@@ -359,6 +365,8 @@ switch(_operation) do {
 
             _debug = [_logic, "debug"] call MAINCLASS;
             _faction = [_logic, "faction"] call MAINCLASS;
+            private _onEachSpawn = [_logic, "onEachSpawn"] call MAINCLASS;
+            private _onEachSpawnOnce = [_logic, "onEachSpawnOnce"] call MAINCLASS;
 
             // DEBUG -------------------------------------------------------------------------------------
             if(_debug) then {
@@ -1516,7 +1524,7 @@ switch(_operation) do {
                      for "_i" from 0 to _guardProbabilityCount -1 do {
                      	
                         _guardGroup = (selectRandom _infantryGroups);
-                        _guards = [_guardGroup, [_center, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                        _guards = [_guardGroup, [_center, _guardDistance] call CBA_fnc_RandPos, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
                         
                         // DEBUG -------------------------------------------------------------------------------------
                         if(_debug) then {
@@ -1568,7 +1576,7 @@ switch(_operation) do {
                                 };
 
                                 if!(surfaceIsWater _position) then {
-                                    _profiles = [_group, _position, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                    _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
                                     // Garrison & Patrols instead of the static garrison.
                                     {
@@ -1611,7 +1619,7 @@ switch(_operation) do {
                             };
 
                             if!(surfaceIsWater _position) then {
-                                _profiles = [_group, _position, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
 
                                 // Garrison & Patrols instead of the static garrison.
                                 {

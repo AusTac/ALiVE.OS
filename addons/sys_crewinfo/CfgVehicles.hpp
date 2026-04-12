@@ -1,5 +1,14 @@
 class CfgVehicles {
-        class ModuleAliveBase;
+    class Logic;
+    class Module_F : Logic
+    {
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+    };
+    class ModuleAliveBase : Module_F
+    {
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class ModuleDescription;
+    };
         class ADDON : ModuleAliveBase
         {
                 scope = 1;
@@ -11,51 +20,33 @@ class CfgVehicles {
                 isPersistent = 1;
                 icon = "\x\alive\addons\sys_crewinfo\icon_sys_crewinfo.paa";
                 picture = "\x\alive\addons\sys_crewinfo\icon_sys_crewinfo.paa";
-
-                         class Arguments
-                      {
-                                    class crewinfo_debug_setting
-                                    {
-                                            displayName = "$STR_ALIVE_CREWINFO_DEBUG";
-                                            description = "$STR_ALIVE_CREWINFO_DEBUG_COMMENT";
-                                            class Values
-                                            {
-
-                                                    class No
-                                                    {
-                                                            name = "No";
-                                                            value = false;
-                                                    };
-                                                    class Yes
-                                                    {
-                                                            name = "Yes";
-                                                            value = true;
-                                                            default = 1;
-
-                                                    };
-                                            };
-                                    };
-                                    class crewinfo_ui_setting
-                                    {
-                                            displayName = "$STR_ALIVE_CREWINFO_UI";
-                                            description = "$STR_ALIVE_CREWINFO_UI_COMMENT";
-                                            class Values
-                                            {
-                                                    class uiRight
-                                                    {
-                                                            name = "Right";
-                                                            value = 1;
-                                                            default = 1;
-                                                    };
-                                                    class uiLeft
-                                                    {
-                                                            name = "Left";
-                                                            value = 2;
-                                                    };
-
-                                            };
-                                    };
-                      };
-
-              };
+                class Attributes : AttributesBase
+                {
+                        class crewinfo_debug_setting : Combo
+                        {
+                                property = "ALiVE_sys_crewinfo_crewinfo_debug_setting";
+                                displayName = "$STR_ALIVE_CREWINFO_DEBUG";
+                                tooltip = "$STR_ALIVE_CREWINFO_DEBUG_COMMENT";
+                                defaultValue = """true""";
+                                class Values
+                                {
+                                    class No { name = "No"; value = false; };
+                                    class Yes { name = "Yes"; value = true; default = 1; };
+                                };
+                        };
+                        class crewinfo_ui_setting : Combo
+                        {
+                                property = "ALiVE_sys_crewinfo_crewinfo_ui_setting";
+                                displayName = "$STR_ALIVE_CREWINFO_UI";
+                                tooltip = "$STR_ALIVE_CREWINFO_UI_COMMENT";
+                                defaultValue = """1""";
+                                class Values
+                                {
+                                    class uiRight { name = "Right"; value = 1; default = 1; };
+                                    class uiLeft { name = "Left"; value = 2; };
+                                };
+                        };
+                        class ModuleDescription : ModuleDescription {};
+                };
+        };
 };
