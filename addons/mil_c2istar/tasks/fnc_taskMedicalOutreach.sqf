@@ -90,6 +90,7 @@ switch (_taskState) do {
         _contact setCaptive true;
         _contact setBehaviour "CARELESS";
         _contact setDir random 360;
+        _contact setVariable ["ALiVE_advciv_blacklist", true, true];
         _contact setVariable ["ALiVE_advciv_active", false, true];
 
         private _aidCrate = createVehicle ["Land_WoodenCrate_01_F", _cratePosition, [], 0, "NONE"];

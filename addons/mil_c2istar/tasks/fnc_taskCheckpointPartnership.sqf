@@ -207,6 +207,7 @@ switch (_taskState) do {
             _vip setCaptive true;
             _vip setBehaviour "CARELESS";
             _vip setDir random 360;
+            _vip setVariable ["ALiVE_advciv_blacklist", true, true];
             _vip setVariable ["ALiVE_advciv_active", false, true];
             _vipUnits pushBack _vip;
             _cleanup pushBack _vip;
@@ -224,6 +225,7 @@ switch (_taskState) do {
             _crowdUnit setCaptive true;
             _crowdUnit setBehaviour "CARELESS";
             _crowdUnit setDir random 360;
+            _crowdUnit setVariable ["ALiVE_advciv_blacklist", true, true];
             _crowdUnit setVariable ["ALiVE_advciv_active", false, true];
             _crowdUnits pushBack _crowdUnit;
             _cleanup pushBack _crowdUnit;

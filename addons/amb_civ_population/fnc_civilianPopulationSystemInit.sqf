@@ -148,9 +148,9 @@ if(isServer) then {
     // ----------------------------------------------------------------
     ALiVE_fnc_advciv_isMissionCritical = {
         params [["_unit", objNull]];
-        if (!ALiVE_advciv_missionCriticalCheck) exitWith { false };
         if (isNull _unit) exitWith { false };
         if (_unit getVariable ["ALiVE_advciv_blacklist", false]) exitWith { true };
+        if (!ALiVE_advciv_missionCriticalCheck) exitWith { false };
 
         private _grp = group _unit;
         // Only block civs in mixed groups (civ + military together)
