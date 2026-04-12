@@ -130,39 +130,39 @@ switch(_operation) do {
                     //Retrieve module-object variables
                     _customName = _logic getvariable ["customName",""];
                     _type = _logic getvariable ["controltype","invasion"];
-                    _occupation = (_logic getvariable ["asym_occupation",-100])/100;
-                    _intelChance = (_logic getvariable ["intelchance",-100])/100;
+                    _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
+                    _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
                     _faction1 = _logic getvariable ["faction1","OPF_F"];
                     _faction2 = _logic getvariable ["faction2","NONE"];
                     _faction3 = _logic getvariable ["faction3","NONE"];
                     _faction4 = _logic getvariable ["faction4","NONE"];
                     _factions = [_logic, "convert", _logic getvariable ["factions",[]]] call ALiVE_fnc_OPCOM;
-                    _simultanObjectives = _logic getvariable ["simultanObjectives",10];
-                    _minAgents = _logic getvariable ["minAgents",2];
-                    _asymForceLimit = floor (_logic getvariable ["asymForceLimit",-1]);
-                    _recruitCycleMin = (_logic getvariable ["recruitCycleMin",30]) max 0;
-                    _recruitCycleMax = (_logic getvariable ["recruitCycleMax",60]) max _recruitCycleMin;
-                    _recruitAttemptLimit = floor (_logic getvariable ["recruitAttemptLimit",0]);
+                    _simultanObjectives = parseNumber str (_logic getvariable ["simultanObjectives",10]);
+                    _minAgents = parseNumber str (_logic getvariable ["minAgents",2]);
+                    _asymForceLimit = floor (parseNumber str (_logic getvariable ["asymForceLimit",-1]));
+                    _recruitCycleMin = (parseNumber str (_logic getvariable ["recruitCycleMin",30])) max 0;
+                    _recruitCycleMax = (parseNumber str (_logic getvariable ["recruitCycleMax",60])) max _recruitCycleMin;
+                    _recruitAttemptLimit = floor (parseNumber str (_logic getvariable ["recruitAttemptLimit",0]));
                     _recruitAttemptLimit = _recruitAttemptLimit max -1;
-                    _recruitSuccessChance = ((_logic getvariable ["recruitSuccessChance",50]) max 0) min 100;
-                    _hostilityPresenceMultiplier = (_logic getvariable ["hostilityPresenceMultiplier",1]) max 0;
-                    _hostilityInstallationMultiplier = (_logic getvariable ["hostilityInstallationMultiplier",1]) max 0;
-                    _hostilityInstallationInterval = ((_logic getvariable ["hostilityInstallationInterval",10]) max 0) * 60;
+                    _recruitSuccessChance = ((parseNumber str (_logic getvariable ["recruitSuccessChance",50])) max 0) min 100;
+                    _hostilityPresenceMultiplier = (parseNumber str (_logic getvariable ["hostilityPresenceMultiplier",1])) max 0;
+                    _hostilityInstallationMultiplier = (parseNumber str (_logic getvariable ["hostilityInstallationMultiplier",1])) max 0;
+                    _hostilityInstallationInterval = ((parseNumber str (_logic getvariable ["hostilityInstallationInterval",10])) max 0) * 60;
                     _taskProfileCountOverridesRaw = _logic getvariable ["taskProfileCountOverrides",""];
                     _taskProfileTypeOverridesRaw = _logic getvariable ["taskProfileTypeOverrides",""];
-                    _civicRecruitmentMultiplier = (_logic getvariable ["civicRecruitmentMultiplier",1]) max 0;
-                    _civicInstallationMultiplier = (_logic getvariable ["civicInstallationMultiplier",1]) max 0;
-                    private _civicRetaliationChanceRaw = (_logic getvariable ["civicRetaliationChance",0]) max 0;
+                    _civicRecruitmentMultiplier = (parseNumber str (_logic getvariable ["civicRecruitmentMultiplier",1])) max 0;
+                    _civicInstallationMultiplier = (parseNumber str (_logic getvariable ["civicInstallationMultiplier",1])) max 0;
+                    private _civicRetaliationChanceRaw = (parseNumber str (_logic getvariable ["civicRetaliationChance",0])) max 0;
                     _civicRetaliationChance = if (_civicRetaliationChanceRaw >= 1) then {
                         (_civicRetaliationChanceRaw min 100) / 100
                     } else {
                         _civicRetaliationChanceRaw min 1
                     };
-                    _civicRetaliationIntensity = (_logic getvariable ["civicRetaliationIntensity",1]) max 0;
+                    _civicRetaliationIntensity = (parseNumber str (_logic getvariable ["civicRetaliationIntensity",1])) max 0;
                     _debug = ((_logic getvariable ["debug","false"]) == "true");
                     _persistent = ((_logic getvariable ["persistent","false"]) == "true");
                     _reinforcements = call compile (_logic getvariable ["reinforcements","0.9"]);
-                    _roadblocks = _logic getvariable ["roadblocks",true];
+                    _roadblocks = (parseNumber str (_logic getvariable ["roadblocks",1])) > 0;
 
                     //Get position
                     _position = getposATL _logic;
