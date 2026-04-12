@@ -3,12 +3,6 @@
 
 // Add a game logic which does nothing except requires the addon in the mission.
 
-// 3DEN UI macros - required for ATTRIBUTE_TITLE_W, ATTRIBUTE_CONTENT_W, GRID_W, GRID_H, SIZE_M
-#include "\a3\3DEN\UI\macros.inc"
-
-// Inherit A3 base edit control
-class ctrlEdit;
-
 class CfgFactionClasses {
     class Alive {
         displayName = "$STR_ALIVE_MODULE";
