@@ -139,7 +139,8 @@ switch(_operation) do {
             _args = _logic getVariable ["placeSeaPatrols", DEFAULT_SEAPATROL_CHANCE];
         };
         if (typeName _args == "STRING") then {
-            _logic setVariable ["placeSeaPatrols", parseNumber _args];
+            _args = parseNumber _args;
+            _logic setVariable ["placeSeaPatrols", _args];
         };
         ASSERT_TRUE(typeName _args == "SCALAR",str _args);
 
