@@ -1242,7 +1242,15 @@ switch(_operation) do {
 
                         // TRANSIT - wait until heli reaches destination area
                         case 0: {
-                            if (_heli distance _destPos < 350) then {
+                            private _distToDest = _heli distance _destPos;
+                            private _heliAGLt  = (getPosATL _heli) select 2;
+                            private _heliSpdT  = round (speed _heli);
+                            if (_dbg) then {
+                                ["ML - heliDeliveryWatchdog: %1 TRANSIT dist=%2m AGL=%3m spd=%4km/h slungAttached=%5 t=%6s",
+                                    _tProfID, round _distToDest, round _heliAGLt, _heliSpdT,
+                                    !isNull (getSlingLoad _heli), _phaseTimer] call ALiVE_fnc_dump;
+                            };
+                            if (_distToDest < 350) then {
                                 // For slingload helis, skip LANDING entirely -- landAt is ignored
                                 // by the Arma AI when carrying a slung vehicle, so the heli never
                                 // descends. Go straight to UNLOAD and signal unloadTransportHelicopter
@@ -1257,11 +1265,15 @@ switch(_operation) do {
                                 if (!isNil "_tProfSig") then {
                                     [_tProfSig, "alive_ml_sling_ready", true] call ALIVE_fnc_hashSet;
                                 };
-                                if (_dbg) then { ["ML - heliDeliveryWatchdog: %1 at dest, sling_ready set, waiting for unload thread.", _tProfID] call ALiVE_fnc_dump; };
+                                ["ML - heliDeliveryWatchdog: %1 at dest, sling_ready set. class=%2 side=%3 near=%4 AGL=%5m spd=%6km/h slungAttached=%7",
+                                    _tProfID, typeOf _heli, str side (driver _heli),
+                                    ([getPos _heli] call ALIVE_fnc_taskGetNearestLocationName),
+                                    round _heliAGLt, _heliSpdT, !isNull (getSlingLoad _heli)] call ALiVE_fnc_dump;
                             };
                             // Hard timeout - something went wrong in transit
                             if (_phaseTimer > 900) then {
-                                ["ML - heliDeliveryWatchdog: %1 TRANSIT timeout, watchdog exiting.", _tProfID] call ALiVE_fnc_dump;
+                                ["ML - heliDeliveryWatchdog: %1 TRANSIT timeout at AGL=%2m spd=%3km/h dist=%4m, watchdog exiting.",
+                                    _tProfID, round _heliAGLt, _heliSpdT, round _distToDest] call ALiVE_fnc_dump;
                                 _running = false;
                             };
                         };
@@ -1319,6 +1331,8 @@ switch(_operation) do {
                         case 2: {
                             private _slungAttached = !isNull (getSlingLoad _heli);
                             private _unloadActive  = _heli getVariable ["alive_ml_sling_unload_active", false];
+                            private _heliAGLu = (getPosATL _heli) select 2;
+                            private _heliSpdU = round (speed _heli);
 
                             if (_slungAttached && _unloadActive) then {
                                 // unloadTransportHelicopter is monitoring -- signal it to release
@@ -1345,8 +1359,37 @@ switch(_operation) do {
                                 if (_phaseTimer > 60) then {
                                     // Timeout: sling never attached or unload thread never started.
                                     // Force RTB regardless so the heli doesn't hover indefinitely.
-                                    ["ML - heliDeliveryWatchdog: %1 UNLOAD timeout (slungAttached=%2 unloadActive=%3), forcing RTB.",
-                                        _tProfID, _slungAttached, _unloadActive] call ALiVE_fnc_dump;
+                                    ["ML - heliDeliveryWatchdog: %1 UNLOAD timeout (slungAttached=%2 unloadActive=%3) class=%4 side=%5 near=%6 AGL=%7m spd=%8km/h pos=%9, forcing RTB.",
+                                        _tProfID, _slungAttached, _unloadActive,
+                                        typeOf _heli, str side (driver _heli),
+                                        ([getPos _heli] call ALIVE_fnc_taskGetNearestLocationName),
+                                        round _heliAGLu, _heliSpdU, getPosATL _heli] call ALiVE_fnc_dump;
+
+                                    // If the sling is still attached, release it directly here.
+                                    // unloadTransportHelicopter cannot reach the vehicle object
+                                    // via the profile when _active=false (slot 10 is null).
+                                    // The watchdog has the live heli reference so it is the
+                                    // correct authority to physically release the load.
+                                    if (_slungAttached) then {
+                                        private _slungVeh = getSlingLoad _heli;
+                                        if (!isNull _slungVeh) then {
+                                            private _slungAGL = (getPosATL _slungVeh) select 2;
+                                            if (_slungAGL > 5) then {
+                                                private _para = createVehicle ["B_Parachute_02_F", getPosATL _slungVeh, [], 0, "FLY"];
+                                                _para setPosASL (getPosASL _slungVeh);
+                                                _para setVelocity (velocity _heli);
+                                                _slungVeh attachTo [_para, [0,0,0]];
+                                                [_para, _slungVeh] spawn {
+                                                    private _p = _this select 0; private _v = _this select 1;
+                                                    waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                                    detach _v; deleteVehicle _p;
+                                                };
+                                            };
+                                            _heli setSlingLoad objNull;
+                                            ["ML - heliDeliveryWatchdog: %1 force-released sling at timeout.", _tProfID] call ALiVE_fnc_dump;
+                                        };
+                                    };
+
                                     _heli setVariable ["alive_ml_rtb_issued", true];
                                     private _tProfNow = [ALIVE_profileHandler, "getProfile", _tProfID] call ALIVE_fnc_profileHandler;
                                     if !(isNil "_tProfNow") then {
@@ -1354,12 +1397,19 @@ switch(_operation) do {
                                         [_tProfNow, "clearWaypoints"] call ALIVE_fnc_profileEntity;
                                         [_tProfNow, "addWaypoint", _wpReturn] call ALIVE_fnc_profileEntity;
                                     };
+                                    // Issue direct flight commands so the physically spawned
+                                    // heli actually departs rather than hovering after the
+                                    // profile waypoint is set.
+                                    _heli flyInHeight 150;
+                                    (group (driver _heli)) setSpeedMode "FULL";
+                                    _heli move _returnPos;
                                     _phase = 3; _phaseTimer = 0;
                                     _heli setVariable ["alive_ml_watchdog_phase", _phase];
                                 } else {
                                     if (_dbg) then {
-                                        ["ML - heliDeliveryWatchdog: %1 waiting for unload thread (slungAttached=%2 unloadActive=%3 t=%4s).",
-                                            _tProfID, _slungAttached, _unloadActive, _phaseTimer] call ALiVE_fnc_dump;
+                                        ["ML - heliDeliveryWatchdog: %1 waiting for unload thread (slungAttached=%2 unloadActive=%3 AGL=%4m spd=%5km/h t=%6s).",
+                                            _tProfID, _slungAttached, _unloadActive,
+                                            round _heliAGLu, _heliSpdU, _phaseTimer] call ALiVE_fnc_dump;
                                     };
                                 };
                             };
@@ -1374,9 +1424,19 @@ switch(_operation) do {
                             _grpRTB setSpeedMode "FULL";
                             (units _grpRTB) apply { _x forceSpeed 70; };
 
-                            if (_heli distance _destPos > 1200 || _phaseTimer > 600) then {
+                            private _distFromDest = _heli distance _destPos;
+                            private _heliAGLr = (getPosATL _heli) select 2;
+                            private _heliSpdR = round (speed _heli);
+                            if (_dbg) then {
+                                ["ML - heliDeliveryWatchdog: %1 RTB dist=%2m AGL=%3m spd=%4km/h t=%5s",
+                                    _tProfID, round _distFromDest, round _heliAGLr, _heliSpdR, _phaseTimer] call ALiVE_fnc_dump;
+                            };
+                            if (_distFromDest > 1200 || _phaseTimer > 600) then {
+                                ["ML - heliDeliveryWatchdog: %1 RTB complete. class=%2 near=%3 dist=%4m AGL=%5m spd=%6km/h t=%7s",
+                                    _tProfID, typeOf _heli,
+                                    ([getPos _heli] call ALIVE_fnc_taskGetNearestLocationName),
+                                    round _distFromDest, round _heliAGLr, _heliSpdR, _phaseTimer] call ALiVE_fnc_dump;
                                 _running = false;
-                                if (_dbg) then { ["ML - heliDeliveryWatchdog: %1 RTB complete, exiting.", _tProfID] call ALiVE_fnc_dump; };
                             };
                         };
 
@@ -5994,25 +6054,26 @@ switch(_operation) do {
                                 };
                             };
 
-                            // Slingload watchdog signal: when the watchdog reaches the
-                            // destination it sets alive_ml_sling_ready on the entity profile hash.
-                            // Checked OUTSIDE the _heliActive guard so it fires even when no
-                            // players are near enough to keep the heli spawned. The heli is
-                            // physically present anyway (preventDespawn), so unloadTransportHelicopter
-                            // must run regardless of player proximity.
-                            private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
-                            if (!_completed && _slingReady) then {
-                                private _heliObjSR = _profile select 2 select 10;
-                                private _alreadyActive = if (!isNull _heliObjSR) then {
-                                    _heliObjSR getVariable ["alive_ml_sling_unload_active", false]
-                                } else { false };
-                                if (!_alreadyActive) then {
-                                    _completed = true;
-                                    // Clear the flag immediately to prevent duplicate calls on
-                                    // subsequent monitor loop cycles before the profile is destroyed.
-                                    [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
-                                    if (_debug) then {
-                                        ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload.", _x] call ALiVE_fnc_dump;
+                    // Slingload watchdog signal: when the watchdog reaches the
+                    // destination it sets alive_ml_sling_ready on the entity profile hash.
+                    // Checked OUTSIDE the _heliActive guard so it fires even when no
+                    // players are near enough to keep the heli spawned. The heli is
+                    // physically present anyway (preventDespawn), so unloadTransportHelicopter
+                    // must run regardless of player proximity.
+                    private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
+                    if (!_completed && _slingReady) then {
+                        private _heliObjSR = _profile select 2 select 10;
+                        private _alreadyActive = if (!isNull _heliObjSR) then {
+                            _heliObjSR getVariable ["alive_ml_sling_unload_active", false]
+                        } else { false };
+                        if (!_alreadyActive) then {
+                            _completed = true;
+                            // Clear the flag immediately to prevent duplicate calls on
+                            // subsequent monitor loop cycles before the profile is destroyed.
+                            [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                            private _heliActiveSR = _profile select 2 select 1;
+                            ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
+                                _x, _heliActiveSR, isNull _heliObjSR] call ALiVE_fnc_dump;
                                     };
                                 };
                             };
@@ -6096,6 +6157,22 @@ switch(_operation) do {
                                 };
                             };
 
+                        };
+
+                        // Slingload watchdog signal for dedicated heli reinforcements.
+                        // Same no-player path as _transportProfiles loop above.
+                        private _slingReadyH = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
+                        if (!_completed && _slingReadyH) then {
+                            private _heliObjSRH = _profile select 2 select 10;
+                            private _alreadyActiveH = if (!isNull _heliObjSRH) then {
+                                _heliObjSRH getVariable ["alive_ml_sling_unload_active", false]
+                            } else { false };
+                            if (!_alreadyActiveH) then {
+                                _completed = true;
+                                [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                                ["ML - heliTransport: %1 sling_ready signal (heliProfiles no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
+                                    _x, (_profile select 2 select 1), isNull _heliObjSRH] call ALiVE_fnc_dump;
+                            };
                         };
 
                         if (_completed) then {
@@ -10136,6 +10213,8 @@ switch(_operation) do {
                     // physically spawned due to preventDespawn. Without this the truck
                     // remains attached and the delivery watchdog never sees slungAttached=false.
                     private _heliObjInactive = _vehicleProfile select 2 select 10;
+                    ["ML - unloadTransportHelicopter: Inactive PAYLOAD branch. profileID=%1 heliObjNull=%2 pilotEntityID=%3",
+                        _vehicleProfileID, isNull _heliObjInactive, _pilotEntityID] call ALiVE_fnc_dump;
                     if (!isNull _heliObjInactive && alive _heliObjInactive) then {
                         private _slungObjInactive = getSlingLoad _heliObjInactive;
                         if (!isNull _slungObjInactive) then {
