@@ -81,13 +81,13 @@ private _heartsAndMindsTaskTypes = [
 
             if !(_tasksCurrent isEqualTo []) then {
                 _isDuplicate = {
-                    private _taskSource = [_x, 12, "", [""]] call BIS_fnc_param;
+                    private _taskSource = _x param [12, "", [""]];
                     private _taskType = "";
 
                     if (_taskSource != "") then {
                         if !(isNil "ALIVE_taskHandler") then {
                             private _parsedTaskSource = [ALIVE_taskHandler, "parseTaskSource", _taskSource] call ALiVE_fnc_taskHandler;
-                            _taskType = [_parsedTaskSource, 1, "", [""]] call BIS_fnc_param;
+                            _taskType = _parsedTaskSource param [1, "", [""]];
                         } else {
                             private _taskSourceParts = [_taskSource, "-"] call CBA_fnc_split;
                             if (count _taskSourceParts >= 2) then {

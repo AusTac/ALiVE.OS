@@ -341,7 +341,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Rally"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _convoyVehicle = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _convoyVehicle = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Rally") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;
@@ -391,7 +391,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Move"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _convoyVehicle = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _convoyVehicle = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Move") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;
@@ -452,7 +452,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Deliver"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _convoyVehicle = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _convoyVehicle = _targets param [0, objNull, [objNull]];
         private _completionVar = [_params, "completionVar", ""] call ALIVE_fnc_hashGet;
 
         if (_lastState != "Deliver") then {

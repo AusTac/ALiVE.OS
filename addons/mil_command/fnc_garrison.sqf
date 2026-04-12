@@ -26,8 +26,8 @@ Highhead, Jman
 
 private ["_type","_waypoints","_unit","_profile","_active","_args","_pos","_radius","_onlyProfiles","_assignments","_group","_profileType","_profileCount","_guardPatrolPercentage"];
 
-_profile = [_this, 0, ["",[],[],nil], [[]]] call BIS_fnc_param;
-_args = [_this, 1, 200, [-1,[]]] call BIS_fnc_param;
+_profile = _this param [0, ["",[],[],nil], [[]]];
+_args = _this param [1, 200, [-1,[]]];
 // DEBUG -------------------------------------------------------------------------------------
 if (ALiVE_SYS_PROFILE_DEBUG_ON) then {
  ["ALIVE_fnc_garrison - _args: %1",_args] call ALiVE_fnc_dump;
@@ -41,7 +41,7 @@ _guardPatrolPercentage = 50;
 
 
 if (_args isEqualType []) then {
-    _radius = [_args, 0, 200, [-1]] call BIS_fnc_param;
+    _radius = _args param [0, 200, [-1]];
     _onlyProfiles = (_args param [1, "false", [""]]) == "true";
     _profileType = _args param [3, ""];
     _profileCount = _args param [4, 0];

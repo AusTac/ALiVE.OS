@@ -29,12 +29,12 @@ nil
 
 private ["_object","_cargo","_weapons","_magazines","_items","_ammo"];
 
-_object = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
+_object = _this param [0, objNull, [objNull]];
 
-_weapons = [[getWeaponCargo _object], 0, [], [[]]] call BIS_fnc_param;
-_magazines = [[getMagazineCargo _object], 0, [], [[]]] call BIS_fnc_param;
-_items = [[getItemCargo _object], 0, [], [[]]] call BIS_fnc_param;
-_ammo = [[if ({_object isKindOf _x} count ["ReammoBox","ReammoBox_F"] == 0) then {magazinesAmmo _object} else {[]}], 0, [], [[]]] call BIS_fnc_param; // Thank you BIS, magazinesAmmo _box returns different resultset than magazinesAmmo _car. Applause!
+_weapons = [getWeaponCargo _object] param [0, [], [[]]];
+_magazines = [getMagazineCargo _object] param [0, [], [[]]];
+_items = [getItemCargo _object] param [0, [], [[]]];
+_ammo = [if ({_object isKindOf _x} count ["ReammoBox","ReammoBox_F"] == 0) then {magazinesAmmo _object} else {[]}] param [0, [], [[]]]; // Thank you BIS, magazinesAmmo _box returns different resultset than magazinesAmmo _car. Applause!
 
 _cargo = [];
 {

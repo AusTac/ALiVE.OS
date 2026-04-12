@@ -52,7 +52,7 @@ switch (_taskState) do {
         if (_clusterData isEqualTo []) exitWith {["C2ISTAR - Task RepairCriticalService - No civilian settlement found!"] call ALiVE_fnc_Dump};
 
         private _cluster = _clusterData select 0;
-        private _supportState = [_clusterData, 2, []] call BIS_fnc_param;
+        private _supportState = _clusterData param [2, []];
         private _clusterCenter = [_cluster, "center", []] call ALIVE_fnc_hashGet;
         private _clusterID = [_cluster, "clusterID", ""] call ALIVE_fnc_hashGet;
         private _supportPhase = "Stabilize";
@@ -212,7 +212,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Repair"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _target = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _target = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Repair") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;

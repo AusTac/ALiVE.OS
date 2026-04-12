@@ -88,7 +88,7 @@ if (_heartsAndMindsWeight > 0) then {
     private _clusterData = [_taskLocation, _taskLocationType, _taskSide, -100000, 100000, _taskFaction, _tasksCurrent, false] call ALIVE_fnc_taskGetCivilianCluster;
 
     if !(_clusterData isEqualTo []) then {
-        private _supportState = [_clusterData, 2, []] call BIS_fnc_param;
+        private _supportState = _clusterData param [2, []];
         private _selectedTaskType = "";
 
         if (_civicStateEnabled && {!(_supportState isEqualTo [])}) then {

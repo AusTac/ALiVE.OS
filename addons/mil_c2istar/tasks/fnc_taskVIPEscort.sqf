@@ -170,7 +170,7 @@ switch (_taskState) do {
         if (_sourceClusterData isEqualTo []) exitWith {["C2ISTAR - Task VIPEscort - No source civilian settlement found!"] call ALiVE_fnc_Dump};
 
         private _sourceCluster = _sourceClusterData select 0;
-        private _supportState = [_sourceClusterData, 2, []] call BIS_fnc_param;
+        private _supportState = _sourceClusterData param [2, []];
         private _sourceCenter = [_sourceCluster, "center", []] call ALIVE_fnc_hashGet;
         private _sourceClusterID = [_sourceCluster, "clusterID", ""] call ALIVE_fnc_hashGet;
         private _supportPhase = "Stabilize";
@@ -423,7 +423,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Pickup"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _vip = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _vip = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Pickup") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;
@@ -482,7 +482,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Escort"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _vip = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _vip = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Escort") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;
@@ -548,7 +548,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Return"] call ALIVE_fnc_hashGet;
         private _targets = [_params, "targets"] call ALIVE_fnc_hashGet;
-        private _vip = [_targets, 0, objNull, [objNull]] call BIS_fnc_param;
+        private _vip = _targets param [0, objNull, [objNull]];
 
         if (_lastState != "Return") then {
             ["chat_start", _currentTaskDialog, _taskSide, _taskPlayers] call ALIVE_fnc_taskCreateRadioBroadcastForPlayers;

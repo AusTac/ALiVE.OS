@@ -25,8 +25,8 @@ nil
 
 private ["_object","_damage"];
 
-_object = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
-_damage = [_this, 1, -1, [-1]] call BIS_fnc_param;
+_object = _this param [0, objNull, [objNull]];
+_damage = _this param [1, -1, [-1]];
 
 if (isNull _object) exitwith {};
 

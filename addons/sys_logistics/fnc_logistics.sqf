@@ -319,7 +319,7 @@ switch (_operation) do {
 
             private ["_object","_id"];
 
-            _object = [_args, 0, objNull, [objNull,""]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull,""]];
 
             switch (typeName _object) do {
                 case ("OBJECT") : {_id = _object getvariable QGVAR(ID)};
@@ -344,7 +344,7 @@ switch (_operation) do {
 
             private ["_object","_id"];
 
-            _object = [_args, 0, objNull, [objNull,""]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull,""]];
             _id = _object getvariable QGVAR(ID);
 
             if (isnil "_id") then {
@@ -360,8 +360,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -387,8 +387,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -418,8 +418,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -443,8 +443,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -464,8 +464,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -503,8 +503,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             // if (isNull _container) then {_container = _object};
 
@@ -521,8 +521,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -548,8 +548,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -572,8 +572,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -598,8 +598,8 @@ switch (_operation) do {
 
             private ["_object","_container","_objectID","_containerID"];
 
-            _object = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _container = [_args, 1, objNull, [objNull]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull]];
+            _container = _args param [1, objNull, [objNull]];
 
             _objectID = [_logic,"id",_object] call ALiVE_fnc_logistics;
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
@@ -627,8 +627,8 @@ switch (_operation) do {
 
             private ["_container","_containerID","_list"];
 
-            _container = [_args, 0, objNull, [objNull]] call BIS_fnc_param;
-            _list = [_args, 1, [], [[]]] call BIS_fnc_param;
+            _container = _args param [0, objNull, [objNull]];
+            _list = _args param [1, [], [[]]];
 
             if (count _list == 0) exitwith {};
 
@@ -663,7 +663,7 @@ switch (_operation) do {
 
             private ["_container","_containerID"];
 
-            _container = [[_args], 0, objNull, [objNull]] call BIS_fnc_param;
+            _container = [_args] param [0, objNull, [objNull]];
             _containerID = [_logic,"id",_container] call ALiVE_fnc_logistics;
 
             _list = _container getvariable [QGVAR(CARGO),[]];
@@ -682,8 +682,8 @@ switch (_operation) do {
         case "addAction": {
             private ["_object","_operation","_id","_condition","_text","_input","_container","_die"];
 
-            _object = [_args, 0, objNull, [objNull,[]]] call BIS_fnc_param;
-            _operation = [_args, 1, "", [""]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull,[]]];
+            _operation = _args param [1, "", [""]];
 
             switch (typename _object) do {
                 case ("ARRAY") : {_object = _object select 0};
@@ -789,8 +789,8 @@ switch (_operation) do {
 
             private ["_object","_operation","_id"];
 
-            _object = [_args, 0, objNull, [objNull,[]]] call BIS_fnc_param;
-            _operation = [_args, 1, "", [""]] call BIS_fnc_param;
+            _object = _args param [0, objNull, [objNull,[]]];
+            _operation = _args param [1, "", [""]];
 
             _id = _object getvariable [format["ALiVE_SYS_LOGISTICS_%1",_operation],-1];
             _object setvariable [format["ALiVE_SYS_LOGISTICS_%1",_operation],nil];
@@ -809,7 +809,7 @@ switch (_operation) do {
         // Aim to avoid recurring call
         case "removeActionsTerm": {
             if (hasInterface) then {
-                _args = [_this, 2, player, [objNull]] call BIS_fnc_param;
+                _args = _this param [2, player, [objNull]];
 
                 [_logic,"removeAction",[_args,"carryObject"]] call ALiVE_fnc_logistics;
                 [_logic,"removeAction",[_args,"dropObject"]] call ALiVE_fnc_logistics;
@@ -827,7 +827,7 @@ switch (_operation) do {
 
         case "removeActions": {
 
-            _args = [_this, 2, player, [objNull]] call BIS_fnc_param;
+            _args = _this param [2, player, [objNull]];
 
             if !(hasInterface) exitwith {
                 [[_logic, "removeActionsTerm", _args],"ALIVE_fnc_logistics", owner _args, false] call BIS_fnc_MP;
@@ -954,9 +954,9 @@ switch (_operation) do {
 
             private ["_position","_radius","_list","_objects"];
 
-            _position = [_args, 0, getArray(configFile >> "CfgWorlds" >> worldName >> "centerPosition")] call BIS_fnc_param;
-            _radius = [_args, 1, 30000] call BIS_fnc_param;
-            _list = [_args, 2, ["Reammobox_F","Static","ThingX","LandVehicle","Air"]] call BIS_fnc_param;
+            _position = _args param [0, getArray(configFile >> "CfgWorlds" >> worldName >> "centerPosition")];
+            _radius = _args param [1, 30000];
+            _list = _args param [2, ["Reammobox_F","Static","ThingX","LandVehicle","Air"]];
 
             _objects = [];
             {

@@ -25,7 +25,7 @@ nil
 
 private ["_unit","_input","_pos"];
 
-_input = [[_this], 0, ["CAManBase"], [[]]] call BIS_fnc_param;
+_input = [_this] param [0, ["CAManBase"], [[]]];
 _unit = objNull;
 
 [] call ALIVE_fnc_markUnits;

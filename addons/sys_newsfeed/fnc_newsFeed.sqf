@@ -41,9 +41,9 @@ Gunny
 
 private ["_logic","_operation","_args","_result"];
 
-_logic = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
-_operation = [_this, 1, "", [""]] call BIS_fnc_param;
-_args = [_this, 2, objNull, [objNull,[],"",0,true,false]] call BIS_fnc_param;
+_logic = _this param [0, objNull, [objNull]];
+_operation = _this param [1, "", [""]];
+_args = _this param [2, objNull, [objNull,[],"",0,true,false]];
 _result = true;
 
 TRACE_3("SYS_NEWSFEED",_logic, _operation, _args);

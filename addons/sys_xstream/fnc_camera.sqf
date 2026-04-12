@@ -4,7 +4,7 @@ SCRIPT(camera);
 
 private ["_relpos","_cam","_cameraTarget","_fov","_sceneChoice","_subChoice","_loopHandle","_logic"];
 
-_logic = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
+_logic = _this param [0, objNull, [objNull]];
 
 // Setup params from logic
 ALiVE_VehicleFired = [];

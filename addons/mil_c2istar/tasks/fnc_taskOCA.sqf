@@ -38,17 +38,17 @@ switch (_taskState) do {
             "_targetTypes","_blacklist","_tasksCurrent"
         ];
 
-        _taskID = [_task, 0, "", [""]] call BIS_fnc_param;
-        _requestPlayerID = [_task, 1, "", [""]] call BIS_fnc_param;
-        _taskSide = [_task, 2, "", [""]] call BIS_fnc_param;
-        _taskFaction = [_task, 3, "", [""]] call BIS_fnc_param;
-        _taskLocationType = [_task, 5, "", [""]] call BIS_fnc_param;
-        _taskLocation = [_task, 6, [], [[]]] call BIS_fnc_param;
-        _taskPlayers = [_task, 7, [], [[]]] call BIS_fnc_param;
-        _taskEnemyFaction = [_task, 8, "", [""]] call BIS_fnc_param;
-        _taskCurrent = [_taskData, 9, "", [""]] call BIS_fnc_param;
-        _taskApplyType = [_taskData, 10, "", [""]] call BIS_fnc_param;
-        _targetBuildings = [_taskData, 11, [], [objnull]] call BIS_fnc_param;
+        _taskID = _task param [0, "", [""]];
+        _requestPlayerID = _task param [1, "", [""]];
+        _taskSide = _task param [2, "", [""]];
+        _taskFaction = _task param [3, "", [""]];
+        _taskLocationType = _task param [5, "", [""]];
+        _taskLocation = _task param [6, [], [[]]];
+        _taskPlayers = _task param [7, [], [[]]];
+        _taskEnemyFaction = _task param [8, "", [""]];
+        _taskCurrent = _taskData param [9, "", [""]];
+        _taskApplyType = _taskData param [10, "", [""]];
+        _targetBuildings = _taskData param [11, [], [objnull]];
 
         _tasksCurrent = ([ALiVE_TaskHandler,"tasks",["",[],[],nil]] call ALiVE_fnc_HashGet) select 2;
 

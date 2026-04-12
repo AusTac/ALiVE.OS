@@ -5,8 +5,8 @@
 //==============================================================================================================================================================================
 private ["_group","_groupID"];
 
-_group = [_this, 0, grpNull, [grpNull,objNull]] call BIS_fnc_param;
-_groupID = [_this, 1, "none", [""]] call BIS_fnc_param;
+_group = _this param [0, grpNull, [grpNull,objNull]];
+_groupID = _this param [1, "none", [""]];
 
 _group = if (typeName _group == "OBJECT") then {group _group} else {_group};
 

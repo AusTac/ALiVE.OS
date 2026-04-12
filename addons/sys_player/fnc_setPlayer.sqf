@@ -31,8 +31,8 @@ nil
 
 private ["_logic","_args","_player","_find","_saveLoadout","_saveHealth","_savePosition","_saveScores","_data","_playerHash","_result","_data"];
 
-_logic = [_this, 0, objNull, [objNull,[]]] call BIS_fnc_param;
-_args = [_this, 1, objNull, [objNull,[],"",0,true,false]] call BIS_fnc_param;
+_logic = _this param [0, objNull, [objNull,[]]];
+_args = _this param [1, objNull, [objNull,[],"",0,true,false]];
 
 _data =  [];
 

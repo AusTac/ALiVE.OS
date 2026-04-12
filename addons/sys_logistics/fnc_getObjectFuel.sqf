@@ -25,7 +25,7 @@ nil
 
 private ["_object"];
 
-_object = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
+_object = _this param [0, objNull, [objNull]];
 
 if (isNull _object) exitwith {};
 

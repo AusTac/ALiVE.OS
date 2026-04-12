@@ -31,7 +31,7 @@ ASSERT_DEFINED("ALIVE_fnc_player","Main function missing");
 
 _moduleID = [_logic, true] call ALIVE_fnc_dumpModuleInit;
 
-//_activated = [_this,2,true,[true]] call BIS_fnc_param;
+//_activated = _this param [2,true,[true]];
 
 //if (_activated) then {
     [_logic, "init",[]] call ALIVE_fnc_player;

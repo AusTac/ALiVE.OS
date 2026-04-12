@@ -30,7 +30,7 @@ nil
 
 private ["_vehicle","_vehicleID"];
 
-_vehicle = [_this, 0, objNull, [objNull,[]]] call BIS_fnc_param;
+_vehicle = _this param [0, objNull, [objNull,[]]];
 
 if (isServer && !isHC) then {
     if (isNil QGVAR(VEHICLEID)) then {

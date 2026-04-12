@@ -41,19 +41,19 @@ private ["_tgt", "_txt", "_alt", "_rad", "_ang", "_dir"];
 
 if !(hasInterface) exitwith {};
 
-_tgt = [_this, 0, objNull, [objNull, []]] call BIS_fnc_param;
-_txt = [_this, 1, "", [""]] call BIS_fnc_param;
-_alt = [_this, 2, 500, [500]] call BIS_fnc_param;
-_rad = [_this, 3, 200, [200]] call BIS_fnc_param;
-_ang = [_this, 4, random 360, [0]] call BIS_fnc_param;
-_dir = [_this, 5, round random 1, [0]] call BIS_fnc_param;
-_condition = [_this, 8, [[],{true}], [[]]] call BIS_fnc_param;
+_tgt = _this param [0, objNull, [objNull, []]];
+_txt = _this param [1, "", [""]];
+_alt = _this param [2, 500, [500]];
+_rad = _this param [3, 200, [200]];
+_ang = _this param [4, random 360, [0]];
+_dir = _this param [5, round random 1, [0]];
+_condition = _this param [8, [[],{true}], [[]]];
 
-ALiVE_fnc_establishingShot_icons = [_this, 6, [], [[]]] call BIS_fnc_param;
+ALiVE_fnc_establishingShot_icons = _this param [6, [], [[]]];
 
 private ["_mode"];
 
-_mode = [_this, 7, 0, [0]] call BIS_fnc_param;
+_mode = _this param [7, 0, [0]];
 
 if (_mode == 0) then {
     enableSaving [false, false];
@@ -352,14 +352,14 @@ if (count ALiVE_fnc_establishingShot_icons > 0) then {
         {
             {
                 private ["_icon", "_color", "_target", "_sizeX", "_sizeY", "_angle", "_text", "_shadow"];
-                _icon = [_x, 0, "", [""]] call BIS_fnc_param;
-                _color = [_x, 1, [], [[]]] call BIS_fnc_param;
-                _target = [_x, 2, [], [[], objNull, grpNull]] call BIS_fnc_param;
-                _sizeX = [_x, 3, 1, [1]] call BIS_fnc_param;
-                _sizeY = [_x, 4, 1, [1]] call BIS_fnc_param;
-                _angle = [_x, 5, random 360, [0]] call BIS_fnc_param;
-                _text = [_x, 6, "", [""]] call BIS_fnc_param;
-                _shadow = [_x, 7, 0, [0]] call BIS_fnc_param;
+                _icon = _x param [0, "", [""]];
+                _color = _x param [1, [], [[]]];
+                _target = _x param [2, [], [[], objNull, grpNull]];
+                _sizeX = _x param [3, 1, [1]];
+                _sizeY = _x param [4, 1, [1]];
+                _angle = _x param [5, random 360, [0]];
+                _text = _x param [6, "", [""]];
+                _shadow = _x param [7, 0, [0]];
 
                 // Determine condition and position
                 private ["_condition", "_position"];

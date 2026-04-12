@@ -13,8 +13,8 @@ SABOTAGE_fnc_compileList = {
 SABOTAGE_fnc_canSee = {
             private ["_unit","_target"];
 
-            _target = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
-            _unit = [_this, 1, objNull, [objNull]] call BIS_fnc_param;
+            _target = _this param [0, objNull, [objNull]];
+            _unit = _this param [1, objNull, [objNull]];
 
             if !(alive _unit) exitwith {false};
 
@@ -326,8 +326,8 @@ Sabotage_fnc_RequestData = {
 
     private ["_playerUID","_type","_data"];
 
-    _playerUID = [_this, 0, "", [""]] call BIS_fnc_param;
-    _type = [_this, 1, "", [""]] call BIS_fnc_param;
+    _playerUID = _this param [0, "", [""]];
+    _type = _this param [1, "", [""]];
 
     _unit = [_playerUID] call ALiVE_fnc_getPlayerByUID;
 
@@ -344,8 +344,8 @@ Sabotage_fnc_convertData = {
 
     private ["_playerUID","_type","_data","_unit"];
 
-    _type = [_this, 0, "", [""]] call BIS_fnc_param;
-    _data = [_this, 1, [], [[]]] call BIS_fnc_param;
+    _type = _this param [0, "", [""]];
+    _data = _this param [1, [], [[]]];
 
     //Safety
     if !(!(_type == "") && {count _data > 0}) exitwith {};
@@ -369,10 +369,10 @@ Sabotage_fnc_SaveData = {
 
     private ["_playerUID","_type","_data","_playerdata"];
 
-    _playerUID = [_this, 0, "", [""]] call BIS_fnc_param;
-    _type = [_this, 1, "", [""]] call BIS_fnc_param;
-    _data = [_this, 2, [], [[]]] call BIS_fnc_param;
-    _override = [_this, 3, false, [true]] call BIS_fnc_param;
+    _playerUID = _this param [0, "", [""]];
+    _type = _this param [1, "", [""]];
+    _data = _this param [2, [], [[]]];
+    _override = _this param [3, false, [true]];
 
     //Safety
     if !(!(_playerUID == "") && {!(_type == "")} && {count _data > 0}) exitwith {};

@@ -29,13 +29,13 @@ nil
 
 private ["_input","_id","_cargo","_cargoR","_cargoT","_cargoL","_cargoWMI","_cargoW","_cargoM","_cargoI","_typesLogistics","_typesWeapons", "_acreActive", "_baseRadio"];
 
-_input = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
+_input = _this param [0, objNull, [objNull]];
 _id = [MOD(SYS_LOGISTICS),"id",_input] call ALiVE_fnc_Logistics;
 
 _acreActive = isClass(configFile >> "CfgPatches" >> "acre_main");
 
 if (count _this > 1) then {
-    _cargo = [_this, 1, [], [[]]] call BIS_fnc_param;
+    _cargo = _this param [1, [], [[]]];
     //["Using provided cargo set for %1: %2!",_input, _cargo] call ALiVE_fnc_DumpR;
 } else {
     _cargo = [[GVAR(STORE),_id] call ALiVE_fnc_HashGet,QGVAR(CARGO)] call ALiVE_fnc_HashGet;
@@ -43,15 +43,15 @@ if (count _this > 1) then {
 };
 
 // Provided Data
-_cargoR = [_cargo, 0, [], [[]]] call BIS_fnc_param;
-_cargoT = [_cargo, 1, [], [[]]] call BIS_fnc_param;
-_cargoL = [_cargo, 2, [], [[]]] call BIS_fnc_param;
-_cargoWMI = [_cargo, 3, [], [[]]] call BIS_fnc_param;
-_Ammo = [_cargo, 4, [], [[]]] call BIS_fnc_param;
+_cargoR = _cargo param [0, [], [[]]];
+_cargoT = _cargo param [1, [], [[]]];
+_cargoL = _cargo param [2, [], [[]]];
+_cargoWMI = _cargo param [3, [], [[]]];
+_Ammo = _cargo param [4, [], [[]]];
 
-_cargoW = [_cargoWMI, 0, [], [[]]] call BIS_fnc_param;
-_cargoM = [_cargoWMI, 1, [], [[]]] call BIS_fnc_param;
-_cargoI = [_cargoWMI, 2, [], [[]]] call BIS_fnc_param;
+_cargoW = _cargoWMI param [0, [], [[]]];
+_cargoM = _cargoWMI param [1, [], [[]]];
+_cargoI = _cargoWMI param [2, [], [[]]];
 
 // Detect local/global commands
 private _global = isMultiplayer && isServer;

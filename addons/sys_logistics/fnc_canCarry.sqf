@@ -26,8 +26,8 @@ nil
 
 private ["_object","_container","_containerCanCarry","_objectCanCarry","_canCarry","_blacklist"];
 
-_object = [_this, 0, objNull, [objNull]] call BIS_fnc_param;
-_container = [_this, 1, objNull, [objNull]] call BIS_fnc_param;
+_object = _this param [0, objNull, [objNull]];
+_container = _this param [1, objNull, [objNull]];
 _allowedContainers = GVAR(CARRYABLE) select 0;
 _allowedObjects = GVAR(CARRYABLE) select 1;
 _blackList = GVAR(CARRYABLE) select 2;

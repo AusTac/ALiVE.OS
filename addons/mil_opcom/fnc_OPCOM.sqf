@@ -2607,14 +2607,14 @@ switch(_operation) do {
                     _debug = [_logic, "debug",false] call ALIVE_fnc_HashGet;
                     _side = [_logic, "side","EAST"] call ALIVE_fnc_HashGet;
 
-                    _id = [_args, 0, "", [""]] call BIS_fnc_param;
-                    _pos = [_args, 1, [0,0,0], [[]]] call BIS_fnc_param;
-                    _size = [_args, 2, 50, [-1]] call BIS_fnc_param;
-                    _type = [_args, 3, "unknown", [""]] call BIS_fnc_param;
-                    _priority = [_args, 4, 100, [-1]] call BIS_fnc_param;
-                    _opcom_state = [_args, 5, "unassigned", [""]] call BIS_fnc_param;
-                    _clusterID = [_args, 6, "none", [""]] call BIS_fnc_param;
-                    _opcomID = [_args, 7, [_logic,"opcomID",""] call ALiVE_fnc_HashGet, [""]] call BIS_fnc_param;
+                    _id = _args param [0, "", [""]];
+                    _pos = _args param [1, [0,0,0], [[]]];
+                    _size = _args param [2, 50, [-1]];
+                    _type = _args param [3, "unknown", [""]];
+                    _priority = _args param [4, 100, [-1]];
+                    _opcom_state = _args param [5, "unassigned", [""]];
+                    _clusterID = _args param [6, "none", [""]];
+                    _opcomID = _args param [7, [_logic,"opcomID",""] call ALiVE_fnc_HashGet, [""]];
 
                     _target = [nil, "createhashobject"] call ALIVE_fnc_OPCOM;
                     [_target, "objectiveID",_id] call ALIVE_fnc_HashSet;

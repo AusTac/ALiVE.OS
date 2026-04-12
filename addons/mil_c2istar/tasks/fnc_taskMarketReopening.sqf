@@ -148,7 +148,7 @@ switch (_taskState) do {
         if (_clusterData isEqualTo []) exitWith {["C2ISTAR - Task MarketReopening - No civilian settlement found!"] call ALiVE_fnc_Dump};
 
         private _cluster = _clusterData select 0;
-        private _supportState = [_clusterData, 2, []] call BIS_fnc_param;
+        private _supportState = _clusterData param [2, []];
         private _clusterCenter = [_cluster, "center", []] call ALIVE_fnc_hashGet;
         private _clusterID = [_cluster, "clusterID", ""] call ALIVE_fnc_hashGet;
         private _supportPhase = "Stabilize";
@@ -171,7 +171,7 @@ switch (_taskState) do {
                     _cluster = _longCluster;
                     _clusterCenter = _longCenter;
                     _clusterID = [_longCluster, "clusterID", ""] call ALIVE_fnc_hashGet;
-                    _supportState = [_longClusterData, 2, []] call BIS_fnc_param;
+                    _supportState = _longClusterData param [2, []];
                     if !(_supportState isEqualTo []) then {
                         _supportPhase = [_supportState, "phase", "Stabilize"] call ALIVE_fnc_hashGet;
                     };

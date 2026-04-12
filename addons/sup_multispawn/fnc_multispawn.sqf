@@ -432,7 +432,7 @@ switch(_operation) do {
 
             private ["_player","_transport","_timer"];
 
-            _player = [[_args], 0, objNull, [objNull]] call BIS_fnc_param;
+            _player = [_args] param [0, objNull, [objNull]];
             _factionData = [GVAR(STORE),faction _player] call ALiVE_fnc_HashGet;
 
             [[_logic,"disablePlayer",_player], "ALiVE_fnc_MultiSpawn", owner _player, false] call BIS_fnc_MP;
@@ -468,7 +468,7 @@ switch(_operation) do {
 
             private ["_player"];
 
-            _player = [[_args], 0, objNull, [objNull]] call BIS_fnc_param;
+            _player = [_args] param [0, objNull, [objNull]];
 
             if !(player == _player) exitwith {};
 
@@ -483,7 +483,7 @@ switch(_operation) do {
 
             private ["_player","_tgts"];
 
-            _player = [[_args], 0, objNull, [objNull]] call BIS_fnc_param;
+            _player = [_args] param [0, objNull, [objNull]];
 
             if !(player == _player) exitwith {};
 
@@ -512,10 +512,10 @@ switch(_operation) do {
 
             private ["_StartPos","_EndPos","_transport","_TransportType","_side","_queue","_faction"];
 
-            _startPos = [_args, 0, [0,0,100], [[]]] call BIS_fnc_param;
-            _endPos = [_args, 1, getMarkerpos "Respawn_West", [[]]] call BIS_fnc_param;
-            _faction = [_args, 2, "BLU_F", [""]] call BIS_fnc_param;
-            _timeOut = [_args, 3, 30, [-1]] call BIS_fnc_param;
+            _startPos = _args param [0, [0,0,100], [[]]];
+            _endPos = _args param [1, getMarkerpos "Respawn_West", [[]]];
+            _faction = _args param [2, "BLU_F", [""]];
+            _timeOut = _args param [3, 30, [-1]];
             _time = time;
 
             if (isnil "_faction") exitwith {["ALiVE_SUP_MULTISPAWN - faction not found when checking queue! Exiting queue..."]};
@@ -667,7 +667,7 @@ switch(_operation) do {
 
             private ["_player","_insertion","_destination","_transport","_timeout"];
 
-            _player = [[_args], 0, objNull, [objNull]] call BIS_fnc_param;
+            _player = [_args] param [0, objNull, [objNull]];
 
             _factionData = [GVAR(STORE),faction _player] call ALiVE_fnc_HashGet;
             _transport = [_factionData,QGVAR(INSERTION_TRANSPORT)] call ALiVE_fnc_HashGet;

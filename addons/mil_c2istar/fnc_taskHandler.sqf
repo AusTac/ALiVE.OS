@@ -611,7 +611,7 @@ switch (_operation) do {
                         if (_taskTypeKey in _heartsAndMindsTasks) then {
                             private _debugPosition = _taskLocation;
                             if (count (_taskSet select 0) > 0) then {
-                                _debugPosition = [(_taskSet select 0) select 0, 3, _taskLocation, [[]]] call BIS_fnc_param;
+                                _debugPosition = ((_taskSet select 0) select 0) param [3, _taskLocation, [[]]];
                             };
 
                             private _clusterID = [_taskParams, "clusterID", ""] call ALiVE_fnc_hashGet;
