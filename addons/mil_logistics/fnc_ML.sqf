@@ -5979,24 +5979,6 @@ switch(_operation) do {
                                         _completed = true;
                                     };
 
-                                    // Slingload watchdog signal: when the watchdog reaches the
-                                    // destination it sets alive_ml_sling_ready on the entity profile hash.
-                                    // Check the profile hash (not vehicle object variable) so this works
-                                    // even when the heli is virtualised and the vehicle object is null.
-                                    private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
-                                    if (!_completed && _slingReady) then {
-                                        // Only trigger if not already unloading
-                                        private _alreadyActive = if (!isNull _heliObj) then {
-                                            _heliObj getVariable ["alive_ml_sling_unload_active", false]
-                                        } else { false };
-                                        if (!_alreadyActive) then {
-                                            _completed = true;
-                                            if (_debug) then {
-                                                ["ML - heliTransport: %1 sling_ready signal received, triggering unload.", _x] call ALiVE_fnc_dump;
-                                            };
-                                        };
-                                    };
-
                                     // Stuck-heli recovery: if the heli has not reached the
                                     // destination after many iterations, reassign its waypoint
                                     // directly to the event position every 30 iterations.
@@ -6008,6 +5990,29 @@ switch(_operation) do {
                                         [_profile, "addWaypoint", _newWP] call ALIVE_fnc_profileEntity;
                                         ["ML - heliTransport: %1 stuck at iteration %2, reassigning waypoint to event position %3",
                                             _x, _waitIterations, _eventPosition] call ALiVE_fnc_dump;
+                                    };
+                                };
+                            };
+
+                            // Slingload watchdog signal: when the watchdog reaches the
+                            // destination it sets alive_ml_sling_ready on the entity profile hash.
+                            // Checked OUTSIDE the _heliActive guard so it fires even when no
+                            // players are near enough to keep the heli spawned. The heli is
+                            // physically present anyway (preventDespawn), so unloadTransportHelicopter
+                            // must run regardless of player proximity.
+                            private _slingReady = [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashGet;
+                            if (!_completed && _slingReady) then {
+                                private _heliObjSR = _profile select 2 select 10;
+                                private _alreadyActive = if (!isNull _heliObjSR) then {
+                                    _heliObjSR getVariable ["alive_ml_sling_unload_active", false]
+                                } else { false };
+                                if (!_alreadyActive) then {
+                                    _completed = true;
+                                    // Clear the flag immediately to prevent duplicate calls on
+                                    // subsequent monitor loop cycles before the profile is destroyed.
+                                    [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                                    if (_debug) then {
+                                        ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload.", _x] call ALiVE_fnc_dump;
                                     };
                                 };
                             };
@@ -6072,22 +6077,22 @@ switch(_operation) do {
                                 };
                             };
 
-                            // Position-based fallback: if active heli is within 500m of
-                            // destination, treat waypoint as complete regardless
+                            // Position-based fallback: if heli is within 500m of destination,
+                            // treat waypoint as complete. Checked outside _heliActive so a
+                            // preventDespawn heli that has physically arrived but has no players
+                            // nearby still triggers unload and clears the destination.
                             private _heliActive = _profile select 2 select 1;
-                            if (_heliActive) then {
-                                private _heliObj = _profile select 2 select 10;
-                                if (!isNull _heliObj && alive _heliObj) then {
-                                    if (_heliObj distance _eventPosition < 500) then {
-                                        _completed = true;
-                                    };
-                                    if (!_completed && _waitIterations > 20 && (_waitIterations - 20) % 30 == 0) then {
-                                        private _newWP = [_eventPosition, 200, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
-                                        [_profile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                                        [_profile, "addWaypoint", _newWP] call ALIVE_fnc_profileEntity;
-                                        ["ML - heliTransport: %1 stuck at iteration %2, reassigning waypoint to event position %3",
-                                            _x, _waitIterations, _eventPosition] call ALiVE_fnc_dump;
-                                    };
+                            private _heliObj = _profile select 2 select 10;
+                            if (!isNull _heliObj && alive _heliObj) then {
+                                if (_heliObj distance _eventPosition < 500) then {
+                                    _completed = true;
+                                };
+                                if (_heliActive && !_completed && _waitIterations > 20 && (_waitIterations - 20) % 30 == 0) then {
+                                    private _newWP = [_eventPosition, 200, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                                    [_profile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
+                                    [_profile, "addWaypoint", _newWP] call ALIVE_fnc_profileEntity;
+                                    ["ML - heliTransport: %1 stuck at iteration %2, reassigning waypoint to event position %3",
+                                        _x, _waitIterations, _eventPosition] call ALiVE_fnc_dump;
                                 };
                             };
 
@@ -10117,6 +10122,15 @@ switch(_operation) do {
                     [_vehicleProfile,"spawnType",[]] call ALIVE_fnc_profileVehicle;
                     [_vehicleProfile,"slingload",[]] call ALIVE_fnc_profileVehicle;
                     [_vehicleProfile, 'slingloading', false] call ALIVE_fnc_hashSet;
+                    // Clear preventDespawn on pilot entity profile so ALiVE does not
+                    // re-spawn the heli on the next simulation cycle.
+                    private _pilotEntityID = [_vehicleProfile, "alive_ml_pilot_entity_id", ""] call ALIVE_fnc_hashGet;
+                    if (_pilotEntityID != "") then {
+                        private _pilotProf = [ALIVE_profileHandler, "getProfile", _pilotEntityID] call ALIVE_fnc_profileHandler;
+                        if (!isNil "_pilotProf") then {
+                            [_pilotProf, "spawnType", []] call ALIVE_fnc_hashSet;
+                        };
+                    };
 
                 };
 
