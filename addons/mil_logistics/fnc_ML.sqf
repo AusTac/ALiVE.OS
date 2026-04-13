@@ -1441,6 +1441,23 @@ switch(_operation) do {
                                     _tProfID, typeOf _heli,
                                     ([getPos _heli] call ALIVE_fnc_taskGetNearestLocationName),
                                     round _distFromDest, round _heliAGLr, _heliSpdR, _phaseTimer] call ALiVE_fnc_dump;
+                                // Clear preventDespawn on heli vehicle and pilot entity profiles.
+                                // Safe to do here at dist>1200m -- ALiVE will virtualise the heli
+                                // shortly after, and fnc_profileEntity now moveOut's crew before
+                                // deleteVehicle so there is no longer any ejection risk.
+                                private _vProfRTB = [ALIVE_profileHandler, "getProfile", _vProfID] call ALIVE_fnc_profileHandler;
+                                if (!isNil "_vProfRTB") then {
+                                    [_vProfRTB, "spawnType", []] call ALIVE_fnc_profileVehicle;
+                                    private _pilotIDRTB = [_vProfRTB, "alive_ml_pilot_entity_id", ""] call ALIVE_fnc_hashGet;
+                                    if (_pilotIDRTB != "") then {
+                                        private _pilotProfRTB = [ALIVE_profileHandler, "getProfile", _pilotIDRTB] call ALIVE_fnc_profileHandler;
+                                        if (!isNil "_pilotProfRTB") then {
+                                            [_pilotProfRTB, "spawnType", []] call ALIVE_fnc_hashSet;
+                                        };
+                                    };
+                                    ["ML - heliDeliveryWatchdog: %1 preventDespawn cleared at RTB (dist=%2m).",
+                                        _tProfID, round _distFromDest] call ALiVE_fnc_dump;
+                                };
                                 _running = false;
                             };
                         };
