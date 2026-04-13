@@ -216,6 +216,11 @@ class CfgFunctions {
                 file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskGetStateOfEntityProfiles.sqf";
                 RECOMPILE;
             };
+            class taskDestroyEntityProfiles {
+                description = "Utility destroy task-owned entity profiles";
+                file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskDestroyEntityProfiles.sqf";
+                RECOMPILE;
+            };
             class taskGetStateOfObjects {
                 description = "Utility have all the entity profiles been destroyed";
                 file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskGetStateOfObjects.sqf";
