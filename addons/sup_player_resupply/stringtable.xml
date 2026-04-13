@@ -82,4 +82,10 @@
     <English>If defined, only vehicles/groups from these factions (BLU_F,BLU_T_F...) can be delivered. If undefined, defaults to player faction. Caution: case sensitive!</English>
     <Chinesesimp>如果已定义，则仅限来自这些阵营的车辆/团体(BLU_F,BLU_T_F...) 可以递送. 如果未定义，默认为玩家阵营.注意:区分大小写!</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_PR_FILTER_FRIENDLY_FACTIONS">
+    <English>Filter Friendly Factions:</English>
+</Key>
+<Key ID="STR_ALIVE_PR_FILTER_FRIENDLY_FACTIONS_COMMENT">
+    <English>When enabled, the Reinforce List (Groups) only shows factions actively commanded by OPCOM modules friendly to the player's side. Disable to show all config factions. Has no effect if Faction Whitelist is set.</English>
+</Key>
 </Container></Package></Project>

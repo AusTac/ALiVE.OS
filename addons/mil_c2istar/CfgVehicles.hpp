@@ -62,6 +62,32 @@ class CfgVehicles {
                             tooltip = "$STR_ALIVE_C2ISTAR_ALLOW_COMMENT";
                             defaultValue = """LaserDesignator""";
                     };
+                    // FACTION FILTERS
+                    class FACTION_FILTERS : ALiVE_ModuleSubTitle
+                    {
+                            property = QGVAR(__LINE__);
+                            displayName = " FACTION FILTER PARAMETERS";
+                    };
+                    class filterEnemyFactions : Combo
+                    {
+                            property = "ALiVE_MIL_C2ISTAR_filterEnemyFactions";
+                            displayName = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS";
+                            tooltip = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS_COMMENT";
+                            defaultValue = """true""";
+                            class Values
+                            {
+                                    class Yes
+                                    {
+                                            name = "Yes";
+                                            value = "true";
+                                    };
+                                    class No
+                                    {
+                                            name = "No";
+                                            value = "false";
+                                    };
+                            };
+                    };
                     // TASKING
                     class TASKING : ALiVE_ModuleSubTitle
                     {
@@ -85,26 +111,6 @@ class CfgVehicles {
                                     {
                                             name = "Yes";
                                             value = "true";
-                                    };
-                            };
-                    };
-                    class filterEnemyFactions : Combo
-                    {
-                            property = "ALiVE_MIL_C2ISTAR_filterEnemyFactions";
-                            displayName = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS";
-                            tooltip = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS_COMMENT";
-                            defaultValue = """true""";
-                            class Values
-                            {
-                                    class Yes
-                                    {
-                                            name = "Yes";
-                                            value = "true";
-                                    };
-                                    class No
-                                    {
-                                            name = "No";
-                                            value = "false";
                                     };
                             };
                     };

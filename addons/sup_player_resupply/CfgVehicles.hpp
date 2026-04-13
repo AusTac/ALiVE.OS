@@ -35,6 +35,18 @@ class CfgVehicles {
                             };
                     };
                     class pr_factionWhitelist : Edit { property = "ALiVE_sup_player_resupply_pr_factionWhitelist"; displayName = "$STR_ALIVE_PR_FACTION_WHITELIST"; tooltip = "$STR_ALIVE_PR_FACTION_WHITELIST_COMMENT"; defaultValue = """"""; typeName = "STRING"; };
+                    class filterFriendlyFactions : Combo
+                    {
+                            property = "ALiVE_sup_player_resupply_filterFriendlyFactions";
+                            displayName = "$STR_ALIVE_PR_FILTER_FRIENDLY_FACTIONS";
+                            tooltip = "$STR_ALIVE_PR_FILTER_FRIENDLY_FACTIONS_COMMENT";
+                            defaultValue = """true""";
+                            class Values
+                            {
+                                class Yes { name = "Yes"; value = "true"; default = 1; };
+                                class No  { name = "No";  value = "false"; };
+                            };
+                    };
                     class pr_restrictionDeliveryAirDrop : Combo
                     {
                             property = "ALiVE_sup_player_resupply_pr_restrictionDeliveryAirDrop";

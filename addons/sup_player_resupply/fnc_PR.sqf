@@ -49,6 +49,7 @@ Peer Reviewed:
 #define DEFAULT_SIDE "WEST"
 #define DEFAULT_FACTION "BLU_F"
 #define DEFAULT_FACTIONS []
+#define DEFAULT_FILTER_FRIENDLY_FACTIONS true
 #define DEFAULT_MARKER []
 #define DEFAULT_DESTINATION_MARKER []
 #define DEFAULT_DESTINATION []
@@ -344,6 +345,21 @@ switch(_operation) do {
         _result = _args;
     };
 
+    case "filterFriendlyFactions": {
+        if (typeName _args == "BOOL") then {
+            _logic setVariable ["filterFriendlyFactions", _args];
+        } else {
+            _args = _logic getVariable ["filterFriendlyFactions", DEFAULT_FILTER_FRIENDLY_FACTIONS];
+        };
+        if (typeName _args == "STRING") then {
+            if (_args == "true") then {_args = true;} else {_args = false;};
+            _logic setVariable ["filterFriendlyFactions", _args];
+        };
+        ASSERT_TRUE(typeName _args == "BOOL", str _args);
+
+        _result = _args;
+    };
+
     case "blacklist": {
         if !(isnil "_args") then {
             if(typeName _args == "STRING") then {
@@ -423,6 +439,13 @@ switch(_operation) do {
         // Set faction whitelist
         ALIVE_PR_FACTIONLIST = [_logic, "factions", _logic getVariable ["pr_factionWhitelist", DEFAULT_FACTIONS]] call MAINCLASS;
 
+        // If filterFriendlyFactions is enabled and no explicit whitelist was set,
+        // replace ALIVE_PR_FACTIONLIST with factions from OPCOM instances friendly
+        // to the server-side logic. The client-side init block does the same after
+        // player side is resolved, so this covers the server path.
+        private _filterFriendlyFactions = [_logic, "filterFriendlyFactions"] call MAINCLASS;
+        missionNamespace setVariable ["ALIVE_pr_filterFriendlyFactions", _filterFriendlyFactions, true];
+
         // Set final blacklist
         ALiVE_PR_BLACKLIST = ([_logic, "blacklist", _logic getVariable ["pr_restrictionBlacklist", DEFAULT_RESTRICTION_BLACKLIST]] call MAINCLASS) + ALiVE_PR_BLACKLIST + ALiVE_PLACEMENT_VEHICLEBLACKLIST;
 
@@ -467,6 +490,39 @@ switch(_operation) do {
 
             if (count ALIVE_PR_FACTIONLIST == 0) then {
                 ALIVE_PR_FACTIONLIST pushback _playerFaction;
+            };
+
+            // When filterFriendlyFactions is enabled, narrow ALIVE_PR_FACTIONLIST
+            // to only factions commanded by OPCOM instances that are friendly to
+            // the player's side. Uses each OPCOM's own sidesfriendly array so the
+            // getFriend logic is consistent with how OPCOM computed it at init.
+            // Only applies when no explicit pr_factionWhitelist has been set —
+            // a non-empty whitelist already expresses deliberate mission designer intent.
+            if (_filterFriendlyFactions) then {
+                private _explicitWhitelist = _logic getVariable ["pr_factionWhitelist", ""];
+                if (_explicitWhitelist isEqualTo "" || {_explicitWhitelist isEqualTo []}) then {
+                    private _friendlyFactions = [];
+                    {
+                        if (_x isEqualType []) then {
+                            private _sidesFriendly = [_x, "sidesfriendly", []] call ALIVE_fnc_hashGet;
+                            if (_sideText in _sidesFriendly) then {
+                                private _opcomFactions = [_x, "factions", []] call ALIVE_fnc_hashGet;
+                                {
+                                    if ((_x isEqualType "") && {!(_x isEqualTo "")} && {!(_x in _friendlyFactions)}) then {
+                                        _friendlyFactions pushBack _x;
+                                    };
+                                } forEach _opcomFactions;
+                            };
+                        };
+                    } forEach (missionNamespace getVariable ["OPCOM_instances", []]);
+
+                    if (count _friendlyFactions > 0) then {
+                        ALIVE_PR_FACTIONLIST = _friendlyFactions;
+                        ["SUP_PR filterFriendlyFactions - ALIVE_PR_FACTIONLIST filtered to OPCOM friendly factions: %1", ALIVE_PR_FACTIONLIST] call ALiVE_fnc_dump;
+                    } else {
+                        ["SUP_PR filterFriendlyFactions - no OPCOM friendly factions found yet, keeping existing ALIVE_PR_FACTIONLIST: %1", ALIVE_PR_FACTIONLIST] call ALiVE_fnc_dump;
+                    };
+                };
             };
 
             [_logic,"faction",_playerFaction] call MAINCLASS;
@@ -638,6 +694,53 @@ switch(_operation) do {
             };
 
             [_logic,"sortedVehicles",_sortedVehicles] call MAINCLASS;
+
+            // Pre-compute vehicle display names and weights into a cache hash.
+            // The UI forEach at depth 1 previously did live config reads (getText,
+            // getObjectWeight) per vehicle on every category selection — causing
+            // multi-second freezes with large modsets (hundreds of Car classnames).
+            // Building the cache once here means the UI does only hash lookups.
+            //
+            // Weight uses CfgVehicles mass directly. If mass == 0 we fall back to
+            // a class-based approximate (matching getObjectWeight _types table) to
+            // avoid the createVehicleLocal spawn that getObjectWeight would trigger.
+            private _typeWeightFallbacks = [
+                ["Truck_F",    1000],
+                ["Car",         540],
+                ["Tank",       6500],
+                ["Air",         327],
+                ["Ship",        750],
+                ["Reammobox_F", 200],
+                ["Static",      400],
+                ["ThingX",        7],
+                ["Man",         200],
+                ["StaticWeapon", 60]
+            ];
+
+            if (isNil "ALIVE_PR_vehicleCache") then {
+                ALIVE_PR_vehicleCache = [] call ALiVE_fnc_hashCreate;
+            };
+
+            {
+                private _category = _x;
+                private _classes = [_sortedVehicles, _category] call ALIVE_fnc_hashGet;
+                if (!isNil "_classes" && {_classes isEqualType []}) then {
+                    {
+                        private _class = _x;
+                        if !(_class in (ALIVE_PR_vehicleCache select 1)) then {
+                            private _displayName = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
+                            if (_displayName isEqualTo "") then { _displayName = _class; };
+                            private _mass = getNumber (configFile >> "CfgVehicles" >> _class >> "mass");
+                            if (_mass == 0) then {
+                                { if (_class isKindOf (_x select 0)) exitWith { _mass = _x select 1; }; } forEach _typeWeightFallbacks;
+                            };
+                            [ALIVE_PR_vehicleCache, _class, [_displayName, _mass]] call ALIVE_fnc_hashSet;
+                        };
+                    } forEach _classes;
+                };
+            } forEach (_sortedVehicles select 1);
+
+            ["SUP_PR - vehicle cache built: %1 entries", count (ALIVE_PR_vehicleCache select 1)] call ALiVE_fnc_dump;
 
 
             // get sorted group data
@@ -1624,6 +1727,13 @@ switch(_operation) do {
                     _selectedOption = _selectedListOptions select _selectedIndex;
                     _selectedValue = _selectedListValues select _selectedIndex;
                     _sortedVehicles = [_logic,"sortedVehicles"] call MAINCLASS;
+                    // Ensure _sortedVehicles is a valid hash regardless of init timing.
+                    // DEFAULT_SORTED_VEHICLES is [] (plain array) — replace with an
+                    // empty hash so all downstream ALIVE_fnc_hashGet calls are safe.
+                    if (isNil "_sortedVehicles" || {!(_sortedVehicles isEqualType [])} || {count _sortedVehicles < 2}) then {
+                        ["SUP_PR SUPPLY_LIST_SELECT - sortedVehicles not yet initialised (type: %1, count: %2), using empty hash", typeName _sortedVehicles, count (_sortedVehicles)] call ALiVE_fnc_dump;
+                        _sortedVehicles = [] call ALiVE_fnc_hashCreate;
+                    };
                     _faction = [_logic,"faction"] call MAINCLASS;
                     _side = [_logic,"side"] call MAINCLASS;
 
@@ -1784,7 +1894,11 @@ switch(_operation) do {
                                 {
                                     private ["_slingable"];
 
-                                    _displayName = getText(configFile >> "CfgVehicles" >> _x >> "displayname");
+                                    // Use pre-computed cache — avoids live getText/getObjectWeight
+                                    // config reads (including createVehicleLocal) per vehicle
+                                    private _cached = [ALIVE_PR_vehicleCache, _x, ["", 0]] call ALIVE_fnc_hashGet;
+                                    _displayName = _cached select 0;
+                                    private _cachedMass = _cached select 1;
 
                                     // Make sure item is not too heavy to transport based on delivery type
                                     if (_deliveryType == "PR_HELI_INSERT" || _deliveryType == "PR_AIRDROP") then {
@@ -1794,7 +1908,7 @@ switch(_operation) do {
                                         If (!_slingable && _deliveryType == "PR_HELI_INSERT" && (_selectedValue == "Car" || _selectedValue == "Ship")) then {
                                             // Don't display
                                         } else {
-                                            if ([_x] call ALIVE_fnc_getObjectWeight < _maxWeight) then {
+                                            if (_cachedMass < _maxWeight) then {
                                                 _options pushback _displayName;
                                                 _values pushback _x;
                                             };
@@ -1866,7 +1980,10 @@ switch(_operation) do {
 
                                 if (_selectedSupplyListDepth == 2 && _index > 0) then {
                                     private _vehicleClasses = [_sortedVehicles, _selectedValue] call ALIVE_fnc_hashGet;
-                                    _supplyList lbSetTooltip [_index, format ["%1", _vehicleClasses select (_index - 1)]];
+                                    // Guard: hashGet returns nil if key missing; array must have enough entries
+                                    if (!isNil "_vehicleClasses" && {_vehicleClasses isEqualType []} && {count _vehicleClasses >= _index}) then {
+                                        _supplyList lbSetTooltip [_index, format ["%1", _vehicleClasses select (_index - 1)]];
+                                    };
                                 };
                             } forEach _options;
 
@@ -1897,7 +2014,19 @@ switch(_operation) do {
                     _selectedOption = _selectedListOptions select _selectedIndex;
                     _selectedValue = _selectedListValues select _selectedIndex;
                     _sortedVehicles = [_logic,"sortedVehicles"] call MAINCLASS;
+                    // Ensure _sortedVehicles is a valid hash regardless of init timing.
+                    if (isNil "_sortedVehicles" || {!(_sortedVehicles isEqualType [])} || {count _sortedVehicles < 2}) then {
+                        ["SUP_PR REINFORCE_LIST_SELECT - sortedVehicles not yet initialised (type: %1, count: %2), using empty hash", typeName _sortedVehicles, count (_sortedVehicles)] call ALiVE_fnc_dump;
+                        _sortedVehicles = [] call ALiVE_fnc_hashCreate;
+                    };
                     _sortedGroups = [_logic,"sortedGroups"] call MAINCLASS;
+                    // Ensure _sortedGroups is a valid hash regardless of init timing.
+                    // DEFAULT_SORTED_GROUPS is [] (plain array) — replace with an
+                    // empty hash so all downstream ALIVE_fnc_hashGet calls are safe.
+                    if (isNil "_sortedGroups" || {!(_sortedGroups isEqualType [])} || {count _sortedGroups < 2}) then {
+                        _sortedGroups = [] call ALiVE_fnc_hashCreate;
+                        ["SUP_PR - sortedGroups not yet initialised, using empty hash"] call ALiVE_fnc_dump;
+                    };
                     _faction = [_logic,"faction"] call MAINCLASS;
                     _side = [_logic,"side"] call MAINCLASS;
 
@@ -2010,6 +2139,11 @@ switch(_operation) do {
                                     _options = ["<< Back"];
                                     _values = _options;
                                     _categories = [_sortedGroups,_selectedValue] call ALIVE_fnc_hashGet;
+                                    // Guard: faction key may not exist in sortedGroups (e.g. no CfgGroups entry)
+                                    if (isNil "_categories" || {!(_categories isEqualType [])} || {count _categories < 2}) then {
+                                        ["SUP_PR REINFORCE depth1 - no categories for faction '%1', skipping", _selectedValue] call ALiVE_fnc_dump;
+                                        _categories = [] call ALiVE_fnc_hashCreate;
+                                    };
                                     _categories = _categories select 1;
                                     _options = _options + _categories;
 
@@ -2089,10 +2223,17 @@ switch(_operation) do {
                                     _categories = [_sortedGroups,_selectedReinforceListParents select 1] call ALIVE_fnc_hashGet;
                                     _groups = [_categories,_selectedReinforceListParents select 2] call ALIVE_fnc_hashGet;
 
-                                    _options = _groups select 2;
-                                    _options = ["<< Back"] + _options;
-                                    _values = _groups select 1;
-                                    _values = ["<< Back"] + _values;
+                                    // Guard: category or group key may not exist
+                                    if (isNil "_groups" || {!(_groups isEqualType [])} || {count _groups < 3}) then {
+                                        ["SUP_PR REINFORCE depth2 - no groups for category '%1' faction '%2', skipping", _selectedReinforceListParents select 2, _selectedReinforceListParents select 1] call ALiVE_fnc_dump;
+                                        _options = ["<< Back"];
+                                        _values = ["<< Back"];
+                                    } else {
+                                        _options = _groups select 2;
+                                        _options = ["<< Back"] + _options;
+                                        _values = _groups select 1;
+                                        _values = ["<< Back"] + _values;
+                                    };
 
                                     _selectedReinforceListOptions set [3,_options];
                                     _selectedReinforceListValues set [3,_values];
@@ -2198,7 +2339,10 @@ switch(_operation) do {
                                     if (_selectedReinforceListDepth == 3) then {
                                         private _groupCategories = [_sortedGroups, _selectedReinforceListParents select 1] call ALIVE_fnc_hashGet;
                                         private _groupClasses = [_groupCategories, _selectedReinforceListParents select 2] call ALIVE_fnc_hashGet;
-                                        _tooltip = (_groupClasses select 1) select (_index - 1);
+                                        // Guard: nil groupClasses means missing CfgGroups entry — leave tooltip empty
+                                        if (!isNil "_groupClasses" && {_groupClasses isEqualType []} && {count _groupClasses > 1}) then {
+                                            _tooltip = (_groupClasses select 1) select (_index - 1);
+                                        };
                                     } else {
                                         // Individuals
                                         if (_selectedReinforceListDepth == 2 && _selectedReinforceListParents select 0 == "Individuals") then {
