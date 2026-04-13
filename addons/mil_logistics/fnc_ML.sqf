@@ -7395,7 +7395,7 @@ switch(_operation) do {
                                         if !(isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
                                     };
                                     if (!isNull _vehicle && alive _vehicle) then {
-                                        { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
+                                        { moveOut _x } forEach ((crew _vehicle) + (cargo _vehicle));
                                     };
                                     [_transportProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                                 };
@@ -7423,7 +7423,7 @@ switch(_operation) do {
                                 // cargo covers observer and passenger seats (e.g. Chinook
                                 // crewman seats that are not classified as crew positions).
                                 if (_hasLiveVehicle) then {
-                                    { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
+                                    { moveOut _x } forEach ((crew _vehicle) + (cargo _vehicle));
                                 };
 
                                 [_transportProfile, "destroy"] call ALIVE_fnc_profileVehicle;
@@ -7719,7 +7719,7 @@ switch(_operation) do {
                                     // fnc_removeProfileVehicleAssignment _indexes error in ALiVE core.
                                     [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
                                     if (!isNull _vehicle && alive _vehicle) then {
-                                        { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
+                                        { moveOut _x } forEach ((crew _vehicle) + (cargo _vehicle));
                                     };
                                     [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                                 };
@@ -7733,7 +7733,7 @@ switch(_operation) do {
                                 // Clear vehicleAssignments before destroy to prevent ALiVE core _indexes error.
                                 [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
                                 if (!isNull _vehicle && alive _vehicle) then {
-                                    { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
+                                    { moveOut _x } forEach ((crew _vehicle) + (cargo _vehicle));
                                 };
                                 [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                             };
