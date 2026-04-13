@@ -306,6 +306,7 @@ switch (_taskState) do {
         [_taskParams, "lastState", ""] call ALIVE_fnc_hashSet;
         [_taskParams, "siteActive", false] call ALIVE_fnc_hashSet;
         [_taskParams, "holdUntil", 0] call ALIVE_fnc_hashSet;
+        [_taskParams, "forceCompleteAt", 0] call ALIVE_fnc_hashSet;
         [_taskParams, "currentWave", 1] call ALIVE_fnc_hashSet;
         [_taskParams, "lastWave", 0] call ALIVE_fnc_hashSet;
         [_taskParams, "totalWaves", 2 + floor (random 2)] call ALIVE_fnc_hashSet;
@@ -370,6 +371,7 @@ switch (_taskState) do {
                 [_params] call _activateAttendees;
                 [_params, "siteActive", true] call ALIVE_fnc_hashSet;
                 [_params, "holdUntil", serverTime + 540] call ALIVE_fnc_hashSet;
+                [_params, "forceCompleteAt", serverTime + 1140] call ALIVE_fnc_hashSet;
                 [_params, "nextWaveAt", serverTime + 30] call ALIVE_fnc_hashSet;
                 [_params, "nextTask", ([_params, "taskIDs"] call ALIVE_fnc_hashGet) select 2] call ALIVE_fnc_hashSet;
 
@@ -399,6 +401,7 @@ switch (_taskState) do {
         private _taskDialog = [_params, "dialog"] call ALIVE_fnc_hashGet;
         private _currentTaskDialog = [_taskDialog, "Secure"] call ALIVE_fnc_hashGet;
         private _holdUntil = [_params, "holdUntil", 0] call ALIVE_fnc_hashGet;
+        private _forceCompleteAt = [_params, "forceCompleteAt", 0] call ALIVE_fnc_hashGet;
         private _currentWave = [_params, "currentWave", 1] call ALIVE_fnc_hashGet;
         private _lastWave = [_params, "lastWave", 0] call ALIVE_fnc_hashGet;
         private _totalWaves = [_params, "totalWaves", 2] call ALIVE_fnc_hashGet;
@@ -475,7 +478,30 @@ switch (_taskState) do {
             _currentWave = [_params, "currentWave", _currentWave] call ALIVE_fnc_hashGet;
             _entityProfileIDs = [_params, "entityProfileIDs", []] call ALIVE_fnc_hashGet;
 
-            if (_currentWave > _totalWaves && {_entityProfileIDs isEqualTo []} && {serverTime >= _holdUntil} && {[_taskPosition, _taskPlayers, _taskSide, 250] call ALIVE_fnc_taskIsAreaClearOfEnemies}) then {
+            if (_forceCompleteAt <= 0 && {_holdUntil > 0}) then {
+                _forceCompleteAt = _holdUntil + 600;
+                [_params, "forceCompleteAt", _forceCompleteAt] call ALIVE_fnc_hashSet;
+            };
+
+            private _areaClear = [_taskPosition, _taskPlayers, _taskSide, 250] call ALIVE_fnc_taskIsAreaClearOfEnemies;
+            private _staleWave = !(_entityProfileIDs isEqualTo []) && {serverTime >= _holdUntil} && {_forceCompleteAt > 0} && {serverTime >= _forceCompleteAt};
+
+            if (_staleWave) then {
+                private _playersNear = [_taskPosition, _taskPlayers, 1000] call ALIVE_fnc_taskHavePlayersReachedDestination;
+                private _realAreaClear = _playersNear && {!([_taskPosition, _taskSide, 250, false] call ALIVE_fnc_isEnemyNear)};
+
+                if (_areaClear || {_realAreaClear}) then {
+                    [_entityProfileIDs] call ALIVE_fnc_taskDestroyEntityProfiles;
+                    [_params, "entityProfileIDs", []] call ALIVE_fnc_hashSet;
+                    [_params, "currentWave", _totalWaves + 1] call ALIVE_fnc_hashSet;
+                    [_params, "nextWaveAt", 0] call ALIVE_fnc_hashSet;
+                    _currentWave = _totalWaves + 1;
+                    _entityProfileIDs = [];
+                    _areaClear = [_taskPosition, _taskPlayers, _taskSide, 250] call ALIVE_fnc_taskIsAreaClearOfEnemies;
+                };
+            };
+
+            if (_currentWave > _totalWaves && {_entityProfileIDs isEqualTo []} && {serverTime >= _holdUntil} && {_areaClear}) then {
                 [_params, "nextTask", ""] call ALIVE_fnc_hashSet;
 
                 _task set [8, "Succeeded"];
