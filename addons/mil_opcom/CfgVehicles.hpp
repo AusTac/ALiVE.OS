@@ -102,12 +102,12 @@ class CfgVehicles {
                                 property = "ALiVE_mil_opcom_reinforcements";
                                 displayName = "$STR_ALIVE_OPCOM_REINFORCEMENTS";
                                 tooltip = "$STR_ALIVE_OPCOM_REINFORCEMENTS_COMMENT";
-                                defaultValue = """0.9""";
+                                defaultValue = """0.75""";
                                 class Values
                                 {
-                                    class Constant { name = "Constant"; value = "0.9"; default = 1; };
-                                    class Blocked { name = "Packets"; value = "0.75"; };
-                                    class Seldom { name = "Seldom"; value = "0.5"; };
+                                    class Aggressive   { name = "Aggressive (90%)";   value = "0.9";  };
+                                    class Moderate     { name = "Moderate (75%)";     value = "0.75"; default = 1; };
+                                    class Conservative { name = "Conservative (50%)"; value = "0.5";  };
                                 };
                         };
                         class intelchance : Combo
@@ -214,8 +214,8 @@ class CfgVehicles {
                                 defaultValue = """""";
                         };
 
-                        // ---- Objectives & Recruitment ----------------------------------------
-                        class HDR_OBJ : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_OBJ"; displayName = "OBJECTIVES & RECRUITMENT"; };
+                        // ---- Objectivest ----------------------------------------
+                        class HDR_OBJ : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_OBJ"; displayName = "OBJECTIVES"; };
                         class simultanObjectives : Edit
                         {
                                 property = "ALiVE_mil_opcom_simultanObjectives";
@@ -224,6 +224,8 @@ class CfgVehicles {
                                 defaultValue = """10""";
                                 typeName = "NUMBER";
                         };
+                        // ----  Recruitment ----------------------------------------
+                        class ASYM_SET : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_ASYM_SET"; displayName = "ASYMMETRIC SETTINGS"; };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";
@@ -272,6 +274,8 @@ class CfgVehicles {
                                 defaultValue = """50""";
                                 typeName = "NUMBER";
                         };
+                        // ----  Task Overrides ----------------------------------------
+                        class TSK_OVR : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_TSK_OVR"; displayName = "TASK OVERRIDES"; };
                         class taskProfileCountOverrides : Edit
                         {
                                 property = "ALiVE_mil_opcom_taskProfileCountOverrides";
@@ -288,7 +292,7 @@ class CfgVehicles {
                         };
 
                         // ---- Hostility ------------------------------------------------------
-                        class HDR_HOSTILITY : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_HOSTILITY"; displayName = "HOSTILITY"; };
+                        class HDR_HOSTILITY : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_HOSTILITY"; displayName = "ASYMMETRIC HOSTILITY"; };
                         class hostilityPresenceMultiplier : Edit
                         {
                                 property = "ALiVE_mil_opcom_hostilityPresenceMultiplier";

@@ -63,8 +63,8 @@
     <Chinesesimp>增援部队</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_REINFORCEMENTS_COMMENT">
-    <English>Requires Military Logistics Module! Selects the threshold of the AI Commanders reinforcement requests (90% / 75% / 50% of English forces)</English>
-    <Chinesesimp>需要军事后勤模块!选择AI指挥官增援请求的阈值(英军的90%/75%/50%)</Chinesesimp>
+    <English>Requires Military Logistics Module. Sets the force strength threshold at which the AI Commander requests reinforcements. Aggressive (90%) = requests early, while still near full strength. Moderate (75%) = requests when noticeably weakened. Conservative (50%) = only requests when heavily depleted.</English>
+    <Chinesesimp>需要军事后勤模块。设置AI指挥官请求增援的兵力阈值。激进(90%)=较早请求，接近满编时即请求。适中(75%)=明显削弱时请求。保守(50%)=仅在严重损耗时请求。</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_FACTIONS">
     <English>Override Factions:</English>
