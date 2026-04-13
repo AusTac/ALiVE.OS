@@ -10105,6 +10105,8 @@ switch(_operation) do {
                                                     [_slungProf, "position",        _truckLandPos] call ALIVE_fnc_profileVehicle;
                                                     [_slungProf, "despawnPosition", _truckLandPos] call ALIVE_fnc_profileVehicle;
                                                     [_slungProf, "hasSimulated",    false]         call ALIVE_fnc_profileVehicle;
+                                                    ["ML - unloadTransportHelicopter: Slung truck %1 profile updated. pos=%2 hasSimulated=false spawnType=[]",
+                                                        _slingloadVehicle, _truckLandPos] call ALiVE_fnc_dump;
                                                     // Clear preventDespawn so the truck profile returns to normal lifecycle
                                                     [_slungProf, "spawnType", []] call ALIVE_fnc_profileVehicle;
 
