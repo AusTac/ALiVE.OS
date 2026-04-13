@@ -6083,14 +6083,14 @@ switch(_operation) do {
 
                         };
 
-                    };
-
                         if (_completed) then {
                             _waypointsCompleted = _waypointsCompleted + 1;
                             [_logic,"unloadTransportHelicopter",[_event,_profile]] call MAINCLASS;
                         } else {
                             _waypointsNotCompleted = _waypointsNotCompleted + 1;
                         };
+
+                    };
 
                 } forEach _transportProfiles;
 
@@ -7394,9 +7394,6 @@ switch(_operation) do {
                                         private _cmdProf = [ALIVE_profileHandler, "getProfile", _inCommand2 select 0] call ALIVE_fnc_profileHandler;
                                         if !(isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
                                     };
-                                    if (!isNull _vehicle && alive _vehicle) then {
-                                        { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
-                                    };
                                     [_transportProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                                 };
 
@@ -7412,18 +7409,6 @@ switch(_operation) do {
                                     if !(isNil "_commandProfile") then {
                                         [_commandProfile, "destroy"] call ALIVE_fnc_profileEntity;
                                     };
-                                };
-
-                                // Move any crew and passengers out of the vehicle before
-                                // destroying the profile. If the heli is still physically
-                                // present, ALiVE's destroy call triggers deleteVehicle which
-                                // ejects seated units -- they inherit the vehicle velocity,
-                                // enter freefall and die on impact.
-                                // crew covers pilot/co-pilot/gunner seats.
-                                // cargo covers observer and passenger seats (e.g. Chinook
-                                // crewman seats that are not classified as crew positions).
-                                if (_hasLiveVehicle) then {
-                                    { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
                                 };
 
                                 [_transportProfile, "destroy"] call ALIVE_fnc_profileVehicle;
@@ -7718,9 +7703,6 @@ switch(_operation) do {
                                     // Clear vehicleAssignments before destroy to prevent
                                     // fnc_removeProfileVehicleAssignment _indexes error in ALiVE core.
                                     [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
-                                    if (!isNull _vehicle && alive _vehicle) then {
-                                        { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
-                                    };
                                     [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                                 };
                                 _anyActive = _anyActive + 1;
@@ -7732,9 +7714,6 @@ switch(_operation) do {
                                 };
                                 // Clear vehicleAssignments before destroy to prevent ALiVE core _indexes error.
                                 [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
-                                if (!isNull _vehicle && alive _vehicle) then {
-                                    { moveOut _x } forEach (crew _vehicle + cargo _vehicle);
-                                };
                                 [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
                             };
                         };
