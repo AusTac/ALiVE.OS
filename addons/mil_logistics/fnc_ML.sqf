@@ -1345,6 +1345,11 @@ switch(_operation) do {
                                     [_tProfNow, "clearWaypoints"] call ALIVE_fnc_profileEntity;
                                     [_tProfNow, "addWaypoint", _wpReturn] call ALIVE_fnc_profileEntity;
                                 };
+                                // Issue direct flight commands so the heli physically departs
+                                // after sling release rather than hovering at the delivery point.
+                                _heli flyInHeight 150;
+                                (group (driver _heli)) setSpeedMode "FULL";
+                                _heli move _returnPos;
 
                                 _phase = 3; _phaseTimer = 0;
                                 _heli setVariable ["alive_ml_watchdog_phase", _phase];
@@ -10092,6 +10097,14 @@ switch(_operation) do {
                                                 private _slungProf = [ALIVE_profileHandler, "getProfile", _slungID select 0] call ALIVE_fnc_profileHandler;
                                                 if !(isNil "_slungProf") then {
                                                     [_slungProf, "slung",     []] call ALIVE_fnc_hashSet;
+                                                    // Update truck profile position to where it actually landed.
+                                                    // The profile still has the original HQ spawn position --
+                                                    // without this ALiVE cannot locate the vehicle to despawn it.
+                                                    private _truckLandPos = getPos _slingloadVehicle;
+                                                    _truckLandPos set [2, 0];
+                                                    [_slungProf, "position",        _truckLandPos] call ALIVE_fnc_profileVehicle;
+                                                    [_slungProf, "despawnPosition", _truckLandPos] call ALIVE_fnc_profileVehicle;
+                                                    [_slungProf, "hasSimulated",    false]         call ALIVE_fnc_profileVehicle;
                                                     // Clear preventDespawn so the truck profile returns to normal lifecycle
                                                     [_slungProf, "spawnType", []] call ALIVE_fnc_profileVehicle;
 
