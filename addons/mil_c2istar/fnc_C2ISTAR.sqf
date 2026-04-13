@@ -66,6 +66,7 @@ Peer Reviewed:
 #define DEFAULT_RUN_EVERY 120
 #define DEFAULT_TASK_MIN_DISTANCE 0
 #define DEFAULT_VIP_PANIC_TIMEOUT 180
+#define DEFAULT_FILTER_ENEMY_FACTIONS true
 #define DEFAULT_CIVIC_STATE_ENABLED false
 #define DEFAULT_CIVIC_MULTIPLIER 1
 #define DEFAULT_CIVIC_DUPLICATE_TASK_PENALTY 0.15
@@ -495,6 +496,20 @@ switch(_operation) do {
         // Module attribute system may store value as string — coerce to scalar
         if (typeName _result == "STRING") then { _result = parseNumber _result; };
     };
+    case "filterEnemyFactions": {
+        if (typeName _args == "BOOL") then {
+            _logic setVariable ["filterEnemyFactions", _args];
+        } else {
+            _args = _logic getVariable ["filterEnemyFactions", DEFAULT_FILTER_ENEMY_FACTIONS];
+        };
+        if (typeName _args == "STRING") then {
+            if (_args == "true") then {_args = true;} else {_args = false;};
+            _logic setVariable ["filterEnemyFactions", _args];
+        };
+        ASSERT_TRUE(typeName _args == "BOOL", str _args);
+
+        _result = _args;
+    };
     case "civicStateEnabled": {
         if (typeName _args == "BOOL") then {
             _logic setVariable ["civicStateEnabled", _args];
@@ -677,6 +692,7 @@ switch(_operation) do {
 
         private _taskMinDistance = [_logic, "taskMinDistance"] call MAINCLASS;
         private _vipPanicTimeout = [_logic, "vipPanicTimeout"] call MAINCLASS;
+        private _filterEnemyFactions = [_logic, "filterEnemyFactions"] call MAINCLASS;
         private _civicStateEnabled = [_logic, "civicStateEnabled"] call MAINCLASS;
         private _civicTrustSuccessMultiplier = [_logic, "civicTrustSuccessMultiplier"] call MAINCLASS;
         private _civicTrustFailureMultiplier = [_logic, "civicTrustFailureMultiplier"] call MAINCLASS;
@@ -733,6 +749,7 @@ switch(_operation) do {
 
         missionNamespace setVariable ["ALIVE_taskMinDistance", (_taskMinDistance max 0), true];
         missionNamespace setVariable ["ALIVE_taskVipPanicTimeout", (_vipPanicTimeout max 30), true];
+        missionNamespace setVariable ["ALIVE_c2istar_filterEnemyFactions", _filterEnemyFactions, true];
         missionNamespace setVariable ["ALIVE_civicStateEnabled", _civicStateEnabled, true];
         missionNamespace setVariable ["ALIVE_civicTrustSuccessMultiplier", (_civicTrustSuccessMultiplier max 0), true];
         missionNamespace setVariable ["ALIVE_civicTrustFailureMultiplier", (_civicTrustFailureMultiplier max 0), true];
@@ -1046,7 +1063,17 @@ switch(_operation) do {
             [_taskingState,"generateLocationListSelectedIndex",DEFAULT_SELECTED_INDEX] call ALIVE_fnc_hashSet;
             [_taskingState,"generateLocationListSelectedValue",DEFAULT_SELECTED_VALUE] call ALIVE_fnc_hashSet;
 
-            _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
+            // Build faction list — filtered to ALiVE mission factions when module param is set
+            if (missionNamespace getVariable ["ALIVE_c2istar_filterEnemyFactions", true]) then {
+                _factionsDataSource = [] call ALiVE_fnc_getAliveMissionFactionsDataSource;
+                // If OPCOM has not yet registered any factions (e.g. pre-init), fall back to full list
+                if ((_factionsDataSource select 0) isEqualTo []) then {
+                    ["C2ISTAR - filterEnemyFactions: no OPCOM factions found yet, falling back to full faction list"] call ALiVE_fnc_dump;
+                    _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
+                };
+            } else {
+                _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
+            };
             [_taskingState,"generateFactionOptions",_factionsDataSource select 0] call ALIVE_fnc_hashSet;
             [_taskingState,"generateFactionValues",_factionsDataSource select 1] call ALIVE_fnc_hashSet;
             [_taskingState,"generateFactionListSelectedIndex",DEFAULT_SELECTED_INDEX] call ALIVE_fnc_hashSet;

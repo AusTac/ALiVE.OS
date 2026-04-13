@@ -571,6 +571,13 @@ class getFactionsDataSource
 	RECOMPILE;
 };
 
+class getAliveMissionFactionsDataSource
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_getAliveMissionFactionsDataSource.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class sortCFGGroupsByFaction
 {
 	file = "\x\alive\addons\x_lib\functions\config\fnc_sortCFGGroupsByFaction.sqf";

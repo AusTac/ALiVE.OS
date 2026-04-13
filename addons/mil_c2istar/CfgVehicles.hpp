@@ -88,6 +88,26 @@ class CfgVehicles {
                                     };
                             };
                     };
+                    class filterEnemyFactions : Combo
+                    {
+                            property = "ALiVE_MIL_C2ISTAR_filterEnemyFactions";
+                            displayName = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS";
+                            tooltip = "$STR_ALIVE_C2ISTAR_FILTER_ENEMY_FACTIONS_COMMENT";
+                            defaultValue = """true""";
+                            class Values
+                            {
+                                    class Yes
+                                    {
+                                            name = "Yes";
+                                            value = "true";
+                                    };
+                                    class No
+                                    {
+                                            name = "No";
+                                            value = "false";
+                                    };
+                            };
+                    };
                     class autoGenerateBlufor : Combo
                     {
                             property = "ALiVE_MIL_C2ISTAR_autoGenerateBlufor";
