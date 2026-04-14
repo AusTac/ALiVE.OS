@@ -286,9 +286,12 @@ switch (_operation) do {
 
                         private _roadBlocks = parseNumber([_logic, "roadBlocks"] call MAINCLASS);
                         private _debug = [_logic, "debug"] call MAINCLASS;
+                        private _maxRoadblockSpawnAttempts = 10;
+                        private _lastRoadblockDebug = -30;
 
                         while {count GVAR(ROADBLOCK_LOCATIONS) > 0} do {
                             private _timer = time;
+                            private _spawnChecks = 0;
 
                             {
                                 if (_x isEqualType []) then {
@@ -305,12 +308,31 @@ switch (_operation) do {
                                     };
 
                                     if (_spawn) then {
+                                        _spawnChecks = _spawnChecks + 1;
+
                                         private _roadblockResult = [_position, _size + 150, ceil(_roadBlocks / 30), _debug] call ALiVE_fnc_createRoadblock;
+                                        private _roadblockLocation = [_position, _size];
+
                                         if (count _roadblockResult > 0) then {
-                                            private _roadblockLocation = [_position, _size];
                                             GVAR(ROADBLOCK_LOCATIONS) set [_forEachIndex, -1];
                                             if !(isNil "ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS") then {
                                                 ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS = ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS select {!(_x isEqualTo _roadblockLocation)};
+                                            };
+                                        } else {
+                                            private _attempts = if (count _x > 2) then {_x select 2} else {0};
+                                            _attempts = _attempts + 1;
+
+                                            if (_attempts >= _maxRoadblockSpawnAttempts) then {
+                                                GVAR(ROADBLOCK_LOCATIONS) set [_forEachIndex, -1];
+                                                if !(isNil "ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS") then {
+                                                    ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS = ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS select {!(_x isEqualTo _roadblockLocation)};
+                                                };
+
+                                                if (_debug) then {
+                                                    ["Roadblock at %1 failed to spawn after %2 attempts; removing from queue", _position, _attempts] call ALiVE_fnc_dump;
+                                                };
+                                            } else {
+                                                GVAR(ROADBLOCK_LOCATIONS) set [_forEachIndex, [_position, _size, _attempts]];
                                             };
                                         };
                                     };
@@ -319,8 +341,9 @@ switch (_operation) do {
 
                             GVAR(ROADBLOCK_LOCATIONS) = GVAR(ROADBLOCK_LOCATIONS) - [-1];
 
-                            if (_debug) then {
+                            if (_debug && {(_spawnChecks > 0) || {time - _lastRoadblockDebug > 30}}) then {
                                 ["Roadblock iteration time: %1 secs for %2 entries...", time - _timer, count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump;
+                                _lastRoadblockDebug = time;
                             };
 
                             sleep 1;
