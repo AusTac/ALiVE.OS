@@ -611,21 +611,25 @@ switch(_operation) do {
                     if (parsenumber([_logic, "roadBlocks"] call MAINCLASS) > 0) then {
                         [_logic] spawn {
 
-                            private ["_logic","_roadBlocks","_debug"];
+                            private ["_logic","_roadBlocks","_debug","_maxRoadblockSpawnAttempts","_lastRoadblockDebug"];
 
                             _logic = _this select 0;
 
                             _roadBlocks = parsenumber([_logic, "roadBlocks"] call MAINCLASS);
                             _debug = [_logic, "debug"] call MAINCLASS;
+                            _maxRoadblockSpawnAttempts = 10;
+                            _lastRoadblockDebug = -30;
 
                             if (_debug) then { ["TOTAL VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump };
 											  
                             while {count GVAR(ROADBLOCK_LOCATIONS) > 0} do {
-                                private ["_timer"];
+                                private ["_timer","_spawnChecks"];
 
                                 _timer = time;
+                                _spawnChecks = 0;
+
                                 {
-                                    private ["_position","_size","_spawn"];
+                                    private ["_position","_size","_spawn","_attempts","_thisroadblockResult"];
 
                                     if (!isnil "_x") then {
 
@@ -644,11 +648,22 @@ switch(_operation) do {
                                             };
 
                                             if (_spawn) then {
-                                                _thisroadblockResult = [_position, _size + 150, ceil(_roadblocks / 30), _debug] call ALiVE_fnc_createRoadblock;
+                                                _spawnChecks = _spawnChecks + 1;
+                                                _thisroadblockResult = [_position, _size + 150, ceil(_roadBlocks / 30), _debug] call ALiVE_fnc_createRoadblock;
                                                 if (_debug) then { ["_thisroadblockResult: %1, count: %2", _thisroadblockResult, count _thisroadblockResult] call ALiVE_fnc_dump };
                                                  if (count _thisroadblockResult > 0)  then {
                                                    GVAR(ROADBLOCK_LOCATIONS) set [_foreachIndex, -1];
-                                                 };
+                                                 } else {
+                                                   _attempts = if (count _x > 2) then {_x select 2} else {0};
+                                                   _attempts = _attempts + 1;
+
+                                                   if (_attempts >= _maxRoadblockSpawnAttempts) then {
+                                                       GVAR(ROADBLOCK_LOCATIONS) set [_foreachIndex, -1];
+                                                       if (_debug) then { ["Roadblock at %1 failed to spawn after %2 attempts; removing from queue", _position, _attempts] call ALiVE_fnc_dump };
+                                                   } else {
+                                                       GVAR(ROADBLOCK_LOCATIONS) set [_foreachIndex, [_position, _size, _attempts]];
+                                                   };
+                                                };
                                                 if (_debug) then { ["VAR(ROADBLOCK_LOCATIONS): %1, count: %2", GVAR(ROADBLOCK_LOCATIONS), count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump };
                                             };
                                         };
@@ -657,7 +672,10 @@ switch(_operation) do {
 
                                 GVAR(ROADBLOCK_LOCATIONS) = GVAR(ROADBLOCK_LOCATIONS) - [-1];
 
-                                if (_debug) then {["Roadblock iteration time: %1 secs for %2 entries...", time - _timer, count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump};
+                                if (_debug && {(_spawnChecks > 0) || {time - _lastRoadblockDebug > 30}}) then {
+                                    ["Roadblock iteration time: %1 secs for %2 entries...", time - _timer, count GVAR(ROADBLOCK_LOCATIONS)] call ALiVE_fnc_dump;
+                                    _lastRoadblockDebug = time;
+                                };
 
                                 sleep 1;
                             };
