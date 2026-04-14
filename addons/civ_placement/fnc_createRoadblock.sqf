@@ -41,6 +41,7 @@ params [
 ];
 
 private _result = [];
+_vehicle = objNull;
 
 if (isnil QGVAR(ROADBLOCKS)) then {GVAR(ROADBLOCKS) = []};
 
@@ -85,6 +86,7 @@ for "_i" from 1 to _num do {
 for "_j" from 1 to (count _roadpoints) do {
 
     _roadpos = _roadpoints select (_j - 1);
+    _vehicle = objNull;
 
     if ({_roadpos distance _x < 100} count GVAR(ROADBLOCKS) > 0) exitWith {["Roadblock %1 to close to another! Not created...",_roadpos] call ALiVE_fnc_dump};
 
@@ -136,7 +138,7 @@ for "_j" from 1 to (count _roadpoints) do {
     };
 
     if (!isNil "ALiVE_compositions_roadblocks") then {
-        _checkpoint = [(selectRandom ALiVE_compositions_roadblocks), _CompType] call ALiVE_fnc_findComposition;
+        _checkpoint = [(selectRandom ALiVE_compositions_roadblocks), _compType] call ALiVE_fnc_findComposition;
     } else {
         private ["_cat","_size"];
         _cat = ["CheckpointsBarricades"];
@@ -180,30 +182,32 @@ for "_j" from 1 to (count _roadpoints) do {
     private _vehicleTypes = [1, _fac, "Car"] call ALiVE_fnc_findVehicleType;
     _vehicleTypes = _vehicleTypes - ALiVE_PLACEMENT_VEHICLEBLACKLIST;
 
-    _vehtype = selectRandom _vehicleTypes;
-   
-    // randomise 50/50 spawn...
-    private _randomVehicleDice = round(random 99);
-    if (_randomVehicleDice % 2 == 0) then {   
-      if (!isNil "_vehtype") then {
-     	 private _parkingPosition = [_vehtype, _roadpos, _compClassnames, false] call ALIVE_fnc_getParkingPosition; 	   
-     	 if (count _parkingPosition > 0) then {
-     	  	private _parkPosition = _parkingPosition select 0;
-     	  	private _parkDirection = _parkingPosition select 1; 
-         if !(isnil "ALiVE_ProfileHandler") then {
-            _vehicle = [_vehtype, [_fac call ALiVE_fnc_factionSide] call ALiVE_fnc_sideToSideText, _fac, _parkPosition, _parkDirection, true, _fac, [], true] call ALiVE_fnc_createProfileVehicle;
-         } else {
-             _vehicle = createVehicle [_vehtype, _parkPosition, [], 0, "NONE"];
-             _vehicle setDir _parkDirection;
-             _vehicle setposATL (getposATL _vehicle);
-         };
-         // DEBUG -------------------------------------------------------------------------------------
-         if(_debug) then {
-           ["ALIVE_fnc_createRoadBlock _vehicleClass: %1, _parkPosition: %2, _parkDirection: %3", _vehtype, _parkPosition, _parkDirection] call ALiVE_fnc_dump;
-         };        
-         // DEBUG -------------------------------------------------------------------------------------
-       };
-      };
+    if (count _vehicleTypes > 0) then {
+        _vehtype = selectRandom _vehicleTypes;
+
+        // randomise 50/50 spawn...
+        private _randomVehicleDice = round(random 99);
+        if (_randomVehicleDice % 2 == 0) then {
+            if (!isNil "_vehtype") then {
+                private _parkingPosition = [_vehtype, _roadpos, _compClassnames, false] call ALIVE_fnc_getParkingPosition;
+                if (count _parkingPosition > 0) then {
+                    private _parkPosition = _parkingPosition select 0;
+                    private _parkDirection = _parkingPosition select 1;
+                    if !(isnil "ALiVE_ProfileHandler") then {
+                        _vehicle = [_vehtype, [_fac call ALiVE_fnc_factionSide] call ALiVE_fnc_sideToSideText, _fac, _parkPosition, _parkDirection, true, _fac, [], true] call ALiVE_fnc_createProfileVehicle;
+                    } else {
+                        _vehicle = createVehicle [_vehtype, _parkPosition, [], 0, "NONE"];
+                        _vehicle setDir _parkDirection;
+                        _vehicle setposATL (getposATL _vehicle);
+                    };
+                    // DEBUG -------------------------------------------------------------------------------------
+                    if(_debug) then {
+                        ["ALIVE_fnc_createRoadBlock _vehicleClass: %1, _parkPosition: %2, _parkDirection: %3", _vehtype, _parkPosition, _parkDirection] call ALiVE_fnc_dump;
+                    };
+                    // DEBUG -------------------------------------------------------------------------------------
+                };
+            };
+        };
     };
 
     // Spawn static virtual group if Profile System is loaded and get them to defend
@@ -237,7 +241,7 @@ for "_j" from 1 to (count _roadpoints) do {
 
             // Spawn group and get them to defend
             _blockers = [getpos _roadpos, _side, "Infantry", _fac] call ALiVE_fnc_randomGroupByType;
-            if (isNil "_vehicle") then {
+            if !(isNull _vehicle) then {
                 _blockers addVehicle _vehicle;
             };
 
