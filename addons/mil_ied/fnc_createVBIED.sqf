@@ -92,8 +92,10 @@ _IED setVectorUp [0,0,-1];
     if (!isNil "_marker") then {[_marker] call CBA_fnc_deleteEntity;};
 };
 
-// Set up trigger to detonate IED
-_booby = [_IED, typeOf _vehicle] call ALIVE_fnc_armIED;
+// Do NOT call ALIVE_fnc_armIED here. The VBIED detonation is handled
+// entirely by the HandleDamage event handler below. armIED creates a
+// proximity polling loop that would immediately detect the host vehicle
+// as a nearby LandVehicle and detonate on the first 0.5s tick.
 
 // Add damage handler
 _ehID = _IED addeventhandler ["HandleDamage",{
@@ -119,7 +121,7 @@ _ehID = _IED addeventhandler ["HandleDamage",{
 }];
 
 _IED setVariable ["ehID",_ehID, true];
-_IED setvariable ["charge", _IED, true];
+_IED setvariable ["charge", _vehicle, true]; // store the host vehicle for cleanup
 
 if (_debug) then {
     diag_log format ["ALIVE-%1 IED: Creating VB-IED for %2 at %3", time, typeof _vehicle, getposATL _vehicle];
