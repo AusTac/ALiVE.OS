@@ -98,7 +98,20 @@ switch(_operation) do {
 
     case "destroy": {
 
-        [_logic, "debug", false] call MAINCLASS;
+        // Debug marker cleanup is intentionally NOT invoked here.
+        // MAINCLASS at this point resolves to ALiVE_fnc_profile (the base),
+        // which has no case "debug" -- a dispatch via MAINCLASS would fall
+        // through to the default branch below and trigger the "FIX THIS
+        // SHIT" diagnostic, followed by a harmless-but-noisy "class does
+        // not support operation" error from baseClassHash.
+        //
+        // Debug cleanup is already handled earlier in the destroy flow:
+        // fnc_profileEntity / fnc_profileVehicle both call
+        // ALIVE_profileHandler "unregisterProfile" before cascading here
+        // (see fnc_profileHandler.sqf:538-551), which dispatches
+        // [_profile, "debug", false] through the correct child class and
+        // removes markers. By the time we reach this SUPERCLASS destroy,
+        // debug=false is already set and markers are already gone.
 
         if (isServer) then {
             [_logic, "destroy"] call SUPERCLASS;
@@ -137,10 +150,10 @@ switch(_operation) do {
     };
 
     default {
-        if (_operation == "debug") then {
-            ["FIX THIS SHIT: ALiVE_fnc_profile was called with 'debug' operation from '%1'", _fnc_scriptNameParent] call ALiVE_fnc_Dump;
-        };
-
+        // Any operation not handled here falls through to baseClassHash,
+        // which itself logs a "class does not support operation" message
+        // if nothing there matches either. No need for a bespoke
+        // diagnostic in this class.
         _result = [_logic, _operation, _args] call SUPERCLASS;
     };
 
