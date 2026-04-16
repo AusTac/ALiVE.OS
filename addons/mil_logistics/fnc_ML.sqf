@@ -6730,7 +6730,21 @@ switch(_operation) do {
 
                 if(count _eventTransportVehiclesProfiles > 0) then {
 
+                    if (_debug) then {
+                        ["ML - transportLoad: Assigning %1 infantry groups to %2 transport vehicles. Event: %3",
+                            count _infantryProfiles, count _eventTransportVehiclesProfiles, _eventID] call ALiVE_fnc_dump;
+                    };
+
                     {
+                        // Guard: more infantry groups than transport vehicles —
+                        // the remaining groups travel on foot (no vehicle assignment).
+                        if (_processedProfiles >= count _eventTransportVehiclesProfiles) exitWith {
+                            if (_debug) then {
+                                ["ML - transportLoad: No more transport vehicles available (%1 assigned, %2 groups remaining). Event: %3",
+                                    _processedProfiles, count _infantryProfiles - _processedProfiles, _eventID] call ALiVE_fnc_dump;
+                            };
+                        };
+
                         _infantryProfile = [ALIVE_profileHandler, "getProfile", _x select 0] call ALIVE_fnc_profileHandler;
                         if!(isNil "_infantryProfile") then {
 
@@ -6740,12 +6754,35 @@ switch(_operation) do {
 
                                 [_infantryProfile,_transportProfile] call ALIVE_fnc_createProfileVehicleAssignment;
 
+                                if (_debug) then {
+                                    ["ML - transportLoad: Assigned infantry %1 to transport %2 (%3/%4)",
+                                        _x select 0, _transportProfileID, _processedProfiles + 1, count _eventTransportVehiclesProfiles] call ALiVE_fnc_dump;
+                                };
+
                                 _processedProfiles = _processedProfiles + 1;
+                            } else {
+                                if (_debug) then {
+                                    ["ML - transportLoad: WARNING transport profile %1 is nil, skipping.", _transportProfileID] call ALiVE_fnc_dump;
+                                };
+                            };
+                        } else {
+                            if (_debug) then {
+                                ["ML - transportLoad: WARNING infantry profile %1 is nil, skipping.", _x select 0] call ALiVE_fnc_dump;
                             };
                         };
 
                     } forEach _infantryProfiles;
 
+                    if (_debug) then {
+                        ["ML - transportLoad: Complete. %1 assignments made. Event: %2",
+                            _processedProfiles, _eventID] call ALiVE_fnc_dump;
+                    };
+
+                } else {
+                    if (_debug) then {
+                        ["ML - transportLoad: No transport vehicles available, infantry will travel on foot. Event: %1",
+                            _eventID] call ALiVE_fnc_dump;
+                    };
                 };
 
                 [_event, "state", "transportLoadWait"] call ALIVE_fnc_hashSet;
@@ -7613,10 +7650,26 @@ switch(_operation) do {
 
                 if(count _eventTransportProfiles > 0) then {
 
-                    // send transport vehicles back to insertion point
+                    // Anchor RTB destination to the supply network so convoys
+                    // don't drive back through enemy territory. Mirrors the
+                    // heli-path supply-network anchoring for departures.
+                    private _rawReinforcePos = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
+                    private _rtbPosition = [_logic, "getSupplyNetworkDeparturePos", [
+                        _eventFaction,
+                        _eventPosition,
+                        _rawReinforcePos,
+                        _eventID,
+                        _debug
+                    ]] call MAINCLASS;
+
+                    if (_debug) then {
+                        ["ML - transportReturn: RTB via supply network node at %1 (raw objective was %2). Event: %3",
+                            _rtbPosition, _rawReinforcePos, _eventID] call ALiVE_fnc_dump;
+                    };
+
+                    // send transport vehicles back to supply network node
                     {
-                        _reinforcementPosition = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
-                        _position = _reinforcementPosition getPos [random(300), random(360)];
+                        _position = _rtbPosition getPos [random(300), random(360)];
                         _position = [_position] call ALIVE_fnc_getClosestRoad;
                         _profileWaypoint = [_position, 100, "MOVE", "LIMITED", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
 
@@ -9319,6 +9372,11 @@ switch(_operation) do {
 
                             switch(_eventType) do {
                                 case "PR_STANDARD": {
+
+                                    // Store departure position on event hash for consistency
+                                    // with HELI_INSERT / AIRDROP paths. Used by debug dumps and
+                                    // could be referenced by future garrison position logic.
+                                    [_event, "departurePosition", _reinforcementPosition] call ALIVE_fnc_hashSet;
 
                                     // update the state of the event
                                     // next state is transport load
