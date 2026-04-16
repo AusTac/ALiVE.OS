@@ -169,4 +169,28 @@
     <English>Sleep values between spawning units to not overload engine</English>
     <Chinesesimp>生成单位之间的睡眠值不会使引擎过载</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_PLAYER_OCCUPANT_GRACE">
+    <English>Player Occupant Grace (s):</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_PLAYER_OCCUPANT_GRACE_COMMENT">
+    <English>Seconds to keep an AI-owned profiled vehicle spawned after the last player leaves it. Prevents vehicles vanishing under players who were riding in or commandeering AI assets. Default 300 (5 min).</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_GRACE">
+    <English>Post-Death Grace (s):</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_GRACE_COMMENT">
+    <English>Seconds to keep AI profiles near a player-death location spawned after the player dies, even if the player respawns outside normal spawn radius. Lets the remaining firefight play out naturally. Default 120.</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_RADIUS">
+    <English>Post-Death Radius (m):</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_RADIUS_COMMENT">
+    <English>Radius around a player-death position within which nearby AI profiles receive the Post-Death Grace linger. Default 500.</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_MID_COMBAT_EXTENSION">
+    <English>Mid-Combat Extension (s):</English>
+</Key>
+<Key ID="STR_ALIVE_PROFILE_SYSTEM_MID_COMBAT_EXTENSION_COMMENT">
+    <English>If a profile within its Post-Death linger window is still in combat when the grace would expire, extend the linger by this many seconds. Repeats while combat continues. Default 60.</English>
+</Key>
 </Container></Package></Project>

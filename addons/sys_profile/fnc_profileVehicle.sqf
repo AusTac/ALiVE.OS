@@ -749,6 +749,22 @@ switch (_operation) do {
             // getin event handler
             _vehicle addEventHandler ["getIn", ALIVE_fnc_profileGetInEventHandler];
 
+            // getOut event handler: stamp the profile with the tickTime of the
+            // last time a player was aboard. Combined with the despawn-path
+            // crew scan, this gives us a configurable grace period
+            // (ALIVE_playerOccupantGrace) during which the vehicle cannot be
+            // despawned even after the player walks away. Prevents AI-owned
+            // profiled vehicles vanishing under players who borrowed them.
+            _vehicle addEventHandler ["GetOut", {
+                params ["_veh", "", "_unit"];
+                if (!isPlayer _unit) exitWith {};
+                private _profileID = _veh getVariable ["profileID", ""];
+                if (_profileID == "") exitWith {};
+                private _prof = [ALIVE_profileHandler, "getProfile", _profileID] call ALIVE_fnc_profileHandler;
+                if (isNil "_prof") exitWith {};
+                [_prof, "playerOccupantLastSeen", diag_tickTime] call ALIVE_fnc_hashSet;
+            }];
+
             // set profile as active and store a reference to the unit on the profile
             [_logic,"vehicle",_vehicle] call ALIVE_fnc_hashSet;
             [_logic,"active",true] call ALIVE_fnc_hashSet;
@@ -794,6 +810,55 @@ switch (_operation) do {
                         };
                     }
                 } forEach (_linked select 2);
+            };
+
+            // --- Despawn linger checks (see sys_profile module "Despawn Linger" params) ---
+
+            // (1) Live player-aboard check: never despawn a vehicle with a player in crew.
+            //     GetOut stamps playerOccupantLastSeen so the grace period below can fire
+            //     after they leave, but while they are aboard the timestamp is irrelevant.
+            if (!_despawnPrevented) then {
+                private _liveVeh = _logic select 2 select 10;
+                if (!isNull _liveVeh) then {
+                    {
+                        if (isPlayer _x) exitWith { _despawnPrevented = true; };
+                    } forEach (crew _liveVeh);
+                };
+            };
+
+            // (2) Player-occupant grace: kept spawned for N seconds after the last
+            //     player left, even if no player is currently aboard. The
+            //     _occLast <= diag_tickTime guard rejects stale stamps from a
+            //     cross-Arma-session persistence reload (diag_tickTime resets on
+            //     engine restart, so a persisted future value must be discarded).
+            if (!_despawnPrevented) then {
+                private _occLast = [_logic, "playerOccupantLastSeen", 0] call ALIVE_fnc_hashGet;
+                if (_occLast > 0 && {_occLast <= diag_tickTime} && {(diag_tickTime - _occLast) < ALIVE_playerOccupantGrace}) then {
+                    _despawnPrevented = true;
+                };
+            };
+
+            // (3) Post-death linger: set by the EntityKilled EH in XEH_postInit for
+            //     profiles near a player-death position. While still in combat inside
+            //     the linger window, keep linger >= now + midCombatExtension. Clamped
+            //     (not additive) so a profile stuck outside spawn range with ongoing
+            //     combat can't grow its linger unboundedly across despawn cycles.
+            if (!_despawnPrevented) then {
+                private _linger = [_logic, "postDeathLingerUntil", 0] call ALIVE_fnc_hashGet;
+                private _maxPlausible = ALIVE_postDeathGrace max ALIVE_midCombatExtension;
+                // Reject stale persisted stamps: on cross-session reload diag_tickTime
+                // resets, so a _linger more than one grace-worth into the future must
+                // be from a previous Arma session -- treat as expired.
+                if (_linger > 0 && {diag_tickTime < _linger} && {(_linger - diag_tickTime) <= _maxPlausible}) then {
+                    _despawnPrevented = true;
+                    private _inCombat = [_logic, "combat", false] call ALIVE_fnc_hashGet;
+                    if (_inCombat) then {
+                        private _newLinger = diag_tickTime + ALIVE_midCombatExtension;
+                        if (_newLinger > _linger) then {
+                            [_logic, "postDeathLingerUntil", _newLinger] call ALIVE_fnc_hashSet;
+                        };
+                    };
+                };
             };
 
             if (!_despawnPrevented) then {

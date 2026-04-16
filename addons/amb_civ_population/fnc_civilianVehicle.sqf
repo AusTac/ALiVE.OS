@@ -503,7 +503,13 @@ switch(_operation) do {
         // with the marker churn from position/spawn/despawn debug triggers this
         // halves FPS (issue #838). On dedicated server visibleMap is always false,
         // which is desired — dev testing with debug on happens SP / listen server.
-        if (!visibleMap) exitWith {};
+        //
+        // Must return [] (not the default _result=true) so callers that
+        // concatenate (_markers + _marker) don't crash with a Bool+Array type
+        // error. Using if-visibleMap-then (not exitWith) plus an explicit
+        // _result=[] up front, to avoid any ambiguity in how _result propagates.
+        _result = [];
+        if (visibleMap) then {
 
         private ["_debugColor"];
 
@@ -552,6 +558,7 @@ switch(_operation) do {
             [_logic,"debugMarkers",_markers] call ALIVE_fnc_hashSet;
         };
 
+        }; // end if (visibleMap)
     };
 
     case "deleteDebugMarkers": {

@@ -48,6 +48,13 @@ class CfgVehicles {
                     class spawnRadiusUAV : Edit { property = "ALiVE_sys_profile_spawnRadiusUAV"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_SPAWN_UAV_RADIUS"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_SPAWN_UAV_RADIUS_COMMENT"; defaultValue = """-1"""; };
                     class smoothSpawn : Edit { property = "ALiVE_sys_profile_smoothSpawn"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_SMOOTHSPAWN"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_SMOOTHSPAWN_COMMENT"; defaultValue = """0.3"""; };
 
+                    // ---- Despawn Linger -------------------------------------------------
+                    class HDR_LINGER : ALiVE_ModuleSubTitle { property = "ALiVE_sys_profile_HDR_LINGER"; displayName = "DESPAWN LINGER"; };
+                    class playerOccupantGrace : Edit { property = "ALiVE_sys_profile_playerOccupantGrace"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_PLAYER_OCCUPANT_GRACE"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_PLAYER_OCCUPANT_GRACE_COMMENT"; defaultValue = """300"""; };
+                    class postDeathGrace : Edit { property = "ALiVE_sys_profile_postDeathGrace"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_GRACE"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_GRACE_COMMENT"; defaultValue = """120"""; };
+                    class postDeathRadius : Edit { property = "ALiVE_sys_profile_postDeathRadius"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_RADIUS"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_POST_DEATH_RADIUS_COMMENT"; defaultValue = """500"""; };
+                    class midCombatExtension : Edit { property = "ALiVE_sys_profile_midCombatExtension"; displayName = "$STR_ALIVE_PROFILE_SYSTEM_MID_COMBAT_EXTENSION"; tooltip = "$STR_ALIVE_PROFILE_SYSTEM_MID_COMBAT_EXTENSION_COMMENT"; defaultValue = """60"""; };
+
                     // ---- Virtual Combat -------------------------------------------------
                     class HDR_VCOMBAT : ALiVE_ModuleSubTitle { property = "ALiVE_sys_profile_HDR_VCOMBAT"; displayName = "VIRTUAL COMBAT"; };
                     class speedModifier : Combo
