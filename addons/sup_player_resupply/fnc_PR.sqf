@@ -590,23 +590,23 @@ switch(_operation) do {
             _deliveryListValues = [];
 
             if(_restrictionTypeAirDrop) then {
-                _deliveryListOptions pushback ("Airlift: Air drop by transport plane");
+                _deliveryListOptions pushback ("Airdrop  -  Assets parachuted from transport aircraft");
                 _deliveryListValues pushback "PR_AIRDROP";
             };
 
             if(_restrictionTypeHeliInsert) then {
-                _deliveryListOptions pushback ("Airlift: Air insertion via helicopter or VTOL");
+                _deliveryListOptions pushback ("Helicopter  -  Assets delivered by rotary wing or VTOL");
                 _deliveryListValues pushback "PR_HELI_INSERT";
             };
 
             if(_restrictionTypeConvoy) then {
-                _deliveryListOptions pushback ("Convoy: Resupply via road transport vehicles");
+                _deliveryListOptions pushback ("Convoy  -  Ground vehicles deliver assets by road");
                 _deliveryListValues pushback "PR_STANDARD";
             };
 
             if(count _deliveryListOptions == 0) then {
                 ["There are no delivery methods allowed, enable one or more delivery methods on the Player Combat Logistics module!"] call ALIVE_fnc_dumpR;
-                _deliveryListOptions pushback ("Convoy: Resupply via road transport vehicles");
+                _deliveryListOptions pushback ("Convoy  -  Ground vehicles deliver assets by road");
                 _deliveryListValues pushback "PR_STANDARD";
             };
 
@@ -677,7 +677,25 @@ switch(_operation) do {
 
             // get sorted config data
             if(_restrictionType == "SIDE") then {
-                _sortedVehicles = [_sideText,ALiVE_PR_BLACKLIST,ALiVE_PR_WHITELIST] call ALIVE_fnc_sortCFGVehiclesByClass;
+                // Build the full side-wide vehicle hash first, then filter each
+                // category's classname list to only vehicles whose CfgVehicles
+                // faction entry matches one of the ALIVE_PR_FACTIONLIST factions.
+                // This prevents all installed mod factions appearing when only a
+                // subset of friendly OPCOM factions should be available.
+                private _allVehicles = [_sideText,ALiVE_PR_BLACKLIST,ALiVE_PR_WHITELIST] call ALIVE_fnc_sortCFGVehiclesByClass;
+                {
+                    private _category = _x;
+                    private _classList = [_allVehicles, _category] call ALiVE_fnc_hashGet;
+                    if (!isNil "_classList" && {_classList isEqualType []}) then {
+                        private _filtered = _classList select {
+                            private _vFaction = getText (configFile >> "CfgVehicles" >> _x >> "faction");
+                            _vFaction in ALIVE_PR_FACTIONLIST
+                        };
+                        if (count _filtered > 0) then {
+                            [_sortedVehicles, _category, _filtered] call ALiVE_fnc_hashSet;
+                        };
+                    };
+                } forEach (_allVehicles select 1);
             }else{
                 {
                     private _tempVehicles = [_x,ALiVE_PR_BLACKLIST,ALiVE_PR_WHITELIST, _civ] call ALIVE_fnc_sortCFGVehiclesByFactionClass;
@@ -696,56 +714,134 @@ switch(_operation) do {
             [_logic,"sortedVehicles",_sortedVehicles] call MAINCLASS;
 
             // Pre-compute vehicle display names and weights into a cache hash.
-            // The UI forEach at depth 1 previously did live config reads (getText,
-            // getObjectWeight) per vehicle on every category selection — causing
-            // multi-second freezes with large modsets (hundreds of Car classnames).
-            // Building the cache once here means the UI does only hash lookups.
-            //
-            // Weight uses CfgVehicles mass directly. If mass == 0 we fall back to
-            // a class-based approximate (matching getObjectWeight _types table) to
-            // avoid the createVehicleLocal spawn that getObjectWeight would trigger.
-            private _typeWeightFallbacks = [
-                ["Truck_F",    1000],
-                ["Car",         540],
-                ["Tank",       6500],
-                ["Air",         327],
-                ["Ship",        750],
-                ["Reammobox_F", 200],
-                ["Static",      400],
-                ["ThingX",        7],
-                ["Man",         200],
-                ["StaticWeapon", 60]
-            ];
-
+            // Done in a spawn so the 22,000+ config reads do not block the
+            // scheduler or prevent the tablet from opening.
+            // ALIVE_PR_vehicleCacheReady is false until the spawn completes.
+            // The Supply List UI checks this flag and shows a loading message
+            // if the cache is not yet ready.
+            ALIVE_PR_vehicleCacheReady = false;
             if (isNil "ALIVE_PR_vehicleCache") then {
                 ALIVE_PR_vehicleCache = [] call ALiVE_fnc_hashCreate;
             };
 
-            {
-                private _category = _x;
-                private _classes = [_sortedVehicles, _category] call ALIVE_fnc_hashGet;
-                if (!isNil "_classes" && {_classes isEqualType []}) then {
-                    {
-                        private _class = _x;
-                        if !(_class in (ALIVE_PR_vehicleCache select 1)) then {
-                            private _displayName = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
-                            if (_displayName isEqualTo "") then { _displayName = _class; };
-                            private _mass = getNumber (configFile >> "CfgVehicles" >> _class >> "mass");
-                            if (_mass == 0) then {
-                                { if (_class isKindOf (_x select 0)) exitWith { _mass = _x select 1; }; } forEach _typeWeightFallbacks;
-                            };
-                            [ALIVE_PR_vehicleCache, _class, [_displayName, _mass]] call ALIVE_fnc_hashSet;
-                        };
-                    } forEach _classes;
-                };
-            } forEach (_sortedVehicles select 1);
+            [_sortedVehicles] spawn {
+                private _sortedVehicles = _this select 0;
 
-            ["SUP_PR - vehicle cache built: %1 entries", count (ALIVE_PR_vehicleCache select 1)] call ALiVE_fnc_dump;
+                private _typeWeightFallbacks = [
+                    ["Truck_F",    1000],
+                    ["Car",         540],
+                    ["Tank",       6500],
+                    ["Air",         327],
+                    ["Ship",        750],
+                    ["Reammobox_F", 200],
+                    ["Static",      400],
+                    ["ThingX",        7],
+                    ["Man",         200],
+                    ["StaticWeapon", 60]
+                ];
+
+                private _categoryKeys  = _sortedVehicles select 1;
+                private _totalCategories = count _categoryKeys;
+                private _processed = 0;
+                ALIVE_PR_vehicleCachePercent = 0;
+
+                {
+                    private _category = _x;
+                    private _classes = [_sortedVehicles, _category] call ALIVE_fnc_hashGet;
+                    if (!isNil "_classes" && {_classes isEqualType []}) then {
+                        {
+                            private _class = _x;
+                            if !(_class in (ALIVE_PR_vehicleCache select 1)) then {
+                                private _displayName = getText (configFile >> "CfgVehicles" >> _class >> "displayName");
+                                if (_displayName isEqualTo "") then { _displayName = _class; };
+                                private _mass = getNumber (configFile >> "CfgVehicles" >> _class >> "mass");
+                                if (_mass == 0) then {
+                                    { if (_class isKindOf (_x select 0)) exitWith { _mass = _x select 1; }; } forEach _typeWeightFallbacks;
+                                };
+                                [ALIVE_PR_vehicleCache, _class, [_displayName, _mass]] call ALIVE_fnc_hashSet;
+                            };
+                        } forEach _classes;
+                    };
+                    _processed = _processed + 1;
+                    ALIVE_PR_vehicleCachePercent = floor ((_processed / _totalCategories) * 100);
+                } forEach _categoryKeys;
+
+                ALIVE_PR_vehicleCacheReady = true;
+                ["SUP_PR - vehicle cache built: %1 entries", count (ALIVE_PR_vehicleCache select 1)] call ALiVE_fnc_dump;
+
+                // If the user selected a category while the cache was still building,
+                // trigger the UI refresh on a new spawn so disableSerialization works
+                // correctly for listbox control access.
+                if (!isNil "ALIVE_PR_pendingSupplyCategory" && {ALIVE_PR_pendingSupplyCategory != ""}) then {
+                    [] spawn {
+                        disableSerialization;
+                        private _pendingCategory = ALIVE_PR_pendingSupplyCategory;
+                        ALIVE_PR_pendingSupplyCategory = "";
+
+                        private _supplyList = PR_getControl(PRTablet_CTRL_MainDisplay, PRTablet_CTRL_SupplyList);
+                        if (isNull _supplyList) exitWith {
+                            ["SUP_PR - cache refresh: supply list control not found, tablet may be closed"] call ALiVE_fnc_dump;
+                        };
+
+                        private _sortedVehicles = [ALIVE_SUP_PLAYER_RESUPPLY, "sortedVehicles"] call MAINCLASS;
+                        private _deliveryType   = [ALIVE_SUP_PLAYER_RESUPPLY, "selectedDeliveryListValue"] call MAINCLASS;
+                        private _vehicleClasses = [_sortedVehicles, _pendingCategory] call ALIVE_fnc_hashGet;
+                        private _counts = switch (_deliveryType) do {
+                            case "PR_AIRDROP":     { [ALIVE_SUP_PLAYER_RESUPPLY, "countsAir"]    call MAINCLASS };
+                            case "PR_HELI_INSERT": { [ALIVE_SUP_PLAYER_RESUPPLY, "countsInsert"] call MAINCLASS };
+                            default                { [ALIVE_SUP_PLAYER_RESUPPLY, "countsConvoy"] call MAINCLASS };
+                        };
+                        private _maxWeight = _counts select 0;
+                        private _options = ["<< Back"];
+                        private _values  = ["<< Back"];
+                        if (!isNil "_vehicleClasses" && {_vehicleClasses isEqualType []}) then {
+                            {
+                                private _cached      = [ALIVE_PR_vehicleCache, _x, ["", 0]] call ALIVE_fnc_hashGet;
+                                private _displayName = _cached select 0;
+                                private _cachedMass  = _cached select 1;
+                                if (_deliveryType == "PR_HELI_INSERT" || _deliveryType == "PR_AIRDROP") then {
+                                    private _slingable = count ([(configFile >> "CfgVehicles" >> _x >> "slingLoadCargoMemoryPoints")] call ALiVE_fnc_getConfigValue) > 0;
+                                    if (!_slingable && _deliveryType == "PR_HELI_INSERT" && (_pendingCategory == "Car" || _pendingCategory == "Ship")) then {
+                                    } else {
+                                        if (_cachedMass < _maxWeight) then { _options pushBack _displayName; _values pushBack _x; };
+                                    };
+                                } else {
+                                    if (_deliveryType == "PR_STANDARD") then { _options pushBack _displayName; _values pushBack _x; };
+                                };
+                            } forEach _vehicleClasses;
+                        };
+                        private _supplyListOptions = [ALIVE_SUP_PLAYER_RESUPPLY, "selectedSupplyListOptions"] call MAINCLASS;
+                        private _supplyListValues  = [ALIVE_SUP_PLAYER_RESUPPLY, "selectedSupplyListValues"]  call MAINCLASS;
+                        _supplyListOptions set [2, _options];
+                        _supplyListValues  set [2, _values];
+                        [ALIVE_SUP_PLAYER_RESUPPLY, "selectedSupplyListDepth",   2]                  call MAINCLASS;
+                        [ALIVE_SUP_PLAYER_RESUPPLY, "selectedSupplyListOptions", _supplyListOptions] call MAINCLASS;
+                        [ALIVE_SUP_PLAYER_RESUPPLY, "selectedSupplyListValues",  _supplyListValues]  call MAINCLASS;
+                        lbClear _supplyList;
+                        { _supplyList lbAdd format["%1", _x]; } forEach _options;
+                        ["SUP_PR - cache refresh complete for category '%1' (%2 items)", _pendingCategory, count _options - 1] call ALiVE_fnc_dump;
+                    };
+                };
+            };
 
 
             // get sorted group data
+            // When filterFriendlyFactions is active, only include CfgGroups
+            // entries for factions in ALIVE_PR_FACTIONLIST (which has already
+            // been narrowed to friendly OPCOM factions). This mirrors the
+            // vehicle list filtering and prevents showing all mod factions.
             if(_restrictionType == "SIDE") then {
-                _sortedGroups = [_sideText] call ALIVE_fnc_sortCFGGroupsBySide;
+                // Build side-wide hash first, then discard keys not in ALIVE_PR_FACTIONLIST
+                private _allGroups = [_sideText] call ALIVE_fnc_sortCFGGroupsBySide;
+                {
+                    private _faction = _x;
+                    if (_faction in ALIVE_PR_FACTIONLIST) then {
+                        private _factionGroups = [_allGroups, _faction] call ALiVE_fnc_hashGet;
+                        if (!isNil "_factionGroups" && {_factionGroups isEqualType []} && {count (_factionGroups select 1) > 0}) then {
+                            [_sortedGroups, _faction, _factionGroups] call ALiVE_fnc_hashSet;
+                        };
+                    };
+                } forEach (_allGroups select 1);
             }else{
                 {
                     private _tempGroups = [_sideText, _x] call ALIVE_fnc_sortCFGGroupsByFaction;
@@ -753,6 +849,7 @@ switch(_operation) do {
                     [_sortedGroups, _x, _factionGroups] call ALiVE_fnc_hashSet;
                 } foreach ALIVE_PR_FACTIONLIST;
             };
+            ["SUP_PR - sortedGroups factions: %1", _sortedGroups select 1] call ALiVE_fnc_dump;
 
             [_logic,"sortedGroups",_sortedGroups] call MAINCLASS;
 
@@ -1788,75 +1885,95 @@ switch(_operation) do {
                                         _options = _staticOptions select 0;
                                         _values = _staticOptions select 1;
 
-                                        /*
-                                        switch(_selectedDeliveryValue) do {
-                                            case "PR_AIRDROP": {
-                                                _options = ["<< Back","Car","Ship"];
-                                                _values = ["<< Back","Car","Ship"];
-                                            };
-                                            case "PR_HELI_INSERT": {
-                                                _options = ["<< Back","Air"];
-                                                _values = ["<< Back","Air"];
-                                            };
-                                            case "PR_STANDARD": {
-                                                _options = ["<< Back","Car","Armored","Support"];
-                                                _values = ["<< Back","Car","Armored","Support"];
-                                            };
+                                        // PR_HELI_INSERT: static data only includes "Air" by default.
+                                        // Supplement with slingable ground categories so players can
+                                        // request vehicles that can be underslung and delivered by heli.
+                                        if (_selectedDeliveryValue == "PR_HELI_INSERT") then {
+                                            private _extraCategories = ["Car","Armored","Support","Static"];
+                                            {
+                                                if !(_x in _values) then {
+                                                    _options pushBack _x;
+                                                    _values pushBack _x;
+                                                };
+                                            } forEach _extraCategories;
                                         };
-                                        */
 
                                         _selectedSupplyListOptions set [1,_options];
                                         _selectedSupplyListValues set [1,_values];
                                     };
                                     case "Defence Stores": {
 
-                                        private ["_staticOptions"];
+                                        // Scan sortedVehicles for categories containing static/structure objects
+                                        // (not Man, not crewed vehicles, not ammo boxes).
+                                        // The static side options ("Fortifications", "Tents" etc.) are vanilla
+                                        // vehicleClass names that mod factions don't use.
+                                        _options = ["<< Back"];
+                                        _values  = ["<< Back"];
 
-                                        // attempt to get options by faction
-                                        _staticOptions = [ALIVE_factionDefaultResupplyDefenceStoreOptions,_faction,[]] call ALIVE_fnc_hashGet;
+                                        private _vehicleCats = ["Car","Armored","Air","Ship","Support","Static","StaticWeapon"];
 
-                                        // if no options found for the faction use side options
-                                        if(count _staticOptions == 0) then {
-                                            _staticOptions = [ALIVE_sideDefaultResupplyDefenceStoreOptions,_side] call ALIVE_fnc_hashGet;
+                                        {
+                                            private _catKey = _x;
+                                            if !(_catKey in _vehicleCats) then {
+                                                private _classList = [_sortedVehicles, _catKey] call ALIVE_fnc_hashGet;
+                                                if (!isNil "_classList" && {_classList isEqualType []} && {count _classList > 0}) then {
+                                                    private _hasStatic = false;
+                                                    {
+                                                        if (!(_x isKindOf "Man") && !(_x isKindOf "LandVehicle") && !(_x isKindOf "Air") && !(_x isKindOf "Ship") && !(_x isKindOf "Ammo")) exitWith {
+                                                            _hasStatic = true;
+                                                        };
+                                                    } forEach _classList;
+                                                    if (_hasStatic && !(_catKey in _values)) then {
+                                                        private _parts = [_catKey, "_"] call CBA_fnc_split;
+                                                        private _catName = (_parts select (count _parts - 1)) call CBA_fnc_capitalize;
+                                                        _options pushBack _catName;
+                                                        _values  pushBack _catKey;
+                                                    };
+                                                };
+                                            };
+                                        } forEach (_sortedVehicles select 1);
+
+                                        // Always include Static (sandbags, barbed wire etc.)
+                                        if !("Static" in _values) then {
+                                            private _staticList = [_sortedVehicles, "Static"] call ALIVE_fnc_hashGet;
+                                            if (!isNil "_staticList" && {count _staticList > 0}) then {
+                                                _options pushBack "Static";
+                                                _values  pushBack "Static";
+                                            };
                                         };
 
-                                        _staticOptions = [_staticOptions,_selectedDeliveryValue] call ALIVE_fnc_hashGet;
-
-                                        _options = _staticOptions select 0;
-                                        _values = _staticOptions select 1;
-
-                                        /*
-                                        _options = ["<< Back","Static","Fortifications","Tents","Military"];
-                                        _values = ["<< Back","Static","Fortifications","Tents","Structures_Military"];
-                                        */
-
                                         _selectedSupplyListOptions set [1,_options];
-                                        _selectedSupplyListValues set [1,_values];
+                                        _selectedSupplyListValues  set [1,_values];
                                     };
                                     case "Combat Supplies": {
 
-                                        private ["_staticOptions"];
+                                        // Scan sortedVehicles for categories containing ammo/supply objects.
+                                        // The static side option ("Ammo") is a vanilla vehicleClass name
+                                        // that mod factions may not use.
+                                        _options = ["<< Back"];
+                                        _values  = ["<< Back"];
 
-                                        // attempt to get options by faction
-                                        _staticOptions = [ALIVE_factionDefaultResupplyCombatSuppliesOptions,_faction,[]] call ALIVE_fnc_hashGet;
-
-                                        // if no options found for the faction use side options
-                                        if(count _staticOptions == 0) then {
-                                            _staticOptions = [ALIVE_sideDefaultResupplyCombatSuppliesOptions,_side] call ALIVE_fnc_hashGet;
-                                        };
-
-                                        _staticOptions = [_staticOptions,_selectedDeliveryValue] call ALIVE_fnc_hashGet;
-
-                                        _options = _staticOptions select 0;
-                                        _values = _staticOptions select 1;
-
-                                        /*
-                                        _options = ["<< Back","Ammo"];
-                                        _values = ["<< Back","Ammo"];
-                                        */
+                                        {
+                                            private _catKey = _x;
+                                            private _classList = [_sortedVehicles, _catKey] call ALIVE_fnc_hashGet;
+                                            if (!isNil "_classList" && {_classList isEqualType []} && {count _classList > 0}) then {
+                                                private _hasAmmo = false;
+                                                {
+                                                    if (_x isKindOf "Ammo" || _x isKindOf "ReammoBox" || _x isKindOf "AmmoBox") exitWith {
+                                                        _hasAmmo = true;
+                                                    };
+                                                } forEach _classList;
+                                                if (_hasAmmo && !(_catKey in _values)) then {
+                                                    private _parts = [_catKey, "_"] call CBA_fnc_split;
+                                                    private _catName = (_parts select (count _parts - 1)) call CBA_fnc_capitalize;
+                                                    _options pushBack _catName;
+                                                    _values  pushBack _catKey;
+                                                };
+                                            };
+                                        } forEach (_sortedVehicles select 1);
 
                                         _selectedSupplyListOptions set [1,_options];
-                                        _selectedSupplyListValues set [1,_values];
+                                        _selectedSupplyListValues  set [1,_values];
                                     };
                                 };
 
@@ -1865,6 +1982,32 @@ switch(_operation) do {
 
                                 // selected something from the second level
                                 // get vehicle classes for the selected category
+
+                                // If cache is still building show message and abort
+                                if (isNil "ALIVE_PR_vehicleCacheReady" || {!ALIVE_PR_vehicleCacheReady}) then {
+                                    lbClear _supplyList;
+                                    _supplyList lbAdd "Please wait, loading data...";
+                                    // Store the pending category so the spawn can auto-refresh when ready
+                                    ALIVE_PR_pendingSupplyCategory = _selectedValue;
+                                    _updateList = false;
+
+                                    // Launch a watcher that updates the progress % in the listbox entry
+                                    // until the cache finishes. Runs in its own spawn for UI access.
+                                    [_supplyList] spawn {
+                                        private _ctrl = _this select 0;
+                                        disableSerialization;
+                                        private _lastPct = -1;
+                                        waitUntil {
+                                            sleep 0.5;
+                                            private _pct = if (isNil "ALIVE_PR_vehicleCachePercent") then { 0 } else { ALIVE_PR_vehicleCachePercent };
+                                            if (_pct != _lastPct && {!isNull _ctrl} && {lbSize _ctrl > 0}) then {
+                                                _ctrl lbSetText [0, format ["Please wait, loading %1%%...", _pct]];
+                                                _lastPct = _pct;
+                                            };
+                                            (!isNil "ALIVE_PR_vehicleCacheReady" && {ALIVE_PR_vehicleCacheReady})
+                                        };
+                                    };
+                                } else {
 
                                 _updateList = true;
 
@@ -1927,6 +2070,8 @@ switch(_operation) do {
                                 _selectedSupplyListOptions set [2,_options];
                                 _selectedSupplyListValues set [2,_values];
 
+                                }; // end cache ready else
+
                             };
                             case 2: {
 
@@ -1934,6 +2079,9 @@ switch(_operation) do {
 
                                 // selected something from the third level
                                 // a vehicle has been selected..
+
+                                // Guard: reject empty, placeholder or << Back selections
+                                if (_selectedValue isEqualTo "" || _selectedValue isEqualTo "<< Back" || _selectedOption isEqualTo "Please wait, loading data...") exitWith {};
 
                                 _payloadListOptions = [_logic,"payloadListOptions"] call MAINCLASS;
                                 _payloadListValues = [_logic,"payloadListValues"] call MAINCLASS;
@@ -2066,40 +2214,33 @@ switch(_operation) do {
                                 switch(_selectedValue) do {
                                     case "Individuals": {
 
-                                        private ["_staticOptions"];
+                                        // Build categories from sortedVehicles that contain Man-type units.
+                                        // The original static options ("Men", "MenRecon" etc.) are vanilla
+                                        // category names that don't exist in mod factions like RHS.
+                                        // Instead we scan the faction's actual vehicle categories and
+                                        // keep only those that contain at least one Man classname.
+                                        _options = ["<< Back"];
+                                        _values  = ["<< Back"];
 
-                                        // attempt to get options by faction
-                                        _staticOptions = [ALIVE_factionDefaultResupplyIndividualOptions,_faction,[]] call ALIVE_fnc_hashGet;
-
-                                        // if no options found for the faction use side options
-                                        if(count _staticOptions == 0) then {
-                                            _staticOptions = [ALIVE_sideDefaultResupplyIndividualOptions,_side] call ALIVE_fnc_hashGet;
-                                        };
-
-                                        _staticOptions = [_staticOptions,_selectedDeliveryValue] call ALIVE_fnc_hashGet;
-
-                                        _options = _staticOptions select 0;
-                                        _values = _staticOptions select 1;
-
-                                        /*
-                                        switch(_selectedDeliveryValue) do {
-                                            case "PR_AIRDROP": {
-                                                _options = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
-                                                _values = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
+                                        {
+                                            private _catKey = _x;
+                                            private _classList = [_sortedVehicles, _catKey] call ALIVE_fnc_hashGet;
+                                            if (!isNil "_classList" && {_classList isEqualType []} && {count _classList > 0}) then {
+                                                // Check if any vehicle in this category is a Man
+                                                private _hasMen = false;
+                                                { if (_x isKindOf "Man") exitWith { _hasMen = true; }; } forEach _classList;
+                                                if (_hasMen && !(_catKey in _values)) then {
+                                                    // Strip mod prefix (e.g. "rhs_vehclass_infantry" -> "Infantry")
+                                                    private _parts = [_catKey, "_"] call CBA_fnc_split;
+                                                    private _catName = (_parts select (count _parts - 1)) call CBA_fnc_capitalize;
+                                                    _options pushBack _catName;
+                                                    _values  pushBack _catKey;
+                                                };
                                             };
-                                            case "PR_HELI_INSERT": {
-                                                _options = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
-                                                _values = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
-                                            };
-                                            case "PR_STANDARD": {
-                                                _options = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
-                                                _values = ["<< Back","Men","MenDiver","MenRecon","MenSniper","MenSupport"];
-                                            };
-                                        };
-                                        */
+                                        } forEach (_sortedVehicles select 1);
 
                                         _selectedReinforceListOptions set [1,_options];
-                                        _selectedReinforceListValues set [1,_values];
+                                        _selectedReinforceListValues  set [1,_values];
                                     };
                                     case "Groups": {
 
@@ -2188,29 +2329,30 @@ switch(_operation) do {
 
                                 }else{
 
-                                    // selected something from the second level
-                                    // get vehicle classes for the selected category
+                                    // Individuals depth-1: user selected a vehicle category containing Man units.
+                                    // List only the Man-type classnames from that category.
 
                                     _options = ["<< Back"];
-                                    _values = ["<< Back"];
+                                    _values  = ["<< Back"];
 
-                                    _vehicleClasses = [_sortedVehicles,_selectedValue] call ALIVE_fnc_hashGet;
-                                    _vehicleClasses = _vehicleClasses - ALiVE_PLACEMENT_VEHICLEBLACKLIST;
-
-                                    {
-                                        _displayName = getText(configFile >> "CfgVehicles" >> _x >> "displayname");
-
-                                        _options pushback _displayName;
-                                        _values pushback _x;
-
-                                    } forEach _vehicleClasses;
+                                    private _classList = [_sortedVehicles, _selectedValue] call ALIVE_fnc_hashGet;
+                                    if (!isNil "_classList" && {_classList isEqualType []}) then {
+                                        {
+                                            if (_x isKindOf "Man") then {
+                                                private _displayName = getText (configFile >> "CfgVehicles" >> _x >> "displayName");
+                                                if (_displayName isEqualTo "") then { _displayName = _x; };
+                                                _options pushBack _displayName;
+                                                _values  pushBack _x;
+                                            };
+                                        } forEach _classList;
+                                    };
 
                                     _selectedReinforceListOptions set [2,_options];
-                                    _selectedReinforceListValues set [2,_values];
+                                    _selectedReinforceListValues  set [2,_values];
 
-                                };
+                                }; // end else (Individuals)
 
-                            };
+                            }; // end if Groups/Individuals
                             case 2: {
 
                                 if(_selectedReinforceListParents select 0 == "Groups") then {
@@ -2803,10 +2945,7 @@ switch(_operation) do {
 
                 case "SHOW_STATUS_CLICK": {
 
-                    private ["_side","_faction","_destination","_deliveryType","_selectedDeliveryValue","_payloadListValues","_emptyVehicles",
-                    "_payload","_staticIndividuals","_joinIndividuals","_reinforceIndividuals","_staticGroups","_joinGroups",
-                    "_reinforceGroups","_payloadClass","_payloadInfo","_payloadType","_payloadOrders","_requestID","_forceMakeup",
-                    "_event","_eventID","_playerID"];
+                    private ["_side","_faction","_requestID","_playerID","_event"];
 
                     _side = [_logic,"side"] call MAINCLASS;
                     _faction = [_logic,"faction"] call MAINCLASS;
@@ -2821,9 +2960,30 @@ switch(_operation) do {
                         [[_event],"ALIVE_fnc_addEventToServer",false,false] spawn BIS_fnc_MP;
                     };
 
-                    // set the interface state
+                    // set the interface state and launch the status refresh poller
 
                     [_logic,"showStatus"] call MAINCLASS;
+
+                    // Poll every 15 s while the status screen is showing.
+                    // Stops automatically when the player navigates back to the request screen.
+                    [_logic] spawn {
+                        private _statusLogic = _this select 0;
+                        while { [_statusLogic,"state"] call MAINCLASS == "REQUEST_SENT" } do {
+                            sleep 15;
+                            if ([_statusLogic,"state"] call MAINCLASS != "REQUEST_SENT") exitWith {};
+                            private _side     = [_statusLogic,"side"]    call MAINCLASS;
+                            private _faction  = [_statusLogic,"faction"] call MAINCLASS;
+                            private _playerID = getPlayerUID player;
+                            private _requestID = floor(time);
+                            private _pollEvent = ['LOGCOM_STATUS_REQUEST', [_faction,_side,_requestID,_playerID],"PR"] call ALIVE_fnc_event;
+                            if(isServer) then {
+                                [ALIVE_eventLog, "addEvent",_pollEvent] call ALIVE_fnc_eventLog;
+                            }else{
+                                [[_pollEvent],"ALIVE_fnc_addEventToServer",false,false] spawn BIS_fnc_MP;
+                            };
+                            ["SUP_PR - status auto-refresh fired"] call ALiVE_fnc_dump;
+                        };
+                    };
 
                 };
 
@@ -3147,17 +3307,25 @@ switch(_operation) do {
         [_logic,"statusMarker",[]] call MAINCLASS;
 
         // Display Current Force Pool
+        // Kick off a server-side fetch immediately; a background poller will
+        // keep the display live every 30 s while the tablet is open.
 
         private ["_forcePool","_forcePoolStatus"];
         _forcePoolStatus = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_ForcePool);
-        if (!isNil "ALIVE_globalForcePool") then {
-            _forcePool = [ALIVE_globalForcePool,faction player,0] call ALIVE_fnc_hashGet;
-        } else {
-            _forcePool = "WAITING...";
-        };
-
-        _forcePoolStatus ctrlSetText format["Current Force Pool: %1",_forcePool];
+        _forcePoolStatus ctrlSetText "Current Force Pool: Fetching...";
         _forcePoolStatus ctrlShow true;
+
+        [nil,"getForcePool", [player, faction player]] remoteExecCall [QUOTE(MAINCLASS),2];
+
+        // Background poller: re-fetches every 30 s until the tablet is closed
+        [_logic, faction player] spawn {
+            private _pollLogic   = _this select 0;
+            private _pollFaction = _this select 1;
+            while { [_pollLogic,"state"] call MAINCLASS != "REQUEST_SENT" } do {
+                sleep 30;
+                [nil,"getForcePool", [player, _pollFaction]] remoteExecCall [QUOTE(MAINCLASS),2];
+            };
+        };
         // setup the delivery type list
         private ["_deliveryList","_deliveryListOptions","_deliveryListValues","_selectedDeliveryListIndex"];
 
@@ -3240,21 +3408,41 @@ switch(_operation) do {
     case "getForcePool": {
 
         _args params ["_player","_faction"];
-        //Wait until MIL_LOG has init and Force Pool Set
-        waituntil {!(isnil "ALIVE_globalForcePool")};
-        private _forcePool = [MOD(globalForcePool),_faction, 0] call ALiVE_fnc_hashGet;
 
-        [nil,"displayForcePool", [_faction,_forcePool]] remoteExecCall [QUOTE(MAINCLASS),_player];
+        // remoteExecCall runs unscheduled - spawn so we can sleep/waituntil
+        [_player, _faction] spawn {
+            params ["_player","_faction"];
+
+            // Wait until MIL_LOG has init and the global pool hash exists
+            waituntil { !(isnil "ALIVE_globalForcePool") };
+
+            // Wait until this faction's pool entry has been registered.
+            // Capped at 60 s in case the faction is simply not in the pool.
+            private _waited = 0;
+            waituntil {
+                sleep 2;
+                _waited = _waited + 2;
+                (_faction in (ALIVE_globalForcePool select 1)) || (_waited >= 60)
+            };
+
+            private _forcePool = [MOD(globalForcePool),_faction, 0] call ALiVE_fnc_hashGet;
+            if (_forcePool isEqualType "") then { _forcePool = parseNumber _forcePool; };
+
+            [nil,"displayForcePool", [_faction,_forcePool]] remoteExecCall [QUOTE(MAINCLASS),_player];
+        };
 
     };
 
     case "displayForcePool": {
 
-        _args params ["_faction","_forcepool"];
+        _args params ["_faction","_forcePool"];
 
+        disableSerialization;
         private _forcePoolStatus = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_ForcePool);
-        _forcePoolStatus ctrlSetText format ["Current Force Pool: %1", _forcePool];
-        _forcePoolStatus ctrlShow true;
+        if (!isNull _forcePoolStatus) then {
+            _forcePoolStatus ctrlSetText format ["Current Force Pool: %1", _forcePool];
+            _forcePoolStatus ctrlShow true;
+        };
 
     };
 
@@ -3476,10 +3664,6 @@ switch(_operation) do {
 
     case "resetRequest": {
 
-        // the tablet has just made a request
-        // and the request has been completed
-        // reset the request interface objects
-
         // reset map marker
 
         private ["_markers","_destinationMarkers"];
@@ -3536,29 +3720,6 @@ switch(_operation) do {
 
         _payloadTitle = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadListTitle);
         _payloadTitle ctrlShow true;
-
-        _payloadInfo = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadInfo);
-        _payloadInfo ctrlShow true;
-
-        _payloadStatus = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadStatus);
-        _payloadStatus ctrlShow true;
-
-        _payloadWeight = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadWeight);
-        _payloadWeight ctrlShow true;
-
-        _payloadSize = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadSize);
-        _payloadSize ctrlShow true;
-
-        _payloadGroups = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadGroups);
-        _payloadGroups ctrlShow true;
-
-        _payloadVehicles = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadVehicles);
-        _payloadVehicles ctrlShow true;
-
-        _payloadIndividuals = PR_getControl(PRTablet_CTRL_MainDisplay,PRTablet_CTRL_PayloadIndividuals);
-        _payloadIndividuals ctrlShow true;
-
-        // restore the delivery type list
 
         private ["_deliveryList","_deliveryListOptions","_deliveryListValues","_selectedDeliveryListIndex"];
 
