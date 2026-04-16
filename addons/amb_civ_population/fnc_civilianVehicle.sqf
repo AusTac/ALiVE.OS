@@ -218,7 +218,14 @@ switch(_operation) do {
             [_logic,"position",_args] call ALIVE_fnc_hashSet;
 
             if([_logic,"debug"] call ALIVE_fnc_hashGet) then {
-                [_logic,"debug",true] call MAINCLASS;
+                // Throttle marker refreshes to at most once every 2s per vehicle.
+                // Position updates can fire per frame for active vehicles; without this
+                // the debug path rebuilds markers per frame and tanks FPS (issue #838).
+                private _last = [_logic,"debugMarkerLastRefresh",0] call ALIVE_fnc_hashGet;
+                if (diag_tickTime - _last >= 2) then {
+                    [_logic,"debugMarkerLastRefresh",diag_tickTime] call ALIVE_fnc_hashSet;
+                    [_logic,"debug",true] call MAINCLASS;
+                };
             };
         };
 
@@ -490,6 +497,13 @@ switch(_operation) do {
     };
 
     case "createDebugMarkers": {
+
+        // Skip marker creation entirely when no map is open on this machine.
+        // With a map open the engine re-renders every marker every frame; combined
+        // with the marker churn from position/spawn/despawn debug triggers this
+        // halves FPS (issue #838). On dedicated server visibleMap is always false,
+        // which is desired — dev testing with debug on happens SP / listen server.
+        if (!visibleMap) exitWith {};
 
         private ["_debugColor"];
 
