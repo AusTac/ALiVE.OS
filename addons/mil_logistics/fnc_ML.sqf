@@ -11416,9 +11416,18 @@ switch(_operation) do {
 
                                 _payloadProfile = [ALIVE_profileHandler, "getProfile", _payloadProfileID] call ALIVE_fnc_profileHandler;
 
+                                // Guard: getProfile returns nil when a payload profile has
+                                // been un-registered before cleanup runs (e.g. transport heli
+                                // destroyed during RTB). Calling hashGet on nil throws
+                                // "[any,'type']" and leaves _isEntity undeclared, cascading a
+                                // second "Undefined variable _isEntity" error on the if() below.
+                                if (isNil "_payloadProfile") exitWith {
+                                    ["ML - setEventProfilesAvailable: skipping un-registered payload profile %1", _payloadProfileID] call ALiVE_fnc_dump;
+                                };
+
                                 _isEntity = [_payloadProfile,"type"] call ALiVE_fnc_hashGet != "vehicle";
 
-                                if(!(isNil "_payloadProfile") && _isEntity) then {
+                                if (_isEntity) then {
                                     [_payloadProfile, "addWaypoint", _profileWaypoint] call ALIVE_fnc_profileEntity;
                                     _profileCount = _profileCount + 1;
                                 };
