@@ -8418,8 +8418,26 @@ switch(_operation) do {
                                         };
                                     } foreach _transportGroups;
 
-                                    // Cannot find vehicle big enough to slingload...
-                                    if (_vehicleClass == "") exitWith {_totalCount = _totalCount - 1;};
+                                    // Cannot find heli big enough to slingload this vehicle.
+                                    // Fall back to PR_AIRDROP "Option A" teleport: the cargo
+                                    // profile was already registered earlier in the dispatch
+                                    // loop, so we simply reposition it at the destination
+                                    // rather than decrementing _totalCount and bailing.
+                                    // The old exitWith here also broke the _emptyVehicleProfiles
+                                    // forEach entirely, silently abandoning any further cargo items.
+                                    if (_vehicleClass == "") then {
+                                        private _heavyID = _x select 0;
+                                        private _heavyProfile = [ALiVE_ProfileHandler, "getProfile", _heavyID] call ALIVE_fnc_profileHandler;
+                                        if (!isNil "_heavyProfile") then {
+                                            [_heavyProfile, "position", _eventPosition] call ALIVE_fnc_profileVehicle;
+                                            _payloadGroupProfiles pushback [_heavyID];
+                                            ["ML - PR_HELI_INSERT empty-vehicle too heavy to sling (weight %1). Teleporting %2 to destination %3 (Option A fallback).",
+                                                _payloadWeight, _heavyID, _eventPosition] call ALiVE_fnc_dump;
+                                        } else {
+                                            ["ML - PR_HELI_INSERT weight-fail fallback: profile %1 already un-registered, skipping.", _heavyID] call ALiVE_fnc_dump;
+                                            _totalCount = _totalCount - 1;
+                                        };
+                                    } else {
 
                                     if (_paraDrop) then {
                                         _position set [2,PARADROP_HEIGHT];
@@ -8466,6 +8484,7 @@ switch(_operation) do {
                                         ]] call MAINCLASS;
 
                                     _totalCount = _totalCount + 1;
+                                    }; // end else (_vehicleClass == "")
 
                                 } foreach _emptyVehicleProfiles;
 
@@ -8930,8 +8949,21 @@ switch(_operation) do {
                                                 };
                                             } foreach _transportGroups;
 
-                                            // Cannot find vehicle big enough to slingload...
-                                            if (_vehicleClass == "") exitWith {_totalCount = _totalCount - 1;};
+                                            // Cannot find heli big enough to slingload this vehicle.
+                                            // Fall back to PR_AIRDROP "Option A" teleport — same
+                                            // rationale as the empty-vehicle loop above; keeps
+                                            // _totalCount honest and continues the forEach.
+                                            if (_vehicleClass == "") then {
+                                                if (!isNil "_slingLoadProfile") then {
+                                                    [_slingLoadProfile, "position", _eventPosition] call ALIVE_fnc_profileVehicle;
+                                                    _payloadGroupProfiles pushback [_x];
+                                                    ["ML - PR_HELI_INSERT grouped-vehicle too heavy to sling (weight %1). Teleporting %2 to destination %3 (Option A fallback).",
+                                                        _payloadWeight, _x, _eventPosition] call ALiVE_fnc_dump;
+                                                } else {
+                                                    ["ML - PR_HELI_INSERT weight-fail fallback: profile %1 already un-registered, skipping.", _x] call ALiVE_fnc_dump;
+                                                    _totalCount = _totalCount - 1;
+                                                };
+                                            } else {
 
                                             _position set [2,PARADROP_HEIGHT];
 
@@ -8958,6 +8990,7 @@ switch(_operation) do {
                                             [_profile, "addWaypoint", _profileWaypoint] call ALIVE_fnc_profileEntity;
 
                                             _totalCount = _totalCount + 1;
+                                            }; // end else (_vehicleClass == "")
                                         };
 
                                     } foreach _groupProfile;
