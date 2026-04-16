@@ -11129,11 +11129,46 @@ switch(_operation) do {
             // reinforce profiles get released
             // to OPCOM control
 
+            // Resolve garrison position for player-requested reinforceIndividuals --
+            // use the event's final delivery position so they hold ground at the LZ
+            // rather than standing idle until OPCOM picks them up. Mirrors the AI-path
+            // treatment for _infantryProfiles above.
+            private _reinforceGarrisonPos = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
+            if (isNil "_reinforceGarrisonPos" || count _reinforceGarrisonPos == 0) then {
+                _reinforceGarrisonPos = _eventPosition;
+            };
+
             {
                 {
                     _profile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
                     if!(isNil "_profile") then {
                         [_profile,"busy",false] call ALIVE_fnc_hashSet;
+
+                        // Clear any vehicle assignment left over from heli transport.
+                        // Player-requested reinforcements inserted via PR_HELI_INSERT
+                        // carry stale vehicleAssignments pointing at the (now destroyed)
+                        // transport heli. Without this cleanup, OPCOM sees corrupt
+                        // speedPerSecond and may fail to re-task them.
+                        private _vAssign = [_profile, "vehicleAssignments"] call ALIVE_fnc_hashGet;
+                        if (!isNil "_vAssign" && { typeName _vAssign == "ARRAY" } && { count _vAssign >= 2 } && { count (_vAssign select 1) > 0 }) then {
+                            private _emptyHash = [] call ALIVE_fnc_hashCreate;
+                            [_profile, "vehicleAssignments", _emptyHash] call ALIVE_fnc_hashSet;
+                            [_profile, "vehiclesInCargoOf", []] call ALIVE_fnc_hashSet;
+                            [_profile, "vehiclesInCommandOf", []] call ALIVE_fnc_hashSet;
+                            [_profile, "speedPerSecond", "Man" call ALIVE_fnc_vehicleGetSpeedPerSecond] call ALIVE_fnc_hashSet;
+                        };
+
+                        // Assign garrison duty at the delivery position so reinforcements
+                        // hold the area immediately on arrival. OPCOM can override this
+                        // with its own orders once it picks them up.
+                        [_profile, "setActiveCommand", [
+                            "ALIVE_fnc_managedGarrison", "managed", [200, "false", _reinforceGarrisonPos]
+                        ]] call ALIVE_fnc_profileEntity;
+
+                        if (_debug) then {
+                            ["ML - setEventProfilesAvailable: Garrison assigned to reinforceIndividual %1 at %2",
+                                _x, _reinforceGarrisonPos] call ALiVE_fnc_dump;
+                        };
                     };
                 } forEach _x;
 
