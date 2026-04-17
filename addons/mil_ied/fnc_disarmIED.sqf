@@ -25,10 +25,67 @@ _id     = _this select 2;
 
 _IEDCharge = _IED getVariable ["charge", nil];
 
+// Bail immediately if this container has already been disarmed - stale addActions
+// on other clients can still fire after the charge has been recovered.
+if (_IED getVariable ["ALiVE_IED_Disarmed", false]) exitWith {
+    hint "IED already disarmed.";
+};
+
 // Everything below needs scheduled context (sleep / waitUntil). addAction
 // callbacks are unscheduled, so spawn a fresh thread.
 [_IED, _caller, _id, _IEDCharge] spawn {
     params ["_IED", "_caller", "_id", "_IEDCharge"];
+
+    // Nested fn: complete a successful disarm. Keeps the container intact,
+    // strips the charge from it, and hands the demo charge to the disarmer's
+    // inventory (or drops it nearby in a GroundWeaponHolder). Called from
+    // both the wire-guess-success and the auto-success paths.
+    private _fnDisarmSuccess = {
+        params ["_IED", "_caller", "_id", "_IEDCharge", "_successHint"];
+
+        // Stop the armIED proximity loop - loop checks this variable.
+        _IED setVariable ["ALiVE_IED_Disarmed", true, true];
+
+        // Strip the local disarm action (best-effort - addAction IDs are per-client;
+        // addActionIED's condition also hides stale entries on other clients).
+        [_IED, _id] remoteExec ["ALiVE_fnc_removeActionIED", 0, true];
+
+        // Clean up the stub proximity triggers the armIED spawn created.
+        private _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
+        {
+            deleteVehicle _x;
+        } foreach _trgr;
+
+        // Remove from module tracking + drop sector hostility.
+        [[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
+        [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
+
+        // Detach and delete the charge visual. The user's rule: keep the
+        // container (trash pile / tyre / junk) visible, only remove the bomb.
+        if (!isNil "_IEDCharge" && {!isNull _IEDCharge}) then {
+            _IEDCharge removeEventHandler ["handleDamage", _IED getVariable "ehID"];
+            detach _IEDCharge;
+            deleteVehicle _IEDCharge;
+            _IED setVariable ["charge", objNull, true];
+
+            // Award the recovered charge to the disarmer. Inventory first, then
+            // a GroundWeaponHolder ~3m away if the disarmer is full.
+            private _chargeMag = "DemoCharge_Remote_Mag";
+            if (_caller canAdd _chargeMag) then {
+                _caller addMagazine _chargeMag;
+                hint format ["%1 Charge recovered - added to inventory.", _successHint];
+            } else {
+                private _holderPos = _caller getPos [3, random 360];
+                private _holder = createVehicle ["GroundWeaponHolder", _holderPos, [], 2, "NONE"];
+                _holder addMagazineCargoGlobal [_chargeMag, 1];
+                hint format ["%1 Inventory full - charge placed on the ground nearby.", _successHint];
+            };
+        } else {
+            // Dud or 3rd-party IED: no separate charge to recover. Leave the
+            // container alive but announce the disarm.
+            hint _successHint;
+        };
+    };
 
     private _skill             = _caller skillFinal "commanding";
     private _challengeEnabled  = (ADDON getVariable ["IED_Engineer_Challenge", 1]) == 1;
@@ -88,22 +145,7 @@ _IEDCharge = _IED getVariable ["charge", nil];
         if (isNull _IED || !alive _IED) exitWith { hint ""; };
 
         if (_success) then {
-            private _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
-            {
-                deleteVehicle _x;
-            } foreach _trgr;
-
-            if !(isNil "_IEDCharge") then {
-                _IEDCharge removeEventHandler ["handleDamage", _IED getVariable "ehID"];
-            };
-
-            [[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
-            [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
-
-            deleteVehicle _IEDCharge;
-            deleteVehicle _IED;
-
-            hint "You guessed correct! IED is disarmed";
+            [_IED, _caller, _id, _IEDCharge, "You guessed correct! IED disarmed."] call _fnDisarmSuccess;
         } else {
             // Wrong wire - detonate.
             private _shell = [["M_Mo_120mm_AT","M_Mo_120mm_AT_LG","M_Mo_82mm_AT_LG","R_60mm_HE","Bomb_04_F","Bomb_03_F"],[4,8,2,1,1,1]] call BIS_fnc_selectRandomWeighted;
@@ -124,23 +166,6 @@ _IEDCharge = _IED getVariable ["charge", nil];
     } else {
 
         // Standard disarm - automatic success.
-        [_IED, _id] remoteExec ["ALiVE_fnc_removeActionIED", 0, true];
-
-        private _trgr = (position _IED) nearObjects ["EmptyDetector", 3];
-        {
-            deleteVehicle _x;
-        } foreach _trgr;
-
-        if !(isNil "_IEDCharge") then {
-            _IEDCharge removeEventHandler ["handleDamage", _IED getVariable "ehID"];
-        };
-
-        [[position _IED, [str(side group player)], -20] ,"ALiVE_fnc_updateSectorHostility", false, false, true] call BIS_fnc_MP;
-        [[ADDON, "removeIED", _IED] ,"ALiVE_fnc_IED", false, false, true] call BIS_fnc_MP;
-
-        deleteVehicle _IEDCharge;
-        deleteVehicle _IED;
-
-        hint "IED is disarmed";
+        [_IED, _caller, _id, _IEDCharge, "IED disarmed."] call _fnDisarmSuccess;
     };
 };

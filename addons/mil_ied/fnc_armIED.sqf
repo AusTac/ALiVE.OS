@@ -106,10 +106,17 @@ private _gracePeriod = 15;
         // Per-engineer trip counters, keyed by netId. Lives for the IED's lifetime.
         private _tripMap = createHashMap;
 
-        while {!_detonated && !isNull _ied && alive _ied} do {
+        while {
+            !_detonated &&
+            !isNull _ied &&
+            alive _ied &&
+            !(_ied getVariable ["ALiVE_IED_Disarmed", false])
+        } do {
             sleep 0.5;
 
-            if (isNull _ied || !alive _ied) then { _detonated = true; } else {
+            if (isNull _ied || !alive _ied || (_ied getVariable ["ALiVE_IED_Disarmed", false])) then {
+                _detonated = true;   // reuse the loop-exit flag; container may stay alive post-disarm
+            } else {
 
                 // --- Detection hint (engineer / mine detector) ---
                 private _detectList = _ied nearEntities ["Man", _proximity + 5];
