@@ -258,6 +258,16 @@ switch(_operation) do {
                     };
                     ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
 
+                    // ----- Phase 3a: resolved IED class pools ------------------------------
+                    // One authoritative read point per category. For now this is a direct
+                    // passthrough of the existing module attributes (which are ARRAY after
+                    // their case handlers' string-to-array coercion). Phase 3b/3c will layer
+                    // in detected-integration classes + user _additional field + hash-based
+                    // edit detection, all without touching placement-side consumers again.
+                    ADDON setVariable ["resolvedRoadIEDClasses",  [ADDON, "roadIEDClasses"]  call MAINCLASS, true];
+                    ADDON setVariable ["resolvedUrbanIEDClasses", [ADDON, "urbanIEDClasses"] call MAINCLASS, true];
+                    ADDON setVariable ["resolvedClutterClasses",  [ADDON, "clutterClasses"]  call MAINCLASS, true];
+
                     if (count _integrations == 0) then {
                         diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice='%3')",
                             time, _resolved, _iChoice];

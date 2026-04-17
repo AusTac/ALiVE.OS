@@ -122,16 +122,16 @@ for "_j" from 1 to _numIEDs do {
         private _isRoadContext = false;
 
         if (isOnRoad _IEDpos) then {
-            _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+            _IEDskins = ADDON getVariable ["resolvedRoadIEDClasses", [ADDON, "roadIEDClasses"] call MAINCLASS];
             _isRoadContext = true;
         } else {
             // Check to see proximity to houses (use "House" base class to catch all map building types)
             if (count (_IEDpos nearObjects ["House", 40]) > 0) then {
-                _IEDskins = [ADDON, "urbanIEDClasses"] call MAINCLASS;
+                _IEDskins = ADDON getVariable ["resolvedUrbanIEDClasses", [ADDON, "urbanIEDClasses"] call MAINCLASS];
 
                 // Add clutter nearby so its not so obvious that there is an IED
                 private ["_clutter","_c","_clut","_clutm","_t"];
-                _clutter = [ADDON, "clutterClasses"] call MAINCLASS;
+                _clutter = ADDON getVariable ["resolvedClutterClasses", [ADDON, "clutterClasses"] call MAINCLASS];
                 for "_c" from 1 to (2 + (ceil(random 6))) do {
 
                     //Seems to cause a crash lateley if _clutter is empty (trigger-related?)
@@ -155,7 +155,7 @@ for "_j" from 1 to _numIEDs do {
                     };*/
                 };
             } else {
-                _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+                _IEDskins = ADDON getVariable ["resolvedRoadIEDClasses", [ADDON, "roadIEDClasses"] call MAINCLASS];
                 _isRoadContext = true;
             };
         };
@@ -166,7 +166,7 @@ for "_j" from 1 to _numIEDs do {
         // left a bare model visible against cleared shoulder terrain.
         if (_isRoadContext) then {
             private ["_clutter","_roadC","_roadClut"];
-            _clutter = [ADDON, "clutterClasses"] call MAINCLASS;
+            _clutter = ADDON getVariable ["resolvedClutterClasses", [ADDON, "clutterClasses"] call MAINCLASS];
             for "_roadC" from 1 to (1 + (ceil (random 2))) do {
                 if (count _clutter > 0) then {
                     _roadClut = createVehicle [(selectRandom _clutter), _IEDpos, [], 8, "NONE"];
