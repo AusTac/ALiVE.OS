@@ -89,6 +89,13 @@ switch(_operation) do {
                         ARTY_RESPAWN_LIMIT = parsenumber(_ARTY_SET_RESPAWN_LIMIT);
 
                         _audio = NEO_radioLogic getvariable ["combatsupport_audio",true];
+                        // Defensive coercion: combatsupport_audio is a Combo and Eden returns it as BOOL
+                        // when the PBO is binarised (normal production builds) but as STRING "0"/"1" when
+                        // packed without binarisation (AddonBuilder -packonly dev builds). Normalise once
+                        // here and PV back so the downstream UI handlers and FSMs that read this off
+                        // NEO_radioLogic always see a bool and don't choke on `if (_audio) then`.
+                        if !(_audio isEqualType true) then { _audio = parseNumber str _audio > 0; };
+                        NEO_radioLogic setVariable ["combatsupport_audio", _audio, true];
 
                         _transportArrays = [];
                         _casArrays = [];
@@ -242,8 +249,17 @@ switch(_operation) do {
                                     _height = parsenumber(_heightset);
                                     _code = ((synchronizedObjects _logic) select _i) getvariable ["cas_code",""];
                                     _code = [_code,"this","(_this select 0)"] call CBA_fnc_replace;
+                                    // Military Logistics Simulation module attrs. These are Combo attrs without
+                                    // typeName, which Eden always stores as STRING ("0" / "1") regardless of whether
+                                    // the PBO is binarised. parseNumber accepts a STRING directly and returns the
+                                    // numeric value - NO str() wrapper. (Other ALiVE call sites use `parseNumber str`
+                                    // because they read Edit attrs with typeName=NUMBER where Eden stores NUMBER and
+                                    // parseNumber can't read that without the str() conversion; we're the opposite
+                                    // case.)
+                                    _casLogistics = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["cas_logistics","0"]);
+                                    _casLogisticsSource = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["cas_logisticssource","0"]);
 
-                                    _casArray = [_position,_direction, _type, _callsign, _id,_code,_height];
+                                    _casArray = [_position,_direction, _type, _callsign, _id,_code,_height,_casLogistics,_casLogisticsSource];
                                     _casArrays pushback _casArray;
                                 };
                                 case ("ALiVE_SUP_TRANSPORT") : {
@@ -260,7 +276,20 @@ switch(_operation) do {
 
 
                                     _slingloading = ((synchronizedObjects _logic) select _i) getvariable ["transport_slingloading",true];
+                                    // Defensive coercion for the upstream attrs. When the PBO is binarised by
+                                    // Mikero (the usual production pipeline) Eden returns _slingloading as BOOL
+                                    // and _containers as NUMBER, matching the defaults and expected downstream
+                                    // usage (`!_slingloading`, `_containers > 0`). When the PBO is packed without
+                                    // binarisation (AddonBuilder -packonly, used for fast dev iteration) Eden
+                                    // returns these as STRING ("0"/"1"). The isEqualType guards here no-op on
+                                    // binarised builds and only trigger on the un-binarised dev path.
+                                    if !(_slingloading isEqualType true) then { _slingloading = parseNumber str _slingloading > 0; };
                                     _containers = ((synchronizedObjects _logic) select _i) getvariable ["transport_containers",0];
+                                    if !(_containers isEqualType 0) then { _containers = parseNumber str _containers; };
+                                    // Military Logistics Simulation module attrs - Combo without typeName, Eden
+                                    // always returns STRING. Bare parseNumber handles STRING directly.
+                                    _transportLogistics = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["transport_logistics","0"]);
+                                    _transportLogisticsSource = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["transport_logisticssource","0"]);
 
 
                                     LOG(_slingloading);
@@ -271,7 +300,7 @@ switch(_operation) do {
                                         _tasks = DEFAULT_TRANSPORT_TASKS;
                                     };
 
-                                    _transportArray = [_position,_direction,_type, _callsign,_tasks,_code,_height,_slingloading, _containers];
+                                    _transportArray = [_position,_direction,_type, _callsign,_tasks,_code,_height,_slingloading, _containers,_transportLogistics,_transportLogisticsSource];
                                     _transportArrays pushback _transportArray;
                                 };
                                 case ("ALiVE_sup_artillery") : {
@@ -318,8 +347,12 @@ switch(_operation) do {
                                     _rockets = ["ROCKETS", _rocketrounds];
 
                                    _ordnance = [_he,_illum,_smoke,_wp,_guided,_cluster,_lg,_mine,_atmine, _rockets];
+                                    // Military Logistics Simulation module attrs - Combo without typeName, Eden
+                                    // always returns STRING. Bare parseNumber handles STRING directly.
+                                    _artyLogistics = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["artillery_logistics","0"]);
+                                    _artyLogisticsSource = parseNumber (((synchronizedObjects _logic) select _i) getvariable ["artillery_logisticssource","0"]);
 
-                                    _artyArray = [_position,_class, _callsign,3,_ordnance,_code];
+                                    _artyArray = [_position,_class, _callsign,3,_ordnance,_code,_artyLogistics,_artyLogisticsSource];
                                     _artyArrays pushback _artyArray;
                                 };
                             };
@@ -470,6 +503,12 @@ switch(_operation) do {
                             _veh setVariable ["ALIVE_CombatSupport", true];
                             _veh setVariable ["NEO_transportAvailableTasks", _tasks, true];
 
+                            // Military Logistics Simulation settings.
+                            private _logisticsEnabled = if (count _x > 9) then {(_x select 9) > 0} else {false};
+                            private _logisticsSource = if (count _x > 10) then {_x select 10} else {0};
+                            _veh setVariable ["ALIVE_logistics_enabled", _logisticsEnabled, true];
+                            _veh setVariable ["ALIVE_logistics_source", _logisticsSource, true];
+
                             private _fsmHandle = [_veh, _grp, _callsign, _pos, _dir, _height, _type, CS_RESPAWN,_code, _audio, _slingloading] execFSM _transportfsm;
 
                             _t = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", _side];
@@ -569,6 +608,12 @@ switch(_operation) do {
 
                             // set ownership flag for other modules
                             _veh setVariable ["ALIVE_CombatSupport", true];
+
+                            // Military Logistics Simulation settings.
+                            private _logisticsEnabled = if (count _x > 7) then {(_x select 7) > 0} else {false};
+                            private _logisticsSource = if (count _x > 8) then {_x select 8} else {0};
+                            _veh setVariable ["ALIVE_logistics_enabled", _logisticsEnabled, true];
+                            _veh setVariable ["ALIVE_logistics_source", _logisticsSource, true];
 
                             //FSM
                             private _fsmHandle = [_veh, _grp, _callsign, _pos, _airport, _dir, _height, _type, CS_RESPAWN, _code, _audio] execFSM _casfsm;
@@ -814,6 +859,29 @@ switch(_operation) do {
 
                             leader _grp setVariable ["NEO_radioArtyBatteryRounds", _roundsAvailable, true];
 
+                            // Military Logistics Simulation settings.
+                            private _logisticsEnabled = if (count _x > 6) then {(_x select 6) > 0} else {false};
+                            private _logisticsSource = if (count _x > 7) then {_x select 7} else {0};
+                            // Store default rounds for resupply service to restore.
+                            private _defaultRounds = +_roundsAvailable;
+                            // Set on each tank vehicle in the battery.
+                            {
+                                _x setVariable ["ALIVE_logistics_enabled", _logisticsEnabled, true];
+                                _x setVariable ["ALIVE_logistics_source", _logisticsSource, true];
+                                _x setVariable ["ALIVE_resupply_defaultRounds", _defaultRounds, true];
+                            } forEach _units;
+                            // Also set on leader - the registry keys artillery by leader _grp, not by vehicle,
+                            // and NEO_radioArtyBatteryRounds is tracked on the leader.
+                            private _leader = leader _grp;
+                            _leader setVariable ["ALIVE_logistics_enabled", _logisticsEnabled, true];
+                            _leader setVariable ["ALIVE_logistics_source", _logisticsSource, true];
+                            _leader setVariable ["ALIVE_resupply_defaultRounds", _defaultRounds, true];
+                            // Store a ref to a primary vehicle so the watchdog can read fuel/damage off the tank
+                            // and the service fn can rearm it, not the soldier leader.
+                            if (count _units > 0) then {
+                                _leader setVariable ["ALIVE_resupply_primaryVehicle", _units select 0, true];
+                            };
+
                             //FSM
                             private _fsmHandle = [_units, _grp, _callsign, _pos, _roundsAvailable, _canMove, _class, leader _grp, _code, _audio, _side] execFSM "\x\alive\addons\sup_combatSupport\scripts\NEO_radio\fsms\alivearty.fsm";
 
@@ -878,6 +946,18 @@ switch(_operation) do {
                                     };
                                 };
                             } foreach _sides;
+                        };
+
+                        // --- Military Logistics Simulation: start watchdog ---
+                        // The watchdog scans NEO_radio per-side arrays each tick, so respawned
+                        // assets are picked up automatically. No static registry to maintain here.
+                        missionNamespace setVariable ["ALIVE_resupply_activeCount", 0, true];
+
+                        if (["ALiVE_mil_logistics"] call ALIVE_fnc_isModuleAvailable) then {
+                            [] spawn ALIVE_fnc_resupplyWatchdog;
+                            ["CS - Resupply Watchdog spawned (live-scan mode)"] call ALiVE_fnc_dump;
+                        } else {
+                            ["CS WARNING: Military Logistics Simulation requires a Military Logistics module to be placed in the mission - watchdog not started."] call ALiVE_fnc_dump;
                         };
 
                         //Now PV the logic to all clients indicate its ready

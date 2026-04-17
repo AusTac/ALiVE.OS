@@ -111,6 +111,25 @@ if (_side == WEST && _type == "BUS_MotInf_MortTeam") then {
 
 leader _grp setVariable ["NEO_radioArtyBatteryRounds", _roundsAvailable, true];
 
+// Carry the Military Logistics Simulation settings from the old leader onto the new battery so
+// the resupply watchdog keeps monitoring the asset after respawn. Variables are still readable
+// on the dead leader via getVariable.
+private _oldLogisticsEnabled = _battery getVariable ["ALIVE_logistics_enabled", false];
+private _oldLogisticsSource = _battery getVariable ["ALIVE_logistics_source", 0];
+private _oldDefaultRounds = _battery getVariable ["ALIVE_resupply_defaultRounds", _roundsAvailable];
+{
+    _x setVariable ["ALIVE_logistics_enabled", _oldLogisticsEnabled, true];
+    _x setVariable ["ALIVE_logistics_source", _oldLogisticsSource, true];
+    _x setVariable ["ALIVE_resupply_defaultRounds", _oldDefaultRounds, true];
+} forEach _units;
+private _newLeader = leader _grp;
+_newLeader setVariable ["ALIVE_logistics_enabled", _oldLogisticsEnabled, true];
+_newLeader setVariable ["ALIVE_logistics_source", _oldLogisticsSource, true];
+_newLeader setVariable ["ALIVE_resupply_defaultRounds", _oldDefaultRounds, true];
+if (count _units > 0) then {
+    _newLeader setVariable ["ALIVE_resupply_primaryVehicle", _units select 0, true];
+};
+
 _codeArray = [_code, ";"] Call CBA_fnc_split;
 {
     _vehicle = _x;

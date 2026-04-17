@@ -118,4 +118,16 @@
     <English>Code that will be ran on each artillery piece</English>
     <Chinesesimp>将在每门火炮上运行的代码</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_ARTILLERY_LOGISTICS">
+    <English>Use Military Logistics Simulation</English>
+</Key>
+<Key ID="STR_ALIVE_ARTILLERY_LOGISTICS_DESC">
+    <English>When enabled, this asset will request resupply from LOGCOM when ammo, fuel, or damage thresholds are reached. Requires a Military Logistics module.</English>
+</Key>
+<Key ID="STR_ALIVE_ARTILLERY_LOGISTICSSOURCE">
+    <English>Logistics Source</English>
+</Key>
+<Key ID="STR_ALIVE_ARTILLERY_LOGISTICSSOURCE_DESC">
+    <English>Static: resupply dispatched from LOGCOM base position. Dynamic: dispatched from nearest friendly-held objective.</English>
+</Key>
 </Container></Package></Project>
