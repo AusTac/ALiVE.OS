@@ -26,8 +26,8 @@
 // ----------------------------------------------------------------------------
 
 class Cfg3DEN {
-    class Attribute {
-        class Combo;
+    class Attributes {
+        class Combo; // BI's Combo base class - forward declaration
         class ALiVE_IntegrationChoice: Combo {
             attributeLoad = "_this call ALIVE_fnc_edenIntegrationChoiceLoad";
             attributeSave = "_this call ALIVE_fnc_edenIntegrationChoiceSave";
