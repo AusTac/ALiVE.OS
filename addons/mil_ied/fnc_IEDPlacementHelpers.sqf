@@ -306,7 +306,9 @@ switch(_operation) do {
         /*
         Find tactical chokepoints (bridges, narrow roads, canyon passages)
         Args: [centerPos, radius]
-        Returns: ARRAY of [position, score] pairs sorted by tactical value (highest first)
+        Returns: ARRAY of [position, score, roadObj] triples sorted by tactical
+        value (highest first). roadObj is the road segment so callers can derive
+        `direction roadObj` for proper perpendicular verge offsets.
         */
         private ["_center","_radius","_roads","_chokepoints"];
         
@@ -365,7 +367,7 @@ switch(_operation) do {
             
             // Only include positions with tactical value
             if (_score > 20) then {
-                _chokepoints pushBack [_roadPos, _score];
+                _chokepoints pushBack [_roadPos, _score, _road];
             };
             
         } forEach _roads;

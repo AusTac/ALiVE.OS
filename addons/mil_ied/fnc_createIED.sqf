@@ -115,8 +115,11 @@ for "_j" from 1 to _numIEDs do {
 
         // If error occurred, skip IED creation for this iteration
         if (!_error) then {
+        private _isRoadContext = false;
+
         if (isOnRoad _IEDpos) then {
             _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+            _isRoadContext = true;
         } else {
             // Check to see proximity to houses (use "House" base class to catch all map building types)
             if (count (_IEDpos nearObjects ["House", 40]) > 0) then {
@@ -149,6 +152,34 @@ for "_j" from 1 to _numIEDs do {
                 };
             } else {
                 _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+                _isRoadContext = true;
+            };
+        };
+
+        // Road IED clutter - sparse (1-3 pieces) and placed tight to the IED
+        // to break up its silhouette against open verge. Urban IEDs already
+        // get dense clutter above; rural road IEDs previously had none, which
+        // left a bare model visible against cleared shoulder terrain.
+        if (_isRoadContext) then {
+            private ["_clutter","_roadC","_roadClut"];
+            _clutter = [ADDON, "clutterClasses"] call MAINCLASS;
+            for "_roadC" from 1 to (1 + (ceil (random 2))) do {
+                if (count _clutter > 0) then {
+                    _roadClut = createVehicle [(selectRandom _clutter), _IEDpos, [], 8, "NONE"];
+                    _roadClut setvariable [QUOTE(ADDON), true];
+
+                    // Nudge off tarmac if it landed on a road. Bounded retry
+                    // so we don't infinite-loop on wide intersections.
+                    private _retry = 0;
+                    while {isOnRoad _roadClut && _retry < 8} do {
+                        _roadClut setPos [
+                            ((position _roadClut) select 0) - 6 + random 12,
+                            ((position _roadClut) select 1) - 6 + random 12,
+                            ((position _roadClut) select 2)
+                        ];
+                        _retry = _retry + 1;
+                    };
+                };
             };
         };
 
