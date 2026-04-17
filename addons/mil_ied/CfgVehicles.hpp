@@ -47,10 +47,16 @@ class CfgVehicles {
                                 displayName  = "Integration";
                                 tooltip      = "Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time - only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to <mod> uses that specific mod's mode. See RPT for detection details at mission start.";
                                 control      = "ALiVE_IntegrationChoice";
-                                // Storage is handled directly by attributeSave / attributeLoad
-                                // (setVariable on the logic), bypassing Eden's built-in Combo
-                                // attribute pipeline which treats the value as numeric and drops
-                                // the string payload. No `expression` or `typeName` needed.
+                                // typeName + expression + defaultValue wire the attribute value
+                                // into Eden's SQM serialization + mission-load entity-apply path.
+                                // attributeSave explicitly stores the string into Eden's "value"
+                                // slot (via setVariable on the control), which is what Eden reads
+                                // when emitting the SQM. At mission start, expression fires with
+                                // _value = the serialized string and lands it on the logic
+                                // variable `integrationChoice` that fnc_IED.sqf's init reads.
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['integrationChoice', _value];";
+                                defaultValue = """'_auto'""";
                         };
                         // ---- IED Threat -----------------------------------------------------
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };
