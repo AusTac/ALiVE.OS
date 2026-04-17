@@ -45,13 +45,13 @@ class CfgVehicles {
                         {
                                 property = "ALiVE_mil_ied_integrationMode";
                                 displayName = "Integration Mode";
-                                tooltip = "How IED arming/detonation behaves when 3rd-party IED mods are loaded. Auto uses the detected integration's declared mode (e.g. ACE 3 Explosives -> Mine semantics). Force options ignore detection. See RPT for ""N integration(s) detected"" at mission start.";
+                                tooltip = "Who handles IED arming and detonation. Auto defers to a detected 3rd-party IED mod (ACE, RHS, CUP, SOG, etc.) if any are loaded, otherwise uses ALiVE. Force options ignore detection. See RPT ""N integration(s) detected"" at mission start.";
                                 defaultValue = """0""";
                                 class Values
                                 {
-                                        class Auto       { name = "Auto (detect)"; value = 0; default = 1; };
-                                        class ForceMine  { name = "Force Mine Semantics"; value = 1; };
-                                        class ForceALiVE { name = "Force ALiVE Pipeline"; value = 2; };
+                                        class Auto        { name = "Auto (detect)"; value = 0; default = 1; };
+                                        class ForceDefer  { name = "Defer to 3rd-party mod"; value = 1; };
+                                        class ForceALiVE  { name = "Force ALiVE handling"; value = 2; };
                                 };
                         };
                         // ---- IED Threat -----------------------------------------------------

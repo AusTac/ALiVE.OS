@@ -208,12 +208,15 @@ switch(_operation) do {
                     ADDON setVariable ["detectedIEDIntegrations", _integrations, true];
 
                     // Resolve the effective integration mode. integrationMode values:
-                    //   0 = Auto        - pick based on detection
-                    //   1 = ForceMine   - Arma mineActive semantics (legacy thirdParty=Yes)
-                    //   2 = ForceALiVE  - full ALiVE pipeline (legacy thirdParty=No)
+                    //   0 = Auto         - pick based on detection
+                    //   1 = ForceDefer   - Arma mineActive semantics, 3rd-party mod handles detonation
+                    //                      (legacy thirdParty=Yes)
+                    //   2 = ForceALiVE   - full ALiVE pipeline (legacy thirdParty=No)
                     // Auto rule: if any NON-vanilla detected integration declares mode="mine",
                     // use "mine" globally; otherwise use "alive". The vanilla baseline entry
-                    // is informational and does not by itself force a mode choice.
+                    // is informational and does not by itself force a mode choice. When
+                    // multiple non-vanilla integrations are detected we still produce just
+                    // one global "mine" decision - see commit message for the trade-off.
                     private _iModeChoice = ADDON getVariable ["integrationMode", 0];
                     private _resolved = switch (_iModeChoice) do {
                         case 1: { "mine" };
