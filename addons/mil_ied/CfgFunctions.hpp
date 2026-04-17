@@ -96,6 +96,16 @@ class cfgFunctions {
                                 file = "\x\alive\addons\mil_ied\fnc_detectIEDIntegrations.sqf";
                                 RECOMPILE;
                         };
+                        class edenIntegrationChoiceLoad {
+                                description = "Eden attributeLoad for ALiVE_IntegrationChoice control";
+                                file = "\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceLoad.sqf";
+                                RECOMPILE;
+                        };
+                        class edenIntegrationChoiceSave {
+                                description = "Eden attributeSave for ALiVE_IntegrationChoice control";
+                                file = "\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceSave.sqf";
+                                RECOMPILE;
+                        };
                 };
         };
 };

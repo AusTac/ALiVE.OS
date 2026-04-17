@@ -19,49 +19,18 @@
 //   "alive" or "mine" accordingly; if the user saved a choice for a mod
 //   they've since unloaded, the resolver falls back to the Auto rule with
 //   a diag_log warning.
+//
+//   attributeLoad / attributeSave live in separate .sqf files so the config
+//   preprocessor isn't asked to cope with multi-line strings (which fail
+//   with "Mismatched or missing quotes" on Windows CRLF).
 // ----------------------------------------------------------------------------
 
 class Cfg3DEN {
     class Attribute {
-        class Combo; // BI base class - single-select combo box
+        class Combo;
         class ALiVE_IntegrationChoice: Combo {
-            attributeLoad = "\
-                private _ctrl = (_this controlsGroupCtrl 100);\
-                lbClear _ctrl;\
-                private _specials = [['_auto', 'Auto (detect)'], ['_force_alive', 'Force ALiVE handling']];\
-                {\
-                    _x params ['_data', '_label'];\
-                    private _idx = _ctrl lbAdd _label;\
-                    _ctrl lbSetData [_idx, _data];\
-                } forEach _specials;\
-                private _registry = configFile >> 'Cfg3rdPartyIEDs';\
-                if (isClass _registry) then {\
-                    for '_i' from 0 to (count _registry - 1) do {\
-                        private _entry = _registry select _i;\
-                        if (isClass _entry) then {\
-                            private _cn = configName _entry;\
-                            private _cp = getText (_entry >> 'cfgPatchesName');\
-                            if (_cn != 'ALiVE_Vanilla_A3' && _cp != '' && {isClass (configFile >> 'CfgPatches' >> _cp)}) then {\
-                                private _dn = getText (_entry >> 'displayName');\
-                                private _idx = _ctrl lbAdd format ['Defer to: %1', _dn];\
-                                _ctrl lbSetData [_idx, _cn];\
-                            };\
-                        };\
-                    };\
-                };\
-                private _value = _this getVariable 'value';\
-                if (isNil '_value' || {typeName _value != 'STRING' || _value == ''}) then { _value = '_auto'; };\
-                private _selIdx = 0;\
-                for '_i' from 0 to (lbSize _ctrl - 1) do {\
-                    if ((_ctrl lbData _i) == _value) exitWith { _selIdx = _i; };\
-                };\
-                _ctrl lbSetCurSel _selIdx;\
-            ";
-            attributeSave = "\
-                private _ctrl = (_this controlsGroupCtrl 100);\
-                private _sel = lbCurSel _ctrl;\
-                if (_sel < 0) then { '_auto' } else { _ctrl lbData _sel }\
-            ";
+            attributeLoad = "_this call ALIVE_fnc_edenIntegrationChoiceLoad";
+            attributeSave = "_this call ALIVE_fnc_edenIntegrationChoiceSave";
         };
     };
 };
