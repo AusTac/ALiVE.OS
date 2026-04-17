@@ -258,15 +258,66 @@ switch(_operation) do {
                     };
                     ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
 
-                    // ----- Phase 3a: resolved IED class pools ------------------------------
-                    // One authoritative read point per category. For now this is a direct
-                    // passthrough of the existing module attributes (which are ARRAY after
-                    // their case handlers' string-to-array coercion). Phase 3b/3c will layer
-                    // in detected-integration classes + user _additional field + hash-based
-                    // edit detection, all without touching placement-side consumers again.
-                    ADDON setVariable ["resolvedRoadIEDClasses",  [ADDON, "roadIEDClasses"]  call MAINCLASS, true];
-                    ADDON setVariable ["resolvedUrbanIEDClasses", [ADDON, "urbanIEDClasses"] call MAINCLASS, true];
-                    ADDON setVariable ["resolvedClutterClasses",  [ADDON, "clutterClasses"]  call MAINCLASS, true];
+                    // ----- Phase 3b: resolved IED class pools (Option A + additional) ------
+                    // Pool source per category:
+                    //   - _force_alive                 -> ALiVE defaults
+                    //   - _auto + resolved=="alive"    -> ALiVE defaults
+                    //   - _auto + resolved=="mine"     -> first non-vanilla mine integration
+                    //   - explicit <className>         -> that integration (if loaded)
+                    //   - integration declares empty   -> fall back to ALiVE defaults for
+                    //                                     that category (lenient Option A)
+                    // User's _additional field is ALWAYS appended, de-duplicated.
+                    private _activeIntegration = nil;
+                    if (_iChoice != "_force_alive") then {
+                        private _matchIdx = if (_iChoice == "_auto") then {
+                            if (_resolved == "mine") then {
+                                _integrations findIf {
+                                    (_x get "className") != "ALiVE_Vanilla_A3" &&
+                                    (_x get "mode") == "mine"
+                                }
+                            } else { -1 };
+                        } else {
+                            _integrations findIf { (_x get "className") == _iChoice };
+                        };
+                        if (_matchIdx >= 0) then {
+                            _activeIntegration = _integrations select _matchIdx;
+                        };
+                    };
+
+                    private _fnResolveClasses = {
+                        params ["_category"];
+                        private _base = [ADDON, _category] call MAINCLASS;
+                        // Pool: integration classes if present+non-empty, else ALiVE defaults.
+                        private _pool = if (!isNil "_activeIntegration") then {
+                            private _iClasses = _activeIntegration get _category;
+                            if (count _iClasses > 0) then { +_iClasses } else { +_base };
+                        } else {
+                            +_base
+                        };
+                        // Stack user's _additional, deduped.
+                        private _addStr = _logic getVariable [_category + "_additional", ""];
+                        if (typeName _addStr == "STRING" && {_addStr != ""}) then {
+                            private _addArr = [_addStr, " ", ""] call CBA_fnc_replace;
+                            _addArr = [_addArr, ","] call CBA_fnc_split;
+                            {
+                                if (_x != "" && {!(_x in _pool)}) then { _pool pushBack _x; };
+                            } forEach _addArr;
+                        };
+                        _pool
+                    };
+
+                    ADDON setVariable ["resolvedRoadIEDClasses",  ["roadIEDClasses"]  call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedUrbanIEDClasses", ["urbanIEDClasses"] call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedClutterClasses",  ["clutterClasses"]  call _fnResolveClasses, true];
+
+                    if (ADDON getVariable ["debug", false]) then {
+                        diag_log format ["ALIVE-%1 MIL_IED Phase 3b: activeIntegration=%2, road=%3 urban=%4 clutter=%5",
+                            time,
+                            if (isNil "_activeIntegration") then { "(ALiVE defaults)" } else { _activeIntegration get "displayName" },
+                            count (ADDON getVariable "resolvedRoadIEDClasses"),
+                            count (ADDON getVariable "resolvedUrbanIEDClasses"),
+                            count (ADDON getVariable "resolvedClutterClasses")];
+                    };
 
                     if (count _integrations == 0) then {
                         diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice='%3')",

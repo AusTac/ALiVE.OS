@@ -200,8 +200,29 @@ class CfgVehicles {
                         // ---- Object Classes -------------------------------------------------
                         class HDR_CLASSES : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_CLASSES"; displayName = "OBJECT CLASSES"; };
                         class roadIEDClasses : Edit { property = "ALiVE_mil_ied_roadIEDClasses"; displayName = "$STR_ALIVE_IED_ROAD_IED_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """ALIVE_IEDUrbanSmall_Remote_Ammo,ALIVE_IEDLandSmall_Remote_Ammo,ALIVE_IEDUrbanBig_Remote_Ammo,ALIVE_IEDLandBig_Remote_Ammo"""; };
+                        class roadIEDClasses_additional : Edit
+                        {
+                                property = "ALiVE_mil_ied_roadIEDClasses_additional";
+                                displayName = "Road IED - Additional Classes";
+                                tooltip = "Comma-separated extra classes to merge into the road IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                defaultValue = """""";
+                        };
                         class urbanIEDClasses : Edit { property = "ALiVE_mil_ied_urbanIEDClasses"; displayName = "$STR_ALIVE_IED_URBAN_IED_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """ALIVE_IEDUrbanSmall_Remote_Ammo,ALIVE_IEDUrbanBig_Remote_Ammo,Land_JunkPile_F,Land_GarbageContainer_closed_F,Land_GarbageBags_F,Land_Tyres_F,Land_GarbagePallet_F,Land_Basket_F,Land_Sack_F,Land_Sacks_goods_F,Land_Sacks_heap_F,Land_BarrelTrash_F"""; };
+                        class urbanIEDClasses_additional : Edit
+                        {
+                                property = "ALiVE_mil_ied_urbanIEDClasses_additional";
+                                displayName = "Urban IED - Additional Classes";
+                                tooltip = "Comma-separated extra classes to merge into the urban IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                defaultValue = """""";
+                        };
                         class clutterClasses : Edit { property = "ALiVE_mil_ied_clutterClasses"; displayName = "$STR_ALIVE_IED_CLUTTER_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """Land_JunkPile_F,Land_GarbageContainer_closed_F,Land_GarbageBags_F,Land_Tyres_F,Land_GarbagePallet_F,Land_Basket_F,Land_Sack_F,Land_Sacks_goods_F,Land_Sacks_heap_F,Land_BarrelTrash_F"""; };
+                        class clutterClasses_additional : Edit
+                        {
+                                property = "ALiVE_mil_ied_clutterClasses_additional";
+                                displayName = "Clutter - Additional Classes";
+                                tooltip = "Comma-separated extra classes to merge into the camouflage clutter pool placed near IEDs. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                defaultValue = """""";
+                        };
                         class ModuleDescription : ModuleDescription {};
                 };
         };

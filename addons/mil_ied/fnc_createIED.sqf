@@ -187,6 +187,15 @@ for "_j" from 1 to _numIEDs do {
             };
         };
 
+        // Guard: the resolved pool could be empty if a selected integration
+        // declares no classes for this category AND the user has wiped the
+        // base attribute and _additional field. Skip this iteration cleanly
+        // rather than feeding nil to createVehicle.
+        if (count _IEDskins == 0) exitWith {
+            _error = true;
+            diag_log format ["ALIVE-%1 MIL_IED: empty class pool, skipping placement (check integrationChoice + <cat>_additional fields)", time];
+        };
+
         if !(_thirdParty) then {
             _IEDpos set [2, -0.1];
         };
