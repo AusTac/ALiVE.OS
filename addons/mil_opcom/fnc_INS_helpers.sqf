@@ -1165,6 +1165,16 @@ ALiVE_fnc_INS_idle = {
     waituntil {time - _time > _this};
 };
 
+ALiVE_fnc_INS_protectInstallationActionObject = {
+    params [["_object", objNull, [objNull]]];
+
+    if (isNull _object) exitwith {};
+
+    _object allowDamage false;
+    _object enableSimulationGlobal false;
+    _object setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+};
+
 ALiVE_fnc_spawnFurniture = {
 
     private ["_pos","_furniture","_bomb","_box","_created"];
@@ -1201,10 +1211,9 @@ ALiVE_fnc_spawnFurniture = {
                 _furniture setposATL _pos;
                 _furniture setdir getdir _building;
 
-                // Disable sim to avoid flipping furniture. Bombs are not affected and still exploding.
-                // Once building is destroyed or site is disabled, the furniture gets deleted.
-                _furniture enableSimulation false;
-                _furniture setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+                // Keep action anchors stable. Bombs are not affected and still exploding.
+                // Once the building is destroyed or site is disabled, the furniture gets deleted.
+                [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                 _created pushback _furniture;
 
@@ -1242,7 +1251,7 @@ ALiVE_fnc_spawnFurniture = {
                 if (_add && {random 1 < 0.5}) then {
                     _furniture = createVehicle [(selectRandom _furnitures), _pos, [], 0, "CAN_COLLIDE"];
                     _furniture setdir getdir _building;
-                    _furniture setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+                    [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                     _object = createVehicle [(selectRandom _objects), _pos, [], 0, "CAN_COLLIDE"];
                     _object attachTo [_furniture, [0,0,(_furniture call ALiVE_fnc_getRelativeTop) + 0.15]];
@@ -1253,7 +1262,7 @@ ALiVE_fnc_spawnFurniture = {
                     if (_ammo && {random 1 < 0.5}) then {
                         _box = createVehicle [(selectRandom _boxes), _pos, [], 0, "CAN_COLLIDE"];
                         _box setdir (_building getDir _box);
-                        _box setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+                        [_box] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                         _created pushback _box;
                     };
@@ -1267,8 +1276,7 @@ ALiVE_fnc_spawnFurniture = {
         _furniture = createVehicle [(selectRandom _furnitures), _anchorPos, [], 0, "CAN_COLLIDE"];
         _furniture setposATL _anchorPos;
         _furniture setdir getdir _building;
-        _furniture enableSimulation false;
-        _furniture setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+        [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
 
         _created pushback _furniture;
     };
