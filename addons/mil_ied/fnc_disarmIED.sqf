@@ -30,31 +30,45 @@ _IEDCharge = _IED getVariable ["charge", nil];
 [_IED, _caller, _id, _IEDCharge] spawn {
     params ["_IED", "_caller", "_id", "_IEDCharge"];
 
-    private _skill = _caller skillFinal "commanding";
+    private _skill             = _caller skillFinal "commanding";
+    private _challengeEnabled  = (ADDON getVariable ["IED_Engineer_Challenge", 1]) == 1;
 
     // Skill-scaled disarm time. Skill 1.0 -> baseTime, skill 0 -> 1.5x baseTime,
-    // floored at 50% of baseTime for any hypothetical over-skilled unit.
+    // floored at 50% of baseTime. If the Engineer Challenge master toggle is
+    // off, fall back to legacy instant disarm.
     private _baseTime   = ADDON getVariable ["IED_Engineer_Disarm_BaseTime", 60];
-    private _disarmTime = ((_baseTime * (1.5 - 0.5 * _skill)) max (_baseTime * 0.5));
+    private _disarmTime = if (_challengeEnabled) then {
+        ((_baseTime * (1.5 - 0.5 * _skill)) max (_baseTime * 0.5))
+    } else {
+        0
+    };
 
-    hint format ["Disarming IED… (~%1s)", round _disarmTime];
+    if (_disarmTime > 0) then {
+        hint format ["Disarming IED… (~%1s)", round _disarmTime];
 
-    // Interruptible wait. If the server-side accumulator detonates the IED
-    // during disarm, our reference goes null and we bail.
-    private _elapsed = 0;
-    while {_elapsed < _disarmTime} do {
-        sleep 1;
-        if (isNull _IED || !alive _IED) exitWith {};
-        _elapsed = _elapsed + 1;
+        // Interruptible wait. If the server-side accumulator detonates the IED
+        // during disarm, our reference goes null and we bail.
+        private _elapsed = 0;
+        while {_elapsed < _disarmTime} do {
+            sleep 1;
+            if (isNull _IED || !alive _IED) exitWith {};
+            _elapsed = _elapsed + 1;
+        };
+    } else {
+        hint "Disarming IED…";
     };
 
     if (isNull _IED || !alive _IED) exitWith {
         hint "";
     };
 
-    // Skill-scaled new-device chance.
-    private _newDeviceBase      = ADDON getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75];
-    private _newDeviceThreshold = ((_newDeviceBase + 0.15 * _skill) min 0.90) max 0.70;
+    // New-device chance. Skill-scaled when Challenge is enabled, flat 10% legacy otherwise.
+    private _newDeviceThreshold = if (_challengeEnabled) then {
+        private _base = ADDON getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75];
+        ((_base + 0.15 * _skill) min 0.90) max 0.70
+    } else {
+        0.90
+    };
 
     if ((random 1) > _newDeviceThreshold) then {
 

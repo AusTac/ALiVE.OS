@@ -90,13 +90,14 @@ private _gracePeriod = 15;
     [_ied, _type, _shell, _proximity] spawn {
         params ["_ied", "_type", "_shell", "_proximity"];
 
-        private _aiTriggerable = ADDON getVariable ["aiTriggerable", false];
-        private _device        = ADDON getVariable ["IED_Detection_Device", "MineDetector"];
-        private _detection     = ADDON getVariable ["IED_Detection", 1];
-        private _tripBase      = ADDON getVariable ["IED_Engineer_Trip_Base", 0.02];
-        private _decayRate     = ADDON getVariable ["IED_Engineer_Decay_Rate", 0.01];
-        private _threshold     = _ied getVariable ["ALiVE_IED_TripThreshold", 1.0];
-        private _debugLocal    = ADDON getVariable ["debug", false];
+        private _aiTriggerable    = ADDON getVariable ["aiTriggerable", false];
+        private _device           = ADDON getVariable ["IED_Detection_Device", "MineDetector"];
+        private _detection        = ADDON getVariable ["IED_Detection", 1];
+        private _challengeEnabled = (ADDON getVariable ["IED_Engineer_Challenge", 1]) == 1;
+        private _tripBase         = ADDON getVariable ["IED_Engineer_Trip_Base", 0.02];
+        private _decayRate        = ADDON getVariable ["IED_Engineer_Decay_Rate", 0.01];
+        private _threshold        = _ied getVariable ["ALiVE_IED_TripThreshold", 1.0];
+        private _debugLocal       = ADDON getVariable ["debug", false];
 
         private _detectedOnce = false;
         private _detonated    = false;
@@ -160,6 +161,10 @@ private _gracePeriod = 15;
                             // Non-engineer or vehicle-borne: instant detonation (legacy behaviour).
                             _shouldDetonate = true;
                         } else {
+                            if (!_challengeEnabled) then {
+                                // Master toggle off: qualifying engineer is fully immune (legacy).
+                                // Nothing to do - fall through without accumulating.
+                            } else {
                             // Engineer: accumulate trip pressure.
                             private _key = netId _u;
                             _engineersSeen pushBack _key;
@@ -207,6 +212,7 @@ private _gracePeriod = 15;
                             if (_trip >= _threshold) then {
                                 _shouldDetonate = true;
                             };
+                            }; // end else (challengeEnabled)
                         };
                     };
                 } forEach _detonateList;

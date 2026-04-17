@@ -90,6 +90,101 @@ class CfgVehicles {
                                 property = "ALiVE_mil_ied_Locs_IED"; displayName = "$STR_ALIVE_ied_Locs_IED"; tooltip = "$STR_ALIVE_ied_Locs_IED_COMMENT"; defaultValue = """0""";
                                 class Values { class Random{name="Random";value=0;default=1;}; class Occupied{name="Enemy Occupied";value=1;}; class Unoccupied{name="Unoccupied";value=2;}; };
                         };
+                        // ---- Engineer Challenge ---------------------------------------------
+                        class HDR_ENGINEER : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_ENGINEER"; displayName = "ENGINEER CHALLENGE"; };
+                        class IED_Engineer_Challenge : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Challenge";
+                                displayName = "Engineer Challenge";
+                                tooltip = "If No, engineers (mine detector / Explosive Specialist / CBA EOD trait) are fully immune to IED proximity detonation (legacy behaviour). If Yes, engineers accumulate trip pressure based on distance, stance, movement speed and skill - careless approach can detonate the IED before they defuse.";
+                                defaultValue = """1""";
+                                class Values { class No{name="No";value=0;}; class Yes{name="Yes";value=1;default=1;}; };
+                        };
+                        class IED_Engineer_Trip_Base : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Trip_Base";
+                                displayName = "Trip Rate";
+                                tooltip = "Base per-tick (0.5s) trip-pressure increment for engineers. Scaled by distance, stance, speed and skill. Higher = IEDs detonate sooner under careless approach.";
+                                defaultValue = """0.02""";
+                                class Values
+                                {
+                                        class Gentle { name="Gentle (0.01)"; value=0.01; };
+                                        class Default { name="Default (0.02)"; value=0.02; default=1; };
+                                        class Aggressive { name="Aggressive (0.04)"; value=0.04; };
+                                        class Brutal { name="Brutal (0.08)"; value=0.08; };
+                                };
+                        };
+                        class IED_Engineer_Trip_ThresholdMin : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Trip_ThresholdMin";
+                                displayName = "Trip Threshold Min";
+                                tooltip = "Lower bound of the per-IED randomized trip threshold. Each IED rolls its own threshold in [Min, Max] on creation. Lower = quicker to trip.";
+                                defaultValue = """0.7""";
+                                class Values
+                                {
+                                        class Low { name="Low (0.5)"; value=0.5; };
+                                        class Default { name="Default (0.7)"; value=0.7; default=1; };
+                                        class High { name="High (1.0)"; value=1.0; };
+                                        class VHigh { name="Very High (1.5)"; value=1.5; };
+                                };
+                        };
+                        class IED_Engineer_Trip_ThresholdMax : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Trip_ThresholdMax";
+                                displayName = "Trip Threshold Max";
+                                tooltip = "Upper bound of the per-IED randomized trip threshold. Must be >= Min; if Max < Min the threshold is constant at Min.";
+                                defaultValue = """1.3""";
+                                class Values
+                                {
+                                        class Low { name="Low (1.0)"; value=1.0; };
+                                        class Default { name="Default (1.3)"; value=1.3; default=1; };
+                                        class High { name="High (1.8)"; value=1.8; };
+                                        class VHigh { name="Very High (2.5)"; value=2.5; };
+                                };
+                        };
+                        class IED_Engineer_Decay_Rate : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Decay_Rate";
+                                displayName = "Trip Decay Rate";
+                                tooltip = "Per-tick (0.5s) decay of accumulated trip pressure once an engineer leaves the IED's proximity radius. Higher = retreating resets pressure faster.";
+                                defaultValue = """0.01""";
+                                class Values
+                                {
+                                        class Slow { name="Slow (0.005)"; value=0.005; };
+                                        class Default { name="Default (0.01)"; value=0.01; default=1; };
+                                        class Fast { name="Fast (0.02)"; value=0.02; };
+                                        class Instant { name="Instant (0.05)"; value=0.05; };
+                                };
+                        };
+                        class IED_Engineer_Disarm_BaseTime : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Disarm_BaseTime";
+                                displayName = "Disarm Base Time";
+                                tooltip = "Seconds required to disarm an IED at skill 1.0 (scales up to 1.5x at skill 0, floored at 50%% of base). The IED remains vulnerable to detonation throughout this window.";
+                                defaultValue = """60""";
+                                class Values
+                                {
+                                        class Fast { name="Fast (30s)"; value=30; };
+                                        class Default { name="Default (60s)"; value=60; default=1; };
+                                        class Slow { name="Slow (90s)"; value=90; };
+                                        class VSlow { name="Very Slow (120s)"; value=120; };
+                                        class Brutal { name="Brutal (180s)"; value=180; };
+                                };
+                        };
+                        class IED_Engineer_Disarm_NewDeviceBase : Combo
+                        {
+                                property = "ALiVE_mil_ied_IED_Engineer_Disarm_NewDeviceBase";
+                                displayName = "Wire-Guess Threshold";
+                                tooltip = "Baseline threshold for the 'new device' wire-guess minigame. Effective trigger rate: ~10%% at skill 1.0, ~25%% at skill 0, clamped [0.70, 0.90]. Lower value = wire-guess fires more often.";
+                                defaultValue = """0.75""";
+                                class Values
+                                {
+                                        class Often { name="Often (0.60)"; value=0.60; };
+                                        class Default { name="Default (0.75)"; value=0.75; default=1; };
+                                        class Rare { name="Rare (0.85)"; value=0.85; };
+                                        class VRare { name="Very Rare (0.95)"; value=0.95; };
+                                };
+                        };
                         // ---- Object Classes -------------------------------------------------
                         class HDR_CLASSES : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_CLASSES"; displayName = "OBJECT CLASSES"; };
                         class roadIEDClasses : Edit { property = "ALiVE_mil_ied_roadIEDClasses"; displayName = "$STR_ALIVE_IED_ROAD_IED_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """ALIVE_IEDUrbanSmall_Remote_Ammo,ALIVE_IEDLandSmall_Remote_Ammo,ALIVE_IEDUrbanBig_Remote_Ammo,ALIVE_IEDLandBig_Remote_Ammo"""; };
