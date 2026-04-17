@@ -605,15 +605,16 @@ switch(_operation) do {
             } else {
                 _args = _logic getVariable ["debug", false];
             };
+            // Eden Combo attributes can land on the logic as STRING "1"/"0" or
+            // SCALAR 1/0 (not always BOOL). The pre-existing STRING branch only
+            // recognised "true"/"false", so a user-selected "Yes" arrived here
+            // as STRING "1" and was silently coerced to BOOL false -
+            // createMarkers never ran at init and debug markers didn't appear
+            // until the admin menu passed BOOL true explicitly.
             if (typeName _args == "STRING") then {
-                    if(_args == "true") then {_args = true;} else {_args = false;};
+                    _args = (_args in ["1","true"]);
                     _logic setVariable ["debug", _args, true];
             };
-            // Eden Combo attributes store value=1/value=0 as SCALAR. Without this
-            // coercion the BOOL-only `if (_args)` further down throws
-            // "Type Number, expected Bool" and createMarkers never runs at init,
-            // so debug markers don't appear until the admin menu explicitly
-            // passes BOOL true.
             if (typeName _args == "SCALAR") then {
                     _args = _args > 0;
                     _logic setVariable ["debug", _args, true];
