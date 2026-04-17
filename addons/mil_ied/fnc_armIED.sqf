@@ -45,6 +45,8 @@ _proximity = 2 + floor(random 10);
 
 // Per-IED randomized trip threshold. Stored on the IED so debug/inspection tools
 // can read it without re-rolling. Hidden from the player by design.
+// Module-attribute type coercion is handled by fnc_IED.sqf's case handlers at
+// init, so these reads are guaranteed SCALAR.
 private _tripThresholdMin = ADDON getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7];
 private _tripThresholdMax = ADDON getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3];
 private _tripThreshold    = _tripThresholdMin + random (_tripThresholdMax - _tripThresholdMin);

@@ -167,6 +167,25 @@ switch(_operation) do {
                     [ADDON, "thirdParty", _logic getVariable ["thirdParty", false]] call MAINCLASS;
                     [ADDON, "aiTriggerable", _logic getVariable ["AI_Triggerable", false]] call MAINCLASS;
 
+                    // Normalize numeric/bool Combo attributes through their case handlers.
+                    // Eden can store the raw defaultValue string ("0"/"1"/"0.02") when the
+                    // user never touched an attribute; each case handler coerces to the
+                    // declared type so downstream reads get a clean SCALAR/BOOL.
+                    [ADDON, "Persistence",                       _logic getVariable ["Persistence", false]] call MAINCLASS;
+                    [ADDON, "IED_Threat",                        _logic getVariable ["IED_Threat", 0]] call MAINCLASS;
+                    [ADDON, "IED_Starting_Threat",               _logic getVariable ["IED_Starting_Threat", 0]] call MAINCLASS;
+                    [ADDON, "IED_Detection",                     _logic getVariable ["IED_Detection", 1]] call MAINCLASS;
+                    [ADDON, "Bomber_Threat",                     _logic getVariable ["Bomber_Threat", 0]] call MAINCLASS;
+                    [ADDON, "VB_IED_Threat",                     _logic getVariable ["VB_IED_Threat", 0]] call MAINCLASS;
+                    [ADDON, "Locs_IED",                          _logic getVariable ["Locs_IED", 0]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Challenge",            _logic getVariable ["IED_Engineer_Challenge", 1]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_Base",            _logic getVariable ["IED_Engineer_Trip_Base", 0.02]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_ThresholdMin",    _logic getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_ThresholdMax",    _logic getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Decay_Rate",           _logic getVariable ["IED_Engineer_Decay_Rate", 0.01]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Disarm_BaseTime",      _logic getVariable ["IED_Engineer_Disarm_BaseTime", 60]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Disarm_NewDeviceBase", _logic getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75]] call MAINCLASS;
+
                     publicVariable QUOTE(ADDON);
 
                     _debug = [_logic, "debug"] call MAINCLASS;
@@ -608,6 +627,192 @@ switch(_operation) do {
         };
         case "aiTriggerable": {
             _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
+        };
+        case "Persistence": {
+            if (typeName _args == "BOOL") then {
+                _logic setVariable ["Persistence", _args];
+            } else {
+                _args = _logic getVariable ["Persistence", false];
+            };
+            if (typeName _args == "STRING") then {
+                _args = (_args in ["1","true"]);
+                _logic setVariable ["Persistence", _args];
+            };
+            if (typeName _args == "SCALAR") then {
+                _args = _args > 0;
+                _logic setVariable ["Persistence", _args];
+            };
+            ASSERT_TRUE(typeName _args == "BOOL",str _args);
+            _result = _args;
+        };
+        case "IED_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Threat", _args];
+            } else {
+                _args = _logic getVariable ["IED_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Starting_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Starting_Threat", _args];
+            } else {
+                _args = _logic getVariable ["IED_Starting_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Starting_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Detection": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Detection", _args];
+            } else {
+                _args = _logic getVariable ["IED_Detection", 1];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Detection", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "Bomber_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["Bomber_Threat", _args];
+            } else {
+                _args = _logic getVariable ["Bomber_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["Bomber_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "VB_IED_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["VB_IED_Threat", _args];
+            } else {
+                _args = _logic getVariable ["VB_IED_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["VB_IED_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "Locs_IED": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["Locs_IED", _args];
+            } else {
+                _args = _logic getVariable ["Locs_IED", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["Locs_IED", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Challenge": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Challenge", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Challenge", 1];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Challenge", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_Base": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_Base", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_Base", 0.02];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_Base", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_ThresholdMin": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMin", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMin", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_ThresholdMax": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMax", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMax", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Decay_Rate": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Decay_Rate", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Decay_Rate", 0.01];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Decay_Rate", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Disarm_BaseTime": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Disarm_BaseTime", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Disarm_BaseTime", 60];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Disarm_BaseTime", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Disarm_NewDeviceBase": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Disarm_NewDeviceBase", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Disarm_NewDeviceBase", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
         };
         case "createMarkers": {
 
