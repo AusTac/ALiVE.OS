@@ -6,4 +6,5 @@
 #include "dialog.hpp"
 #include "CfgHints.hpp"
 #include "Cfg3rdPartyIEDs.hpp"
+#include "Cfg3DEN.hpp"
 

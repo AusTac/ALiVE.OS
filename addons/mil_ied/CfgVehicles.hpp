@@ -41,18 +41,13 @@ class CfgVehicles {
                                 property = "ALiVE_mil_ied_AI_Triggerable"; displayName = "$STR_ALIVE_IED_AI_TRIGGER"; tooltip = "$STR_ALIVE_IED_AI_TRIGGER_COMMENT"; defaultValue = """0""";
                                 class Values { class No{name="No";value=0;default=1;}; class Yes{name="Yes";value=1;}; };
                         };
-                        class integrationMode : Combo
+                        class integrationChoice
                         {
-                                property = "ALiVE_mil_ied_integrationMode";
-                                displayName = "Integration Mode";
-                                tooltip = "Who handles IED arming and detonation. Auto defers to a detected 3rd-party IED mod (ACE, RHS, CUP, SOG, etc.) if any are loaded, otherwise uses ALiVE. Force options ignore detection. See RPT ""N integration(s) detected"" at mission start.";
-                                defaultValue = """0""";
-                                class Values
-                                {
-                                        class Auto        { name = "Auto (detect)"; value = 0; default = 1; };
-                                        class ForceDefer  { name = "Defer to 3rd-party mod"; value = 1; };
-                                        class ForceALiVE  { name = "Force ALiVE handling"; value = 2; };
-                                };
+                                property    = "ALiVE_mil_ied_integrationChoice";
+                                displayName = "Integration";
+                                tooltip     = "Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time - only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to <mod> uses that specific mod's mode. See RPT for detection details at mission start.";
+                                control     = "ALiVE_IntegrationChoice";
+                                defaultValue = """_auto""";
                         };
                         // ---- IED Threat -----------------------------------------------------
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };

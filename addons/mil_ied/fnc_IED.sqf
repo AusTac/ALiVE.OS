@@ -164,22 +164,39 @@ switch(_operation) do {
                     [ADDON, "roadIEDClasses", _logic getVariable ["roadIEDClasses", DEFAULT_ROADIEDS]] call MAINCLASS;
                     [ADDON, "urbanIEDClasses", _logic getVariable ["urbanIEDClasses", DEFAULT_URBANIEDS]] call MAINCLASS;
                     [ADDON, "clutterClasses", _logic getVariable ["clutterClasses", DEFAULT_CLUTTER]] call MAINCLASS;
-                    // Legacy migration: missions saved before integrationMode existed may
-                    // have thirdParty=1/true stored on the logic. Map that to ForceMine (1)
-                    // so behaviour is preserved without requiring the mission-maker to
-                    // re-visit the Eden attribute.
-                    private _legacyThirdParty = _logic getVariable ["thirdParty", nil];
-                    private _iModeInitial = _logic getVariable ["integrationMode", nil];
-                    if (isNil "_iModeInitial" && !(isNil "_legacyThirdParty")) then {
-                        private _legacyIsOn = (_legacyThirdParty isEqualTo true) ||
-                                              (_legacyThirdParty isEqualTo 1) ||
-                                              (_legacyThirdParty isEqualTo "1") ||
-                                              (_legacyThirdParty isEqualTo "true");
-                        _logic setVariable ["integrationMode", if (_legacyIsOn) then { 1 } else { 0 }];
-                        diag_log format ["ALIVE-%1 MIL_IED: legacy thirdParty=%2 migrated to integrationMode=%3",
-                            time, _legacyThirdParty, if (_legacyIsOn) then { 1 } else { 0 }];
+                    // Legacy migration: earlier versions used a binary `thirdParty` Yes/No,
+                    // then a numeric `integrationMode` (0/1/2). The new `integrationChoice`
+                    // is a STRING ("_auto", "_force_alive", or a registry className).
+                    // Missions saved with either legacy shape get mapped in-place so the
+                    // mission-maker doesn't need to re-visit the Eden attribute.
+                    private _legacyTp      = _logic getVariable ["thirdParty", nil];
+                    private _legacyIMode   = _logic getVariable ["integrationMode", nil];
+                    private _iChoiceCurrent = _logic getVariable ["integrationChoice", nil];
+                    if (isNil "_iChoiceCurrent") then {
+                        private _migrated = nil;
+                        if (!isNil "_legacyIMode") then {
+                            // 0 = Auto, 1 = ForceDefer (Yes), 2 = ForceALiVE (No)
+                            _migrated = switch (_legacyIMode) do {
+                                case 2: { "_force_alive" };
+                                case 1: { "_auto" };   // old ForceDefer -> Auto (any detected mine wins)
+                                default { "_auto" };
+                            };
+                        } else {
+                            if (!isNil "_legacyTp") then {
+                                private _on = (_legacyTp isEqualTo true) ||
+                                              (_legacyTp isEqualTo 1) ||
+                                              (_legacyTp isEqualTo "1") ||
+                                              (_legacyTp isEqualTo "true");
+                                _migrated = if (_on) then { "_auto" } else { "_force_alive" };
+                            };
+                        };
+                        if (!isNil "_migrated") then {
+                            _logic setVariable ["integrationChoice", _migrated];
+                            diag_log format ["ALIVE-%1 MIL_IED: legacy integration setting migrated to integrationChoice='%2' (from thirdParty=%3, integrationMode=%4)",
+                                time, _migrated, _legacyTp, _legacyIMode];
+                        };
                     };
-                    [ADDON, "integrationMode", _logic getVariable ["integrationMode", 0]] call MAINCLASS;
+                    [ADDON, "integrationChoice", _logic getVariable ["integrationChoice", "_auto"]] call MAINCLASS;
                     [ADDON, "aiTriggerable", _logic getVariable ["AI_Triggerable", false]] call MAINCLASS;
 
                     // Normalize numeric/bool Combo attributes through their case handlers.
@@ -207,40 +224,49 @@ switch(_operation) do {
                     private _integrations = call ALIVE_fnc_detectIEDIntegrations;
                     ADDON setVariable ["detectedIEDIntegrations", _integrations, true];
 
-                    // Resolve the effective integration mode. integrationMode values:
-                    //   0 = Auto         - pick based on detection
-                    //   1 = ForceDefer   - Arma mineActive semantics, 3rd-party mod handles detonation
-                    //                      (legacy thirdParty=Yes)
-                    //   2 = ForceALiVE   - full ALiVE pipeline (legacy thirdParty=No)
+                    // Resolve the effective integration mode. integrationChoice is a STRING:
+                    //   "_auto"         - pick based on detection (default)
+                    //   "_force_alive"  - full ALiVE pipeline, ignore detection
+                    //   <className>     - the registry className of a specific integration
+                    //                     (e.g. "ACE_Explosives"). If the named integration
+                    //                     is currently detected, use its declared mode;
+                    //                     otherwise fall back to Auto + warn.
+                    //
                     // Auto rule: if any NON-vanilla detected integration declares mode="mine",
                     // use "mine" globally; otherwise use "alive". The vanilla baseline entry
-                    // is informational and does not by itself force a mode choice. When
-                    // multiple non-vanilla integrations are detected we still produce just
-                    // one global "mine" decision - see commit message for the trade-off.
-                    private _iModeChoice = ADDON getVariable ["integrationMode", 0];
-                    private _resolved = switch (_iModeChoice) do {
-                        case 1: { "mine" };
-                        case 2: { "alive" };
+                    // is informational and does not by itself force a mode choice.
+                    private _fnAutoResolve = {
+                        private _anyMine = (_integrations findIf {
+                            (_x get "className") != "ALiVE_Vanilla_A3" &&
+                            (_x get "mode") == "mine"
+                        }) >= 0;
+                        if (_anyMine) then { "mine" } else { "alive" }
+                    };
+                    private _iChoice = ADDON getVariable ["integrationChoice", "_auto"];
+                    private _resolved = switch (true) do {
+                        case (_iChoice == "_force_alive"): { "alive" };
+                        case (_iChoice == "_auto"):        { call _fnAutoResolve };
                         default {
-                            // Auto
-                            private _anyMine = (_integrations findIf {
-                                (_x get "className") != "ALiVE_Vanilla_A3" &&
-                                (_x get "mode") == "mine"
-                            }) >= 0;
-                            if (_anyMine) then { "mine" } else { "alive" }
+                            private _match = _integrations findIf { (_x get "className") == _iChoice };
+                            if (_match >= 0) then {
+                                (_integrations select _match) get "mode"
+                            } else {
+                                diag_log format ["ALIVE-%1 MIL_IED WARNING: integrationChoice='%2' is not a currently loaded integration; falling back to Auto", time, _iChoice];
+                                call _fnAutoResolve
+                            };
                         };
                     };
                     ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
 
                     if (count _integrations == 0) then {
-                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice=%3)",
-                            time, _resolved, _iModeChoice];
+                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice='%3')",
+                            time, _resolved, _iChoice];
                     } else {
                         private _summary = _integrations apply {
                             format ["%1 (mode=%2)", _x get "displayName", _x get "mode"]
                         };
-                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3 - resolved mode=%4 (choice=%5)",
-                            time, count _integrations, _summary joinString ", ", _resolved, _iModeChoice];
+                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3 - resolved mode=%4 (choice='%5')",
+                            time, count _integrations, _summary joinString ", ", _resolved, _iChoice];
                     };
 
                     _debug = [_logic, "debug"] call MAINCLASS;
@@ -687,20 +713,21 @@ switch(_operation) do {
         case "locations": {
             _result = [_logic,_operation,_args,[]] call ALIVE_fnc_OOsimpleOperation;
         };
-        case "integrationMode": {
-            // Combo attribute, stored as SCALAR 0/1/2. Coerce STRING defaults
-            // to SCALAR the same way the other Combo handlers in the canonical
-            // refactor do.
-            if (typeName _args == "SCALAR") then {
-                _logic setVariable ["integrationMode", _args];
-            } else {
-                _args = _logic getVariable ["integrationMode", 0];
-            };
+        case "integrationChoice": {
+            // Custom Eden attribute backed by a STRING token - "_auto",
+            // "_force_alive", or a registry className. Coerce non-string
+            // inputs (e.g. defaultValue can round-trip as something else)
+            // back to a safe default.
             if (typeName _args == "STRING") then {
-                _args = parseNumber _args;
-                _logic setVariable ["integrationMode", _args];
+                _logic setVariable ["integrationChoice", _args];
+            } else {
+                _args = _logic getVariable ["integrationChoice", "_auto"];
+                if (typeName _args != "STRING" || _args == "") then {
+                    _args = "_auto";
+                    _logic setVariable ["integrationChoice", _args];
+                };
             };
-            ASSERT_TRUE(typeName _args == "SCALAR", str _args);
+            ASSERT_TRUE(typeName _args == "STRING", str _args);
             _result = _args;
         };
         case "aiTriggerable": {
