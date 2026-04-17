@@ -4,55 +4,35 @@ SCRIPT(armIED);
 #define SUPERCLASS ALIVE_fnc_baseClass
 #define MAINCLASS ALIVE_fnc_ied
 
-// Create trigger for IED detonation
-private ["_IED","_trg","_type","_shell","_proximity","_debug"];
+// Arms an IED with proximity detonation.
+//
+// Detonation model:
+//   - Non-engineer units (or vehicle-borne engineers, or AI in aiTriggerable mode
+//     who lack the engineer qualification) trip the IED instantly when inside the
+//     proximity radius.
+//   - Qualifying engineers (mine detector / Explosive Specialist role / CBA "EOD"
+//     trait) build per-engineer-per-IED "trip pressure" each 0.5s poll, modulated
+//     by distance, stance, movement speed and skill. When pressure crosses a
+//     per-IED randomized threshold the IED detonates. Trip pressure decays when
+//     the engineer leaves the radius.
+//
+// Tunables (ADDON getVariable):
+//   IED_Engineer_Trip_Base         - per-tick base increment (default 0.02)
+//   IED_Engineer_Trip_ThresholdMin - min randomized threshold (default 0.7)
+//   IED_Engineer_Trip_ThresholdMax - max randomized threshold (default 1.3)
+//   IED_Engineer_Decay_Rate        - per-tick decay when clear (default 0.01)
+
+private ["_IED","_type","_shell","_proximity","_debug"];
 
 if !(isServer) exitWith {diag_log "ArmIED Not running on server!";};
 
-_debug = ADDON getVariable ["debug", false];
+_debug     = ADDON getVariable ["debug", false];
 _detection = ADDON getVariable ["IED_Detection", 1];
-_device = ADDON getVariable ["IED_Detection_Device", "MineDetector"];
+_device    = ADDON getVariable ["IED_Detection_Device", "MineDetector"];
 
-// Build trigger condition strings based on AI_Triggerable setting.
-// Two separate conditions are needed:
-//
-// _condSpawn  - used by the large area spawn trigger (IED/bomber creation)
-//               needs a count over units to determine if anyone is present
-//
-// _condDetonate - used by the small proximity detonation trigger on each IED
-//                 player mode: original per-unit EOD/detector check
-//                 AI mode: any alive unit at ground level in trigger area
-//
 private _aiTriggerable = ADDON getVariable ["aiTriggerable", false];
 
-private _condDetonate = if (_aiTriggerable) then {
-    // AI + players: any alive unit at ground level detonates the IED.
-    // No EOD/detector check - that is a player-only concept.
-    // vehicle _x handles the case where _x is already the vehicle (tank etc.)
-    format["({alive (vehicle _x) && ((getposATL (vehicle _x)) select 2 < 8)} count thislist > 0)"]
-} else {
-    // Players only: _x in thisList checks the person object (vehicle _x is never in thisList
-    // for EmptyDetector triggers - it would always evaluate false for players in vehicles).
-    // getposATL (vehicle _x) gives the vehicle hull height for the altitude check.
-    format["({_x in thisList && ((getposATL (vehicle _x)) select 2 < 8) && !('%1' in (items _x)) && (getText (configFile >> 'cfgVehicles' >> typeof _x >> 'displayName') != 'Explosive Specialist') && ([vehicleVarName _x,'EOD'] call CBA_fnc_find == -1)} count ([] call BIS_fnc_listPlayers) > 0)", _device]
-};
-
-private _condDetect = if (_aiTriggerable) then {
-    // AI + players with detector get the detection notification
-    format["({_x in thisList && ((getposATL (vehicle _x)) select 2 < 8) && (('%1' in (items _x)) || (getText (configFile >> 'cfgVehicles' >> typeof _x >> 'displayName') == 'Explosive Specialist') || ([vehicleVarName _x,'EOD'] call CBA_fnc_find != -1))} count thislist > 0)", _device]
-} else {
-    format["({_x in thisList && ((getposATL (vehicle _x)) select 2 < 8) && (('%1' in (items _x)) || (getText (configFile >> 'cfgVehicles' >> typeof _x >> 'displayName') == 'Explosive Specialist') || ([vehicleVarName _x,'EOD'] call CBA_fnc_find != -1))} count ([] call BIS_fnc_listPlayers) > 0)", _device]
-};
-
-private _condDisarm = if (_aiTriggerable) then {
-    // Any alive unit at ground level can set off pressure trigger
-    "({alive (vehicle _x) && ((getposATL (vehicle _x)) select 2 < 8)} count thislist > 0)"
-} else {
-    // _x in thisList checks the person; getposATL (vehicle _x) checks hull height
-    "({_x in thisList && ((getposATL (vehicle _x)) select 2 < 8)} count ([] call BIS_fnc_listPlayers) > 0)"
-};
-
-_IED = _this select 0;
+_IED  = _this select 0;
 _type = _this select 1;
 
 if (count _this > 2) then {
@@ -63,55 +43,35 @@ if (count _this > 2) then {
 
 _proximity = 2 + floor(random 10);
 
-if (_debug) then {
-    diag_log format ["ALIVE-%1 IED: arming IED at %2 of %3 as %4 with proximity of %5",time, getposATL _IED,_type,_shell,_proximity];
-};
+// Per-IED randomized trip threshold. Stored on the IED so debug/inspection tools
+// can read it without re-rolling. Hidden from the player by design.
+private _tripThresholdMin = ADDON getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7];
+private _tripThresholdMax = ADDON getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3];
+private _tripThreshold    = _tripThresholdMin + random (_tripThresholdMax - _tripThresholdMin);
+_IED setVariable ["ALiVE_IED_TripThreshold", _tripThreshold];
 
-// Add Action to IED for disarmm
-/*
-if !(isDedicated) then {
-    _IED addAction ["<t color='#ff0000'>Disarm IED</t>",ALiVE_fnc_disarmIED, "", 6, false, true,"", "_target distance _this < 3"];
-} else {
-    [_IED,"ALiVE_fnc_addActionIED", true, true, true] call BIS_fnc_MP;
+if (_debug) then {
+    diag_log format ["ALIVE-%1 IED: arming IED at %2 of %3 as %4 with proximity %5, trip threshold %6",
+        time, getposATL _IED, _type, _shell, _proximity, _tripThreshold];
 };
-*/
 
 _IED remoteExec ["ALiVE_fnc_addActionIED", 0, true];
 
-// Arm-time grace period: the triggers for this IED are created AFTER a delay.
-// This prevents instant detonation when an IED is placed in an area where the
-// player is already present at placement time (e.g. player spawning into a town
-// while the IED placement batch is running).
-//
-// Critically: we do NOT create triggers now and switch their activation later.
-// Switching EmptyDetector activation from NONE to ANY causes the engine to
-// immediately evaluate the condition against whatever is currently in thislist,
-// detonating any IED that has units present at the moment of the switch.
-// Creating the triggers fresh after the grace period avoids this entirely.
-//
-// The spawn is non-blocking - does not stall the IED creation loop.
+// Arm-time grace period: trigger creation is delayed so an IED cannot detonate
+// instantly on placement if a player is already present at spawn time. See the
+// EmptyDetector rationale in git history - creating triggers with ANY/PRESENT
+// against already-present units fires them synchronously, so we defer.
 private _gracePeriod = 15;
 
-[
-    _IED,
-    _type,
-    _shell,
-    _proximity,
-    _condDetonate,
-    _condDetect,
-    _condDisarm,
-    _gracePeriod
-] spawn {
-    params ["_ied", "_type", "_shell", "_proximity", "_condDetonate", "_condDetect", "_condDisarm", "_grace"];
+[_IED, _type, _shell, _proximity, _gracePeriod] spawn {
+    params ["_ied", "_type", "_shell", "_proximity", "_grace"];
 
     sleep _grace;
 
-    // Bail if the IED was found and disarmed during the grace window
     if (isNull _ied || !alive _ied) exitWith {};
 
-    // If a player is still within the detonation radius + a safety buffer when the
-    // grace expires, wait until they have moved clear before creating the triggers.
-    // AI units are intentionally excluded here - they are valid targets once armed.
+    // Wait for all players to clear the blast radius + buffer before we arm.
+    // AI are intentionally not held back - they are valid targets once armed.
     private _clearRadius = _proximity + 15;
     waitUntil {
         if (isNull _ied || !alive _ied) exitWith { true };
@@ -119,23 +79,29 @@ private _gracePeriod = 15;
         ({(vehicle _x) distance _ied < _clearRadius} count ([] call BIS_fnc_listPlayers)) == 0
     };
 
-    // Re-check after waitUntil in case IED was removed while waiting
     if (isNull _ied || !alive _ied) exitWith {};
 
-    // -------------------------------------------------------------------------
-    // Replace EmptyDetector triggers with a polling loop.
-    // EmptyDetector with ANY/PRESENT fires synchronously on createTrigger if
-    // units are already present — no grace period approach can prevent this.
-    // The loop checks proximity every 0.5s and is immune to this engine behaviour.
-    // -------------------------------------------------------------------------
-    [_ied, _type, _shell, _proximity, _condDetonate, _condDetect, _condDisarm] spawn {
-        params ["_ied", "_type", "_shell", "_proximity", "_condDetonate", "_condDetect", "_condDisarm"];
+    // ---------------------------------------------------------------------
+    // Polling-loop detonation model.
+    // EmptyDetector-based triggers with ANY/PRESENT have synchronous-fire
+    // edge cases; a polling loop is immune and lets us run the per-engineer
+    // trip-pressure model below.
+    // ---------------------------------------------------------------------
+    [_ied, _type, _shell, _proximity] spawn {
+        params ["_ied", "_type", "_shell", "_proximity"];
 
         private _aiTriggerable = ADDON getVariable ["aiTriggerable", false];
         private _device        = ADDON getVariable ["IED_Detection_Device", "MineDetector"];
         private _detection     = ADDON getVariable ["IED_Detection", 1];
-        private _detectedOnce  = false;
-        private _detonated     = false;
+        private _tripBase      = ADDON getVariable ["IED_Engineer_Trip_Base", 0.02];
+        private _decayRate     = ADDON getVariable ["IED_Engineer_Decay_Rate", 0.01];
+        private _threshold     = _ied getVariable ["ALiVE_IED_TripThreshold", 1.0];
+        private _debugLocal    = ADDON getVariable ["debug", false];
+
+        private _detectedOnce = false;
+        private _detonated    = false;
+        // Per-engineer trip counters, keyed by netId. Lives for the IED's lifetime.
+        private _tripMap = createHashMap;
 
         while {!_detonated && !isNull _ied && alive _ied} do {
             sleep 0.5;
@@ -161,49 +127,102 @@ private _gracePeriod = 15;
                     };
                 };
 
-                // --- Detonation check ---
-                // Build candidate list: men and ground vehicles within proximity.
+                // --- Detonation / accumulator check ---
+                // Candidate pool: men + ground vehicles within proximity, alive, ground level.
                 private _detonateList = _ied nearEntities ["Man", _proximity];
                 _detonateList append (_ied nearEntities ["LandVehicle", _proximity]);
-
-                // Filter to alive units at ground level only.
                 _detonateList = _detonateList select {
                     alive _x && ((getposATL (vehicle _x)) select 2 < 8)
                 };
 
+                private _players       = [] call BIS_fnc_listPlayers;
                 private _shouldDetonate = false;
+                private _engineersSeen = [];
 
-                if (_aiTriggerable) then {
-                    // AI + players can detonate, BUT:
-                    // - Players carrying a detector or with EOD role are exempt
-                    //   (they get a detection hint instead, same as aiTriggerable=false).
-                    // - Pure AI units (non-players) always detonate regardless.
-                    private _players = [] call BIS_fnc_listPlayers;
+                {
+                    private _u = _x;
+                    private _isPlayer = (_u in _players) || (vehicle _u in _players);
+                    private _relevant = _aiTriggerable || _isPlayer;
 
-                    private _detonatingUnits = _detonateList select { private _x2 = _x;
-                        private _isPlayer = (_x2 in _players) || (vehicle _x2 in _players);
-                        if (_isPlayer) then {
-                            // Player: only detonates if no EOD/detector
-                            !(_device in (items _x2)) &&
-                            (getText (configFile >> "CfgVehicles" >> typeOf _x2 >> "displayName") != "Explosive Specialist") &&
-                            ([vehicleVarName _x2, "EOD"] call CBA_fnc_find == -1)
+                    if (_relevant && !_shouldDetonate) then {
+                        private _inVehicle = (vehicle _u) != _u;
+
+                        // Engineer qualification applies to dismounted units only.
+                        // Vehicle-borne engineers lose the exemption - vehicles aren't
+                        // "carefully approaching".
+                        private _qualifies = (!_inVehicle) && (
+                            (_device in (items _u)) ||
+                            (getText (configFile >> "CfgVehicles" >> typeOf _u >> "displayName") == "Explosive Specialist") ||
+                            ([vehicleVarName _u, "EOD"] call CBA_fnc_find != -1)
+                        );
+
+                        if (!_qualifies) then {
+                            // Non-engineer or vehicle-borne: instant detonation (legacy behaviour).
+                            _shouldDetonate = true;
                         } else {
-                            // AI: always detonates
-                            true
-                        }
+                            // Engineer: accumulate trip pressure.
+                            private _key = netId _u;
+                            _engineersSeen pushBack _key;
+                            private _trip = _tripMap getOrDefault [_key, 0];
+
+                            // Distance factor: quadratic falloff, with a close-contact boost.
+                            private _dist = _u distance _ied;
+                            private _distFactor = if (_dist < 1) then {
+                                1.5
+                            } else {
+                                ((1 - (_dist / _proximity)) ^ 2) max 0
+                            };
+
+                            // Stance factor.
+                            private _stanceFactor = switch (unitPos _u) do {
+                                case "DOWN":   { 0.3 };
+                                case "MIDDLE": { 0.6 };
+                                default        { 1.0 };   // "UP" / "AUTO"
+                            };
+
+                            // Speed factor (kph, absolute value).
+                            private _spd = abs (speed _u);
+                            private _speedFactor = switch (true) do {
+                                case (_spd <= 1):  { 0.3 };
+                                case (_spd <= 4):  { 0.6 };
+                                case (_spd <= 8):  { 1.2 };
+                                default            { 2.0 };
+                            };
+
+                            // Skill factor is a divisor, clamped. Player skill is typically 1.0
+                            // in MP so the variance mainly matters for AI engineers.
+                            private _skill = _u skillFinal "commanding";
+                            private _skillFactor = ((_skill + 0.5) max 0.5) min 2.0;
+
+                            private _increment = _tripBase * _distFactor * _stanceFactor * _speedFactor / _skillFactor;
+                            _trip = _trip + _increment;
+                            _tripMap set [_key, _trip];
+
+                            if (_debugLocal) then {
+                                diag_log format ["ALIVE-%1 IED accum: %2 trip=%3/%4 (d=%5 st=%6 sp=%7 sk=%8)",
+                                    time, name _u, _trip toFixed 3, _threshold toFixed 3,
+                                    _distFactor toFixed 2, _stanceFactor, _speedFactor, _skillFactor toFixed 2];
+                            };
+
+                            if (_trip >= _threshold) then {
+                                _shouldDetonate = true;
+                            };
+                        };
                     };
-                    _shouldDetonate = count _detonatingUnits > 0;
-                } else {
-                    // Players only, no EOD/detector
-                    private _nearPlayers = ([] call BIS_fnc_listPlayers) select {
-                        (vehicle _x) distance _ied < _proximity &&
-                        ((getposATL (vehicle _x)) select 2 < 8) &&
-                        !(_device in (items _x)) &&
-                        (getText (configFile >> "CfgVehicles" >> typeOf _x >> "displayName") != "Explosive Specialist") &&
-                        ([vehicleVarName _x, "EOD"] call CBA_fnc_find == -1)
+                } forEach _detonateList;
+
+                // Decay trip pressure for engineers no longer in range.
+                {
+                    private _key = _x;
+                    if !(_key in _engineersSeen) then {
+                        private _trip = (_tripMap getOrDefault [_key, 0]) - _decayRate;
+                        if (_trip <= 0) then {
+                            _tripMap deleteAt _key;
+                        } else {
+                            _tripMap set [_key, _trip];
+                        };
                     };
-                    _shouldDetonate = count _nearPlayers > 0;
-                };
+                } forEach (+(keys _tripMap));
 
                 if (_shouldDetonate) then {
                     deletevehicle (_ied getVariable ["Detect_Trigger", objNull]);
@@ -219,8 +238,9 @@ private _gracePeriod = 15;
         }; // end while
     };
 
-    // Minimal stub triggers kept so that fnc_RemoveIED's nearObjects ["EmptyDetector",3]
-    // still finds something to clean up. They have condition "false" so they never fire.
+    // Stub triggers - kept so fnc_removeIED's nearObjects ["EmptyDetector",3] finds
+    // something to clean up. Condition is hardcoded "false" so they never fire;
+    // detonation is driven entirely by the polling loop above.
     private _trg = createTrigger ["EmptyDetector", getposATL _ied];
     _trg setTriggerArea [1, 1, 0, false];
     _trg setTriggerActivation ["NONE", "PRESENT", false];
@@ -242,5 +262,3 @@ private _gracePeriod = 15;
 
 // Note: the per-IED triggers are created asynchronously above after the grace period.
 // The IED object itself exists immediately; only the trigger creation is deferred.
-// Code below this point that previously created the three triggers inline has been
-// moved into the spawned block above.
