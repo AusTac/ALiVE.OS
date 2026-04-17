@@ -91,6 +91,11 @@ class cfgFunctions {
                                 file = "\x\alive\addons\mil_ied\fnc_IEDPlacementHelpers.sqf";
                                 RECOMPILE;
                         };
+                        class detectIEDIntegrations {
+                                description = "Detect loaded 3rd-party IED integrations from Cfg3rdPartyIEDs";
+                                file = "\x\alive\addons\mil_ied\fnc_detectIEDIntegrations.sqf";
+                                RECOMPILE;
+                        };
                 };
         };
 };

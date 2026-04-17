@@ -188,6 +188,21 @@ switch(_operation) do {
 
                     publicVariable QUOTE(ADDON);
 
+                    // Auto-detect 3rd-party IED integrations from Cfg3rdPartyIEDs.
+                    // Phase 1: detect + log only. Consumers (arm/create/remove)
+                    // still use the legacy `thirdParty` attribute this session.
+                    private _integrations = call ALIVE_fnc_detectIEDIntegrations;
+                    ADDON setVariable ["detectedIEDIntegrations", _integrations, true];
+                    if (count _integrations == 0) then {
+                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected (registry scanned, no matching addons loaded)", time];
+                    } else {
+                        private _summary = _integrations apply {
+                            format ["%1 (mode=%2)", _x get "displayName", _x get "mode"]
+                        };
+                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3",
+                            time, count _integrations, _summary joinString ", "];
+                    };
+
                     _debug = [_logic, "debug"] call MAINCLASS;
                     {_x setMarkerAlpha 0} foreach (_logic getVariable ["taor", DEFAULT_TAOR]);
                     {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_BLACKLIST]);
