@@ -1461,7 +1461,7 @@ switch(_operation) do {
                             {
                                 // Reset "disable"-action on exisiting roadblocks at the objective once at mission start
                                 if (_center distance _x < (_size + 50) && {count (nearestObjects [_x, ["ALIVE_DemoCharge_Remote_Ammo"],2]) < 2}) then {
-                                    [_x] call ALiVE_fnc_INS_addRoadblockHoldAction;
+                                    [_x] call ALiVE_fnc_INS_addRoadblockHoldActionWhenReady;
                                 };
                             } foreach ALiVE_CIV_PLACEMENT_ROADBLOCKS;
                         };

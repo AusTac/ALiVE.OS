@@ -724,17 +724,51 @@ ALiVE_fnc_INS_sabotage = {
                 _timeTaken = time; waituntil {time - _timeTaken > 900};
 };
 
-ALiVE_fnc_INS_getRoadblockActionObject = {
+ALiVE_fnc_INS_getRoadblockPosition = {
                 params [["_roadblockSource", objNull, [objNull, []]]];
 
-                private _roadblockPos = if (_roadblockSource isEqualType objNull) then {
+                if (_roadblockSource isEqualType objNull) then {
                     getPosATL _roadblockSource
                 } else {
                     _roadblockSource
                 };
+};
+
+ALiVE_fnc_INS_getRoadblockCompositionHandlers = {
+                params [["_roadblockSource", objNull, [objNull, []]]];
+
+                private _roadblockPos = [_roadblockSource] call ALiVE_fnc_INS_getRoadblockPosition;
+                (nearestObjects [_roadblockPos, ["ALIVE_DemoCharge_Remote_Ammo"], 5]) select {
+                    !((_x getVariable ["ALiVE_X_LIB_COMPOSITION_OBJECTS", []]) isEqualTo [])
+                }
+};
+
+ALiVE_fnc_INS_getRoadblockActionObject = {
+                params [["_roadblockSource", objNull, [objNull, []]]];
+
+                private _roadblockPos = [_roadblockSource] call ALiVE_fnc_INS_getRoadblockPosition;
 
                 private _actionObject = objNull;
-                private _barGates = nearestObjects [_roadblockPos, ["Land_BarGate_F"], 10];
+                private _compositionHandlers = [_roadblockSource] call ALiVE_fnc_INS_getRoadblockCompositionHandlers;
+                private _compositionObjects = [];
+                {
+                    _compositionObjects append (_x getVariable ["ALiVE_X_LIB_COMPOSITION_OBJECTS", []]);
+                } forEach _compositionHandlers;
+
+                _compositionObjects = _compositionObjects select {!isNull _x};
+
+                private _barGates = _compositionObjects select {
+                    _x isKindOf "Land_BarGate_F"
+                };
+
+                if !(_barGates isEqualTo []) then {
+                    _barGates = [_barGates, [_roadblockPos], {_input0 distance2D _x}, "ASCEND"] call BIS_fnc_sortBy;
+                } else {
+                    // Only scan loose gates for legacy roadblocks without composition data.
+                    if (_compositionHandlers isEqualTo []) then {
+                        _barGates = nearestObjects [_roadblockPos, ["Land_BarGate_F"], 20];
+                    };
+                };
 
                 if !(_barGates isEqualTo []) then {
                     _actionObject = _barGates select 0;
@@ -788,12 +822,10 @@ ALiVE_fnc_INS_addRoadblockHoldAction = {
                 if (isNull _actionObject) exitwith {};
 
                 if (_actionObject getVariable [QGVAR(ROADBLOCK_DISABLED), false]) exitwith {};
+                if (_actionObject getVariable [QGVAR(ROADBLOCK_ACTION_ADDED), false]) exitwith {};
+                _actionObject setVariable [QGVAR(ROADBLOCK_ACTION_ADDED), true, true];
 
-                private _chargePos = if (_roadblockSource isEqualType objNull) then {
-                    getPosATL _roadblockSource
-                } else {
-                    _roadblockSource
-                };
+                private _chargePos = [_roadblockSource] call ALiVE_fnc_INS_getRoadblockPosition;
 
                 private _charge = createVehicle ["ALIVE_DemoCharge_Remote_Ammo", _chargePos, [], 0, "CAN_COLLIDE"];
                 _charge hideObjectGlobal true;
@@ -804,8 +836,8 @@ ALiVE_fnc_INS_addRoadblockHoldAction = {
                     "disable the roadblock!",
                     "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
                     "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-                    "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
-                    "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
+                    "_this distance2D _target < 8 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
+                    "_caller distance2D _target < 8 && {!(_target getVariable ['ALiVE_MIL_OPCOM_ROADBLOCK_DISABLED', false])}",
                     {},
                     {},
                     {
@@ -830,6 +862,23 @@ ALiVE_fnc_INS_addRoadblockHoldAction = {
                     [_charge],
                     15
                 ] remoteExec ["BIS_fnc_holdActionAdd", 0, _actionObject];
+};
+
+ALiVE_fnc_INS_addRoadblockHoldActionWhenReady = {
+                params [["_roadblockSource", objNull, [objNull, []]]];
+
+                [_roadblockSource] spawn {
+                    params [["_roadblockSource", objNull, [objNull, []]]];
+
+                    private _timeout = time + 10;
+                    waitUntil {
+                        sleep 0.25;
+                        !(([_roadblockSource] call ALiVE_fnc_INS_getRoadblockCompositionHandlers) isEqualTo []) ||
+                        {time > _timeout}
+                    };
+
+                    [_roadblockSource] call ALiVE_fnc_INS_addRoadblockHoldAction;
+                };
 };
 
 ALiVE_fnc_INS_roadblocks = {
@@ -873,7 +922,7 @@ ALiVE_fnc_INS_roadblocks = {
 
                     // Create disable action on newly created roadblocks
                     {
-                        [_x] call ALiVE_fnc_INS_addRoadblockHoldAction;
+                        [_x] call ALiVE_fnc_INS_addRoadblockHoldActionWhenReady;
                     } foreach _roads;
                 };
 
