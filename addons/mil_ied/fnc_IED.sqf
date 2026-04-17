@@ -609,6 +609,15 @@ switch(_operation) do {
                     if(_args == "true") then {_args = true;} else {_args = false;};
                     _logic setVariable ["debug", _args, true];
             };
+            // Eden Combo attributes store value=1/value=0 as SCALAR. Without this
+            // coercion the BOOL-only `if (_args)` further down throws
+            // "Type Number, expected Bool" and createMarkers never runs at init,
+            // so debug markers don't appear until the admin menu explicitly
+            // passes BOOL true.
+            if (typeName _args == "SCALAR") then {
+                    _args = _args > 0;
+                    _logic setVariable ["debug", _args, true];
+            };
             ASSERT_TRUE(typeName _args == "BOOL",str _args);
 
             [_logic,"deleteMarkers"] call MAINCLASS;
