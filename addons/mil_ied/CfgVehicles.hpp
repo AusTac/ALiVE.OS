@@ -41,10 +41,18 @@ class CfgVehicles {
                                 property = "ALiVE_mil_ied_AI_Triggerable"; displayName = "$STR_ALIVE_IED_AI_TRIGGER"; tooltip = "$STR_ALIVE_IED_AI_TRIGGER_COMMENT"; defaultValue = """0""";
                                 class Values { class No{name="No";value=0;default=1;}; class Yes{name="Yes";value=1;}; };
                         };
-                        class thirdParty : Combo
+                        class integrationMode : Combo
                         {
-                                property = "ALiVE_mil_ied_thirdParty"; displayName = "$STR_ALIVE_IED_3RDPARTY"; tooltip = "$STR_ALIVE_IED_3RDPARTY_COMMENT"; defaultValue = """0""";
-                                class Values { class Yes{name="Yes";value=1;}; class No{name="No";value=0;default=1;}; };
+                                property = "ALiVE_mil_ied_integrationMode";
+                                displayName = "Integration Mode";
+                                tooltip = "How IED arming/detonation behaves when 3rd-party IED mods are loaded. Auto uses the detected integration's declared mode (e.g. ACE 3 Explosives -> Mine semantics). Force options ignore detection. See RPT for ""N integration(s) detected"" at mission start.";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                        class Auto       { name = "Auto (detect)"; value = 0; default = 1; };
+                                        class ForceMine  { name = "Force Mine Semantics"; value = 1; };
+                                        class ForceALiVE { name = "Force ALiVE Pipeline"; value = 2; };
+                                };
                         };
                         // ---- IED Threat -----------------------------------------------------
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };

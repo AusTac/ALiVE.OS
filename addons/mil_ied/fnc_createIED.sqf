@@ -16,10 +16,14 @@ TRACE_1("IED",_this);
 
 _debug = ADDON getVariable ["debug", false];
 _threat = ADDON getVariable ["IED_Threat", DEFAULT_IED_THREAT];
-private _thirdParty = ADDON getVariable ["thirdParty", false];
+// Resolved at module init by ALIVE_fnc_detectIEDIntegrations + the Auto/Force
+// rules: "alive" = full ALiVE pipeline (arm + proximity + disarm), "mine" = Arma
+// mineActive semantics (skip ALiVE arming, let the 3rd-party mod detonate).
+private _integrationMode = ADDON getVariable ["resolvedIntegrationMode", "alive"];
+private _thirdParty = (_integrationMode == "mine");
 
 if (_thirdParty && _debug) then {
-    ["MIL IED: Using third party IEDs"] call ALiVE_fnc_dump;
+    ["MIL IED: Using mine-semantics (3rd-party integration)"] call ALiVE_fnc_dump;
 };
 
 _position = _this select 0;

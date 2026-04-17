@@ -164,7 +164,22 @@ switch(_operation) do {
                     [ADDON, "roadIEDClasses", _logic getVariable ["roadIEDClasses", DEFAULT_ROADIEDS]] call MAINCLASS;
                     [ADDON, "urbanIEDClasses", _logic getVariable ["urbanIEDClasses", DEFAULT_URBANIEDS]] call MAINCLASS;
                     [ADDON, "clutterClasses", _logic getVariable ["clutterClasses", DEFAULT_CLUTTER]] call MAINCLASS;
-                    [ADDON, "thirdParty", _logic getVariable ["thirdParty", false]] call MAINCLASS;
+                    // Legacy migration: missions saved before integrationMode existed may
+                    // have thirdParty=1/true stored on the logic. Map that to ForceMine (1)
+                    // so behaviour is preserved without requiring the mission-maker to
+                    // re-visit the Eden attribute.
+                    private _legacyThirdParty = _logic getVariable ["thirdParty", nil];
+                    private _iModeInitial = _logic getVariable ["integrationMode", nil];
+                    if (isNil "_iModeInitial" && !(isNil "_legacyThirdParty")) then {
+                        private _legacyIsOn = (_legacyThirdParty isEqualTo true) ||
+                                              (_legacyThirdParty isEqualTo 1) ||
+                                              (_legacyThirdParty isEqualTo "1") ||
+                                              (_legacyThirdParty isEqualTo "true");
+                        _logic setVariable ["integrationMode", if (_legacyIsOn) then { 1 } else { 0 }];
+                        diag_log format ["ALIVE-%1 MIL_IED: legacy thirdParty=%2 migrated to integrationMode=%3",
+                            time, _legacyThirdParty, if (_legacyIsOn) then { 1 } else { 0 }];
+                    };
+                    [ADDON, "integrationMode", _logic getVariable ["integrationMode", 0]] call MAINCLASS;
                     [ADDON, "aiTriggerable", _logic getVariable ["AI_Triggerable", false]] call MAINCLASS;
 
                     // Normalize numeric/bool Combo attributes through their case handlers.
@@ -189,18 +204,40 @@ switch(_operation) do {
                     publicVariable QUOTE(ADDON);
 
                     // Auto-detect 3rd-party IED integrations from Cfg3rdPartyIEDs.
-                    // Phase 1: detect + log only. Consumers (arm/create/remove)
-                    // still use the legacy `thirdParty` attribute this session.
                     private _integrations = call ALIVE_fnc_detectIEDIntegrations;
                     ADDON setVariable ["detectedIEDIntegrations", _integrations, true];
+
+                    // Resolve the effective integration mode. integrationMode values:
+                    //   0 = Auto        - pick based on detection
+                    //   1 = ForceMine   - Arma mineActive semantics (legacy thirdParty=Yes)
+                    //   2 = ForceALiVE  - full ALiVE pipeline (legacy thirdParty=No)
+                    // Auto rule: if any NON-vanilla detected integration declares mode="mine",
+                    // use "mine" globally; otherwise use "alive". The vanilla baseline entry
+                    // is informational and does not by itself force a mode choice.
+                    private _iModeChoice = ADDON getVariable ["integrationMode", 0];
+                    private _resolved = switch (_iModeChoice) do {
+                        case 1: { "mine" };
+                        case 2: { "alive" };
+                        default {
+                            // Auto
+                            private _anyMine = (_integrations findIf {
+                                (_x get "className") != "ALiVE_Vanilla_A3" &&
+                                (_x get "mode") == "mine"
+                            }) >= 0;
+                            if (_anyMine) then { "mine" } else { "alive" }
+                        };
+                    };
+                    ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
+
                     if (count _integrations == 0) then {
-                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected (registry scanned, no matching addons loaded)", time];
+                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice=%3)",
+                            time, _resolved, _iModeChoice];
                     } else {
                         private _summary = _integrations apply {
                             format ["%1 (mode=%2)", _x get "displayName", _x get "mode"]
                         };
-                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3",
-                            time, count _integrations, _summary joinString ", "];
+                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3 - resolved mode=%4 (choice=%5)",
+                            time, count _integrations, _summary joinString ", ", _resolved, _iModeChoice];
                     };
 
                     _debug = [_logic, "debug"] call MAINCLASS;
@@ -647,8 +684,21 @@ switch(_operation) do {
         case "locations": {
             _result = [_logic,_operation,_args,[]] call ALIVE_fnc_OOsimpleOperation;
         };
-        case "thirdParty": {
-            _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
+        case "integrationMode": {
+            // Combo attribute, stored as SCALAR 0/1/2. Coerce STRING defaults
+            // to SCALAR the same way the other Combo handlers in the canonical
+            // refactor do.
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["integrationMode", _args];
+            } else {
+                _args = _logic getVariable ["integrationMode", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["integrationMode", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR", str _args);
+            _result = _args;
         };
         case "aiTriggerable": {
             _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
