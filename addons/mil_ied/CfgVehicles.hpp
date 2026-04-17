@@ -43,11 +43,14 @@ class CfgVehicles {
                         };
                         class integrationChoice
                         {
-                                property    = "ALiVE_mil_ied_integrationChoice";
-                                displayName = "Integration";
-                                tooltip     = "Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time - only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to <mod> uses that specific mod's mode. See RPT for detection details at mission start.";
-                                control     = "ALiVE_IntegrationChoice";
-                                defaultValue = """_auto""";
+                                property     = "ALiVE_mil_ied_integrationChoice";
+                                displayName  = "Integration";
+                                tooltip      = "Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time - only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to <mod> uses that specific mod's mode. See RPT for detection details at mission start.";
+                                control      = "ALiVE_IntegrationChoice";
+                                // Storage is handled directly by attributeSave / attributeLoad
+                                // (setVariable on the logic), bypassing Eden's built-in Combo
+                                // attribute pipeline which treats the value as numeric and drops
+                                // the string payload. No `expression` or `typeName` needed.
                         };
                         // ---- IED Threat -----------------------------------------------------
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };

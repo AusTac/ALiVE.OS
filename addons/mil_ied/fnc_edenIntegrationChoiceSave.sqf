@@ -22,5 +22,19 @@ Jman
 
 private _ctrl = (_this controlsGroupCtrl 100);
 private _sel = lbCurSel _ctrl;
-if (_sel < 0) exitWith { "_auto" };
-_ctrl lbData _sel
+private _result = if (_sel < 0) then {
+    "_auto"
+} else {
+    _ctrl lbData _sel
+};
+
+// Write the choice directly onto every selected logic entity. We don't
+// rely on Eden's `expression` mechanism because the BI Combo base treats
+// attribute values as numeric - our string payload would be discarded.
+// setVariable with the third arg `true` makes the value public so
+// clients see it too when the mission starts.
+{
+    _x setVariable ["integrationChoice", _result, true];
+} forEach (get3DENSelected "logic");
+
+_result

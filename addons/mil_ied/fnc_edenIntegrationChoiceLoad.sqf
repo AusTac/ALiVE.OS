@@ -22,6 +22,19 @@ Author:
 Jman
 ---------------------------------------------------------------------------- */
 
+// Read the stored choice from the currently-edited logic. We bypass Eden's
+// built-in attribute `value` slot because the BI Combo base treats
+// attribute values as numeric, silently discarding our custom string
+// payload. Writing/reading directly via setVariable on the logic keeps the
+// choice round-trippable and also makes it immediately available to the
+// runtime init path, which reads the same variable.
+private _selected = get3DENSelected "logic";
+private _stored = if (count _selected > 0) then {
+    (_selected select 0) getVariable ["integrationChoice", nil]
+} else {
+    nil
+};
+
 // BI Combo attribute template exposes its combo control at IDC 100.
 private _ctrl = _this controlsGroupCtrl 100;
 if (isNull _ctrl) exitWith {
@@ -58,10 +71,11 @@ if (isClass _registry) then {
     };
 };
 
-// Restore selection from stored value; fall back to "_auto" for nil/bad.
-private _value = _this getVariable "value";
-if (isNil "_value" || {typeName _value != "STRING" || {_value == ""}}) then {
-    _value = "_auto";
+// Restore selection. Fall back to "_auto" if nothing is stored yet.
+private _value = if (!isNil "_stored" && {typeName _stored == "STRING"} && {_stored != ""}) then {
+    _stored
+} else {
+    "_auto"
 };
 
 private _selIdx = 0;
