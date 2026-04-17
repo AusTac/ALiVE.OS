@@ -59,4 +59,19 @@ class Cfg3rdPartyIEDs {
         detonator[]       = {};
     };
 
+    // ACE 3 Explosives - IED/mine classes and detonation use ACE's explosives
+    // framework (triggers, range cards, etc.) which maps better to Arma's
+    // mineActive semantics than to ALiVE's proximity-accumulator pipeline.
+    // Class arrays are intentionally empty in Phase 1 and will be populated
+    // in Phase 3 when the Object Classes merge consumes them.
+    class ACE_Explosives {
+        cfgPatchesName = "ace_explosives";
+        displayName    = "ACE 3 Explosives";
+        mode           = "mine";
+        roadIEDClasses[]  = {};
+        urbanIEDClasses[] = {};
+        clutterClasses[]  = {};
+        detonator[]       = {};
+    };
+
 };
