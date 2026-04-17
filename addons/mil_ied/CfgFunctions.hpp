@@ -96,16 +96,13 @@ class cfgFunctions {
                                 file = "\x\alive\addons\mil_ied\fnc_detectIEDIntegrations.sqf";
                                 RECOMPILE;
                         };
-                        class edenIntegrationChoiceLoad {
-                                description = "Eden attributeLoad for ALiVE_IntegrationChoice control";
-                                file = "\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceLoad.sqf";
-                                RECOMPILE;
-                        };
-                        class edenIntegrationChoiceSave {
-                                description = "Eden attributeSave for ALiVE_IntegrationChoice control";
-                                file = "\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceSave.sqf";
-                                RECOMPILE;
-                        };
+                        // Note: fnc_edenIntegrationChoiceLoad.sqf and
+                        // fnc_edenIntegrationChoiceSave.sqf are deliberately NOT registered
+                        // in CfgFunctions. CfgFunctions aren't compiled until mission
+                        // preInit, but those handlers need to fire at 3DEN attribute-load
+                        // time (before any mission runs). Cfg3DEN.hpp references them via
+                        // `compile preprocessFileLineNumbers` instead, which works in any
+                        // context.
                 };
         };
 };

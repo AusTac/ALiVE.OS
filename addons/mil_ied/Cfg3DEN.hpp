@@ -29,8 +29,12 @@ class Cfg3DEN {
     class Attributes {
         class Combo; // BI's Combo base class - forward declaration
         class ALiVE_IntegrationChoice: Combo {
-            attributeLoad = "_this call ALIVE_fnc_edenIntegrationChoiceLoad";
-            attributeSave = "_this call ALIVE_fnc_edenIntegrationChoiceSave";
+            // Load the SQF directly via compile preprocessFileLineNumbers rather
+            // than going through CfgFunctions. ALIVE_fnc_* functions are NOT
+            // available in 3DEN attribute-load context (CfgFunctions aren't
+            // compiled until mission preInit, after Eden attributes render).
+            attributeLoad = "_this call compile preprocessFileLineNumbers '\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\mil_ied\fnc_edenIntegrationChoiceSave.sqf'";
         };
     };
 };

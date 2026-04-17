@@ -22,7 +22,12 @@ Author:
 Jman
 ---------------------------------------------------------------------------- */
 
-private _ctrl = (_this controlsGroupCtrl 100);
+// BI Combo attribute template exposes its combo control at IDC 100.
+private _ctrl = _this controlsGroupCtrl 100;
+if (isNull _ctrl) exitWith {
+    diag_log "ALIVE MIL_IED EDEN IntegrationChoice LOAD: combo control (IDC 100) not found";
+};
+
 lbClear _ctrl;
 
 // Two always-present meta-choices.
