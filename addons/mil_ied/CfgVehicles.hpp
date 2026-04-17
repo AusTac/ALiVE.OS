@@ -207,6 +207,19 @@ class CfgVehicles {
                                 tooltip = "Comma-separated extra classes to merge into the road IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
                                 defaultValue = """""";
                         };
+                        class roadIEDClasses_autoDetect : Combo
+                        {
+                                property = "ALiVE_mil_ied_roadIEDClasses_autoDetect";
+                                displayName = "Road IED - Auto-detect Source";
+                                tooltip = "Whether the road IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                        class Auto { name = "Auto (follow integration)"; value = 0; default = 1; };
+                                        class Yes  { name = "Yes (always merge)"; value = 1; };
+                                        class No   { name = "No (ignore integration)"; value = 2; };
+                                };
+                        };
                         class urbanIEDClasses : Edit { property = "ALiVE_mil_ied_urbanIEDClasses"; displayName = "$STR_ALIVE_IED_URBAN_IED_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """ALIVE_IEDUrbanSmall_Remote_Ammo,ALIVE_IEDUrbanBig_Remote_Ammo,Land_JunkPile_F,Land_GarbageContainer_closed_F,Land_GarbageBags_F,Land_Tyres_F,Land_GarbagePallet_F,Land_Basket_F,Land_Sack_F,Land_Sacks_goods_F,Land_Sacks_heap_F,Land_BarrelTrash_F"""; };
                         class urbanIEDClasses_additional : Edit
                         {
@@ -215,6 +228,19 @@ class CfgVehicles {
                                 tooltip = "Comma-separated extra classes to merge into the urban IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
                                 defaultValue = """""";
                         };
+                        class urbanIEDClasses_autoDetect : Combo
+                        {
+                                property = "ALiVE_mil_ied_urbanIEDClasses_autoDetect";
+                                displayName = "Urban IED - Auto-detect Source";
+                                tooltip = "Whether the urban IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                        class Auto { name = "Auto (follow integration)"; value = 0; default = 1; };
+                                        class Yes  { name = "Yes (always merge)"; value = 1; };
+                                        class No   { name = "No (ignore integration)"; value = 2; };
+                                };
+                        };
                         class clutterClasses : Edit { property = "ALiVE_mil_ied_clutterClasses"; displayName = "$STR_ALIVE_IED_CLUTTER_CLASSES"; tooltip = "$STR_ALIVE_IED_CLASSES_COMMENT"; defaultValue = """Land_JunkPile_F,Land_GarbageContainer_closed_F,Land_GarbageBags_F,Land_Tyres_F,Land_GarbagePallet_F,Land_Basket_F,Land_Sack_F,Land_Sacks_goods_F,Land_Sacks_heap_F,Land_BarrelTrash_F"""; };
                         class clutterClasses_additional : Edit
                         {
@@ -222,6 +248,19 @@ class CfgVehicles {
                                 displayName = "Clutter - Additional Classes";
                                 tooltip = "Comma-separated extra classes to merge into the camouflage clutter pool placed near IEDs. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
                                 defaultValue = """""";
+                        };
+                        class clutterClasses_autoDetect : Combo
+                        {
+                                property = "ALiVE_mil_ied_clutterClasses_autoDetect";
+                                displayName = "Clutter - Auto-detect Source";
+                                tooltip = "Whether the clutter pool should pull classes from the active 3rd-party integration. Auto: follow integration choice. Yes: always merge integration classes (union). No: never use integration classes for this category.";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                        class Auto { name = "Auto (follow integration)"; value = 0; default = 1; };
+                                        class Yes  { name = "Yes (always merge)"; value = 1; };
+                                        class No   { name = "No (ignore integration)"; value = 2; };
+                                };
                         };
                         class ModuleDescription : ModuleDescription {};
                 };

@@ -217,6 +217,9 @@ switch(_operation) do {
                     [ADDON, "IED_Engineer_Decay_Rate",           _logic getVariable ["IED_Engineer_Decay_Rate", 0.01]] call MAINCLASS;
                     [ADDON, "IED_Engineer_Disarm_BaseTime",      _logic getVariable ["IED_Engineer_Disarm_BaseTime", 60]] call MAINCLASS;
                     [ADDON, "IED_Engineer_Disarm_NewDeviceBase", _logic getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75]] call MAINCLASS;
+                    [ADDON, "roadIEDClasses_autoDetect",         _logic getVariable ["roadIEDClasses_autoDetect", 0]] call MAINCLASS;
+                    [ADDON, "urbanIEDClasses_autoDetect",        _logic getVariable ["urbanIEDClasses_autoDetect", 0]] call MAINCLASS;
+                    [ADDON, "clutterClasses_autoDetect",         _logic getVariable ["clutterClasses_autoDetect", 0]] call MAINCLASS;
 
                     publicVariable QUOTE(ADDON);
 
@@ -258,42 +261,80 @@ switch(_operation) do {
                     };
                     ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
 
-                    // ----- Phase 3b: resolved IED class pools (Option A + additional) ------
-                    // Pool source per category:
-                    //   - _force_alive                 -> ALiVE defaults
-                    //   - _auto + resolved=="alive"    -> ALiVE defaults
-                    //   - _auto + resolved=="mine"     -> first non-vanilla mine integration
-                    //   - explicit <className>         -> that integration (if loaded)
-                    //   - integration declares empty   -> fall back to ALiVE defaults for
-                    //                                     that category (lenient Option A)
+                    // ----- Phase 3c: resolved IED class pools with autoDetect + edit detect -
+                    // Per-category resolution matrix:
+                    //
+                    //   autoDetect | edited | source pool
+                    //   -----------+--------+--------------------------------------------
+                    //   No         | any    | base (current attribute value)
+                    //   Yes        | no     | candidate integration's classes (or base if empty)
+                    //   Yes        | yes    | base UNION candidate integration's classes
+                    //   Auto       | no     | Phase 3b: integration if iChoice/resolved picks it,
+                    //              |        | else base
+                    //   Auto       | yes    | base (respect user override)
+                    //
+                    // "edited" = current attribute value differs from compile-time DEFAULT_*.
+                    // "candidate integration" = the integration we'd source classes from
+                    // regardless of iChoice (for autoDetect=Yes): if iChoice picks a specific
+                    // integration use that; otherwise pick first non-vanilla mine integration
+                    // detected.
                     // User's _additional field is ALWAYS appended, de-duplicated.
-                    private _activeIntegration = nil;
-                    if (_iChoice != "_force_alive") then {
-                        private _matchIdx = if (_iChoice == "_auto") then {
-                            if (_resolved == "mine") then {
-                                _integrations findIf {
-                                    (_x get "className") != "ALiVE_Vanilla_A3" &&
-                                    (_x get "mode") == "mine"
-                                }
-                            } else { -1 };
-                        } else {
-                            _integrations findIf { (_x get "className") == _iChoice };
-                        };
-                        if (_matchIdx >= 0) then {
-                            _activeIntegration = _integrations select _matchIdx;
-                        };
+                    private _candidateIntegration = nil;
+                    private _matchIdx = if (_iChoice == "_auto" || _iChoice == "_force_alive") then {
+                        _integrations findIf {
+                            (_x get "className") != "ALiVE_Vanilla_A3" &&
+                            (_x get "mode") == "mine"
+                        }
+                    } else {
+                        _integrations findIf { (_x get "className") == _iChoice };
+                    };
+                    if (_matchIdx >= 0) then {
+                        _candidateIntegration = _integrations select _matchIdx;
                     };
 
+                    // _autoModeFollowsIntegration: under autoDetect=Auto, does iChoice imply
+                    // we should swap in the integration? Mirrors the Phase 3b rule.
+                    private _autoModeFollowsIntegration = !(_iChoice == "_force_alive") &&
+                                                          !(_iChoice == "_auto" && _resolved == "alive");
+
                     private _fnResolveClasses = {
-                        params ["_category"];
-                        private _base = [ADDON, _category] call MAINCLASS;
-                        // Pool: integration classes if present+non-empty, else ALiVE defaults.
-                        private _pool = if (!isNil "_activeIntegration") then {
-                            private _iClasses = _activeIntegration get _category;
-                            if (count _iClasses > 0) then { +_iClasses } else { +_base };
-                        } else {
-                            +_base
+                        params ["_category", "_defaultArr"];
+                        private _base       = [ADDON, _category] call MAINCLASS;
+                        private _autoDetect = ADDON getVariable [_category + "_autoDetect", 0];
+                        private _edited     = !(_base isEqualTo _defaultArr);
+                        private _iClasses   = if (!isNil "_candidateIntegration") then {
+                            _candidateIntegration get _category
+                        } else { [] };
+                        private _hasIClasses = (count _iClasses > 0);
+
+                        private _pool = switch (_autoDetect) do {
+                            case 2: { +_base };                      // No - never integration
+                            case 1: {                                // Yes - always merge if any
+                                if (_hasIClasses) then {
+                                    if (_edited) then {
+                                        // user override - union with integration
+                                        private _p = +_base;
+                                        { if (!(_x in _p)) then { _p pushBack _x; }; } forEach _iClasses;
+                                        _p
+                                    } else {
+                                        // base is default - replace with integration (Option A)
+                                        +_iClasses
+                                    };
+                                } else { +_base };
+                            };
+                            default {                                // Auto (0)
+                                if (_edited) then {
+                                    +_base                            // respect user edits
+                                } else {
+                                    if (_autoModeFollowsIntegration && _hasIClasses) then {
+                                        +_iClasses                    // Phase 3b behaviour
+                                    } else {
+                                        +_base
+                                    };
+                                };
+                            };
                         };
+
                         // Stack user's _additional, deduped.
                         private _addStr = _logic getVariable [_category + "_additional", ""];
                         if (typeName _addStr == "STRING" && {_addStr != ""}) then {
@@ -306,17 +347,17 @@ switch(_operation) do {
                         _pool
                     };
 
-                    ADDON setVariable ["resolvedRoadIEDClasses",  ["roadIEDClasses"]  call _fnResolveClasses, true];
-                    ADDON setVariable ["resolvedUrbanIEDClasses", ["urbanIEDClasses"] call _fnResolveClasses, true];
-                    ADDON setVariable ["resolvedClutterClasses",  ["clutterClasses"]  call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedRoadIEDClasses",  ["roadIEDClasses",  DEFAULT_ROADIEDS]  call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedUrbanIEDClasses", ["urbanIEDClasses", DEFAULT_URBANIEDS] call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedClutterClasses",  ["clutterClasses",  DEFAULT_CLUTTER]  call _fnResolveClasses, true];
 
                     if (ADDON getVariable ["debug", false]) then {
-                        diag_log format ["ALIVE-%1 MIL_IED Phase 3b: activeIntegration=%2, road=%3 urban=%4 clutter=%5",
+                        diag_log format ["ALIVE-%1 MIL_IED Phase 3c: candidate=%2, road=%3 (autoDetect=%4) urban=%5 (autoDetect=%6) clutter=%7 (autoDetect=%8)",
                             time,
-                            if (isNil "_activeIntegration") then { "(ALiVE defaults)" } else { _activeIntegration get "displayName" },
-                            count (ADDON getVariable "resolvedRoadIEDClasses"),
-                            count (ADDON getVariable "resolvedUrbanIEDClasses"),
-                            count (ADDON getVariable "resolvedClutterClasses")];
+                            if (isNil "_candidateIntegration") then { "(none)" } else { _candidateIntegration get "displayName" },
+                            count (ADDON getVariable "resolvedRoadIEDClasses"),  ADDON getVariable ["roadIEDClasses_autoDetect", 0],
+                            count (ADDON getVariable "resolvedUrbanIEDClasses"), ADDON getVariable ["urbanIEDClasses_autoDetect", 0],
+                            count (ADDON getVariable "resolvedClutterClasses"),  ADDON getVariable ["clutterClasses_autoDetect", 0]];
                     };
 
                     if (count _integrations == 0) then {
@@ -976,6 +1017,45 @@ switch(_operation) do {
             if (typeName _args == "STRING") then {
                 _args = parseNumber _args;
                 _logic setVariable ["IED_Engineer_Disarm_NewDeviceBase", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "roadIEDClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["roadIEDClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["roadIEDClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["roadIEDClasses_autoDetect", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "urbanIEDClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["urbanIEDClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["urbanIEDClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["urbanIEDClasses_autoDetect", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "clutterClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["clutterClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["clutterClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["clutterClasses_autoDetect", _args];
             };
             ASSERT_TRUE(typeName _args == "SCALAR",str _args);
             _result = _args;
