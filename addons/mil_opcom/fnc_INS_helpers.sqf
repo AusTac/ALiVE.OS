@@ -1165,6 +1165,16 @@ ALiVE_fnc_INS_idle = {
     waituntil {time - _time > _this};
 };
 
+ALiVE_fnc_INS_protectInstallationActionObject = {
+    params [["_object", objNull, [objNull]]];
+
+    if (isNull _object) exitwith {};
+
+    _object allowDamage false;
+    _object enableSimulationGlobal false;
+    _object setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
+};
+
 ALiVE_fnc_spawnFurniture = {
 
     private ["_pos","_furniture","_bomb","_box","_created"];
@@ -1201,9 +1211,9 @@ ALiVE_fnc_spawnFurniture = {
                 _furniture setposATL _pos;
                 _furniture setdir getdir _building;
 
-                // Disable sim to avoid flipping furniture. Bombs are not affected and still exploding.
-                // Once building is destroyed or site is disabled, the furniture gets deleted.
-                _furniture enableSimulation false;
+                // Keep action anchors stable. Bombs are not affected and still exploding.
+                // Once the building is destroyed or site is disabled, the furniture gets deleted.
+                [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                 _created pushback _furniture;
 
@@ -1241,6 +1251,7 @@ ALiVE_fnc_spawnFurniture = {
                 if (_add && {random 1 < 0.5}) then {
                     _furniture = createVehicle [(selectRandom _furnitures), _pos, [], 0, "CAN_COLLIDE"];
                     _furniture setdir getdir _building;
+                    [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                     _object = createVehicle [(selectRandom _objects), _pos, [], 0, "CAN_COLLIDE"];
                     _object attachTo [_furniture, [0,0,(_furniture call ALiVE_fnc_getRelativeTop) + 0.15]];
@@ -1251,6 +1262,7 @@ ALiVE_fnc_spawnFurniture = {
                     if (_ammo && {random 1 < 0.5}) then {
                         _box = createVehicle [(selectRandom _boxes), _pos, [], 0, "CAN_COLLIDE"];
                         _box setdir (_building getDir _box);
+                        [_box] call ALiVE_fnc_INS_protectInstallationActionObject;
 
                         _created pushback _box;
                     };
@@ -1259,9 +1271,97 @@ ALiVE_fnc_spawnFurniture = {
         };
     } foreach _positions;
 
+    if ({_x getVariable [QGVAR(INSTALLATION_ACTION_OBJECT), false]} count _created == 0 && {count _positions > 0}) then {
+        private _anchorPos = selectRandom _positions;
+        _furniture = createVehicle [(selectRandom _furnitures), _anchorPos, [], 0, "CAN_COLLIDE"];
+        _furniture setposATL _anchorPos;
+        _furniture setdir getdir _building;
+        [_furniture] call ALiVE_fnc_INS_protectInstallationActionObject;
+
+        _created pushback _furniture;
+    };
+
     _building setvariable [QGVAR(furnitured),_created];
 
     _created
+};
+
+ALiVE_fnc_INS_getInstallationActionObjects = {
+    params [
+        ["_building", objNull, [objNull]],
+        ["_objects", [], [[]]]
+    ];
+
+    private _sourceObjects = if (_objects isEqualTo []) then {
+        _building getvariable [QGVAR(furnitured),[]]
+    } else {
+        _objects
+    };
+
+    private _actionObjects = _sourceObjects select {
+        alive _x && {_x getVariable [QGVAR(INSTALLATION_ACTION_OBJECT), false]}
+    };
+
+    if (_actionObjects isEqualTo [] && {alive _building}) then {
+        _actionObjects = [_building];
+    };
+
+    _actionObjects
+};
+
+ALiVE_fnc_INS_addInstallationHoldActions = {
+    params [
+        ["_building", objNull, [objNull]],
+        ["_title", "", [""]],
+        ["_disabledVar", "", [""]],
+        ["_subtitleTitle", "", [""]],
+        ["_subtitleText", "", [""]],
+        ["_duration", 10, [0]]
+    ];
+
+    if !(alive _building) exitwith {};
+    if (_disabledVar == "") exitwith {};
+
+    private _interactionDistanceSqr = 100;
+
+    {
+        private _actionObject = _x;
+        private _actionKeys = _actionObject getVariable [QGVAR(INSTALLATION_ACTIONS_ADDED), []];
+
+        if !(_disabledVar in _actionKeys) then {
+            _actionKeys pushback _disabledVar;
+
+            _actionObject setVariable ["ALiVE_MIL_OPCOM_INSTALLATION_BUILDING", _building, true];
+            _actionObject setVariable [QGVAR(INSTALLATION_ACTIONS_ADDED), _actionKeys, true];
+
+            [
+                _actionObject,
+                _title,
+                "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
+                "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
+                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_this distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
+                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_caller distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
+                {},
+                {},
+                {
+                    params ["_target", "_caller", "_ID", "_arguments"];
+                    _arguments params ["_building", "_disabledVar", "_subtitleTitle", "_subtitleText"];
+
+                    if (isNull _building) exitWith {};
+
+                    _building setVariable [_disabledVar,true,true];
+                    [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
+
+                    [_building, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
+
+                    [_subtitleTitle, format [_subtitleText,name _caller, mapGridPosition _building]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
+                },
+                {},
+                [_building, _disabledVar, _subtitleTitle, _subtitleText],
+                _duration
+            ] remoteExec ["BIS_fnc_holdActionAdd", 0, _actionObject];
+        };
+    } foreach ([_building] call ALiVE_fnc_INS_getInstallationActionObjects);
 };
 
 ALiVE_fnc_INS_spawnIEDfactory = {
@@ -1274,32 +1374,18 @@ ALiVE_fnc_INS_spawnIEDfactory = {
 
     _building setvariable [QGVAR(factory),_id];
     _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
+
+    [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
 
     [
         _building,
         "disable the IED factory!",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_FACTORY_DISABLED', false])}",
-        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_FACTORY_DISABLED', false])}",
-        {},
-        {},
-        {
-            params ["_target", "_caller", "_ID", "_arguments"];
-
-            _target setVariable [QGVAR(FACTORY_DISABLED),true,true];
-            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
-
-            [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
-
-            ["Nice Job", format ["%1 disabled the IED factory at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
-        },
-        {},
-        [],
-        10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
-
-    [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
+        "ALiVE_MIL_OPCOM_FACTORY_DISABLED",
+        "Nice Job",
+        "%1 disabled the IED factory at grid %2!",
+        _duration
+    ] call ALiVE_fnc_INS_addInstallationHoldActions;
 };
 
 ALiVE_fnc_INS_spawnHQ = {
@@ -1312,32 +1398,19 @@ ALiVE_fnc_INS_spawnHQ = {
 
     _building setvariable [QGVAR(HQ),_id];
     _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
+
+    [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
+    [_building,true,true,false] call ALiVE_fnc_spawnFurniture;
 
     [
         _building,
         "disable the Recruitment HQ!",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_HQ_DISABLED', false])}",
-        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_HQ_DISABLED', false])}",
-        {},
-        {},
-        {
-            params ["_target", "_caller", "_ID", "_arguments"];
-
-            _target setVariable [QGVAR(HQ_DISABLED),true,true];
-            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
-            [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
-
-            ["Congratulations", format ["%1 disabled the Recruitment HQ at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
-        },
-        {},
-        [],
-        10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
-
-    [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
-    [_building,true,true,false] call ALiVE_fnc_spawnFurniture;
+        "ALiVE_MIL_OPCOM_HQ_DISABLED",
+        "Congratulations",
+        "%1 disabled the Recruitment HQ at grid %2!",
+        _duration
+    ] call ALiVE_fnc_INS_addInstallationHoldActions;
 };
 
 ALiVE_fnc_INS_spawnDepot = {
@@ -1350,31 +1423,18 @@ ALiVE_fnc_INS_spawnDepot = {
 
     _building setvariable [QGVAR(depot),_id];
     _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
+
+    [_building,true,false,true] call ALiVE_fnc_spawnFurniture;
 
     [
         _building,
         "disable the weapons depot!",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-        "_this distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_DEPOT_DISABLED', false])}",
-        "_caller distance2D _target < 3 && {!(_target getVariable ['ALiVE_MIL_OPCOM_DEPOT_DISABLED', false])}",
-        {},
-        {},
-        {
-            params ["_target", "_caller", "_ID", "_arguments"];
-
-            _target setVariable [QGVAR(DEPOT_DISABLED),true,true];
-            [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
-            [_target, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
-
-            ["Good work", format ["%1 disabled the weapons depot at grid %2!",name _caller, mapGridPosition _target]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
-        },
-        {},
-        [],
-        10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4)
-    ] remoteExec ["BIS_fnc_holdActionAdd", 0, _building];
-
-    [_building,true,false,true] call ALiVE_fnc_spawnFurniture;
+        "ALiVE_MIL_OPCOM_DEPOT_DISABLED",
+        "Good work",
+        "%1 disabled the weapons depot at grid %2!",
+        _duration
+    ] call ALiVE_fnc_INS_addInstallationHoldActions;
 };
 
 ALiVE_fnc_getRelativeTop = {
