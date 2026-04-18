@@ -22,7 +22,18 @@ class CfgVehicles {
             // ---- General --------------------------------------------------------
             class HDR_GENERAL : ALiVE_ModuleSubTitle { property = "ALiVE_civ_placement_custom_HDR_GENERAL"; displayName = "GENERAL"; };
             class debug : Combo { property = "ALiVE_civ_placement_custom_debug"; displayName = "$STR_ALIVE_CP_DEBUG"; tooltip = "$STR_ALIVE_CP_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
-            class faction : Edit { property = "ALiVE_civ_placement_custom_faction"; displayName = "$STR_ALIVE_CP_FACTION"; tooltip = "$STR_ALIVE_CP_FACTION_COMMENT"; defaultValue = """OPF_F"""; };
+            // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
+            // `property` unchanged for SQM BC with pre-existing missions.
+            class faction
+            {
+                    property     = "ALiVE_civ_placement_custom_faction";
+                    displayName  = "$STR_ALIVE_CP_FACTION";
+                    tooltip      = "$STR_ALIVE_CP_FACTION_COMMENT";
+                    control      = "ALiVE_FactionChoice";
+                    typeName     = "STRING";
+                    expression   = "_this setVariable ['faction', _value];";
+                    defaultValue = """'OPF_F'""";
+            };
             class priority : Edit { property = "ALiVE_civ_placement_custom_priority"; displayName = "$STR_ALIVE_CPC_PRIORITY"; tooltip = "$STR_ALIVE_CPC_PRIORITY_COMMENT"; defaultValue = """50"""; };
             class objectiveSize : Edit { property = "ALiVE_civ_placement_custom_objectiveSize"; displayName = "$STR_ALIVE_CPC_OBJECTIVE_SIZE"; tooltip = "$STR_ALIVE_CPC_OBJECTIVE_SIZE_COMMENT"; defaultValue = """200"""; };
             // ---- Force Composition ----------------------------------------------

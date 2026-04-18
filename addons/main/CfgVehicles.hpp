@@ -46,6 +46,35 @@ class Cfg3DEN
         class ALiVE_EditMultilineSQF: EditMulti3
         {
         };
+
+        class Combo; // Forward declaration of BI Combo attribute control
+
+        // ALiVE_FactionChoice:
+        //   Dynamic faction-selection Combo shared across placement-style modules
+        //   (mil_placement, civ_placement, civ_placement_custom, any future module
+        //   with a `faction` attribute). Populated at Eden-panel-open time from
+        //   loaded CfgFactionClasses entries grouped by side (OPFOR / BLUFOR /
+        //   INDFOR / CIVILIAN / Other) with the displayName shown to the user.
+        //
+        //   Stored attribute value is the canonical faction classname STRING
+        //   (e.g. "OPF_F", "rhs_faction_msv", "vn_o_nva"). Legacy mission SQMs
+        //   that stored a faction string the dropdown can't resolve (typo, mod
+        //   unloaded, custom faction) preserve the stored string unchanged via
+        //   an "(unrecognised)" entry added to the top of the dropdown at load
+        //   time.
+        //
+        //   Case-insensitive matching when selecting the stored value — closes
+        //   issue #651 (inconsistent case for faction names lead to ALiVE not
+        //   detecting them). Selecting from the dropdown always writes the
+        //   canonical case from CfgFactionClasses.
+        //
+        //   attributeLoad / attributeSave live in separate .sqf files; see the
+        //   rationale in mil_ied Cfg3DEN.hpp (preprocessor fights with
+        //   multi-line strings on Windows CRLF).
+        class ALiVE_FactionChoice: Combo {
+            attributeLoad = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
     };
     // Configuration of all objects
     class Object

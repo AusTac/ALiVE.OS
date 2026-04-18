@@ -26,7 +26,21 @@ class CfgVehicles {
                         class debug : Combo { property = "ALiVE_civ_placement_debug"; displayName = "$STR_ALIVE_CP_DEBUG"; tooltip = "$STR_ALIVE_CP_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
                         class taor : Edit { property = "ALiVE_civ_placement_taor"; displayName = "$STR_ALIVE_CP_TAOR"; tooltip = "$STR_ALIVE_CP_TAOR_COMMENT"; defaultValue = """"""; };
                         class blacklist : Edit { property = "ALiVE_civ_placement_blacklist"; displayName = "$STR_ALIVE_CP_BLACKLIST"; tooltip = "$STR_ALIVE_CP_BLACKLIST_COMMENT"; defaultValue = """"""; };
-                        class faction : Edit { property = "ALiVE_civ_placement_faction"; displayName = "$STR_ALIVE_CP_FACTION"; tooltip = "$STR_ALIVE_CP_FACTION_COMMENT"; defaultValue = """OPF_F"""; };
+                        // Dynamic faction dropdown - shared control with mil_placement /
+                        // civ_placement_custom. See addons/main/CfgVehicles.hpp for the
+                        // ALiVE_FactionChoice control definition and the rationale. `property`
+                        // unchanged (ALiVE_civ_placement_faction) so SQM storage stays
+                        // backward-compatible with missions saved before this change.
+                        class faction
+                        {
+                                property     = "ALiVE_civ_placement_faction";
+                                displayName  = "$STR_ALIVE_CP_FACTION";
+                                tooltip      = "$STR_ALIVE_CP_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction', _value];";
+                                defaultValue = """'OPF_F'""";
+                        };
 
                         // ---- Objective Filters ----------------------------------------------
                         class HDR_FILTERS : ALiVE_ModuleSubTitle { property = "ALiVE_civ_placement_HDR_FILTERS"; displayName = "OBJECTIVE FILTERS"; };

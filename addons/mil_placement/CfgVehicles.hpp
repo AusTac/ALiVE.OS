@@ -26,7 +26,26 @@ class CfgVehicles {
                         class debug : Combo { property = "ALiVE_mil_placement_debug"; displayName = "$STR_ALIVE_MP_DEBUG"; tooltip = "$STR_ALIVE_MP_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
                         class taor : Edit { property = "ALiVE_mil_placement_taor"; displayName = "$STR_ALIVE_MP_TAOR"; tooltip = "$STR_ALIVE_MP_TAOR_COMMENT"; defaultValue = """"""; };
                         class blacklist : Edit { property = "ALiVE_mil_placement_blacklist"; displayName = "$STR_ALIVE_MP_BLACKLIST"; tooltip = "$STR_ALIVE_MP_BLACKLIST_COMMENT"; defaultValue = """"""; };
-                        class faction : Edit { property = "ALiVE_mil_placement_faction"; displayName = "$STR_ALIVE_MP_FACTION"; tooltip = "$STR_ALIVE_MP_FACTION_COMMENT"; defaultValue = """OPF_F"""; };
+                        // Dynamic faction dropdown - populated at Eden-panel-open time from
+                        // loaded CfgFactionClasses entries (see ALiVE_FactionChoice in
+                        // addons/main/CfgVehicles.hpp). Stored value is the faction classname
+                        // STRING. Legacy SQMs with hand-typed faction strings preserve their
+                        // value via an "(unrecognised)" dropdown entry if the stored string
+                        // doesn't match any currently-loaded faction (typo, mod unloaded,
+                        // custom faction). Case-insensitive matching on restore closes #651.
+                        //
+                        // `property` unchanged (ALiVE_mil_placement_faction) so SQM storage
+                        // stays backward-compatible with missions saved before this change.
+                        class faction
+                        {
+                                property     = "ALiVE_mil_placement_faction";
+                                displayName  = "$STR_ALIVE_MP_FACTION";
+                                tooltip      = "$STR_ALIVE_MP_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction', _value];";
+                                defaultValue = """'OPF_F'""";
+                        };
                         class sizeFilter : Combo
                         {
                                 property = "ALiVE_mil_placement_sizeFilter"; displayName = "$STR_ALIVE_MP_SIZE_FILTER"; tooltip = "$STR_ALIVE_MP_SIZE_FILTER_COMMENT"; defaultValue = """0""";
