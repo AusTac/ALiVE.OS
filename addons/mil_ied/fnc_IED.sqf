@@ -63,9 +63,27 @@ DEFAULT_CLUTTER ["Land_Misc_Rubble_EP1","Land_Misc_Garb_Heap_EP1","Garbage_conta
 
 #define SUPERCLASS ALIVE_fnc_baseClass
 #define MAINCLASS ALIVE_fnc_ied
-#define DEFAULT_BOMBER_THREAT 15
+// Threat DEFAULT_ fallbacks are used when the Eden module attribute is not
+// explicitly set on the logic (legacy SQMs, upgraded missions, edge cases
+// where the attribute-to-logic sync didn't land). These MUST match the
+// CfgVehicles `defaultValue` for each attribute or users see surprise
+// spawns despite picking "None" in the module UI - see issue #824:
+// "empty ambient vehicles whenever I place down an IED Threat module,
+//  even with VBIED threat = None".
+//
+// UI default is "None" (value 0) for all three; VB_IED_Threat and
+// Bomber_Threat previously defaulted to 5 and 15 here, producing ~5% of
+// towns with surprise VBIED cars and ~15% with suicide bombers on legacy
+// missions that never had the attribute synced.
+//
+// IED_Threat kept at 60 intentionally - if an unconfigured mil_ied module
+// produces NO IEDs at all, the module is functionally off and the user
+// likely doesn't know why. Non-zero fallback here is "do something useful
+// even if unconfigured"; non-zero on Bomber/VBIED is "silently add scary
+// things the user didn't ask for". Different trade-off.
+#define DEFAULT_BOMBER_THREAT 0
 #define DEFAULT_IED_THREAT 60
-#define DEFAULT_VB_IED_THREAT 5
+#define DEFAULT_VB_IED_THREAT 0
 #define DEFAULT_VB_IED_SIDE "CIV"
 #define DEFAULT_LOCS_IED 0
 #define DEFAULT_STARTING_IED_THREAT 0
