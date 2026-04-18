@@ -122,11 +122,52 @@ private _civilianBlacklist = [
     "interactive_f"   // BI Argo-era interactive content (displayName "Other (Interactive)")
 ];
 
+// ------------------------------------------------------------------------
+// Build registry overrides map from Cfg3rdPartyFactions. Walks each
+// registry subclass whose cfgPatchesName is loaded, collects any per-
+// faction overrides (displayName / sourceLabel / excluded) into a
+// hashmap keyed by lowercase faction classname. Empty/no-overrides
+// registry is fine - the auto-detection paths below run unmodified.
+// ------------------------------------------------------------------------
+private _registryOverrides = createHashMap;
+private _registry = configFile >> "Cfg3rdPartyFactions";
+if (isClass _registry) then {
+    for "_i" from 0 to (count _registry - 1) do {
+        private _entry = _registry select _i;
+        if (isClass _entry) then {
+            private _cp = getText (_entry >> "cfgPatchesName");
+            if (_cp != "" && {isClass (configFile >> "CfgPatches" >> _cp)}) then {
+                private _factionsClass = _entry >> "factions";
+                if (isClass _factionsClass) then {
+                    for "_j" from 0 to (count _factionsClass - 1) do {
+                        private _facOverride = _factionsClass select _j;
+                        if (isClass _facOverride) then {
+                            private _facCN = configName _facOverride;
+                            private _override = createHashMap;
+                            if (isText (_facOverride >> "displayName")) then {
+                                _override set ["displayName", getText (_facOverride >> "displayName")];
+                            };
+                            if (isText (_facOverride >> "sourceLabel")) then {
+                                _override set ["sourceLabel", getText (_facOverride >> "sourceLabel")];
+                            };
+                            if (isNumber (_facOverride >> "excluded")) then {
+                                _override set ["excluded", getNumber (_facOverride >> "excluded") > 0];
+                            };
+                            _registryOverrides set [toLower _facCN, _override];
+                        };
+                    };
+                };
+            };
+        };
+    };
+};
+
 private _seen = createHashMap; // lowercase classname -> true, for dedup
 private _entries = [];
 private _totalScanned = 0;
 private _droppedBadSide = 0;
 private _droppedNoGroups = 0;
+private _droppedRegistryExcluded = 0;
 
 private _configPaths = [
     missionConfigFile >> "CfgFactionClasses",
@@ -163,20 +204,64 @@ private _configPaths = [
                     //   squads), but CIV_F is the primary faction for every
                     //   civilian placement mission. Exempt civilians from
                     //   the CfgGroups check.
+                    // Source addon: which PBO contributed this faction's
+                    // ALiVE-relevant content. For military sides this is the
+                    // CfgGroups owner; for civilians, the CfgFactionClasses
+                    // owner (CfgGroups is empty for vanilla civilians, so
+                    // we fall back to the faction class's source addon).
+                    // Used as a suffix on the dropdown label so mission-
+                    // makers can see "OPFOR - RHS MSV (rhsafrf)" rather
+                    // than guessing which mod the faction came from.
+                    private _sourceAddon = "";
+
                     private _usable = if (_side == 3) then {
                         // Civilian: always include UNLESS blacklisted as a
                         // known internal / non-real civilian-side faction
                         // (see _civilianBlacklist above).
-                        !((toLower _cn) in _civilianBlacklist)
+                        if (!((toLower _cn) in _civilianBlacklist)) then {
+                            private _facSources = configSourceAddonList _fac;
+                            if (count _facSources > 0) then {
+                                _sourceAddon = _facSources select 0;
+                            };
+                            true
+                        } else {
+                            false
+                        };
                     } else {
                         private _sideName = _sideCfgGroupsName select _side;
                         private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
-                        isClass _groupsEntry && {count _groupsEntry > 0}
+                        if (isClass _groupsEntry && {count _groupsEntry > 0}) then {
+                            private _grpSources = configSourceAddonList _groupsEntry;
+                            if (count _grpSources > 0) then {
+                                _sourceAddon = _grpSources select 0;
+                            };
+                            true
+                        } else {
+                            false
+                        };
                     };
                     if (_usable) then {
-                        private _dn = getText (_fac >> "displayName");
-                        if (_dn isEqualTo "") then { _dn = _cn };
-                        _entries pushBack [_cn, _dn, _side];
+                        // Consult Cfg3rdPartyFactions registry for per-
+                        // faction overrides (excluded / displayName /
+                        // sourceLabel). Empty hashmap if no override.
+                        private _override = _registryOverrides getOrDefault [_cnLower, createHashMap];
+
+                        if (_override getOrDefault ["excluded", false]) then {
+                            _droppedRegistryExcluded = _droppedRegistryExcluded + 1;
+                        } else {
+                            // displayName: registry override > config > classname
+                            private _dn = _override getOrDefault ["displayName", ""];
+                            if (_dn isEqualTo "") then {
+                                _dn = getText (_fac >> "displayName");
+                                if (_dn isEqualTo "") then { _dn = _cn };
+                            };
+                            // sourceLabel: registry override > auto-detected addon
+                            private _srcOverride = _override getOrDefault ["sourceLabel", ""];
+                            if (_srcOverride != "") then {
+                                _sourceAddon = _srcOverride;
+                            };
+                            _entries pushBack [_cn, _dn, _side, _sourceAddon];
+                        };
                     } else {
                         _droppedNoGroups = _droppedNoGroups + 1;
                     };
@@ -187,8 +272,31 @@ private _configPaths = [
 } forEach _configPaths;
 
 // ------------------------------------------------------------------------
-// 4. Populate combo grouped by side.
-//    Order: OPFOR, BLUFOR, INDFOR, CIVILIAN.
+// 4. Pre-check stored value against the in-memory entries list.
+//    If the stored value doesn't match any entry, the "(unrecognised)
+//    <value>" placeholder is added FIRST so it sits at the TOP of the
+//    dropdown. Better UX than tucking unknown values at the end of a
+//    long alphabetical list - mission-makers immediately see that their
+//    stored faction isn't in the current loadout.
+// ------------------------------------------------------------------------
+private _valueLower = toLower _value;
+private _hasMatch = (_entries findIf {
+    _x params ["_cn"];
+    (toLower _cn) == _valueLower
+}) >= 0;
+
+private _foundIdx = -1;
+
+if (!_hasMatch && _value != "") then {
+    private _idx = _ctrl lbAdd format ["(unrecognised) %1", _value];
+    _ctrl lbSetData [_idx, _value];
+    _foundIdx = _idx;  // top entry is the unrecognised one
+};
+
+// ------------------------------------------------------------------------
+// 5. Populate combo grouped by side.
+//    Order: OPFOR, BLUFOR, INDFOR, CIVILIAN. Within each bucket, entries
+//    sorted alphabetically by classname for deterministic ordering.
 // ------------------------------------------------------------------------
 private _sideBuckets = [
     [0, "OPFOR"],
@@ -203,35 +311,28 @@ private _sideBuckets = [
         _x params ["", "", "_s"];
         _s == _sideValue
     };
-    // Sort by classname ascending (first element). Deterministic ordering.
-    _bucketEntries sort true;
+    _bucketEntries sort true; // by classname ascending
 
     {
-        _x params ["_cn", "_dn"];
-        private _label = format ["%1 - %2", _sideLabel, _dn];
+        _x params ["_cn", "_dn", "", "_sourceAddon"];
+        // Suffix the label with the source addon so mission-makers can
+        // see where the faction's CfgGroups (or CfgFactionClasses for
+        // civilians) was contributed from. Helps diagnose missing CDLC
+        // compat PBOs ("RHS - GREF (rhsgref)" vs "RHS - GREF (no source)"
+        // would tell the user composition_rhs_gref didn't load).
+        private _label = if (_sourceAddon == "") then {
+            format ["%1 - %2", _sideLabel, _dn]
+        } else {
+            format ["%1 - %2 (%3)", _sideLabel, _dn, _sourceAddon]
+        };
         private _idx = _ctrl lbAdd _label;
         _ctrl lbSetData [_idx, _cn];
+        // If this is the matching entry, remember the index for selection.
+        if (_foundIdx == -1 && (toLower _cn) == _valueLower) then {
+            _foundIdx = _idx;
+        };
     } forEach _bucketEntries;
 } forEach _sideBuckets;
-
-// ------------------------------------------------------------------------
-// 5. Select the stored value. Case-insensitive compare against lbData.
-//    If not found, add an "(unrecognised) <value>" entry so legacy / typo'd
-//    / mod-unloaded factions aren't silently lost.
-// ------------------------------------------------------------------------
-private _foundIdx = -1;
-private _valueLower = toLower _value;
-for "_i" from 0 to (lbSize _ctrl - 1) do {
-    if ((toLower (_ctrl lbData _i)) == _valueLower) exitWith {
-        _foundIdx = _i;
-    };
-};
-
-if (_foundIdx == -1 && _value != "") then {
-    private _idx = _ctrl lbAdd format ["(unrecognised) %1", _value];
-    _ctrl lbSetData [_idx, _value];
-    _foundIdx = _idx;
-};
 
 if (_foundIdx < 0) then { _foundIdx = 0 }; // defensive: empty list somehow
 _ctrl lbSetCurSel _foundIdx;
@@ -246,10 +347,11 @@ _ctrl lbSetCurSel _foundIdx;
 //  - match outcome (index + resolved lbData, or "(added as unrecognised)")
 // ------------------------------------------------------------------------
 diag_log format [
-    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 dropped(no CfgGroups)=%3 populated=%4 stored='%5' selected=%6 (lbData='%7')",
+    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 dropped(no CfgGroups)=%3 dropped(registry excluded)=%4 populated=%5 stored='%6' selected=%7 (lbData='%8')",
     _totalScanned,
     _droppedBadSide,
     _droppedNoGroups,
+    _droppedRegistryExcluded,
     count _entries,
     _value,
     _foundIdx,
