@@ -54,6 +54,22 @@ if (!isNil "_storedFromLogic" && {typeName _storedFromLogic == "STRING"} && {_st
     _value = _storedFromLogic;  // logic variable wins - re-opening the panel picks up the just-saved value
 };
 
+// Defensive: strip surrounding single quotes from the stored value. Legacy
+// missions saved with an earlier version of the Combo defaultValue format
+// (`"""'OPF_F'"""`) accidentally wrote a 7-char quoted string `'OPF_F'`
+// instead of the intended 5-char `OPF_F`, because the config-level triple-
+// quote + inner-single-quote combination evaluated to an SQF literal that
+// kept the apostrophes. Stripping them here heals those missions on next
+// save (the Save handler returns clean lbData).
+private _len = count _value;
+if (
+    _len >= 2 &&
+    {(_value select [0, 1]) == "'"} &&
+    {(_value select [_len - 1, 1]) == "'"}
+) then {
+    _value = _value select [1, _len - 2];
+};
+
 // ------------------------------------------------------------------------
 // 2. Locate the Combo control inside the attribute display.
 //    BI Combo template exposes its combo at IDC 100.

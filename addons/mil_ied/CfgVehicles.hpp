@@ -56,7 +56,7 @@ class CfgVehicles {
                                 // variable `integrationChoice` that fnc_IED.sqf's init reads.
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['integrationChoice', _value];";
-                                defaultValue = """'_auto'""";
+                                defaultValue = """_auto""";
                         };
                         // ---- IED Threat -----------------------------------------------------
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };

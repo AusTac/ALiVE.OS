@@ -39,7 +39,7 @@ class CfgVehicles {
                                 control      = "ALiVE_FactionChoice";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction', _value];";
-                                defaultValue = """'OPF_F'""";
+                                defaultValue = """OPF_F""";
                         };
 
                         // ---- Objective Filters ----------------------------------------------
