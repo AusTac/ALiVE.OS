@@ -675,4 +675,116 @@ class Cfg3rdPartyIEDs {
         stompRadius       = 0;
     };
 
+    // ------------------------------------------------------------------------
+    // SPE - Spearhead 1944 (WWII Western Front CDLC).
+    //
+    // SPE owns 31 mine/IED-relevant classes in WW2_SPE_Assets_c_Weapons_Mines_c
+    // covering German + US WWII content: Tellermine, S-mine 35 (Bouncing Betty),
+    // Schümine 42, Schützenmine 43 stake, US M1A1 / M3, Ladung demo charges,
+    // an improvised IED (7 stick grenades wired together), TNT blocks, and a
+    // Bangalore torpedo.
+    //
+    // Naming convention discovered from probe: pressure variants use explicit
+    // `_Pressure_MINE` suffix. Classes WITHOUT that suffix are the default
+    // tripwire / standard variants. This drives the alive vs engineMine split:
+    //
+    //   SPE_Pressure - mode=alive, pressure mines need ALiVE's pipeline because
+    //                  createVehicle doesn't auto-arm them (same RHS_GREF
+    //                  lesson). Visible mine + buried charge + stomp trigger.
+    //   SPE_Tripwire - mode=engineMine, default-fuze (tripwire) variants placed
+    //                  via createMine so the engine arms them as proper mines.
+    //                  Stockmine 43 stake mine especially needs this.
+    //   SPE_Charges  - mode=alive, command-detonated demolition charges
+    //                  (Ladung Big/Small, US TNT blocks, Bangalore) plus the
+    //                  Shg24x7 improvised IED. Trash-pile-style placement
+    //                  similar to vanilla A3 / SOG_Command.
+    //
+    // All three detect on `WW2_SPE_Assets_c_Weapons_Mines_c` (the patch that
+    // actually owns these classes), not on a generic SPE Core sentinel - if
+    // the Mines patch isn't loaded, none of these classes resolve and the
+    // entries shouldn't fire.
+    //
+    // Skipped:
+    //   SPE_ModuleMine_*           - Eden modules, not runtime entities
+    //   SPE_MINE_*_Field_*         - minefield templates that scatter many
+    //                                mines per placement, breaks ALiVE's
+    //                                one-entity-per-IED accounting
+    //   Land_SPE_Mine_*            - coal/industrial mining buildings (the
+    //                                "mining" sense, not military)
+    //   SPE_Mine_Ammo_Box_Ger/US   - crates that contain mines as cargo, not
+    //                                IEDs themselves (clutter candidates)
+    //   SPE_US_Rangers_engineer_*  - soldier loadout class
+    // ------------------------------------------------------------------------
+
+    // SPE: pressure mines (German + US WWII).
+    // RHS_GREF-style: visible mine on surface, ALiVE drives the pipeline,
+    // demo charge buried under for the shoot-to-detonate path, stomp trigger
+    // for instant pressure-step detonation.
+    class SPE_Pressure {
+        cfgPatchesName = "WW2_SPE_Assets_c_Weapons_Mines_c";
+        displayName    = "SPE: Pressure Mines";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "SPE_TMI_42_MINE",          // German Tellermine 42 (AT pressure)
+            "SPE_US_M1A1_ATMINE"        // US M1A1 (AT pressure)
+        };
+        urbanIEDClasses[] = {
+            "SPE_SMI_35_Pressure_MINE", // German S-mine 35 (pressure variant of Bouncing Betty)
+            "SPE_shumine_42_MINE",      // German Schümine 42 (wooden box AP, pressure)
+            "SPE_US_M3_Pressure_MINE"   // US M3 (pressure variant)
+        };
+        clutterClasses[]  = {};         // TODO populate after SPE clutter probe
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // SPE: tripwire mines (default-fuze variants of S-Mine 35, Stockmine 43,
+    // US M3). createMine arms them so the engine handles tripwire trigger.
+    // ALiVE pipeline skipped entirely (no charge, no Disarm action).
+    class SPE_Tripwire {
+        cfgPatchesName = "WW2_SPE_Assets_c_Weapons_Mines_c";
+        displayName    = "SPE: Tripwire Mines";
+        mode           = "engineMine";
+        roadIEDClasses[]  = {};         // tripwire mines are AP by design
+        urbanIEDClasses[] = {
+            "SPE_SMI_35_MINE",          // German S-mine 35 (tripwire - the original Bouncing Betty)
+            "SPE_SMI_35_1_MINE",        // German S-mine 35 variant 1 (alternate fuze)
+            "SPE_STMI_MINE",            // German Stockmine 43 (Schützenmine 43 stake mine, tripwire)
+            "SPE_US_M3_MINE"            // US M3 (default tripwire variant)
+        };
+        clutterClasses[]  = {};         // TODO populate after SPE clutter probe
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // SPE: command-detonated demolition charges + improvised IED.
+    // SOG_Command-style: trash-pile placement, ALiVE drives full pipeline,
+    // charge inside the visual model. The Shg24x7 in particular is explicitly
+    // an "Improvised Mine" (7 stick grenades wired together) - a literal IED
+    // in the WWII insurgent / partisan sense.
+    class SPE_Charges {
+        cfgPatchesName = "WW2_SPE_Assets_c_Weapons_Mines_c";
+        displayName    = "SPE: Demo Charges & Improvised";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "SPE_Ladung_Big_MINE",                  // German large demolition charge
+            "SPE_Shg24x7_Improvised_Mine_MINE"      // German improvised IED (7x Shg24 grenades)
+        };
+        urbanIEDClasses[] = {
+            "SPE_Ladung_Small_MINE",                // German small demolition charge
+            "SPE_US_TNT_4pound",                    // US TNT 4-pound block
+            "SPE_US_TNT_half_pound",                // US TNT half-pound block
+            "SPE_US_Bangalore"                      // US Bangalore torpedo
+        };
+        clutterClasses[]  = {};                     // TODO populate after SPE clutter probe
+        detonator[]       = {};
+        placementZ        = -0.1;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
 };
