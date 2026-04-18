@@ -243,44 +243,70 @@ for "_j" from 1 to _numIEDs do {
     if (!_dud && !_thirdParty) then {
         [_IED, typeOf _IED] call ALIVE_fnc_armIED;
 
-        // Attach something that can take a hit to the IED and add a damage handler
+        // Attach the demo charge. chargeOffsetZ controls Z relative to the IED:
+        //   0 (default)  - sit at IED reference point (correct for trash-pile
+        //                  IEDs where the c4 model is "inside" the visual)
+        //   negative     - bury below the IED (used by RHS so the visible mine
+        //                  isn't covered up by the c4 model on top)
         _IEDCharge = createVehicle ["ALIVE_DemoCharge_Remote_Ammo",getposATL _IED, [], 0, "CAN_COLLIDE"];
-        _IEDCharge attachTo [_IED, [0,0,0]];
+        _IEDCharge attachTo [_IED, [0, 0, ADDON getVariable ["resolvedChargeOffsetZ", 0]]];
 
-        // Add damage handler
+        // Damage-handler logic shared by both EHs (charge AND mine). Either
+        // can fire when a bullet/explosive hits its target; the
+        // `ALiVE_IED_Detonating` flag prevents both running. Mine-side EH is
+        // the path that matters when the charge is buried out of sight (RHS):
+        // shooting the visible mine still detonates the IED.
         _ehID = _IEDCharge addeventhandler ["HandleDamage",{
-
-            private _charge = _this select 0;
-            private _killer = _this select 3;
+            params ["_charge", "", "", "_killer"];
             private _IED = attachedTo _charge;
+            if (isNull _IED) exitWith {};
+            if (_IED getVariable ["ALiVE_IED_Detonating", false]) exitWith {};
+            _IED setVariable ["ALiVE_IED_Detonating", true];
             private _pos = getpos _charge;
 
-            //diag_log str(_this);
-            if (isPlayer _killer) then { // GO BOOOOOOOOOOM AND AWARD PLAYER
-
+            if (isPlayer _killer) then {
                 if (ADDON getVariable "debug") then {
-                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3", time, _IED, _killer];
+                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3 (via charge)", time, _IED, _killer];
                     [_IED getvariable "Marker"] call cba_fnc_deleteEntity;
                 };
-
-				// Update Sector Hostility
-    			[position _IED, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
-
-                //set pos to 0 height and give it an extra shot
+                [position _IED, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
                 _pos set [2,0];
                 "M_Mo_120mm_AT" createVehicle _pos;
             };
 
-            // Remove from store if damaged
             [ADDON, "removeIED", _IED] call ALiVE_fnc_IED;
-
-            // Delete IED, charge, and ALL proximity/detection triggers to prevent double-detonation
-            // (armIED also creates triggers; deleting here stops them firing after EH detonation)
-            detach _ied;
+            detach _charge;
             deleteVehicle _IED;
             deletevehicle _charge;
+            private _trgr = _pos nearObjects ["EmptyDetector", 3];
+            {
+                deleteVehicle _x;
+            } foreach _trgr;
+        }];
 
-            // Including all triggers around
+        // Mirrored damage handler on the IED (mine) itself. Critical for
+        // visible-mine integrations like RHS where the buried charge is out
+        // of line-of-sight and a player's bullet hits the mine model first.
+        private _ehIDmine = _IED addEventHandler ["HandleDamage", {
+            params ["_ied", "", "", "_killer"];
+            if (_ied getVariable ["ALiVE_IED_Detonating", false]) exitWith {};
+            _ied setVariable ["ALiVE_IED_Detonating", true];
+            private _charge = _ied getVariable ["charge", objNull];
+            private _pos = getpos _ied;
+
+            if (isPlayer _killer) then {
+                if (ADDON getVariable "debug") then {
+                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3 (via mine)", time, _ied, _killer];
+                    [_ied getvariable "Marker"] call cba_fnc_deleteEntity;
+                };
+                [position _ied, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
+                _pos set [2,0];
+                "M_Mo_120mm_AT" createVehicle _pos;
+            };
+
+            [ADDON, "removeIED", _ied] call ALiVE_fnc_IED;
+            if (!isNull _charge) then { detach _charge; deleteVehicle _charge; };
+            deleteVehicle _ied;
             private _trgr = _pos nearObjects ["EmptyDetector", 3];
             {
                 deleteVehicle _x;
@@ -288,6 +314,7 @@ for "_j" from 1 to _numIEDs do {
         }];
 
         _IED setVariable ["ehID",_ehID, true];
+        _IED setVariable ["ehIDmine",_ehIDmine, true];
         _IED setvariable ["charge", _IEDCharge, true];
     };
 

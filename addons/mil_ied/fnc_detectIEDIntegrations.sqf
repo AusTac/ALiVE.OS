@@ -54,6 +54,16 @@ for "_i" from 0 to (count _registry - 1) do {
             } else {
                 -0.1
             }];
+            _record set ["chargeOffsetZ", if (isNumber (_entry >> "chargeOffsetZ")) then {
+                getNumber (_entry >> "chargeOffsetZ")
+            } else {
+                0
+            }];
+            _record set ["stompRadius", if (isNumber (_entry >> "stompRadius")) then {
+                getNumber (_entry >> "stompRadius")
+            } else {
+                0
+            }];
             _result pushBack _record;
         };
     };

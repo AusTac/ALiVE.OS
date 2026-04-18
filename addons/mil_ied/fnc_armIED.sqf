@@ -100,6 +100,7 @@ private _gracePeriod = 15;
         private _decayRate        = ADDON getVariable ["IED_Engineer_Decay_Rate", 0.01];
         private _threshold        = _ied getVariable ["ALiVE_IED_TripThreshold", 1.0];
         private _debugLocal       = ADDON getVariable ["debug", false];
+        private _stompRadius      = ADDON getVariable ["resolvedStompRadius", 0];
 
         private _detectedOnce = false;
         private _detonated    = false;
@@ -148,6 +149,29 @@ private _gracePeriod = 15;
                 private _players       = [] call BIS_fnc_listPlayers;
                 private _shouldDetonate = false;
                 private _engineersSeen = [];
+
+                // --- Stomp check (per-integration pressure-trigger) ---
+                // For pressure-mine integrations (e.g. RHS) where stepping on
+                // the mine should detonate immediately. Bypasses the engineer
+                // accumulator entirely - intentional, because the fundamental
+                // contract of a pressure mine is "weight on it = boom" and no
+                // amount of skill or careful stance changes that. Engineers
+                // can still defuse from outside the stomp radius via the
+                // 3m addAction.
+                if (_stompRadius > 0) then {
+                    private _stompList = (_ied nearEntities ["Man", _stompRadius]) select {
+                        alive _x &&
+                        ((getposATL _x) select 2 < 1.5) &&
+                        (_aiTriggerable || (_x in _players))
+                    };
+                    if (count _stompList > 0) then {
+                        _shouldDetonate = true;
+                        if (_debugLocal) then {
+                            diag_log format ["ALIVE-%1 IED stomp: detonating, %2 unit(s) within %3m",
+                                time, count _stompList, _stompRadius];
+                        };
+                    };
+                };
 
                 {
                     private _u = _x;

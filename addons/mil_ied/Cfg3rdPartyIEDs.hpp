@@ -41,6 +41,33 @@
 //                                          Override to 0 / +0.05 for visible
 //                                          mine entities (RHS, etc.) so they
 //                                          aren't hidden under terrain.
+//   chargeOffsetZ     (number)  optional - Z offset of the attached
+//                                          ALIVE_DemoCharge_Remote_Ammo
+//                                          relative to the IED. Default: 0
+//                                          (charge sits on top of IED, fine
+//                                          for trash-pile visuals). Override
+//                                          to negative (e.g. -0.3) for
+//                                          visible mine entities so the
+//                                          charge is buried out of sight and
+//                                          only the mine is visible. The
+//                                          shoot-to-detonate damage handler
+//                                          is mirrored to the mine itself in
+//                                          this case so a buried charge
+//                                          doesn't break that path.
+//   stompRadius       (number)  optional - distance (m) at which a relevant
+//                                          unit (player, or AI when
+//                                          AI_Triggerable=Yes) instantly
+//                                          triggers the IED, BYPASSING the
+//                                          engineer trip-accumulator. Use for
+//                                          pressure-mine integrations (RHS
+//                                          PMN-2, PFM-1, etc.) where the
+//                                          real-world trigger is "step on
+//                                          it". Default: 0 (no stomp check;
+//                                          accumulator alone). The disarm
+//                                          addAction range (3m) is still
+//                                          larger than typical stomp radii
+//                                          so engineers can defuse from a
+//                                          safe stand-off distance.
 //
 // Phase-1 note: the arrays above are defined for forward compatibility but
 // are not yet consumed by the placement pipeline. The Object Classes merge
@@ -65,6 +92,8 @@ class Cfg3rdPartyIEDs {
         clutterClasses[]  = {};
         detonator[]       = {};
         placementZ        = -0.1;       // bury (trash-pile look)
+        chargeOffsetZ     = 0;          // charge inside the trash-pile model
+        stompRadius       = 0;          // command-detonated, no pressure trigger
     };
 
     // RHS: AFRF (Armed Forces of the Russian Federation).
@@ -85,10 +114,14 @@ class Cfg3rdPartyIEDs {
     // The Z=-0.1 bury that ALiVE applies to its own IEDs also applies to
     // these, so the mine sits half-buried under ALiVE clutter (camouflage).
     //
-    // Class selection: modern Russian mines that fit insurgent-IED use:
-    //   roadIEDClasses  - TM-62M anti-tank for roadside placement
-    //   urbanIEDClasses - PMN-2 anti-personnel + OZM-72 bouncing AP for
-    //                     foot traffic / urban
+    // Class selection: modern Russian mines that fit insurgent-IED use.
+    // IMPORTANT: only **pressure-activated** mines work with ALiVE's
+    // proximity-accumulator trigger model. Tripwire mines (e.g. OZM-72)
+    // appear inert because their wire is engine-trigger-driven and Arma
+    // only wires that up for createMine, not createVehicle.
+    //   roadIEDClasses  - TM-62M anti-tank (pressure) for roadside placement
+    //   urbanIEDClasses - PMN-2 anti-personnel (pressure) + PFM-1 butterfly
+    //                     (pressure) for foot traffic
     // All are placeable entities (no _module / _used / _mag suffix).
     //
     // Note: ACE is also loaded as mode=mine; my resolver picks the FIRST
@@ -104,11 +137,13 @@ class Cfg3rdPartyIEDs {
         };
         urbanIEDClasses[] = {
             "rhs_mine_pmn2",
-            "rhs_mine_ozm72_a"
+            "rhs_mine_pfm1"
         };
         clutterClasses[]  = {};   // use ALiVE clutter defaults via lenient fallback
         detonator[]       = {};
         placementZ        = 0;    // surface - RHS mines are visible objects
+        chargeOffsetZ     = -0.3; // bury the demo charge below the visible mine
+        stompRadius       = 0.6;  // pressure-trigger: stepping on the mine = boom
     };
 
     // ACE 3 Explosives - IED/mine classes and detonation use ACE's explosives
@@ -139,6 +174,8 @@ class Cfg3rdPartyIEDs {
         clutterClasses[]  = {};   // use ALiVE clutter defaults via lenient fallback
         detonator[]       = {};
         placementZ        = -0.1; // bury slightly (vanilla A3 IED visuals are trash piles)
+        chargeOffsetZ     = 0;    // charge inside the trash-pile model
+        stompRadius       = 0;    // command-detonated, no pressure trigger
     };
 
 };
