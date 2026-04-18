@@ -224,11 +224,15 @@ private _configPaths = [
 
                 if !(_side in [0, 1, 2, 3]) then {
                     _droppedBadSide = _droppedBadSide + 1;
-                } else if !(_side in _allowedSides) then {
-                    // Per-control side allowlist filter: civilian modules
-                    // shouldn't see military factions and vice versa.
-                    _droppedSideFiltered = _droppedSideFiltered + 1;
                 } else {
+                    // SQF doesn't support `else if` - after `else` the parser
+                    // expects a {...} code block, not another `if`. Nested if
+                    // here as the workaround.
+                    if !(_side in _allowedSides) then {
+                        // Per-control side allowlist filter: civilian modules
+                        // shouldn't see military factions and vice versa.
+                        _droppedSideFiltered = _droppedSideFiltered + 1;
+                    } else {
                     // Structural usability filter:
                     //   Military sides (0/1/2) spawn via CfgGroups entries
                     //   (squads / platoons / companies). A military faction
@@ -269,6 +273,7 @@ private _configPaths = [
                     } else {
                         _droppedNoGroups = _droppedNoGroups + 1;
                     };
+                    }; // close inner else (side-allowlist filter wrap from `} else { if !(_side in _allowedSides) ...`)
                 };
             };
         };
