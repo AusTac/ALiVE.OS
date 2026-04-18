@@ -351,6 +351,19 @@ switch(_operation) do {
                     ADDON setVariable ["resolvedUrbanIEDClasses", ["urbanIEDClasses", DEFAULT_URBANIEDS] call _fnResolveClasses, true];
                     ADDON setVariable ["resolvedClutterClasses",  ["clutterClasses",  DEFAULT_CLUTTER]  call _fnResolveClasses, true];
 
+                    // Vertical placement offset (Z). When an integration is the active
+                    // authority (specific choice, or Auto picked it), use its declared
+                    // placementZ. Otherwise fall back to ALiVE's classic burial (-0.1).
+                    private _resolvedPlacementZ = if (!isNil "_candidateIntegration" && {_autoModeFollowsIntegration || _iChoice == "_force_alive"}) then {
+                        // Use candidate's placementZ when it's actually the source of classes
+                        // (force_alive uses defaults so candidate's placementZ doesn't apply
+                        //  there, but explicit choice or auto-picks-mine should honour it)
+                        if (_iChoice == "_force_alive") then { -0.1 } else { _candidateIntegration get "placementZ" }
+                    } else {
+                        -0.1
+                    };
+                    ADDON setVariable ["resolvedPlacementZ", _resolvedPlacementZ, true];
+
                     if (ADDON getVariable ["debug", false]) then {
                         diag_log format ["ALIVE-%1 MIL_IED Phase 3c: candidate=%2, road=%3 (autoDetect=%4) urban=%5 (autoDetect=%6) clutter=%7 (autoDetect=%8)",
                             time,

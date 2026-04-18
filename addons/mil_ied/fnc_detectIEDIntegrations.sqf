@@ -47,6 +47,13 @@ for "_i" from 0 to (count _registry - 1) do {
             _record set ["clutterClasses",   getArray (_entry >> "clutterClasses")];
             _record set ["detonator",        getArray (_entry >> "detonator")];
             _record set ["className",        configName _entry];
+            // Vertical placement offset. isNumber check distinguishes
+            // "explicitly set to 0" from "not specified" (getNumber returns 0 in both).
+            _record set ["placementZ", if (isNumber (_entry >> "placementZ")) then {
+                getNumber (_entry >> "placementZ")
+            } else {
+                -0.1
+            }];
             _result pushBack _record;
         };
     };

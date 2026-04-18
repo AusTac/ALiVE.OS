@@ -34,6 +34,13 @@
 //   detonator[]       (array)   optional - magazine/ammo classes used for
 //                                          detonation - reserved for future
 //                                          disarm/recovery logic.
+//   placementZ        (number)  optional - vertical placement offset for the
+//                                          IED entity. Default: -0.1 (buried,
+//                                          matches ALiVE's classic
+//                                          trash-pile-with-bomb-inside look).
+//                                          Override to 0 / +0.05 for visible
+//                                          mine entities (RHS, etc.) so they
+//                                          aren't hidden under terrain.
 //
 // Phase-1 note: the arrays above are defined for forward compatibility but
 // are not yet consumed by the placement pipeline. The Object Classes merge
@@ -57,6 +64,51 @@ class Cfg3rdPartyIEDs {
         urbanIEDClasses[] = {};
         clutterClasses[]  = {};
         detonator[]       = {};
+        placementZ        = -0.1;       // bury (trash-pile look)
+    };
+
+    // RHS: AFRF (Armed Forces of the Russian Federation).
+    // Detection key is `rhs_main`, the AFRF core addon. Other RHS variants
+    // (USAF / GREF / SAF) each have their own cfgPatches name and would
+    // get their own registry entries; this one is just AFRF.
+    //
+    // mode = "alive" - RHS mines are pressure-triggered and Arma's
+    // createVehicle does NOT auto-arm them (createMine would, but ALiVE
+    // doesn't use that path). In "mine" mode they sit inert: no Arma
+    // detonation, no ACE/vanilla defuse hook recognition. So instead we
+    // run them through ALiVE's full pipeline:
+    //   - armIED attaches a damage-sensitive demo charge to the RHS mine
+    //   - proximity-loop trip accumulator handles approach detection
+    //   - Disarm IED addAction + skill-scaled wire-guess minigame for defuse
+    //   - Detonation creates a separate shell explosion via ALiVE
+    // The RHS mine becomes a visual anchor; ALiVE drives all behaviour.
+    // The Z=-0.1 bury that ALiVE applies to its own IEDs also applies to
+    // these, so the mine sits half-buried under ALiVE clutter (camouflage).
+    //
+    // Class selection: modern Russian mines that fit insurgent-IED use:
+    //   roadIEDClasses  - TM-62M anti-tank for roadside placement
+    //   urbanIEDClasses - PMN-2 anti-personnel + OZM-72 bouncing AP for
+    //                     foot traffic / urban
+    // All are placeable entities (no _module / _used / _mag suffix).
+    //
+    // Note: ACE is also loaded as mode=mine; my resolver picks the FIRST
+    // mine-mode match under Auto. Since RHS is mode=alive, Auto won't pick
+    // it as a candidate even when iChoice=_auto. Use the dropdown's
+    // "Defer to: RHS: AFRF" to explicitly select this entry.
+    class RHS_AFRF {
+        cfgPatchesName = "rhs_main";
+        displayName    = "RHS: AFRF";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "rhs_mine_tm62m"
+        };
+        urbanIEDClasses[] = {
+            "rhs_mine_pmn2",
+            "rhs_mine_ozm72_a"
+        };
+        clutterClasses[]  = {};   // use ALiVE clutter defaults via lenient fallback
+        detonator[]       = {};
+        placementZ        = 0;    // surface - RHS mines are visible objects
     };
 
     // ACE 3 Explosives - IED/mine classes and detonation use ACE's explosives
@@ -86,6 +138,7 @@ class Cfg3rdPartyIEDs {
         };
         clutterClasses[]  = {};   // use ALiVE clutter defaults via lenient fallback
         detonator[]       = {};
+        placementZ        = -0.1; // bury slightly (vanilla A3 IED visuals are trash piles)
     };
 
 };

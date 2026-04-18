@@ -196,9 +196,10 @@ for "_j" from 1 to _numIEDs do {
             diag_log format ["ALIVE-%1 MIL_IED: empty class pool, skipping placement (check integrationChoice + <cat>_additional fields)", time];
         };
 
-        if !(_thirdParty) then {
-            _IEDpos set [2, -0.1];
-        };
+        // Apply per-integration vertical offset. Default -0.1 (ALiVE classic
+        // burial); registry entries can override (e.g. RHS sets 0 so visible
+        // mine objects don't sink under terrain).
+        _IEDpos set [2, ADDON getVariable ["resolvedPlacementZ", -0.1]];
         _IEDskin = (selectRandom _IEDskins);
         _IED = createVehicle [_IEDskin, _IEDpos, [], 0, "NONE"];
 
@@ -227,6 +228,14 @@ for "_j" from 1 to _numIEDs do {
 
     // Only proceed with IED setup if no error occurred and IED was created
     if (!_error) then {
+        // Guard: skip the rest of the per-IED setup if createVehicle returned objNull.
+        // Without this guard the demo charge below would be created at world origin
+        // (or wherever attachTo objNull places it) and ACE would see a loose
+        // explosive with no parent mine - the "lone charge" symptom.
+        if (isNull _IED) then {
+            diag_log format ["ALIVE-%1 MIL_IED arm/charge SKIPPED for null _IED (skin=%2 pos=%3) - this would have produced an orphaned charge",
+                time, _IEDskin, _IEDpos];
+        } else {
         _IED setvariable ["ID", _ID];
     _IED setvariable ["town", _town];
 
@@ -303,6 +312,7 @@ for "_j" from 1 to _numIEDs do {
         ADDON setVariable ["debugMarkers",_markers];
 
     };
+        }; // End of else (isNull _IED guard)
     }; // End of if (!_error) - only set up IED if it was successfully created
 };
 
