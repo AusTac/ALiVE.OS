@@ -733,7 +733,38 @@ class Cfg3rdPartyIEDs {
             "SPE_shumine_42_MINE",      // German Schümine 42 (wooden box AP, pressure)
             "SPE_US_M3_Pressure_MINE"   // US M3 (pressure variant)
         };
-        clutterClasses[]  = {};         // TODO populate after SPE clutter probe
+        // SPE clutter: Norman village (1944) + Allied / German military supply
+        // props. Mirrors vanilla's semantic categories (sacks / pallets /
+        // crates / barrels / debris piles) with period-appropriate French
+        // farmland and supply-dump content. Curated from WW2_SPE_Structures_c
+        // + WW2_SPE_Structures2_c + WW2_SPE_Water_c_Rivers (riverside leaves).
+        clutterClasses[] = {
+            // Food sacks - Norman farmland staple
+            "Land_SPE_Sack_Corn_Heap",
+            "Land_SPE_Sack_Potato_Heap",
+            "Land_SPE_Sack_Wheat_Heap",
+            "Land_SPE_Sack_Corn_Pile",
+            "Land_SPE_Sack_Potato_Pile",
+            // Pallets / crates (mixed civilian + supply-dump)
+            "Land_SPE_Pallet",
+            "Land_SPE_Covered_Pallets_01",
+            "Land_SPE_Cider_Crate_Empty",
+            "Land_SPE_Foodcrate_US_A",
+            "Land_SPE_Ammocrate_US_01",
+            // Barrels - civilian + fuel
+            "Land_SPE_Wooden_Barrel_01",
+            "Land_SPE_Wooden_Barrel_01_Small",
+            "Land_SPE_Wooden_Barrel_02_Brown",
+            "Land_SPE_Wooden_Barrel_02_Open_Brown",
+            "Land_SPE_Fuel_Barrel_German",
+            "Land_SPE_Fuel_Barrel_US",
+            "Land_SPE_Jerrycan",
+            // Debris / leaf piles - perfect tripwire / pressure-mine disguise
+            "Land_SPE_Dugout_Pile_01",
+            "Land_SPE_Dugout_Pile_02",
+            "land_spe_riverside_leaves_pile_01",
+            "land_spe_riverside_leaves_pile_02"
+        };
         detonator[]       = {};
         placementZ        = 0;
         chargeOffsetZ     = -0.3;
@@ -754,7 +785,38 @@ class Cfg3rdPartyIEDs {
             "SPE_STMI_MINE",            // German Stockmine 43 (Schützenmine 43 stake mine, tripwire)
             "SPE_US_M3_MINE"            // US M3 (default tripwire variant)
         };
-        clutterClasses[]  = {};         // TODO populate after SPE clutter probe
+        // SPE clutter: Norman village (1944) + Allied / German military supply
+        // props. Mirrors vanilla's semantic categories (sacks / pallets /
+        // crates / barrels / debris piles) with period-appropriate French
+        // farmland and supply-dump content. Curated from WW2_SPE_Structures_c
+        // + WW2_SPE_Structures2_c + WW2_SPE_Water_c_Rivers (riverside leaves).
+        clutterClasses[] = {
+            // Food sacks - Norman farmland staple
+            "Land_SPE_Sack_Corn_Heap",
+            "Land_SPE_Sack_Potato_Heap",
+            "Land_SPE_Sack_Wheat_Heap",
+            "Land_SPE_Sack_Corn_Pile",
+            "Land_SPE_Sack_Potato_Pile",
+            // Pallets / crates (mixed civilian + supply-dump)
+            "Land_SPE_Pallet",
+            "Land_SPE_Covered_Pallets_01",
+            "Land_SPE_Cider_Crate_Empty",
+            "Land_SPE_Foodcrate_US_A",
+            "Land_SPE_Ammocrate_US_01",
+            // Barrels - civilian + fuel
+            "Land_SPE_Wooden_Barrel_01",
+            "Land_SPE_Wooden_Barrel_01_Small",
+            "Land_SPE_Wooden_Barrel_02_Brown",
+            "Land_SPE_Wooden_Barrel_02_Open_Brown",
+            "Land_SPE_Fuel_Barrel_German",
+            "Land_SPE_Fuel_Barrel_US",
+            "Land_SPE_Jerrycan",
+            // Debris / leaf piles - perfect tripwire / pressure-mine disguise
+            "Land_SPE_Dugout_Pile_01",
+            "Land_SPE_Dugout_Pile_02",
+            "land_spe_riverside_leaves_pile_01",
+            "land_spe_riverside_leaves_pile_02"
+        };
         detonator[]       = {};
         placementZ        = 0;
         chargeOffsetZ     = 0;
@@ -780,7 +842,33 @@ class Cfg3rdPartyIEDs {
             "SPE_US_TNT_half_pound",                // US TNT half-pound block
             "SPE_US_Bangalore"                      // US Bangalore torpedo
         };
-        clutterClasses[]  = {};                     // TODO populate after SPE clutter probe
+        // SPE clutter: same Norman village + supply prop pool as SPE_Pressure
+        // and SPE_Tripwire. Terrain-driven not mode-driven (a Bangalore on a
+        // Normandy lane wants the same farmland trash around it as a German
+        // S-mine on the same lane).
+        clutterClasses[] = {
+            "Land_SPE_Sack_Corn_Heap",
+            "Land_SPE_Sack_Potato_Heap",
+            "Land_SPE_Sack_Wheat_Heap",
+            "Land_SPE_Sack_Corn_Pile",
+            "Land_SPE_Sack_Potato_Pile",
+            "Land_SPE_Pallet",
+            "Land_SPE_Covered_Pallets_01",
+            "Land_SPE_Cider_Crate_Empty",
+            "Land_SPE_Foodcrate_US_A",
+            "Land_SPE_Ammocrate_US_01",
+            "Land_SPE_Wooden_Barrel_01",
+            "Land_SPE_Wooden_Barrel_01_Small",
+            "Land_SPE_Wooden_Barrel_02_Brown",
+            "Land_SPE_Wooden_Barrel_02_Open_Brown",
+            "Land_SPE_Fuel_Barrel_German",
+            "Land_SPE_Fuel_Barrel_US",
+            "Land_SPE_Jerrycan",
+            "Land_SPE_Dugout_Pile_01",
+            "Land_SPE_Dugout_Pile_02",
+            "land_spe_riverside_leaves_pile_01",
+            "land_spe_riverside_leaves_pile_02"
+        };
         detonator[]       = {};
         placementZ        = -0.1;
         chargeOffsetZ     = 0;
