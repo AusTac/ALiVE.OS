@@ -1322,6 +1322,8 @@ ALiVE_fnc_INS_addInstallationHoldActions = {
     if !(alive _building) exitwith {};
     if (_disabledVar == "") exitwith {};
 
+    private _interactionDistanceSqr = 100;
+
     {
         private _actionObject = _x;
         private _actionKeys = _actionObject getVariable [QGVAR(INSTALLATION_ACTIONS_ADDED), []];
@@ -1337,8 +1339,8 @@ ALiVE_fnc_INS_addInstallationHoldActions = {
                 _title,
                 "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
                 "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; _this distance2D _target < 3 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar],
-                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; _caller distance2D _target < 3 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar],
+                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_this distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
+                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_caller distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
                 {},
                 {},
                 {

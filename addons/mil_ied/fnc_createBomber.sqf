@@ -75,9 +75,10 @@ _bomber addItemToVest "DemoCharge_Remote_Mag";
 // Select victim - resolve to an actual infantry unit from the triggering group
 // _victim at this point is the first unit from thisList (may be a vehicle)
 // Unwrap to the actual person and pick a random squadmate
+if (isNil "_victim" || {isNull _victim}) exitWith { deleteVehicle _bomber; };
 private _victimUnit = if (vehicle _victim != _victim) then { driver (vehicle _victim) } else { _victim };
 _victim = selectRandom (units (group _victimUnit));
-if (isNil "_victim" || isNull _victim) exitWith { deletevehicle _bomber; };
+if (isNil "_victim" || {isNull _victim}) exitWith { deleteVehicle _bomber; };
 
 // Add debug marker
 if (_debug) then {
@@ -86,7 +87,7 @@ if (_debug) then {
 
 [_victim,_bomber, _pos] spawn {
 
-    private["_victim","_bomber","_debug","_marker","_shell","_pos"];
+    private["_victim","_bomber","_debug","_marker","_shell","_pos","_time","_timer"];
 
     _victim = _this select 0;
     _bomber = _this select 1;
@@ -103,7 +104,7 @@ if (_debug) then {
     _timer = time;
     waitUntil {
 
-        if (!isNil "_victim" && !isNull _victim && {time - _timer > 15}) then {
+        if (!isNil "_victim" && {!isNull _victim} && {time - _timer > 15}) then {
             // doMove must execute on the machine where the bomber is local.
             // remoteExec ensures the order reaches the correct locality.
             [_bomber, getpos _victim] remoteExecCall ["doMove", _bomber];
@@ -126,10 +127,18 @@ if (_debug) then {
 
         sleep 1;
 
-        !(alive _victim) || (isNil "_victim") || (_bomber distance _victim < 8) || (time > _time) || !(alive _bomber)
+        (isNil "_victim") ||
+        {isNull _victim} ||
+        {!(alive _victim)} ||
+        {isNil "_bomber"} ||
+        {isNull _bomber} ||
+        {!(alive _bomber)} ||
+        {_bomber distance _victim < 8} ||
+        {time > _time}
     };
 
-    if (!(alive _victim) || isNil "_victim") exitWith {    deletevehicle _bomber;};
+    if ((isNil "_bomber") || {isNull _bomber} || {!(alive _bomber)}) exitWith {};
+    if ((isNil "_victim") || {isNull _victim} || {!(alive _victim)}) exitWith {deleteVehicle _bomber;};
 
     // Blow up bomber
     if ((_bomber distance _victim < 8) && (alive _bomber)) then {
