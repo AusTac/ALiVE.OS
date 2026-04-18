@@ -875,4 +875,81 @@ class Cfg3rdPartyIEDs {
         stompRadius       = 0;
     };
 
+    // ------------------------------------------------------------------------
+    // GM - Global Mobilization (Cold War Germany CDLC, 1980s setting).
+    //
+    // GM owns 8 placeable mine + demo-charge classes in `gm_weapons_put`,
+    // covering BOTH political factions of the divided Germany era:
+    //   West (Bundeswehr / BRD): DM-21 AT, DM-31 AP, DM-1233 scatterable AT
+    //   East (Volksarmee / NVA): TM-46 AT, PFM-1 AP butterfly, PTM-3 scatter AT
+    //   Universal demo charges:  PETN, PLNP
+    //
+    // Naming convention is uniform and predictable:
+    //   gm_minestatic_at_*           anti-tank pressure mines
+    //   gm_minestatic_ap_*           anti-personnel pressure mines
+    //   gm_explosivestatic_charge_*  command-detonated demolition charges
+    //
+    // NOTABLE ABSENCE: zero tripwire mines. GM is 1980s Cold War content;
+    // tripwire doctrine was WWII-era and had largely been retired by the
+    // setting period. So no GM_Engine sibling entry needed - all GM mines
+    // are pressure-triggered or command-detonated, both of which work under
+    // ALiVE's alive-mode pipeline (visible mine + buried charge + stomp).
+    //
+    // Mixed East/West classes in single entries (like RHS_GREF mixes German
+    // /US/Russian WWII mines): mission-maker can edit the field in Eden if
+    // they want a single-faction Bundeswehr-only or NVA-only IED pool.
+    //
+    // Skipped:
+    //   gm_AmmoBox_*Rnd_mine_*_put   crates that contain mines as cargo, not
+    //                                IEDs themselves (clutter candidates)
+    // ------------------------------------------------------------------------
+
+    // GM: pressure mines (mixed BRD + NVA factions).
+    // Same RHS_GREF / SPE_Pressure shape: visible surface mine, buried demo
+    // charge underneath, stomp trigger for instant pressure-step detonation.
+    // PFM-1 butterfly is intentionally in urban pool here (small AP scatter
+    // mine, foot-traffic context) - same logic as RHS_AFRF.
+    class GM_Mines {
+        cfgPatchesName = "gm_weapons_put";
+        displayName    = "GM: Mines";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "gm_minestatic_at_dm21",        // West Bundeswehr DM-21 AT pressure
+            "gm_minestatic_at_tm46",        // East NVA TM-46 AT pressure (Soviet)
+            "gm_minestatic_at_dm1233",      // West Bundeswehr DM-1233 AT scatterable
+            "gm_minestatic_at_ptm3"         // East NVA PTM-3 AT scatterable (Soviet)
+        };
+        urbanIEDClasses[] = {
+            "gm_minestatic_ap_dm31",        // West Bundeswehr DM-31 AP (bouncing)
+            "gm_minestatic_ap_pfm1"         // East NVA PFM-1 butterfly AP scatterable
+        };
+        clutterClasses[]  = {};             // TODO populate after GM clutter probe
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // GM: command-detonated demolition charges (PETN + PLNP).
+    // SOG_Command / SPE_Charges shape: trash-pile placement, ALiVE drives the
+    // full pipeline, charge inside the visual model. PETN is the heavier of
+    // the two (high explosive) so road; PLNP urban. Distribution can be
+    // swapped in Eden if testing shows the visuals fit the other way.
+    class GM_Charges {
+        cfgPatchesName = "gm_weapons_put";
+        displayName    = "GM: Demolition Charges";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "gm_explosivestatic_charge_petn"   // PETN high-explosive demo charge
+        };
+        urbanIEDClasses[] = {
+            "gm_explosivestatic_charge_plnp"   // PLNP demolition charge (smaller)
+        };
+        clutterClasses[]  = {};             // TODO populate after GM clutter probe
+        detonator[]       = {};
+        placementZ        = -0.1;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
 };
