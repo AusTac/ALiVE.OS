@@ -108,6 +108,17 @@ lbClear _ctrl;
 // bad-side filter below handles everything else.
 private _sideCfgGroupsName = ["East", "West", "Indep", "Civilian"];
 
+// Civilian-only blacklist. Civilians are exempt from the CfgGroups
+// structural filter (they spawn as individuals, not groups), so we need
+// a targeted list for internal / non-real civilian-side factions that
+// have CfgVehicles units but aren't meaningful mission-maker choices.
+// Extend as new edge cases surface. Phase 2's Cfg3rdPartyFactions
+// registry will turn this into a config-driven exclusion hook.
+// Entries MUST be lowercase for the toLower comparison below.
+private _civilianBlacklist = [
+    "virtual"  // BI VR / Virtual Arsenal training faction (side 3)
+];
+
 private _seen = createHashMap; // lowercase classname -> true, for dedup
 private _entries = [];
 private _totalScanned = 0;
@@ -150,7 +161,10 @@ private _configPaths = [
                     //   civilian placement mission. Exempt civilians from
                     //   the CfgGroups check.
                     private _usable = if (_side == 3) then {
-                        true
+                        // Civilian: always include UNLESS blacklisted as a
+                        // known internal / non-real civilian-side faction
+                        // (see _civilianBlacklist above).
+                        !((toLower _cn) in _civilianBlacklist)
                     } else {
                         private _sideName = _sideCfgGroupsName select _side;
                         private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
