@@ -41,7 +41,7 @@ class CfgVehicles {
                                 property     = "ALiVE_mil_placement_faction";
                                 displayName  = "$STR_ALIVE_MP_FACTION";
                                 tooltip      = "$STR_ALIVE_MP_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice";
+                                control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction', _value];";
                                 defaultValue = """OPF_F""";

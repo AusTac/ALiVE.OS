@@ -5,34 +5,67 @@ SCRIPT(edenFactionChoiceLoad);
 Function: ALIVE_fnc_edenFactionChoiceLoad
 
 Description:
-Eden-attribute `attributeLoad` handler for the shared ALiVE_FactionChoice
-control. Populates the Combo with every faction found in CfgFactionClasses
-(both missionConfigFile and configFile), grouped by side. Preserves legacy
-typed strings by adding an "(unrecognised)" entry at the top if the stored
-value doesn't match any loaded faction.
+Eden-attribute `attributeLoad` handler for the ALiVE_FactionChoice control
+family. Populates the Combo with factions from CfgFactionClasses
+(missionConfig + main config), grouped by side, filtered to the per-control
+side allowlist passed in via the call argument.
+
+Three control variants share this one handler:
+    ALiVE_FactionChoice           sides [0,1,2,3]  (all)
+    ALiVE_FactionChoice_Military  sides [0,1,2]    (no civilians)
+    ALiVE_FactionChoice_Civilian  sides [3]        (civilians only)
+
+Each variant's Cfg3DEN attributeLoad expression looks like:
+    [_this, [<allowed side ints>]] call compile preprocessFileLineNumbers '...'
+
+Side allowlist filtering happens at TWO points:
+  - Enumeration: factions whose side isn't in the allowlist are skipped
+    entirely (not just hidden). Keeps populated counts accurate.
+  - Bucket population: only iterate buckets whose side is in the allowlist.
 
 Defensive enumeration:
-  - Missing displayName falls back to the classname
-  - Missing/invalid side falls into the "Other" bucket instead of dropping
-  - Empty CfgFactionClasses entries are skipped silently
-  - Duplicate classnames across missionConfig + configFile are deduped
+  - Missing displayName falls back to classname
+  - Missing/invalid side dropped (was "Other" bucket pre-Phase 1)
+  - Empty CfgFactionClasses entries skipped silently
+  - Duplicate classnames across missionConfig + configFile deduped
 
 Case-insensitive matching when restoring the selected value (closes #651).
 
-Shared across mil_placement, civ_placement, civ_placement_custom, and any
-future ALiVE module with a `faction` attribute.
+(unrecognised) entries land at TOP of the dropdown.
 
-Lives in its own .sqf file because Arma's config preprocessor struggles with
-multi-line `"..."` strings containing backslash-newline continuations on
-Windows CRLF files (same rationale as mil_ied's edenIntegrationChoice
+Cfg3rdPartyFactions registry consulted for per-faction overrides
+(displayName cleanup, exclusion).
+
+Lives in its own .sqf file because Arma's config preprocessor struggles
+with multi-line `"..."` strings containing backslash-newline continuations
+on Windows CRLF files (same rationale as mil_ied's edenIntegrationChoice
 handlers).
 
 Parameters:
-    _this: DISPLAY - the Eden attribute's display. Combo control has IDC 100.
+    [_display, _allowedSides]
+    _display      : DISPLAY - Eden attribute display. Combo control IDC 100.
+    _allowedSides : ARRAY of NUMBERs - sides to include in the dropdown.
+                    Defaults to [0,1,2,3] (all) if missing/invalid.
 
 Author:
 Jman
 ---------------------------------------------------------------------------- */
+
+// Unpack invocation. New-style call from the variant control classes is
+//   [_display, _allowedSides] call compile preprocessFileLineNumbers '...'
+// Legacy direct call is just _this = display (older Cfg3DEN attributeLoad
+// shape, kept compatible so anyone overriding outside of our control
+// classes still works).
+private _display = controlNull;
+private _allowedSides = [0,1,2,3];
+if (typeName _this == "ARRAY") then {
+    _display = _this select 0;
+    if (count _this > 1 && {typeName (_this select 1) == "ARRAY"}) then {
+        _allowedSides = _this select 1;
+    };
+} else {
+    _display = _this;
+};
 
 // ------------------------------------------------------------------------
 // 1. Resolve the currently-stored faction string.
@@ -44,7 +77,7 @@ private _storedFromLogic = if (count _selected > 0) then {
 } else {
     nil
 };
-private _edenValue = _this getVariable "value";
+private _edenValue = _display getVariable "value";
 
 private _value = "OPF_F";
 if (!isNil "_edenValue" && {typeName _edenValue == "STRING"} && {_edenValue != ""}) then {
@@ -74,7 +107,7 @@ if (
 // 2. Locate the Combo control inside the attribute display.
 //    BI Combo template exposes its combo at IDC 100.
 // ------------------------------------------------------------------------
-private _ctrl = _this controlsGroupCtrl 100;
+private _ctrl = _display controlsGroupCtrl 100;
 if (isNull _ctrl) exitWith {
     diag_log "ALIVE FactionChoice LOAD: combo control (IDC 100) not found";
 };
@@ -163,6 +196,7 @@ private _seen = createHashMap; // lowercase classname -> true, for dedup
 private _entries = [];
 private _totalScanned = 0;
 private _droppedBadSide = 0;
+private _droppedSideFiltered = 0;
 private _droppedNoGroups = 0;
 private _droppedRegistryExcluded = 0;
 
@@ -190,6 +224,10 @@ private _configPaths = [
 
                 if !(_side in [0, 1, 2, 3]) then {
                     _droppedBadSide = _droppedBadSide + 1;
+                } else if !(_side in _allowedSides) then {
+                    // Per-control side allowlist filter: civilian modules
+                    // shouldn't see military factions and vice versa.
+                    _droppedSideFiltered = _droppedSideFiltered + 1;
                 } else {
                     // Structural usability filter:
                     //   Military sides (0/1/2) spawn via CfgGroups entries
@@ -273,6 +311,11 @@ private _sideBuckets = [
 
 {
     _x params ["_sideValue", "_sideLabel"];
+    // Skip the entire bucket if its side isn't in this control's allowlist
+    // (e.g. _Civilian variant skips OPFOR/BLUFOR/INDFOR buckets entirely
+    // - their entries already got filtered out at enumeration too, but
+    // skipping the bucket loop avoids any wasted lbAdd calls).
+    if !(_sideValue in _allowedSides) then { continue };
     private _bucketEntries = _entries select {
         _x params ["", "", "_s"];
         _s == _sideValue
@@ -315,9 +358,11 @@ _ctrl lbSetCurSel _foundIdx;
 //  - match outcome (index + resolved lbData, or "(added as unrecognised)")
 // ------------------------------------------------------------------------
 diag_log format [
-    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 dropped(no CfgGroups)=%3 dropped(registry excluded)=%4 populated=%5 stored='%6' selected=%7 (lbData='%8')",
+    "ALIVE FactionChoice LOAD: allowedSides=%1 scanned=%2 dropped(bad side)=%3 dropped(side filter)=%4 dropped(no CfgGroups)=%5 dropped(registry excluded)=%6 populated=%7 stored='%8' selected=%9 (lbData='%10')",
+    _allowedSides,
     _totalScanned,
     _droppedBadSide,
+    _droppedSideFiltered,
     _droppedNoGroups,
     _droppedRegistryExcluded,
     count _entries,

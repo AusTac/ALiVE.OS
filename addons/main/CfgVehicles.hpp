@@ -49,30 +49,50 @@ class Cfg3DEN
 
         class Combo; // Forward declaration of BI Combo attribute control
 
-        // ALiVE_FactionChoice:
-        //   Dynamic faction-selection Combo shared across placement-style modules
-        //   (mil_placement, civ_placement, civ_placement_custom, any future module
-        //   with a `faction` attribute). Populated at Eden-panel-open time from
-        //   loaded CfgFactionClasses entries grouped by side (OPFOR / BLUFOR /
-        //   INDFOR / CIVILIAN / Other) with the displayName shown to the user.
+        // ALiVE_FactionChoice family:
+        //   Dynamic faction-selection Combo shared across placement-style
+        //   modules. Populated at Eden-panel-open time from loaded
+        //   CfgFactionClasses entries grouped by side (OPFOR / BLUFOR /
+        //   INDFOR / CIVILIAN) with the displayName + classname suffix
+        //   shown to the user.
         //
-        //   Stored attribute value is the canonical faction classname STRING
-        //   (e.g. "OPF_F", "rhs_faction_msv", "vn_o_nva"). Legacy mission SQMs
-        //   that stored a faction string the dropdown can't resolve (typo, mod
-        //   unloaded, custom faction) preserve the stored string unchanged via
-        //   an "(unrecognised)" entry added to the top of the dropdown at load
-        //   time.
+        //   Three variants differ only in which sides their dropdown
+        //   includes - the same Load / Save handlers serve all three,
+        //   parameterized via an array passed alongside _this:
         //
-        //   Case-insensitive matching when selecting the stored value — closes
-        //   issue #651 (inconsistent case for faction names lead to ALiVE not
-        //   detecting them). Selecting from the dropdown always writes the
-        //   canonical case from CfgFactionClasses.
+        //     ALiVE_FactionChoice            sides 0/1/2/3 (all)
+        //     ALiVE_FactionChoice_Military   sides 0/1/2 (no civilians)
+        //     ALiVE_FactionChoice_Civilian   side 3 only
         //
-        //   attributeLoad / attributeSave live in separate .sqf files; see the
-        //   rationale in mil_ied Cfg3DEN.hpp (preprocessor fights with
-        //   multi-line strings on Windows CRLF).
+        //   Modules pick the variant that matches their semantics:
+        //     mil_*    -> Military    (mission-makers shouldn't pick a
+        //                              civilian faction for an enemy
+        //                              placement objective)
+        //     civ_*    -> Civilian    (mission-makers shouldn't pick an
+        //                              OPFOR faction for civilian
+        //                              ambient population)
+        //     generic  -> base ALiVE_FactionChoice (rare; only when
+        //                              all-sides is genuinely intended)
+        //
+        //   Stored attribute value is the canonical faction classname
+        //   STRING. Legacy SQMs whose stored string doesn't match any
+        //   currently-loaded faction get an "(unrecognised) <value>"
+        //   entry at the TOP of the dropdown so the value isn't lost.
+        //   Case-insensitive matching on restore (closes #651).
+        //
+        //   attributeLoad / attributeSave live in separate .sqf files;
+        //   see the rationale in mil_ied Cfg3DEN.hpp (preprocessor fights
+        //   with multi-line strings on Windows CRLF).
         class ALiVE_FactionChoice: Combo {
-            attributeLoad = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeLoad = "[_this, [0,1,2,3]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+        class ALiVE_FactionChoice_Military: Combo {
+            attributeLoad = "[_this, [0,1,2]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+        class ALiVE_FactionChoice_Civilian: Combo {
+            attributeLoad = "[_this, [3]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
             attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
         };
     };

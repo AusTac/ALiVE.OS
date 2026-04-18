@@ -66,7 +66,7 @@ class CfgVehicles {
                                 property     = "ALiVE_amb_civ_placement_faction";
                                 displayName  = "$STR_ALIVE_AMBCP_FACTION";
                                 tooltip      = "$STR_ALIVE_AMBCP_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice";
+                                control      = "ALiVE_FactionChoice_Civilian";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction', _value];";
                                 defaultValue = """CIV_F""";
