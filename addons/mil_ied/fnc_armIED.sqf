@@ -158,17 +158,28 @@ private _gracePeriod = 15;
                 // amount of skill or careful stance changes that. Engineers
                 // can still defuse from outside the stomp radius via the
                 // 3m addAction.
+                //
+                // Uses 2D (horizontal) distance, NOT nearEntities's 3D radius.
+                // A standing player has a center ~0.9m above the ground - their
+                // 3D distance to a ground-level mine is ~0.9m even when standing
+                // on top of it, so a 3D 0.6m radius would never match. Cast a
+                // wider 3D net (4m) to capture candidates, then filter by 2D
+                // ground distance against the configured stompRadius.
+                // Vehicles included so driving over a mine fires the same path.
                 if (_stompRadius > 0) then {
-                    private _stompList = (_ied nearEntities ["Man", _stompRadius]) select {
+                    private _stompCandidates = _ied nearEntities ["Man", 4];
+                    _stompCandidates append (_ied nearEntities ["LandVehicle", 4]);
+                    private _stompList = _stompCandidates select {
                         alive _x &&
-                        ((getposATL _x) select 2 < 1.5) &&
-                        (_aiTriggerable || (_x in _players))
+                        ((getposATL (vehicle _x)) select 2 < 8) &&
+                        (_aiTriggerable || (_x in _players) || ((vehicle _x) in _players)) &&
+                        ((_x distance2D _ied) < _stompRadius)
                     };
                     if (count _stompList > 0) then {
                         _shouldDetonate = true;
                         if (_debugLocal) then {
-                            diag_log format ["ALIVE-%1 IED stomp: detonating, %2 unit(s) within %3m",
-                                time, count _stompList, _stompRadius];
+                            diag_log format ["ALIVE-%1 IED stomp: detonating, %2 unit(s) within 2D %3m of mine at %4",
+                                time, count _stompList, _stompRadius, getposATL _ied];
                         };
                     };
                 };
