@@ -923,7 +923,35 @@ class Cfg3rdPartyIEDs {
             "gm_minestatic_ap_dm31",        // West Bundeswehr DM-31 AP (bouncing)
             "gm_minestatic_ap_pfm1"         // East NVA PFM-1 butterfly AP scatterable
         };
-        clutterClasses[]  = {};             // TODO populate after GM clutter probe
+        // GM clutter: Cold War German military supply props. GM is a military-
+        // only mod with no civilian trash content - the "trash pile" concept
+        // becomes "military supply dump leftover" which still reads correctly
+        // for an insurgent / partisan IED disguise. Curated from
+        // gm_objects_barrel / _canister / _pallet + gm_weapons_ammoboxes.
+        // All ammo box variants chosen are the `_empty` ones (no cargo inside;
+        // pure visual clutter).
+        clutterClasses[] = {
+            // Barrels
+            "gm_barrel",
+            "gm_barrel_rusty",
+            // Canister
+            "gm_jerrycan",
+            // Pallets (civilian + military supply)
+            "gm_pallet_01",
+            "gm_fuelpallet_01",
+            "gm_ammobox_pallet_01_empty",
+            "gm_ammobox_pallet_02_empty",
+            // Empty ammo crates (mixed wood + aluminium)
+            "gm_AmmoBox_wood_01_empty",
+            "gm_AmmoBox_wood_02_empty",
+            "gm_AmmoBox_wood_03_empty",
+            "gm_ammobox_aluminium_01_empty",
+            "gm_ammobox_aluminium_02_empty",
+            // Ammo box piles (junkpile-equivalent)
+            "gm_ammobox_pile_small_01_empty",
+            "gm_ammobox_pile_small_02_empty",
+            "gm_ammobox_pile_large_01_empty"
+        };
         detonator[]       = {};
         placementZ        = 0;
         chargeOffsetZ     = -0.3;
@@ -945,7 +973,161 @@ class Cfg3rdPartyIEDs {
         urbanIEDClasses[] = {
             "gm_explosivestatic_charge_plnp"   // PLNP demolition charge (smaller)
         };
-        clutterClasses[]  = {};             // TODO populate after GM clutter probe
+        // Same GM military-supply clutter as GM_Mines - terrain/era-driven not
+        // mode-driven. A PETN charge on a Cold War German supply route wants
+        // the same ammo-pile / barrel / pallet props around it as a TM-46.
+        clutterClasses[] = {
+            "gm_barrel",
+            "gm_barrel_rusty",
+            "gm_jerrycan",
+            "gm_pallet_01",
+            "gm_fuelpallet_01",
+            "gm_ammobox_pallet_01_empty",
+            "gm_ammobox_pallet_02_empty",
+            "gm_AmmoBox_wood_01_empty",
+            "gm_AmmoBox_wood_02_empty",
+            "gm_AmmoBox_wood_03_empty",
+            "gm_ammobox_aluminium_01_empty",
+            "gm_ammobox_aluminium_02_empty",
+            "gm_ammobox_pile_small_01_empty",
+            "gm_ammobox_pile_small_02_empty",
+            "gm_ammobox_pile_large_01_empty"
+        };
+        detonator[]       = {};
+        placementZ        = -0.1;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // ------------------------------------------------------------------------
+    // CSLA - Iron Curtain (Czechoslovakian People's Army CDLC, 1980s setting).
+    //
+    // CSLA owns 5 placeable Czech-designation pressure mines in the `CSLA`
+    // core patch. Class names follow Czech military designations:
+    //   PT-Mi-Ba-3   Protitanková Mina Bakelitová (anti-tank, bakelite)
+    //   PT-Mi-D      Protitanková Mina Dřevěná (anti-tank, wooden)
+    //   PP-Mi-Na     Protipěchotní Mina Nárazná (AP, impact)
+    //   PP-Mi-Sr-2   Protipěchotní Mina Stupní (AP, stake/pressure)
+    //   NO-2         Nárazná Ostrá 2 (AP fragmentation)
+    //
+    // Like GM (Cold War Germany sibling era): zero tripwire mines, no
+    // command-detonated charges. Pure pressure-trigger doctrine - one entry
+    // covers everything. Same RHS_GREF / GM_Mines shape: visible surface
+    // mine, ALiVE pipeline drives detonation, buried demo charge, stomp
+    // trigger.
+    //
+    // Mixed AT + AP roles in a single Czechoslovakian-faction entry -
+    // matches the "one mod = one nationality" semantic and avoids
+    // multiplying entries for a small mine inventory.
+    //
+    // CLUTTER: clutterClasses[] left empty. CSLA structure namespace probes
+    // returned no findable Land-prefix conventions through standard keyword
+    // filters. CSLA missions fall through to vanilla A3 Mediterranean
+    // clutter - functional but not period-perfect for 1980s Czechoslovakia.
+    // Revisit if a CSLA expert can name the Czech-village clutter classes
+    // directly.
+    //
+    // Skipped:
+    //   CSLA_MineBase / CSLA_SatchelCharge_Base   abstract base classes
+    //   CSLA_ammobox_explosives                   ammo box, not placeable
+    //   CSLA_engMiner / CSLA_engMinerDES          soldier loadout characters
+    // ------------------------------------------------------------------------
+
+    class CSLA_Mines {
+        cfgPatchesName = "CSLA";
+        displayName    = "CSLA: Mines";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "CSLA_PtMiBa3Mine",          // PT-Mi-Ba-3 (AT pressure, bakelite)
+            "CSLA_PTMiDMine"             // PT-Mi-D (AT pressure, wooden)
+        };
+        urbanIEDClasses[] = {
+            "CSLA_PPMiNaMine",           // PP-Mi-Na (AP impact)
+            "CSLA_NO2Mine",              // NO-2 (AP fragmentation)
+            "CSLA_PPMiSr2Mine"           // PP-Mi-Sr-2 (AP stake/pressure)
+        };
+        clutterClasses[]  = {};          // see comment block above
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // ------------------------------------------------------------------------
+    // Western Sahara (Rotators CDLC) - CLUTTER-ONLY ENTRY.
+    //
+    // PIONEERING NEW PATTERN: this is the first registry entry that contributes
+    // ONLY clutter, no IED classes. The mod ships zero mine/IED-relevant
+    // classes (probed across all 88 lxWS patches with broad keyword filters -
+    // confirmed by drilling into Items_Misc / Misc / Ammoboxes / Items_Food
+    // patches individually). But it ships rich Sahara/Maghrebi civilian props
+    // that perfectly disguise an IED on a desert road - tea service, tajines,
+    // dates, carpets, refugee tent debris.
+    //
+    // Resolver behavior: an integration entry with empty roadIEDClasses[] +
+    // empty urbanIEDClasses[] + populated clutterClasses[] gives, when picked
+    // via the Eden dropdown:
+    //   - resolvedRoadIEDClasses  -> falls back to base ALiVE A3 IEDs
+    //                                (lenient fallback: empty integration
+    //                                pool means use base attribute)
+    //   - resolvedUrbanIEDClasses -> falls back to base ALiVE A3 IEDs
+    //   - resolvedClutterClasses  -> uses WS Sahara clutter
+    // Net effect: vanilla A3 IEDs (trash-pile-with-bomb-inside concept),
+    // wrapped in WS-themed civilian props for visual context match.
+    //
+    // mode = "alive" because the resolved IED classes are vanilla A3 ALiVE
+    // IEDs, which the alive pipeline handles correctly.
+    //
+    // This pattern unlocks future addons that ship props but no mines (any
+    // terrain/structures CDLC, basically) - they can register a clutter-only
+    // integration here without requiring custom IED content.
+    //
+    // Detection on `structures_F_lxWS_Items_Food` (a reliably-loaded Western
+    // Sahara patch that always exists when the CDLC is active).
+    // ------------------------------------------------------------------------
+
+    class WS_Clutter {
+        cfgPatchesName = "structures_F_lxWS_Items_Food";
+        displayName    = "Western Sahara: Clutter (vanilla IEDs)";
+        mode           = "alive";
+        roadIEDClasses[]  = {};                 // intentionally empty - falls through to base
+        urbanIEDClasses[] = {};                 // intentionally empty - falls through to base
+        // WS clutter: Maghrebi market service + tent/carpet debris + faction
+        // ammo crates. Authentic Sahara village aesthetic - tajines, teapots,
+        // dates, sugar cups around a roadside IED reads as "leftover from a
+        // raided market stall" in a way A3 Mediterranean trash never could on
+        // Sahara terrain.
+        clutterClasses[] = {
+            // Tea / food service - Maghrebi market staple
+            "Land_Teapot_lxWS",
+            "Land_Tajine_lxWS",
+            "Land_Tajine_small_lxWS",
+            "Land_Tray_lxWS",
+            "Land_Glass_lxWS",
+            "Land_Cup_Empty_lxWS",
+            "Land_Cup_Sugar_lxWS",
+            "Land_Cup_Dates_lxWS",
+            // Carpets / pillows / blankets - bedouin tent goods
+            "Land_Carpet_folded_01_lxWS",
+            "Land_Carpet_folded_02_lxWS",
+            "Land_Carpet_folded_03_lxWS",
+            "Land_Pillow_01_lxWS",
+            "Land_Pillow_03_lxWS",
+            "Land_Wicker_basket_EP1_lxWS",
+            "Land_Blankets_EP1_lxWS",
+            // Agriculture - rural Sahara roadside
+            "Land_HayBlock_01_lxWS",
+            "Land_HayBlock_02_lxWS",
+            "Land_Dates_01_lxWS",
+            "Land_Dates_02_lxWS",
+            // Cages + boxes (livestock market detritus)
+            "Cage_Small_lxWS",
+            "Cage_Medium_lxWS",
+            "Box_Medium_lxWS",
+            // Faction ammo crates ("left behind by combatants")
+            "SFIA_Box_Wps_lxWS",
+            "ION_Box_Wps_lxWS"
+        };
         detonator[]       = {};
         placementZ        = -0.1;
         chargeOffsetZ     = 0;
