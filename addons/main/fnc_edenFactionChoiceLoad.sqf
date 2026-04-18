@@ -114,9 +114,12 @@ private _sideCfgGroupsName = ["East", "West", "Indep", "Civilian"];
 // have CfgVehicles units but aren't meaningful mission-maker choices.
 // Extend as new edge cases surface. Phase 2's Cfg3rdPartyFactions
 // registry will turn this into a config-driven exclusion hook.
-// Entries MUST be lowercase for the toLower comparison below.
+// Entries MUST be lowercase classnames for the toLower comparison below.
+// (Caveat: BI's CfgFactionClasses uses _F suffix on most internal
+// civilian classes - blacklist by classname, not displayName.)
 private _civilianBlacklist = [
-    "virtual"  // BI VR / Virtual Arsenal training faction (side 3)
+    "virtual_f",      // BI VR / Virtual Arsenal training faction (displayName "Virtual")
+    "interactive_f"   // BI Argo-era interactive content (displayName "Other (Interactive)")
 ];
 
 private _seen = createHashMap; // lowercase classname -> true, for dedup
