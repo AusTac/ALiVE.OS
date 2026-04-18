@@ -253,7 +253,7 @@ class CfgVehicles {
                         {
                                 property = "ALiVE_mil_ied_clutterClasses_autoDetect";
                                 displayName = "Clutter - Auto-detect Source";
-                                tooltip = "Whether the clutter pool should pull classes from the active 3rd-party integration. Auto: follow integration choice. Yes: always merge integration classes (union). No: never use integration classes for this category.";
+                                tooltip = "Whether the clutter pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
                                 defaultValue = """0""";
                                 class Values
                                 {

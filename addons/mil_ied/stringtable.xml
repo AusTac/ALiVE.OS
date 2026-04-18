@@ -183,7 +183,7 @@
 	<Chinesesimp>杂物对象种类</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_IED_Classes_COMMENT">
-    <English>Classnames of objects used for IEDs and clutter. Separate multiple classnames with commas, no spaces, no quotes — e.g. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. IED classnames must be valid ammo box or object classnames that function as proximity mines.</English>
+    <English>Classnames of objects used for IEDs and clutter. Separate multiple classnames with commas, no spaces, no quotes — e.g. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. IED classnames must be valid ammo box or object classnames that function as proximity mines.&#10;&#10;OVERRIDE BEHAVIOUR: depending on the matching 'Auto-detect Source' setting below, this base list may be REPLACED or AUGMENTED by the picked 3rd-party integration's classes.&#10;  Auto + unedited list → REPLACED by integration's classes (if any).&#10;  Auto + edited list   → Your edits stand; integration is ignored.&#10;  Yes  + unedited list → REPLACED by integration's classes.&#10;  Yes  + edited list   → Your edits UNION integration's classes.&#10;  No                   → Always uses this exact list; integration ignored.&#10;Set Auto-detect Source = No to lock this list as the sole source.</English>
 	<Chinesesimp>定义用于简易爆炸装置和杂物对象的种类</Chinesesimp>
 </Key>
 </Container></Package></Project>
