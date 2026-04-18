@@ -60,17 +60,31 @@ class Cfg3rdPartyIEDs {
     };
 
     // ACE 3 Explosives - IED/mine classes and detonation use ACE's explosives
-    // framework (triggers, range cards, etc.) which maps better to Arma's
-    // mineActive semantics than to ALiVE's proximity-accumulator pipeline.
-    // Class arrays are intentionally empty in Phase 1 and will be populated
-    // in Phase 3 when the Object Classes merge consumes them.
+    // framework (triggers, range cards, defuse interaction wheel) which maps
+    // better to Arma's mineActive semantics than to ALiVE's
+    // proximity-accumulator pipeline.
+    //
+    // ACE 3 doesn't define its own ACE_IED_* classes; instead it adds
+    // interaction-wheel handlers to the vanilla A3 IED ammo classes when
+    // `ace_explosives` is loaded. So we populate the pools with the vanilla
+    // A3 IED classes - placing those means ACE's defuse UI will fire on them.
+    //
+    // (ALiVE's own ALIVE_IED* classes inherit from Thing, not from MineBase,
+    // so they wouldn't trigger ACE's mine interactions even with this entry
+    // loaded. That's why this entry uses the vanilla A3 names instead.)
     class ACE_Explosives {
         cfgPatchesName = "ace_explosives";
         displayName    = "ACE 3 Explosives";
         mode           = "mine";
-        roadIEDClasses[]  = {};
-        urbanIEDClasses[] = {};
-        clutterClasses[]  = {};
+        roadIEDClasses[] = {
+            "IEDLandSmall_Remote_Ammo",
+            "IEDLandBig_Remote_Ammo"
+        };
+        urbanIEDClasses[] = {
+            "IEDUrbanSmall_Remote_Ammo",
+            "IEDUrbanBig_Remote_Ammo"
+        };
+        clutterClasses[]  = {};   // use ALiVE clutter defaults via lenient fallback
         detonator[]       = {};
     };
 
