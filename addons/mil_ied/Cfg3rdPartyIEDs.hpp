@@ -16,12 +16,39 @@
 //   cfgPatchesName    (string)  REQUIRED - CfgPatches class name to detect.
 //   displayName       (string)  REQUIRED - human-readable label for logs and UI.
 //   mode              (string)  REQUIRED - runtime arming semantics:
-//                                 "alive" - full ALiVE pipeline (proximity
-//                                           accumulator, custom disarm etc.)
-//                                 "mine"  - Arma mineActive semantics;
-//                                           ALiVE skips arming/disarm and
-//                                           delegates detonation to the
-//                                           3rd-party system.
+//                                 "alive"      - full ALiVE pipeline
+//                                                (proximity accumulator,
+//                                                custom disarm, demo charge
+//                                                attached, Disarm IED action).
+//                                 "mine"       - placed via createVehicle;
+//                                                ALiVE skips arming/disarm and
+//                                                delegates detonation to the
+//                                                3rd-party system. Inert with
+//                                                pressure-mine classes that
+//                                                aren't auto-armed - prefer
+//                                                "alive" + stompRadius for
+//                                                those, or "engineMine" below.
+//                                 "passive"    - placed via createVehicle; no
+//                                                ALiVE pipeline, no demo
+//                                                charge, no Disarm IED action.
+//                                                Engine handles damage via
+//                                                collision physics. For
+//                                                contact-damage traps that
+//                                                aren't explosive (e.g. SOG
+//                                                Prairie Fire punji sticks).
+//                                 "engineMine" - placed via CREATEMINE (not
+//                                                createVehicle), so the engine
+//                                                arms the object as a real
+//                                                mine. No ALiVE pipeline, no
+//                                                demo charge, no Disarm IED
+//                                                action. For tripwire mines
+//                                                and pressure mines that the
+//                                                engine should fully manage
+//                                                (RHS OZM-72, SOG booby
+//                                                traps).
+//
+//   The placementZ / chargeOffsetZ / stompRadius fields below only apply in
+//   "alive" mode. For passive / engineMine they're ignored.
 //   roadIEDClasses[]  (array)   optional - classes to append to the road
 //                                          IED pool when this integration
 //                                          is active.
@@ -176,6 +203,146 @@ class Cfg3rdPartyIEDs {
         placementZ        = -0.1; // bury slightly (vanilla A3 IED visuals are trash piles)
         chargeOffsetZ     = 0;    // charge inside the trash-pile model
         stompRadius       = 0;    // command-detonated, no pressure trigger
+    };
+
+    // ------------------------------------------------------------------------
+    // SOG Prairie Fire (S.O.G. - Vietnam-era CDLC).
+    //
+    // SOG splits IED-style content across three CfgPatches:
+    //   weapons_f_vietnam_c     - core mines (M14/15/16, TM57, M18 claymore,
+    //                             tripwires, satchels, punji sticks)
+    //   weapons_f_vietnam_03_c  - improvised IEDs (bike, pot, jerrycan, DH-10,
+    //                             cartridge, lighter)
+    //   structures_f_vietnam_c  - punji fence terrain props
+    // We detect on `weapons_f_vietnam_c` (always loaded with SOG) for all
+    // three SOG entries; if `_03_c` is somehow absent the bike/pot/jerrycan
+    // createVehicle calls return objNull and the null-IED guard in
+    // fnc_createIED handles it silently.
+    //
+    // Three entries because SOG needs three different runtime semantics:
+    //   SOG_Command     - command-detonated _range / _remote variants run
+    //                     through the full ALiVE pipeline (charge + accumulator
+    //                     + Disarm action). This is the closest match to how
+    //                     ALiVE has always worked.
+    //   SOG_Mines       - pressure mines and tripwires placed via createMINE
+    //                     (engineMine mode) so the engine arms them as proper
+    //                     mines. ALiVE skips arming so the engine's pressure /
+    //                     tripwire detection actually fires.
+    //   SOG_Punji       - punji sticks and punji fences are NON-explosive
+    //                     contact-damage hazards. createVehicle places them and
+    //                     the engine handles damage on collision. No ALiVE
+    //                     pipeline, no demo charge.
+    // ------------------------------------------------------------------------
+
+    // SOG: command-detonated improvised IEDs (bike, pot, jerrycan, DH-10
+    // directional, M18 claymore range, satchel remote, ammo box booby trap).
+    // All classes selected are the `_range` / `_remote` variants that the SOG
+    // mod treats as command-detonated - perfect match for ALiVE's accumulator-
+    // driven pipeline (the trigger-man "decides" when to detonate based on
+    // proximity / damage).
+    //
+    // Placement is trash-pile style (bury -0.1, charge inside) so the props
+    // sit naturally on roads and aren't hovering. ALiVE's clutter spawn doesn't
+    // hide these because they're the visual themselves (bike, pot etc.).
+    class SOG_Command {
+        cfgPatchesName = "weapons_f_vietnam_c";
+        displayName    = "SOG Prairie Fire: Command IEDs";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "vn_mine_bike_range",
+            "vn_mine_jerrycan_range",
+            "vn_mine_dh10_range"
+        };
+        urbanIEDClasses[] = {
+            "vn_mine_pot_range",
+            "vn_mine_ammobox_range",
+            "vn_mine_satchel_remote_02",
+            "vn_mine_m18_range",
+            "vn_mine_m112_remote"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = -0.1;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // SOG: pressure mines + tripwire mines, placed via createMine so the
+    // engine arms them. ALiVE pipeline is skipped entirely (no charge attached,
+    // no Disarm IED action, no accumulator) - the engine's built-in mine
+    // trigger logic handles detection and detonation.
+    //
+    // Anti-tank pressure mines (TM-57, M15) -> road pool.
+    // Anti-personnel pressure (M14, M16) + tripwires (M16/F1/M49 frag, arty,
+    // mortar) + booby-trap pickups (lighter, board with nails) -> urban pool.
+    //
+    // placementZ / chargeOffsetZ / stompRadius are all ignored in engineMine
+    // mode (engine handles trigger + visual placement). Defaults left at 0
+    // for clarity.
+    class SOG_Mines {
+        cfgPatchesName = "weapons_f_vietnam_c";
+        displayName    = "SOG Prairie Fire: Mines & Tripwires";
+        mode           = "engineMine";
+        roadIEDClasses[] = {
+            "vn_mine_tm57",
+            "vn_mine_m15"
+        };
+        urbanIEDClasses[] = {
+            "vn_mine_m14",
+            "vn_mine_m16",
+            "vn_mine_tripwire_m16_02",
+            "vn_mine_tripwire_m16_04",
+            "vn_mine_tripwire_f1_02",
+            "vn_mine_tripwire_f1_04",
+            "vn_mine_tripwire_arty",
+            "vn_mine_tripwire_m49_02",
+            "vn_mine_tripwire_m49_04",
+            "vn_mine_tripwire_mortar",
+            "vn_mine_gboard",
+            "vn_mine_lighter"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // SOG: punji sticks + punji fences. NON-EXPLOSIVE contact-damage hazards
+    // (sharpened bamboo) - the engine handles damage on collision via the
+    // model itself. Placed via createVehicle (passive mode) with no ALiVE
+    // pipeline whatsoever: no arm, no charge, no Disarm action, no marker
+    // (these are area-denial obstacles, not detonating IEDs).
+    //
+    // All assigned to urban pool because they're jungle-path / perimeter
+    // hazards that fit infantry-traffic areas, not vehicle roads.
+    //
+    // Land_vn_fence_punji_* are terrain props from structures_f_vietnam_c -
+    // included here because they serve the same role (passive contact damage)
+    // and this entry's mode handles them correctly.
+    class SOG_Punji {
+        cfgPatchesName = "weapons_f_vietnam_c";
+        displayName    = "SOG Prairie Fire: Punji Hazards";
+        mode           = "passive";
+        roadIEDClasses[] = {};
+        urbanIEDClasses[] = {
+            "vn_mine_punji_01",
+            "vn_mine_punji_02",
+            "vn_mine_punji_03",
+            "vn_mine_punji_04",
+            "vn_mine_punji_05",
+            "Land_vn_fence_punji_01_03",
+            "Land_vn_fence_punji_01_05",
+            "Land_vn_fence_punji_01_10",
+            "Land_vn_fence_punji_02_03",
+            "Land_vn_fence_punji_02_05",
+            "Land_vn_fence_punji_02_10"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
     };
 
 };

@@ -16,14 +16,21 @@ TRACE_1("IED",_this);
 
 _debug = ADDON getVariable ["debug", false];
 _threat = ADDON getVariable ["IED_Threat", DEFAULT_IED_THREAT];
-// Resolved at module init by ALIVE_fnc_detectIEDIntegrations + the Auto/Force
-// rules: "alive" = full ALiVE pipeline (arm + proximity + disarm), "mine" = Arma
-// mineActive semantics (skip ALiVE arming, let the 3rd-party mod detonate).
+// Resolved at module init by ALIVE_fnc_detectIEDIntegrations. Possible values:
+//   "alive"      - full ALiVE pipeline (arm + proximity + disarm + charge).
+//   "mine"       - createVehicle but skip ALiVE arming (legacy thirdParty=Yes).
+//   "passive"    - createVehicle, no arming, no charge, no addAction.
+//                  Engine handles via collision damage. For SOG punji sticks etc.
+//   "engineMine" - createMINE (not createVehicle) so the engine arms the object
+//                  as a proper mine. No ALiVE pipeline. For tripwire mines.
 private _integrationMode = ADDON getVariable ["resolvedIntegrationMode", "alive"];
-private _thirdParty = (_integrationMode == "mine");
+private _thirdParty       = (_integrationMode != "alive");   // legacy alias
+private _isAlive          = (_integrationMode == "alive");
+private _isPassive        = (_integrationMode == "passive");
+private _isEngineMine     = (_integrationMode == "engineMine");
 
 if (_thirdParty && _debug) then {
-    ["MIL IED: Using mine-semantics (3rd-party integration)"] call ALiVE_fnc_dump;
+    ["MIL IED: Using non-alive integration mode: %1", _integrationMode] call ALiVE_fnc_dump;
 };
 
 _position = _this select 0;
@@ -201,7 +208,16 @@ for "_j" from 1 to _numIEDs do {
         // mine objects don't sink under terrain).
         _IEDpos set [2, ADDON getVariable ["resolvedPlacementZ", -0.1]];
         _IEDskin = (selectRandom _IEDskins);
-        _IED = createVehicle [_IEDskin, _IEDpos, [], 0, "NONE"];
+
+        // engineMine mode uses createMine instead of createVehicle so the
+        // engine treats the placed object as a properly armed mine - this is
+        // what makes pressure / tripwire triggers actually fire on it.
+        // Other modes (alive, mine, passive) all use createVehicle.
+        _IED = if (_isEngineMine) then {
+            createMine [_IEDskin, _IEDpos, [], 0]
+        } else {
+            createVehicle [_IEDskin, _IEDpos, [], 0, "NONE"]
+        };
 
         _ID = format ["%1-%2", _town, _j];
         if (random 1 < 0.95) then {_dud = false} else {_dud = true};
