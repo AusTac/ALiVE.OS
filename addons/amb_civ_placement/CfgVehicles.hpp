@@ -57,7 +57,20 @@ class CfgVehicles {
                                     class HIGH { name = "$STR_ALIVE_AMBCP_PRIORITY_FILTER_HIGH"; value = "40"; };
                                 };
                         };
-                        class faction : Edit { property = "ALiVE_amb_civ_placement_faction"; displayName = "$STR_ALIVE_AMBCP_FACTION"; tooltip = "$STR_ALIVE_AMBCP_FACTION_COMMENT"; defaultValue = """CIV_F"""; };
+                        // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
+                        // Ambient Civilian Population module defaults to CIV_F (vanilla A3
+                        // civilians). Dropdown's structural CfgGroups filter ensures only
+                        // factions with spawnable civilian groups appear.
+                        class faction
+                        {
+                                property     = "ALiVE_amb_civ_placement_faction";
+                                displayName  = "$STR_ALIVE_AMBCP_FACTION";
+                                tooltip      = "$STR_ALIVE_AMBCP_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction', _value];";
+                                defaultValue = """CIV_F""";
+                        };
                         class placementMultiplier : Combo
                         {
                                 property = "ALiVE_amb_civ_placement_placementMultiplier";

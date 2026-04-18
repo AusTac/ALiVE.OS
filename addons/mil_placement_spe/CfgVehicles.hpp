@@ -33,7 +33,18 @@ class CfgVehicles {
                                     class No { name = "No"; value = false; default = 1; };
                                 };
                         };
-                        class faction : Edit { property = "ALiVE_mil_placement_spe_faction"; displayName = "$STR_ALIVE_SPEMP_FACTION"; tooltip = "$STR_ALIVE_SPEMP_FACTION_COMMENT"; defaultValue = """BLU_F"""; };
+                        // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
+                        // SPE module defaults to BLU_F (Allied side, matching SPE's US-forces focus).
+                        class faction
+                        {
+                                property     = "ALiVE_mil_placement_spe_faction";
+                                displayName  = "$STR_ALIVE_SPEMP_FACTION";
+                                tooltip      = "$STR_ALIVE_SPEMP_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction', _value];";
+                                defaultValue = """BLU_F""";
+                        };
                         class priority : Edit { property = "ALiVE_mil_placement_spe_priority"; displayName = "$STR_ALIVE_SPEMP_PRIORITY"; tooltip = "$STR_ALIVE_SPEMP_PRIORITY_COMMENT"; defaultValue = """50"""; };
                         class size : Edit { property = "ALiVE_mil_placement_spe_size"; displayName = "$STR_ALIVE_SPEMP_SIZE"; tooltip = "$STR_ALIVE_SPEMP_SIZE_COMMENT"; defaultValue = """50"""; };
                         class speInfantryClass : Edit { property = "ALiVE_mil_placement_spe_speInfantryClass"; displayName = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS"; tooltip = "$STR_ALIVE_SPEMP_CUSTOM_INFANTRY_CLASS_COMMENT"; defaultValue = """"""; };
