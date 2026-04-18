@@ -1339,8 +1339,15 @@ ALiVE_fnc_INS_addInstallationHoldActions = {
                 _title,
                 "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
                 "\a3\ui_f\data\IGUI\Cfg\holdactions\holdAction_unbind_ca.paa",
-                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_this distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
-                format ["private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_caller distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])}", _disabledVar, _interactionDistanceSqr],
+                // Wrap in call { } to give `private` a valid statement context.
+                // Arma evaluates addAction condition/conditionShow strings as an
+                // expression (roughly `_eval = <string>`), which turns a leading
+                // `private` statement into a parse error ("Missing ;" at the `=`
+                // after _building). `call { ... }` creates a local scope that can
+                // contain the `private _building = ...` declaration, and returns
+                // the last expression's boolean value as the condition result.
+                format ["call { private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_this distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])} }", _disabledVar, _interactionDistanceSqr],
+                format ["call { private _building = _target getVariable ['ALiVE_MIL_OPCOM_INSTALLATION_BUILDING', _target]; (_caller distanceSqr _target) <= %2 && {alive _building} && {!(_building getVariable ['%1', false])} }", _disabledVar, _interactionDistanceSqr],
                 {},
                 {},
                 {
