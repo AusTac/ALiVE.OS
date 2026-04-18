@@ -139,11 +139,24 @@ private _configPaths = [
                 if !(_side in [0, 1, 2, 3]) then {
                     _droppedBadSide = _droppedBadSide + 1;
                 } else {
-                    // Structural usability filter: faction must have
-                    // CfgGroups entries or it's unusable by placement modules.
-                    private _sideName = _sideCfgGroupsName select _side;
-                    private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
-                    if (isClass _groupsEntry && {count _groupsEntry > 0}) then {
+                    // Structural usability filter:
+                    //   Military sides (0/1/2) spawn via CfgGroups entries
+                    //   (squads / platoons / companies). A military faction
+                    //   with no CfgGroups is unusable by mil_placement.
+                    //   Civilian side (3) spawns INDIVIDUAL units via
+                    //   findVehicleType "Man" + createUnit. Vanilla A3's
+                    //   CfgGroups >> Civilian >> CIV_F is empty (no defined
+                    //   squads), but CIV_F is the primary faction for every
+                    //   civilian placement mission. Exempt civilians from
+                    //   the CfgGroups check.
+                    private _usable = if (_side == 3) then {
+                        true
+                    } else {
+                        private _sideName = _sideCfgGroupsName select _side;
+                        private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
+                        isClass _groupsEntry && {count _groupsEntry > 0}
+                    };
+                    if (_usable) then {
                         private _dn = getText (_fac >> "displayName");
                         if (_dn isEqualTo "") then { _dn = _cn };
                         _entries pushBack [_cn, _dn, _side];
