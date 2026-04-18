@@ -173,6 +173,269 @@ class Cfg3rdPartyIEDs {
         stompRadius       = 0.6;  // pressure-trigger: stepping on the mine = boom
     };
 
+    // RHS: AFRF (Engine-Armed sibling) - tripwire mines.
+    // Sibling entry to RHS_AFRF that handles RHS content the alive pipeline
+    // can't drive: tripwires need the engine's mine logic (createMine arms
+    // them; createVehicle leaves them inert - the OZM-72 lesson). Selected via
+    // Eden dropdown "Defer to: RHS: AFRF (Engine-Armed)".
+    //
+    //   urbanIEDClasses - OZM-72 bouncing tripwire (3 fuze variants a/b/c)
+    //
+    // Deliberately omitted: rhs_mine_msk40p_* (signal-smoke marker, not
+    // damaging), rhs_mine_sm320_* (tripwire signal flares, illumination only),
+    // rhs_mine_ptm1 (scatterable AT pressure - already covered by pfm1-style
+    // pressure handling under the alive entry).
+    class RHS_AFRF_Engine {
+        cfgPatchesName = "rhs_main";
+        displayName    = "RHS: AFRF (Engine-Armed)";
+        mode           = "engineMine";
+        roadIEDClasses[]  = {};   // OZM-72 family is anti-personnel only
+        urbanIEDClasses[] = {
+            "rhs_mine_ozm72_a",
+            "rhs_mine_ozm72_b",
+            "rhs_mine_ozm72_c"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;    // ignored by engineMine; left at 0 for clarity
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // RHS: USAF (United States Armed Forces).
+    // Detection key is `rhsusf_main`. Same alive-mode + pressure semantics as
+    // AFRF (createVehicle doesn't auto-arm, so ALiVE drives the pipeline).
+    //
+    // Class selection (pressure-activated only, per the OZM-72 / tripwire
+    // lesson):
+    //   roadIEDClasses  - M19 anti-tank
+    //   urbanIEDClasses - M14 anti-personnel
+    // m49a1_* trip flares omitted entirely (illumination, no damage). blu91/92
+    // Gator scatterables move to the engine-armed sibling entry below.
+    class RHS_USAF {
+        cfgPatchesName = "rhsusf_main";
+        displayName    = "RHS: USAF";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "rhsusf_mine_M19"
+        };
+        urbanIEDClasses[] = {
+            "rhsusf_mine_m14"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // RHS: USAF (Engine-Armed sibling) - BLU-91/92 Gator scatterables.
+    // Sibling entry to RHS_USAF for the engine-driven scatterable Gator family,
+    // which use magnetic / seismic / tripwire / proximity sensors that only
+    // work when the engine arms them via createMine. createVehicle would leave
+    // them inert (the same problem as OZM-72 under alive mode).
+    //
+    //   roadIEDClasses  - BLU-91/B Gator anti-tank scatterable
+    //   urbanIEDClasses - BLU-92/B Gator anti-personnel scatterable
+    //
+    // NOTE: untested under createMine in actual missions - if Gator triggers
+    // don't fire, drop these and document. M49A1 trip flares deliberately
+    // skipped here too (no damage, atmospheric only).
+    class RHS_USAF_Engine {
+        cfgPatchesName = "rhsusf_main";
+        displayName    = "RHS: USAF (Engine-Armed)";
+        mode           = "engineMine";
+        roadIEDClasses[] = {
+            "rhsusf_mine_blu91"
+        };
+        urbanIEDClasses[] = {
+            "rhsusf_mine_blu92"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // RHS: GREF (Ground Forces - mostly WWII content).
+    // Detection key is `rhsgref_main`. Same alive-mode + pressure semantics as
+    // AFRF / USAF.
+    //
+    // Class selection (pressure-activated only):
+    //   roadIEDClasses  - WWII AT mines, mixed nationality:
+    //                       rhs_mine_a200_bz       (German Tellermine variant)
+    //                       rhs_mine_m3_pressure   (US M3 AT)
+    //                       rhs_mine_TM43          (Russian TM-43)
+    //   urbanIEDClasses - WWII AP mines, mixed nationality:
+    //                       rhs_mine_smine35_press (German S-mine 35 / Bouncing Betty)
+    //                       rhs_mine_m2a3b_press   (US M2A3B AP)
+    //                       rhs_mine_glasmine43_bz (German glass-cased AP)
+    // _trip / _tripwire / stockmine_* variants moved to the engine-armed
+    // sibling entry below (createMine arms them properly; createVehicle leaves
+    // them inert).
+    class RHS_GREF {
+        cfgPatchesName = "rhsgref_main";
+        displayName    = "RHS: GREF";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "rhs_mine_a200_bz",
+            "rhs_mine_m3_pressure",
+            "rhs_mine_TM43"
+        };
+        urbanIEDClasses[] = {
+            "rhs_mine_smine35_press",
+            "rhs_mine_m2a3b_press",
+            "rhs_mine_glasmine43_bz"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // RHS: GREF (Engine-Armed sibling) - WWII tripwire mines.
+    // Sibling entry to RHS_GREF for the WWII tripwire variants that the alive
+    // pipeline can't drive. These are the classes we deliberately excluded
+    // earlier (M2A3B trip, M3 tripwire, Mk II tripwire, S-mine 35/44 trip,
+    // Schützenmine 43 stake mines) - all engine-driven tripwires that need
+    // createMine to arm.
+    //
+    //   urbanIEDClasses - all anti-personnel tripwires, mixed nationality
+    //
+    // No road pool: tripwire mines are AP by design. Anti-tank tripwires
+    // weren't a real WWII weapon system.
+    class RHS_GREF_Engine {
+        cfgPatchesName = "rhsgref_main";
+        displayName    = "RHS: GREF (Engine-Armed)";
+        mode           = "engineMine";
+        roadIEDClasses[]  = {};
+        urbanIEDClasses[] = {
+            "rhs_mine_m2a3b_trip",
+            "rhs_mine_M3_tripwire",
+            "rhs_mine_Mk2_tripwire",
+            "rhs_mine_smine35_trip",
+            "rhs_mine_smine44_trip",
+            "rhs_mine_stockmine43_2m",
+            "rhs_mine_stockmine43_4m"
+        };
+        clutterClasses[]  = {};
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // CUP: IEDs (Community Upgrade Project - command-detonated IED variants).
+    // Both CUP entries detect on `CUP_Weapons_Put`, the addon that owns these
+    // class definitions. CUP doesn't have a single "main" patch like RHS, but
+    // CUP_Weapons_Put is reliably present whenever CUP IED/mine content is.
+    //
+    // Mode + placement: ACE-style. CUP_IED_V1..V4 are visual variants (similar
+    // role to vanilla A3 IEDs - trash-pile-with-bomb-inside concept). Buried
+    // (-0.1) so they sit naturally on terrain, no stomp trigger (these are
+    // command-detonated by design, ALiVE's damage handler drives detonation).
+    class CUP_IEDs {
+        cfgPatchesName = "CUP_Weapons_Put";
+        displayName    = "CUP: IEDs";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "CUP_IED_V1",
+            "CUP_IED_V2"
+        };
+        urbanIEDClasses[] = {
+            "CUP_IED_V3",
+            "CUP_IED_V4"
+        };
+        // CUP clutter: Chernarus / Takistan civilian trash props (Operation
+        // Arrowhead -era visuals). Mirrors the vanilla A3 clutter pool's
+        // semantic categories (garbage / baskets / sacks / barrels / tires) so
+        // CUP missions get period-appropriate IED disguise rather than A3
+        // Mediterranean trash. Curated from CUP_CAStructures_E_* and
+        // CUP_Misc3_Config probes.
+        clutterClasses[] = {
+            "Land_Misc_Garb_3_EP1",
+            "Land_Misc_Garb_4_EP1",
+            "Land_Misc_Garb_Heap_EP1",
+            "Land_Misc_Garb_Square_EP1",
+            "Land_Misc_GContainer_Big",
+            "Land_Misc_Coltan_Heap_EP1",
+            "Land_Misc_Rubble_EP1",
+            "Land_Wicker_basket_EP1",
+            "Land_Basket_EP1",
+            "Land_Sack_EP1",
+            "Land_Fire_barrel",
+            "Land_Fire_barrel_burning",
+            "Land_Barrel_empty",
+            "Land_Barrel_water",
+            "Land_Barrel_sand",
+            "Land_Canister_EP1",
+            "Land_tires_EP1"
+        };
+        detonator[]       = {};
+        placementZ        = -0.1;
+        chargeOffsetZ     = 0;
+        stompRadius       = 0;
+    };
+
+    // CUP: Mines (Community Upgrade Project - pressure-activated mines).
+    // Same cfgPatchesName as CUP: IEDs since both class sets live in
+    // CUP_Weapons_Put. Splitting into two registry entries lets the
+    // mission-maker pick the style explicitly via the Eden Integration
+    // dropdown ("Defer to: CUP: IEDs" vs "Defer to: CUP: Mines").
+    //
+    // Mode + placement: RHS-style. Pressure mines need ALiVE's pipeline
+    // (createVehicle doesn't auto-arm), surface placement so they're visible,
+    // charge buried under, stomp trigger for instant pressure-step detonation.
+    // CUP_Mine assigned to road (assumed AT), CUP_MineE assigned to urban
+    // (assumed AP) - swap if testing shows the assignment is wrong.
+    class CUP_Mines {
+        cfgPatchesName = "CUP_Weapons_Put";
+        displayName    = "CUP: Mines";
+        mode           = "alive";
+        roadIEDClasses[] = {
+            "CUP_Mine"
+        };
+        urbanIEDClasses[] = {
+            "CUP_MineE"
+        };
+        // Same CUP clutter as CUP_IEDs - Chernarus / Takistan civilian trash
+        // props. Identical pool because clutter aesthetic is terrain-driven not
+        // IED-style-driven (a CUP mine on a Takistan road wants the same
+        // garbage around it as a CUP_IED on the same road).
+        clutterClasses[] = {
+            "Land_Misc_Garb_3_EP1",
+            "Land_Misc_Garb_4_EP1",
+            "Land_Misc_Garb_Heap_EP1",
+            "Land_Misc_Garb_Square_EP1",
+            "Land_Misc_GContainer_Big",
+            "Land_Misc_Coltan_Heap_EP1",
+            "Land_Misc_Rubble_EP1",
+            "Land_Wicker_basket_EP1",
+            "Land_Basket_EP1",
+            "Land_Sack_EP1",
+            "Land_Fire_barrel",
+            "Land_Fire_barrel_burning",
+            "Land_Barrel_empty",
+            "Land_Barrel_water",
+            "Land_Barrel_sand",
+            "Land_Canister_EP1",
+            "Land_tires_EP1"
+        };
+        detonator[]       = {};
+        placementZ        = 0;
+        chargeOffsetZ     = -0.3;
+        stompRadius       = 0.6;
+    };
+
+    // RHS: SAF (Serbian Armed Forces) - INTENTIONALLY OMITTED.
+    // RHS SAF doesn't define any unique mine entity classes (probe found
+    // count=0 mine classes attributed to rhssaf_*). Yugoslav/Serbian forces
+    // historically used Soviet-derived equipment so SAF users effectively get
+    // RHS:AFRF coverage via that entry. Don't waste time hunting for SAF mine
+    // classes - none exist as of this commit.
+
     // ACE 3 Explosives - IED/mine classes and detonation use ACE's explosives
     // framework (triggers, range cards, defuse interaction wheel) which maps
     // better to Arma's mineActive semantics than to ALiVE's
@@ -260,7 +523,30 @@ class Cfg3rdPartyIEDs {
             "vn_mine_m18_range",
             "vn_mine_m112_remote"
         };
-        clutterClasses[]  = {};
+        // SOG clutter: Vietnam village / market trash props. Mirrors vanilla's
+        // semantic categories (junkpile / garbage / sacks / baskets / crates /
+        // trashcans) with period-appropriate Vietnamese village content.
+        // Curated from structures_f_vietnam_c + objects_f_vietnam_c.
+        clutterClasses[] = {
+            "Land_vn_junkpile_f",
+            "Land_vn_garbagebags_f",
+            "Land_vn_garbagepallet_f",
+            "Land_vn_garbageheap_01_f",
+            "Land_vn_garbageheap_02_f",
+            "Land_vn_garbageheap_03_f",
+            "Land_vn_garbageheap_04_f",
+            "Land_vn_garbage_line_f",
+            "Land_vn_basket_ep1",
+            "Land_vn_c_prop_basket_01",
+            "Land_vn_c_prop_basket_03",
+            "Land_vn_sack_f",
+            "Land_vn_sacks_goods_f",
+            "Land_vn_sacks_heap_f",
+            "Land_vn_woodencrate_01_f",
+            "Land_vn_object_trashcan_01",
+            "Land_vn_object_trashcan_02",
+            "Land_vn_canisterfuel_f"
+        };
         detonator[]       = {};
         placementZ        = -0.1;
         chargeOffsetZ     = 0;
@@ -301,7 +587,29 @@ class Cfg3rdPartyIEDs {
             "vn_mine_gboard",
             "vn_mine_lighter"
         };
-        clutterClasses[]  = {};
+        // Same SOG clutter pool as SOG_Command - terrain-driven not mode-
+        // driven. Vietnam village trash works the same around a tripwire as
+        // around a command-detonated jerrycan.
+        clutterClasses[] = {
+            "Land_vn_junkpile_f",
+            "Land_vn_garbagebags_f",
+            "Land_vn_garbagepallet_f",
+            "Land_vn_garbageheap_01_f",
+            "Land_vn_garbageheap_02_f",
+            "Land_vn_garbageheap_03_f",
+            "Land_vn_garbageheap_04_f",
+            "Land_vn_garbage_line_f",
+            "Land_vn_basket_ep1",
+            "Land_vn_c_prop_basket_01",
+            "Land_vn_c_prop_basket_03",
+            "Land_vn_sack_f",
+            "Land_vn_sacks_goods_f",
+            "Land_vn_sacks_heap_f",
+            "Land_vn_woodencrate_01_f",
+            "Land_vn_object_trashcan_01",
+            "Land_vn_object_trashcan_02",
+            "Land_vn_canisterfuel_f"
+        };
         detonator[]       = {};
         placementZ        = 0;
         chargeOffsetZ     = 0;
@@ -338,7 +646,29 @@ class Cfg3rdPartyIEDs {
             "Land_vn_fence_punji_02_05",
             "Land_vn_fence_punji_02_10"
         };
-        clutterClasses[]  = {};
+        // Same SOG clutter pool. Punji sticks especially benefit from
+        // garbage / sacks scattered nearby - they hide visually amongst
+        // village trash on a jungle path.
+        clutterClasses[] = {
+            "Land_vn_junkpile_f",
+            "Land_vn_garbagebags_f",
+            "Land_vn_garbagepallet_f",
+            "Land_vn_garbageheap_01_f",
+            "Land_vn_garbageheap_02_f",
+            "Land_vn_garbageheap_03_f",
+            "Land_vn_garbageheap_04_f",
+            "Land_vn_garbage_line_f",
+            "Land_vn_basket_ep1",
+            "Land_vn_c_prop_basket_01",
+            "Land_vn_c_prop_basket_03",
+            "Land_vn_sack_f",
+            "Land_vn_sacks_goods_f",
+            "Land_vn_sacks_heap_f",
+            "Land_vn_woodencrate_01_f",
+            "Land_vn_object_trashcan_01",
+            "Land_vn_object_trashcan_02",
+            "Land_vn_canisterfuel_f"
+        };
         detonator[]       = {};
         placementZ        = 0;
         chargeOffsetZ     = 0;
