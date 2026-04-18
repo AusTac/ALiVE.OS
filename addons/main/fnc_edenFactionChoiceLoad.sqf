@@ -67,12 +67,15 @@ lbClear _ctrl;
 
 // ------------------------------------------------------------------------
 // 3. Enumerate factions defensively.
-//    Collect [_classname, _displayName, _side, _sourceAddon] per faction.
-//    Skip empty classes, fall back on missing displayName, default side to
-//    -1 ("Other") if getNumber returns a non-standard value.
+//    STRICT SIDE FILTER: only include factions with side 0/1/2/3 (OPFOR /
+//    BLUFOR / INDFOR / CIVILIAN). Drops BI internals like "Default", "Alive",
+//    "Buildings" etc. which use side 7 for logic/non-combat purposes and
+//    aren't valid faction choices for mission makers.
 // ------------------------------------------------------------------------
 private _seen = createHashMap; // lowercase classname -> true, for dedup
 private _entries = [];
+private _totalScanned = 0;
+private _droppedBadSide = 0;
 
 private _configPaths = [
     missionConfigFile >> "CfgFactionClasses",
@@ -83,17 +86,26 @@ private _configPaths = [
     for "_i" from 0 to (count _root - 1) do {
         private _fac = _root select _i;
         if (isClass _fac) then {
+            _totalScanned = _totalScanned + 1;
             private _cn = configName _fac;
             private _cnLower = toLower _cn;
             if !(_cnLower in _seen) then {
                 _seen set [_cnLower, true];
-                private _dn = getText (_fac >> "displayName");
-                if (_dn isEqualTo "") then { _dn = _cn };
-                private _side = -1;
-                if (isNumber (_fac >> "side")) then {
-                    _side = getNumber (_fac >> "side");
+                // getNumber follows inheritance and returns 0 for missing,
+                // so use it directly then validate the result is a real side.
+                private _side = getNumber (_fac >> "side");
+                // isNumber check distinguishes "explicitly 0" from "missing".
+                // If side property is entirely absent (not even inherited),
+                // treat as -1 so the validation below drops the entry.
+                if !(isNumber (_fac >> "side")) then { _side = -1 };
+
+                if (_side in [0, 1, 2, 3]) then {
+                    private _dn = getText (_fac >> "displayName");
+                    if (_dn isEqualTo "") then { _dn = _cn };
+                    _entries pushBack [_cn, _dn, _side];
+                } else {
+                    _droppedBadSide = _droppedBadSide + 1;
                 };
-                _entries pushBack [_cn, _dn, _side];
             };
         };
     };
@@ -101,36 +113,26 @@ private _configPaths = [
 
 // ------------------------------------------------------------------------
 // 4. Populate combo grouped by side.
-//    BI side values in CfgFactionClasses:
-//      0 = EAST (OPFOR), 1 = WEST (BLUFOR), 2 = INDEP (INDFOR),
-//      3 = CIVILIAN, anything else (e.g. 4=LOGIC, 7=Alive internal, -1) -> Other
+//    Order: OPFOR, BLUFOR, INDFOR, CIVILIAN.
 // ------------------------------------------------------------------------
 private _sideBuckets = [
     [0, "OPFOR"],
     [1, "BLUFOR"],
     [2, "INDFOR"],
-    [3, "CIVILIAN"],
-    [-1, "Other"]
+    [3, "CIVILIAN"]
 ];
 
 {
     _x params ["_sideValue", "_sideLabel"];
-
-    // Gather + sort this side's entries alphabetically by displayName
     private _bucketEntries = _entries select {
         _x params ["", "", "_s"];
-        if (_sideValue == -1) then {
-            !(_s in [0, 1, 2, 3])  // everything non-standard goes to Other
-        } else {
-            _s == _sideValue
-        };
+        _s == _sideValue
     };
-    _bucketEntries sort true; // sorts by first element (classname) ascending;
-                               // acceptable since displayName often correlates,
-                               // and deterministic-order is the priority here
+    // Sort by classname ascending (first element). Deterministic ordering.
+    _bucketEntries sort true;
 
     {
-        _x params ["_cn", "_dn", "_s"];
+        _x params ["_cn", "_dn"];
         private _label = format ["%1 - %2", _sideLabel, _dn];
         private _idx = _ctrl lbAdd _label;
         _ctrl lbSetData [_idx, _cn];
@@ -139,8 +141,8 @@ private _sideBuckets = [
 
 // ------------------------------------------------------------------------
 // 5. Select the stored value. Case-insensitive compare against lbData.
-//    If not found, add an "(unrecognised) <value>" entry at the TOP of the
-//    list so legacy / typo'd / mod-unloaded factions aren't silently lost.
+//    If not found, add an "(unrecognised) <value>" entry so legacy / typo'd
+//    / mod-unloaded factions aren't silently lost.
 // ------------------------------------------------------------------------
 private _foundIdx = -1;
 private _valueLower = toLower _value;
@@ -152,14 +154,28 @@ for "_i" from 0 to (lbSize _ctrl - 1) do {
 
 if (_foundIdx == -1 && _value != "") then {
     private _idx = _ctrl lbAdd format ["(unrecognised) %1", _value];
-    // Re-order: move the unrecognised entry to the top of the list.
-    // BI Combo doesn't have lbMove; easiest is to clear + rebuild with the
-    // unrecognised entry inserted first. For now accept end-of-list placement
-    // with a warning-shape prefix - users will notice the "(unrecognised)"
-    // label regardless of position.
     _ctrl lbSetData [_idx, _value];
     _foundIdx = _idx;
 };
 
 if (_foundIdx < 0) then { _foundIdx = 0 }; // defensive: empty list somehow
 _ctrl lbSetCurSel _foundIdx;
+
+// ------------------------------------------------------------------------
+// Diagnostic logging: helps debug cases where a user expected a faction
+// to appear in the dropdown but didn't see it. RPT output includes:
+//  - total CfgFactionClasses entries scanned (mission + base config)
+//  - how many were dropped by the strict side filter (side != 0/1/2/3)
+//  - count of entries populated into the combo
+//  - the stored value being matched against
+//  - match outcome (index + resolved lbData, or "(added as unrecognised)")
+// ------------------------------------------------------------------------
+diag_log format [
+    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 populated=%3 stored='%4' selected=%5 (lbData='%6')",
+    _totalScanned,
+    _droppedBadSide,
+    count _entries,
+    _value,
+    _foundIdx,
+    if (_foundIdx >= 0 && _foundIdx < lbSize _ctrl) then { _ctrl lbData _foundIdx } else { "(none)" }
+];
