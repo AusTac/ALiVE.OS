@@ -83,15 +83,36 @@ lbClear _ctrl;
 
 // ------------------------------------------------------------------------
 // 3. Enumerate factions defensively.
-//    STRICT SIDE FILTER: only include factions with side 0/1/2/3 (OPFOR /
-//    BLUFOR / INDFOR / CIVILIAN). Drops BI internals like "Default", "Alive",
-//    "Buildings" etc. which use side 7 for logic/non-combat purposes and
-//    aren't valid faction choices for mission makers.
+//
+//    Two filters:
+//    (a) STRICT SIDE FILTER: only include factions with side 0/1/2/3
+//        (OPFOR / BLUFOR / INDFOR / CIVILIAN). Drops BI internals like
+//        "Default", "Alive", "Buildings" which use side 7 for logic /
+//        non-combat purposes.
+//    (b) STRUCTURAL USABILITY FILTER: only include factions that actually
+//        have CfgGroups entries for their side. mil_placement /
+//        civ_placement spawn UNIT GROUPS, so a faction with no CfgGroups
+//        coverage can't be used by these modules. This auto-excludes BI
+//        internals like "Virtual" (VR training), "Civilian Other
+//        (Interactive)" (Argo-era interactive content), mod dummy-faction
+//        stubs, etc. - without needing a maintained blacklist.
+//
+//    Design choice: structural filter beats hardcoded blacklist because it
+//    stays correct as new mods and BI updates introduce new internal
+//    factions. If a mod later registers a faction WITH CfgGroups that
+//    shouldn't appear, Phase 2's Cfg3rdPartyFactions registry will
+//    provide a config-driven exclusion hook.
 // ------------------------------------------------------------------------
+
+// Side index -> CfgGroups top-level class name. Side 0/1/2/3 only; the
+// bad-side filter below handles everything else.
+private _sideCfgGroupsName = ["East", "West", "Indep", "Civilian"];
+
 private _seen = createHashMap; // lowercase classname -> true, for dedup
 private _entries = [];
 private _totalScanned = 0;
 private _droppedBadSide = 0;
+private _droppedNoGroups = 0;
 
 private _configPaths = [
     missionConfigFile >> "CfgFactionClasses",
@@ -115,12 +136,20 @@ private _configPaths = [
                 // treat as -1 so the validation below drops the entry.
                 if !(isNumber (_fac >> "side")) then { _side = -1 };
 
-                if (_side in [0, 1, 2, 3]) then {
-                    private _dn = getText (_fac >> "displayName");
-                    if (_dn isEqualTo "") then { _dn = _cn };
-                    _entries pushBack [_cn, _dn, _side];
-                } else {
+                if !(_side in [0, 1, 2, 3]) then {
                     _droppedBadSide = _droppedBadSide + 1;
+                } else {
+                    // Structural usability filter: faction must have
+                    // CfgGroups entries or it's unusable by placement modules.
+                    private _sideName = _sideCfgGroupsName select _side;
+                    private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
+                    if (isClass _groupsEntry && {count _groupsEntry > 0}) then {
+                        private _dn = getText (_fac >> "displayName");
+                        if (_dn isEqualTo "") then { _dn = _cn };
+                        _entries pushBack [_cn, _dn, _side];
+                    } else {
+                        _droppedNoGroups = _droppedNoGroups + 1;
+                    };
                 };
             };
         };
@@ -187,9 +216,10 @@ _ctrl lbSetCurSel _foundIdx;
 //  - match outcome (index + resolved lbData, or "(added as unrecognised)")
 // ------------------------------------------------------------------------
 diag_log format [
-    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 populated=%3 stored='%4' selected=%5 (lbData='%6')",
+    "ALIVE FactionChoice LOAD: scanned=%1 dropped(bad side)=%2 dropped(no CfgGroups)=%3 populated=%4 stored='%5' selected=%6 (lbData='%7')",
     _totalScanned,
     _droppedBadSide,
+    _droppedNoGroups,
     count _entries,
     _value,
     _foundIdx,
