@@ -147,9 +147,6 @@ if (isClass _registry) then {
                             if (isText (_facOverride >> "displayName")) then {
                                 _override set ["displayName", getText (_facOverride >> "displayName")];
                             };
-                            if (isText (_facOverride >> "sourceLabel")) then {
-                                _override set ["sourceLabel", getText (_facOverride >> "sourceLabel")];
-                            };
                             if (isNumber (_facOverride >> "excluded")) then {
                                 _override set ["excluded", getNumber (_facOverride >> "excluded") > 0];
                             };
@@ -204,46 +201,20 @@ private _configPaths = [
                     //   squads), but CIV_F is the primary faction for every
                     //   civilian placement mission. Exempt civilians from
                     //   the CfgGroups check.
-                    // Source addon: which PBO contributed this faction's
-                    // ALiVE-relevant content. For military sides this is the
-                    // CfgGroups owner; for civilians, the CfgFactionClasses
-                    // owner (CfgGroups is empty for vanilla civilians, so
-                    // we fall back to the faction class's source addon).
-                    // Used as a suffix on the dropdown label so mission-
-                    // makers can see "OPFOR - RHS MSV (rhsafrf)" rather
-                    // than guessing which mod the faction came from.
-                    private _sourceAddon = "";
-
                     private _usable = if (_side == 3) then {
                         // Civilian: always include UNLESS blacklisted as a
                         // known internal / non-real civilian-side faction
                         // (see _civilianBlacklist above).
-                        if (!((toLower _cn) in _civilianBlacklist)) then {
-                            private _facSources = configSourceAddonList _fac;
-                            if (count _facSources > 0) then {
-                                _sourceAddon = _facSources select 0;
-                            };
-                            true
-                        } else {
-                            false
-                        };
+                        !((toLower _cn) in _civilianBlacklist)
                     } else {
                         private _sideName = _sideCfgGroupsName select _side;
                         private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
-                        if (isClass _groupsEntry && {count _groupsEntry > 0}) then {
-                            private _grpSources = configSourceAddonList _groupsEntry;
-                            if (count _grpSources > 0) then {
-                                _sourceAddon = _grpSources select 0;
-                            };
-                            true
-                        } else {
-                            false
-                        };
+                        isClass _groupsEntry && {count _groupsEntry > 0}
                     };
                     if (_usable) then {
                         // Consult Cfg3rdPartyFactions registry for per-
-                        // faction overrides (excluded / displayName /
-                        // sourceLabel). Empty hashmap if no override.
+                        // faction overrides (excluded / displayName).
+                        // Empty hashmap if no override.
                         private _override = _registryOverrides getOrDefault [_cnLower, createHashMap];
 
                         if (_override getOrDefault ["excluded", false]) then {
@@ -255,12 +226,7 @@ private _configPaths = [
                                 _dn = getText (_fac >> "displayName");
                                 if (_dn isEqualTo "") then { _dn = _cn };
                             };
-                            // sourceLabel: registry override > auto-detected addon
-                            private _srcOverride = _override getOrDefault ["sourceLabel", ""];
-                            if (_srcOverride != "") then {
-                                _sourceAddon = _srcOverride;
-                            };
-                            _entries pushBack [_cn, _dn, _side, _sourceAddon];
+                            _entries pushBack [_cn, _dn, _side];
                         };
                     } else {
                         _droppedNoGroups = _droppedNoGroups + 1;
@@ -314,16 +280,18 @@ private _sideBuckets = [
     _bucketEntries sort true; // by classname ascending
 
     {
-        _x params ["_cn", "_dn", "", "_sourceAddon"];
-        // Suffix the label with the source addon so mission-makers can
-        // see where the faction's CfgGroups (or CfgFactionClasses for
-        // civilians) was contributed from. Helps diagnose missing CDLC
-        // compat PBOs ("RHS - GREF (rhsgref)" vs "RHS - GREF (no source)"
-        // would tell the user composition_rhs_gref didn't load).
-        private _label = if (_sourceAddon == "") then {
+        _x params ["_cn", "_dn"];
+        // Suffix the label with the faction classname - this is what
+        // ALiVE uses internally as the faction identifier (referenced by
+        // mission scripts, _additional class lists, mil/civ_placement
+        // runtime, OPCOM, etc.). Mission-makers reading the dropdown can
+        // immediately see the canonical token without separately looking
+        // it up. When displayName already IS the classname (no override,
+        // empty CfgFactionClasses displayName), don't duplicate it.
+        private _label = if (_dn == _cn) then {
             format ["%1 - %2", _sideLabel, _dn]
         } else {
-            format ["%1 - %2 (%3)", _sideLabel, _dn, _sourceAddon]
+            format ["%1 - %2 (%3)", _sideLabel, _dn, _cn]
         };
         private _idx = _ctrl lbAdd _label;
         _ctrl lbSetData [_idx, _cn];

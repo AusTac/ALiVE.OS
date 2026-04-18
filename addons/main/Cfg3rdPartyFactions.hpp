@@ -37,13 +37,6 @@
 //                                   the dropdown (e.g. clean up an ugly
 //                                   "rhs_faction_vdv_45" -> "RHS - 45th
 //                                   Guards Brigade").
-//           sourceLabel   (string)  override the auto-detected source-
-//                                   addon suffix. Use for friendly names
-//                                   when configSourceAddonList returns a
-//                                   technical token (e.g. "rhsafrf" ->
-//                                   "RHS: AFRF") or to consolidate when
-//                                   multiple addons contribute to the
-//                                   same logical faction.
 //           excluded      (number)  set to 1 to hide this faction from
 //                                   the dropdown even though it passes
 //                                   the structural usability filter.
