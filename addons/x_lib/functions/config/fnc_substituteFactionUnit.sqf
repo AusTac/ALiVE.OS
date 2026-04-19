@@ -78,8 +78,16 @@ if (isNil "ALiVE_factionRolePoolCache") then {
 
 // ------------------------------------------------------------------------
 // 1. Get (or build) the role pool for _targetFaction.
+//
+// Cache lookup gotcha: SQF arrays drop literal `nil` elements at parse
+// time, so `getOrDefault [_target, nil]` becomes `getOrDefault [_target]`
+// (one-arg form), which silently returns nil EVEN when the key exists -
+// the cache never hits and we rebuild the pool every call. Using `in`
+// against the hashmap key set sidesteps the nil-in-array trap.
 // ------------------------------------------------------------------------
-private _pool = ALiVE_factionRolePoolCache getOrDefault [_targetFaction, nil];
+private _pool = if (_targetFaction in ALiVE_factionRolePoolCache) then {
+    ALiVE_factionRolePoolCache get _targetFaction
+};
 if (isNil "_pool") then {
     _pool = createHashMap;
 
@@ -150,4 +158,22 @@ if (count _candidates == 0) exitWith {
     _sourceUnit
 };
 
-selectRandom _candidates
+private _result = selectRandom _candidates;
+
+// Diagnostic - log the FIRST substitution per (faction, sourceRole) pair
+// so we can verify in-RPT that the mod faction's units are actually
+// being returned. Subsequent substitutions for the same pair are silent
+// to avoid log spam (a typical mission produces hundreds of subs).
+if (isNil "ALiVE_factionSubstitutionSeen") then {
+    ALiVE_factionSubstitutionSeen = createHashMap;
+};
+private _seenKey = format ["%1::%2", _targetFaction, _sourceRole];
+if !(_seenKey in ALiVE_factionSubstitutionSeen) then {
+    ALiVE_factionSubstitutionSeen set [_seenKey, true];
+    diag_log format [
+        "ALiVE substituteFactionUnit: '%1' (%2) -> '%3' [faction=%4, pool=%5 candidates]",
+        _sourceUnit, _sourceRole, _result, _targetFaction, count _candidates
+    ];
+};
+
+_result
