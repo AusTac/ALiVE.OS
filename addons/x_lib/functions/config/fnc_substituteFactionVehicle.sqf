@@ -22,13 +22,28 @@ Three caller paths:
   3. createProfilesUnCrewedVehicle - standalone uncrewed vehicles
      (parked supplies, empty heli pads)
 
-Bucketing follows ALiVE_fnc_vehicleGetKindOf's canonical 8-category
+Bucketing starts from ALiVE_fnc_vehicleGetKindOf's canonical 8-category
 model (Car / Tank / Armored / Truck / Ship / Helicopter / Plane /
 StaticWeapon) so substitution preserves vehicle role-intent within a
-group - a transport truck never substitutes to a tank. Statics get
-finer sub-bucketing (StaticMortar / StaticATWeapon / StaticAAWeapon /
-StaticGMGWeapon / StaticMGWeapon) because a mortar-for-HMG swap would
-break tactical intent.
+group - a transport truck never substitutes to a tank. THREE families
+get finer sub-bucketing where the canonical category lumps tactically-
+distinct vehicles together:
+
+  Car         -> Car_Armored (Wheeled APC / MRAP / LSV / armor>=200) vs
+                 Car (Offroad / Hatchback / SUV / Quadbike). Prevents an
+                 MRAP-for-Hatchback or Hatchback-for-APC mismatch.
+  Helicopter  -> Helicopter_Attack (dedicated gunship - vanilla bases
+                 plus the universal "transportSoldier <= 2" heuristic
+                 for mod attack helis) vs Helicopter (transport /
+                 multirole, including those with door guns).
+  StaticWeapon-> StaticMortar / StaticATWeapon / StaticAAWeapon /
+                 StaticGMGWeapon / StaticMGWeapon / StaticWeapon. A
+                 mortar-for-HMG swap would break tactical intent.
+
+Tank / Armored / Ship / Plane are kept as single buckets - finer splits
+showed marginal value in audit (mod factions usually have only 1-3
+vehicles per category) and would create empty buckets that trigger the
+source-unchanged fallback unnecessarily.
 
 Per-faction vehicle pools are cached in ALiVE_factionVehiclePoolCache.
 First call for a faction enumerates its CfgVehicles non-Man scope>=2
@@ -90,17 +105,32 @@ if (isNil "ALiVE_factionVehiclePoolCache") then {
 // ------------------------------------------------------------------------
 // Helper: classify a vehicle into a substitution bucket.
 //
-// Non-statics use vehicleGetKindOf's 8-category convention directly.
-// Statics get finer-grained dispatch because tactical role within the
-// "StaticWeapon" family matters - a mortar request must not satisfy
-// from the HMG bucket. Catch-all "StaticWeapon" handles searchlights /
-// sentries / mod-specific oddballs that don't fit a named subtype.
+// Most non-statics defer to ALiVE_fnc_vehicleGetKindOf's canonical 8-
+// category convention. THREE families get finer-grained dispatch where
+// the canonical bucket lumps tactically-distinct vehicles together:
 //
-// Order matters for statics: more-specific isKindOf checks first, then
-// the StaticWeapon catch-all only if none of the named subtypes match.
+//   1. StaticWeapon   -> StaticMortar / StaticATWeapon / StaticAAWeapon /
+//                        StaticGMGWeapon / StaticMGWeapon / StaticWeapon.
+//                        A mortar request must not resolve to an HMG.
+//   2. Car            -> Car_Armored / Car. The vanilla A3 "Car" class
+//                        spans Hatchback through Marid APC; without a
+//                        split, a soft-transport request could resolve
+//                        to an MRAP and vice versa.
+//   3. Helicopter     -> Helicopter_Attack / Helicopter. Vanilla and mod
+//                        attack helis have no troop transport role - a
+//                        transport-heli request must not return a Kajman.
+//
+// Subdivision uses kindOf chains where the source is vanilla A3 (clean
+// classification), with config-property fallbacks (armor / transport
+// capacity) for mod vehicles that don't derive from the A3 base classes.
+//
+// Truck is checked BEFORE Car because A3's Truck inherits from Car, so
+// both isKindOf checks fire and "Truck" is the more specific category.
 // ------------------------------------------------------------------------
 private _classify = {
     params ["_v"];
+
+    // Statics: finer dispatch by weapon role.
     if (_v isKindOf "StaticWeapon") exitWith {
         switch (true) do {
             case (_v isKindOf "StaticMortar")     : { "StaticMortar" };
@@ -111,6 +141,43 @@ private _classify = {
             default                               { "StaticWeapon" };
         };
     };
+
+    // Truck before Car (Truck inherits Car in A3 - more specific wins).
+    if (_v isKindOf "Truck") exitWith { "Truck" };
+
+    // Car: armored (wheeled APC / MRAP / LSV / armor>=200) vs regular
+    // (Offroad / Hatchback / SUV / Quadbike). The kindOf checks catch
+    // vanilla A3 naming; the armor>=200 fallback catches mod-specific
+    // armored cars that don't derive from the A3 base classes.
+    if (_v isKindOf "Car") exitWith {
+        private _armor = getNumber (configFile >> "CfgVehicles" >> _v >> "armor");
+        private _isArmored =
+            (_v isKindOf "Wheeled_APC_F") ||
+            {_v isKindOf "MRAP_01_base_F"} ||
+            {_v isKindOf "MRAP_02_base_F"} ||
+            {_v isKindOf "MRAP_03_base_F"} ||
+            {_v isKindOf "LSV_01_base_F"} ||
+            {_v isKindOf "LSV_02_base_F"} ||
+            {_armor >= 200};
+        if (_isArmored) then { "Car_Armored" } else { "Car" };
+    };
+
+    // Helicopter: dedicated attack vs transport/multirole. Vanilla A3
+    // attack-heli bases are Heli_Attack_01_base_F (Blackfoot) and
+    // Heli_Attack_02_base_F (Kajman). Mod attack helis (Apache / Mi-24 /
+    // Ka-52 in RHS) often don't derive from those bases - the
+    // transportSoldier <= 2 fallback catches the universal "attack helis
+    // carry pilot+gunner only, transports carry 6+" pattern.
+    if (_v isKindOf "Helicopter") exitWith {
+        private _transport = getNumber (configFile >> "CfgVehicles" >> _v >> "transportSoldier");
+        private _isAttack =
+            (_v isKindOf "Heli_Attack_01_base_F") ||
+            {_v isKindOf "Heli_Attack_02_base_F"} ||
+            {_transport <= 2};
+        if (_isAttack) then { "Helicopter_Attack" } else { "Helicopter" };
+    };
+
+    // Tank / Armored / Ship / Plane: defer to canonical convention.
     _v call ALiVE_fnc_vehicleGetKindOf
 };
 
