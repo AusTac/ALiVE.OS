@@ -125,74 +125,96 @@ class CfgVehicles {
                         };
 
                         // ---- Factions -------------------------------------------------------
-                        // Phase 4 (Apr 2026):
-                        //   - `factions` is the canonical multi-select control,
-                        //     dynamically populated from CfgFactionClasses with
-                        //     side filter + Cfg3rdPartyFactions registry +
-                        //     inferability prediction (same engine as the
-                        //     mil_placement single-select dropdown).
-                        //   - `faction1`-`faction4` are kept defined for SQM-data
-                        //     backward compatibility (the runtime fallback at
-                        //     fnc_OPCOM.sqf:170 still reads them when `factions`
-                        //     is empty, so old missions saved with those slots
-                        //     populated continue to work). They use the same
-                        //     dynamic single-select control as mil_placement -
-                        //     no hardcoded faction list. New mission-makers
-                        //     should use the multi-select Factions control;
-                        //     legacy slots are still reachable for missions
-                        //     that depended on them.
-                        //   - All faction `property` names unchanged so SQM
-                        //     storage stays backward-compatible.
+                        // Phase 4 design:
+                        //   - `factionsList` (multi-select listbox, NEW
+                        //     attribute) is the primary UI: visual pick from
+                        //     currently-loaded factions, dynamic enumeration.
+                        //     Stored as SQF array literal STRING.
+                        //   - `factions` (Edit field, ORIGINAL pre-Phase-4
+                        //     attribute) is preserved unchanged for two roles:
+                        //     manual override for unloaded mod factions
+                        //     (authoring for someone else's modset), and as
+                        //     the data slot that old missions saved their
+                        //     faction list into. New missions can leave it
+                        //     empty.
+                        //   - `faction1` through `faction4` (zero-height
+                        //     hidden attributes) - kept defined so old SQMs
+                        //     that populated those slots still round-trip
+                        //     their data through the runtime. Render no UI.
+                        //   - Runtime in fnc_OPCOM.sqf unions all four
+                        //     sources, deduplicates, drops the "NONE"
+                        //     sentinel, defaults to ["BLU_F"] if everything
+                        //     is empty.
+                        //
+                        // Multi-select UX hint: Ctrl+click toggles an
+                        // individual row in/out of the selection.
+                        // Shift+click range-selects. Plain click replaces
+                        // the selection with just that one item.
                         class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_FACTIONS"; displayName = "FACTIONS"; };
-                        class factions
+                        class factionsList
+                        {
+                                property     = "ALiVE_mil_opcom_factionsList";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
+                                tooltip      = "Primary input. Pick one or more factions for the AI Commander to control - dynamically populated from currently-loaded faction mods. Ctrl+click to toggle individual items, Shift+click to range-select, plain click to replace selection. The runtime unions this with the manual Factions override field below.";
+                                control      = "ALiVE_FactionChoiceMulti_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['factionsList', _value];";
+                                defaultValue = """[]""";
+                                // Override the multi-select control's default
+                                // 'factions' varName - this attribute is named
+                                // `factionsList` so the Load/Save handlers must
+                                // address that variable on the logic. The
+                                // original `factions` property is preserved
+                                // below as the manual-override Edit field
+                                // (original pre-Phase-4 use case).
+                                attributeLoad = "[_this, [0,1,2], 'factionsList'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+                                attributeSave = "[_this, 'factionsList'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+                        };
+                        class factions : Edit
                         {
                                 property     = "ALiVE_mil_opcom_factions";
                                 displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
-                                control      = "ALiVE_FactionChoiceMulti_Military";
-                                typeName     = "STRING";
-                                expression   = "_this setVariable ['factions', _value];";
-                                defaultValue = """[]""";
+                                tooltip      = "Optional manual override / supplement. Type faction classnames here for mods not currently loaded but expected at mission time, or as a free-text override. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Old missions that used this field as their primary input continue to work - the runtime unions this with the multi-select above.";
+                                defaultValue = """""";
                         };
-                        class faction1
+                        // Hidden legacy faction slots - render nothing in the
+                        // attribute panel (h=0, no `control` property) but the
+                        // `expression` still applies SQM-saved values to the
+                        // logic at mission start. Old missions that picked
+                        // factions through these four slots continue to work
+                        // because fnc_OPCOM.sqf still reads them as one of
+                        // the four faction sources it unions.
+                        class faction1 : Default
                         {
                                 property     = "ALiVE_mil_opcom_faction1";
-                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction1', _value];";
-                                defaultValue = """BLU_F""";
+                                defaultValue = """""";
+                                h = 0;
                         };
-                        class faction2
+                        class faction2 : Default
                         {
                                 property     = "ALiVE_mil_opcom_faction2";
-                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction2', _value];";
-                                defaultValue = """NONE""";
+                                defaultValue = """""";
+                                h = 0;
                         };
-                        class faction3
+                        class faction3 : Default
                         {
                                 property     = "ALiVE_mil_opcom_faction3";
-                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction3', _value];";
-                                defaultValue = """NONE""";
+                                defaultValue = """""";
+                                h = 0;
                         };
-                        class faction4
+                        class faction4 : Default
                         {
                                 property     = "ALiVE_mil_opcom_faction4";
-                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction4', _value];";
-                                defaultValue = """NONE""";
+                                defaultValue = """""";
+                                h = 0;
                         };
 
                         // ---- Objectivest ----------------------------------------

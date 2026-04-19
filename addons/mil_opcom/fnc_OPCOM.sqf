@@ -40,6 +40,7 @@ See Also:
 
 Author:
 Highhead
+Jman
 
 Peer reviewed:
 nil
@@ -132,11 +133,16 @@ switch(_operation) do {
                     _type = _logic getvariable ["controltype","invasion"];
                     _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
                     _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
-                    _faction1 = _logic getvariable ["faction1","OPF_F"];
-                    _faction2 = _logic getvariable ["faction2","NONE"];
-                    _faction3 = _logic getvariable ["faction3","NONE"];
-                    _faction4 = _logic getvariable ["faction4","NONE"];
-                    _factions = [_logic, "convert", _logic getvariable ["factions",[]]] call ALiVE_fnc_OPCOM;
+                    // Phase 4: four faction-source slots, all unioned below.
+                    //   factionsList    : multi-select listbox (primary new UX)
+                    //   factions        : Edit field (manual override + old missions' data slot)
+                    //   faction1-4      : hidden legacy attributes (round-trip SQM data)
+                    private _factionsList = [_logic, "convert", _logic getvariable ["factionsList",[]]] call ALiVE_fnc_OPCOM;
+                    _factions             = [_logic, "convert", _logic getvariable ["factions",[]]]     call ALiVE_fnc_OPCOM;
+                    _faction1 = _logic getvariable ["faction1",""];
+                    _faction2 = _logic getvariable ["faction2",""];
+                    _faction3 = _logic getvariable ["faction3",""];
+                    _faction4 = _logic getvariable ["faction4",""];
                     _simultanObjectives = parseNumber str (_logic getvariable ["simultanObjectives",10]);
                     _minAgents = parseNumber str (_logic getvariable ["minAgents",2]);
                     _asymForceLimit = floor (parseNumber str (_logic getvariable ["asymForceLimit",-1]));
@@ -167,10 +173,41 @@ switch(_operation) do {
                     //Get position
                     _position = getposATL _logic;
 
-                    //Collect factions and determine sides
-                    //If missionmaker did not overwrite default factions then use the ones from the module dropdowns
-                    if ((count _factions) == 0) then {
-                        {if (!(_x == "NONE") && {!(_x in _factions)}) then {_factions pushBack _x}} foreach [_faction1,_faction2,_faction3,_faction4];
+                    //Collect factions from all four sources and union into _factions.
+                    //Order: _factionsList (multi-select) is taken as the primary
+                    //base; _factions (Edit field), then _faction1-4 (legacy hidden
+                    //slots) are merged in, deduplicating and filtering out the
+                    //"NONE" sentinel and empty strings (legacy slots default to
+                    //"" so absent ones are skipped).
+                    private _allFactionSources = [];
+                    {
+                        _allFactionSources append _x;
+                    } forEach [
+                        _factionsList,
+                        _factions,
+                        [_faction1, _faction2, _faction3, _faction4]
+                    ];
+
+                    _factions = [];
+                    {
+                        if (typeName _x == "STRING" && {_x != ""} && {_x != "NONE"} && {!(_x in _factions)}) then {
+                            _factions pushBack _x;
+                        };
+                    } forEach _allFactionSources;
+
+                    //Pre-Phase-4 the implicit default came from faction1's
+                    //"BLU_F" defaultValue (the four single-faction slots
+                    //guaranteed _factions had at least one entry). Phase 4
+                    //preserves the same fallback so a misconfigured module
+                    //doesn't crash on the _factions select 0 below - just
+                    //logs a warning so the mission-maker can see they need
+                    //to populate Factions.
+                    if (count _factions == 0) then {
+                        diag_log format [
+                            "ALiVE OPCOM init WARNING: AI Commander '%1' has no factions configured (multi-select Factions empty, manual Factions field empty, no legacy faction1-4 slots populated). Defaulting to ['BLU_F']. Pick at least one faction in the Factions section to silence this.",
+                            _customName
+                        ];
+                        _factions pushBack "BLU_F";
                     };
 
                     _side = "EAST";
