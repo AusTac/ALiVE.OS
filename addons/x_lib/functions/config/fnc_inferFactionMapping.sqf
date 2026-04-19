@@ -96,6 +96,13 @@ private _mapping = [] call ALiVE_fnc_hashCreate;
 [_mapping, "FactionName", _faction] call ALiVE_fnc_hashSet;
 [_mapping, "GroupFactionName", _redirectTarget] call ALiVE_fnc_hashSet;
 
+// Phase 3c.2 marker: inferred (vs curated) mappings get unit substitution
+// at spawn time so the mod's actual units appear instead of the redirect
+// target's vanilla units. Curated mappings (CustomFactions.hpp / sys_orbat
+// creator output) deliberately use the redirect target's specific groups
+// and don't want substitution applied. The Inferred flag distinguishes.
+[_mapping, "Inferred", true] call ALiVE_fnc_hashSet;
+
 // Empty GroupFactionTypes + Groups - the consumers (fnc_configGetRandomGroup
 // in particular) fall through to the redirect target's CfgGroups when these
 // are empty. This is the Phase 3c.1 minimum: faction works, vanilla units

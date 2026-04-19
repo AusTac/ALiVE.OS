@@ -466,6 +466,20 @@ class inferFactionMappingsAll
 	RECOMPILE;
 };
 
+class inferUnitRole
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferUnitRole.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class substituteFactionUnit
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_substituteFactionUnit.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class configGetFactionUnitsByGroups
 {
 	file = "\x\alive\addons\x_lib\functions\config\fnc_configGetFactionUnitsByGroups.sqf";
