@@ -2,7 +2,7 @@ class CfgVehicles {
     class Logic;
     class Module_F : Logic
     {
-        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
+        class AttributesBase { class Edit; class Combo; class Default; class ModuleDescription; };
     };
     class ModuleAliveBase : Module_F
     {
