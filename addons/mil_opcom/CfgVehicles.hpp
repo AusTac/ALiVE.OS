@@ -6,7 +6,7 @@ class CfgVehicles {
     };
     class ModuleAliveBase : Module_F
     {
-        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; class ALiVE_HiddenAttribute; };
         class ModuleDescription;
     };
         class ADDON : ModuleAliveBase
@@ -184,37 +184,33 @@ class CfgVehicles {
                         // factions through these four slots continue to work
                         // because fnc_OPCOM.sqf still reads them as one of
                         // the four faction sources it unions.
-                        class faction1 : Default
+                        class faction1 : ALiVE_HiddenAttribute
                         {
                                 property     = "ALiVE_mil_opcom_faction1";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction1', _value];";
                                 defaultValue = """""";
-                                h = 0;
                         };
-                        class faction2 : Default
+                        class faction2 : ALiVE_HiddenAttribute
                         {
                                 property     = "ALiVE_mil_opcom_faction2";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction2', _value];";
                                 defaultValue = """""";
-                                h = 0;
                         };
-                        class faction3 : Default
+                        class faction3 : ALiVE_HiddenAttribute
                         {
                                 property     = "ALiVE_mil_opcom_faction3";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction3', _value];";
                                 defaultValue = """""";
-                                h = 0;
                         };
-                        class faction4 : Default
+                        class faction4 : ALiVE_HiddenAttribute
                         {
                                 property     = "ALiVE_mil_opcom_faction4";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction4', _value];";
                                 defaultValue = """""";
-                                h = 0;
                         };
 
                         // ---- Objectivest ----------------------------------------
