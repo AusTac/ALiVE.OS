@@ -50,11 +50,21 @@ Jman
 private _faction = _this;
 if (typeName _faction != "STRING" || {_faction == ""}) exitWith { nil };
 
+// SQF gotcha: `exitWith` only exits the NEAREST enclosing code block.
+// Nesting `if (cond) exitWith { nil }` inside an outer `then { ... }`
+// just exits the then-block - the function continues. The skip checks
+// below have to be flat at function-body level (their exitWith returns
+// from the function), or compute a flag and check it at function-body
+// level. The CfgGroups check is the latter pattern because the test
+// itself only applies to non-civilian sides.
+
 // Skip 1: already explicitly mapped (CustomFactions.hpp / orbatcreator /
 // Cfg3rdPartyFactions). Don't override curated data with inferred guesses.
+private _alreadyMapped = false;
 if (!isNil "ALiVE_factionCustomMappings") then {
-    if (_faction in (ALiVE_factionCustomMappings select 1)) exitWith { nil };
+    _alreadyMapped = _faction in (ALiVE_factionCustomMappings select 1);
 };
+if (_alreadyMapped) exitWith { nil };
 
 // Skip 2: faction class itself doesn't exist or has invalid side
 private _factionConfig = configFile >> "CfgFactionClasses" >> _faction;
@@ -62,14 +72,17 @@ if !(isClass _factionConfig) exitWith { nil };
 private _side = getNumber (_factionConfig >> "side");
 if !(_side in [0, 1, 2, 3]) exitWith { nil };
 
-// Skip 3: faction already has proper CfgGroups for its side (no inference needed,
-// existing infrastructure handles it). Skip the structural check for civilians;
-// they don't use CfgGroups (spawn as individuals via createUnit).
+// Skip 3: faction already has proper CfgGroups for its side (no inference
+// needed, existing infrastructure handles it). Skip the structural check
+// for civilians; they don't use CfgGroups (spawn as individuals via
+// createUnit). Compute as flag, then exit at function-body level.
+private _hasProperCfgGroups = false;
 if (_side != 3) then {
     private _sideCfgGroupsName = ["East", "West", "Indep"] select _side;
     private _existingGroups = configFile >> "CfgGroups" >> _sideCfgGroupsName >> _faction;
-    if (isClass _existingGroups && {count _existingGroups > 0}) exitWith {};
+    _hasProperCfgGroups = isClass _existingGroups && {count _existingGroups > 0};
 };
+if (_hasProperCfgGroups) exitWith { nil };
 
 // Probe: faction must have at least one CfgVehicles Man-class unit.
 // Without that we can't establish that the faction is meant for unit
