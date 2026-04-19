@@ -84,6 +84,15 @@ if (_side != 3) then {
 };
 if (_hasProperCfgGroups) exitWith { nil };
 
+// Skip 4: faction IS one of the vanilla A3 base factions used as redirect
+// TARGETS. Those should never be redirect SOURCES (a self-redirect mapping
+// is meaningless - the spawn already produces the right faction's units).
+// Skip 3 catches OPF_F/BLU_F/IND_F via their CfgGroups, but CIV_F has no
+// CfgGroups and is exempt from Skip 3, so it would otherwise leak through
+// and self-redirect. Explicit list keeps the intent obvious.
+private _vanillaTargets = ["OPF_F", "BLU_F", "IND_F", "CIV_F"];
+if (_faction in _vanillaTargets) exitWith { nil };
+
 // Probe: faction must have at least one CfgVehicles Man-class unit.
 // Without that we can't establish that the faction is meant for unit
 // spawning at all (e.g. mod might define a faction class for static-
