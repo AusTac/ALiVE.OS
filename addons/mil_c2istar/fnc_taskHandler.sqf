@@ -31,6 +31,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -520,12 +521,26 @@ switch (_operation) do {
             if (_taskLocationType in ["Short", "Medium", "Long"]) then {
                 private _player = [_requestPlayerID] call ALIVE_fnc_getPlayerByUID;
 
+                // _taskPlayers is [_uids, _displayNames]; (_taskPlayers select 0)
+                // is the array of UID strings. When the auto-task scheduler is
+                // set to "Constant" but no playable units of _taskSide exist
+                // at runtime (all spectators / side empty / players left), the
+                // UID list is empty - selectRandom returns nil and cascades
+                // through getPlayerByUID as "Undefined variable in expression:
+                // _player" / "_playeruid". Mirror the defensive guard used at
+                // line 467-473 for the auto-generation entry point: only sample
+                // a candidate if the UID list is non-empty, and only overwrite
+                // the task location if we actually resolved a player object.
                 if (isNull _player) then {
-                    _player = selectRandom (_taskPlayers select 0);
-                    _player = [_player] call ALIVE_fnc_getPlayerByUID;
+                    private _candidateUIDs = _taskPlayers param [0, []];
+                    if (count _candidateUIDs > 0) then {
+                        _player = [selectRandom _candidateUIDs] call ALIVE_fnc_getPlayerByUID;
+                    };
                 };
 
-                _taskData set [6, position _player];
+                if (!isNull _player) then {
+                    _taskData set [6, position _player];
+                };
             };
 
             private _strategicObjectivePosition = [];
