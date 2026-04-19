@@ -61,7 +61,11 @@ private _isInferredRedirect = false;
 if(!isNil "ALIVE_factionCustomMappings") then {
     if(_prefix in (ALIVE_factionCustomMappings select 1)) then {
         private _customMappings = [ALIVE_factionCustomMappings, _prefix] call ALIVE_fnc_hashGet;
-        if (_customMappings getOrDefault ["Inferred", false]) then {
+        // ALiVE hashes are array-backed (CBA_fnc_hash*), NOT native SQF
+        // HashMaps - getOrDefault doesn't apply. Use the 3-arg form of
+        // ALiVE_fnc_hashGet which returns the default when the key is
+        // absent (curated mappings never set "Inferred").
+        if ([_customMappings, "Inferred", false] call ALIVE_fnc_hashGet) then {
             _isInferredRedirect = true;
         };
         _prefix = [_customMappings, "GroupFactionName"] call ALIVE_fnc_hashGet;
