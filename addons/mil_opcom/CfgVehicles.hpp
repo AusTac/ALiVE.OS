@@ -125,93 +125,74 @@ class CfgVehicles {
                         };
 
                         // ---- Factions -------------------------------------------------------
+                        // Phase 4 (Apr 2026):
+                        //   - `factions` is the canonical multi-select control,
+                        //     dynamically populated from CfgFactionClasses with
+                        //     side filter + Cfg3rdPartyFactions registry +
+                        //     inferability prediction (same engine as the
+                        //     mil_placement single-select dropdown).
+                        //   - `faction1`-`faction4` are kept defined for SQM-data
+                        //     backward compatibility (the runtime fallback at
+                        //     fnc_OPCOM.sqf:170 still reads them when `factions`
+                        //     is empty, so old missions saved with those slots
+                        //     populated continue to work). They use the same
+                        //     dynamic single-select control as mil_placement -
+                        //     no hardcoded faction list. New mission-makers
+                        //     should use the multi-select Factions control;
+                        //     legacy slots are still reachable for missions
+                        //     that depended on them.
+                        //   - All faction `property` names unchanged so SQM
+                        //     storage stays backward-compatible.
                         class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_FACTIONS"; displayName = "FACTIONS"; };
-                        class faction1 : Combo
+                        class factions
                         {
-                                property = "ALiVE_mil_opcom_faction1";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                property     = "ALiVE_mil_opcom_factions";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
+                                control      = "ALiVE_FactionChoiceMulti_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['factions', _value];";
+                                defaultValue = """[]""";
+                        };
+                        class faction1
+                        {
+                                property     = "ALiVE_mil_opcom_faction1";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction1', _value];";
                                 defaultValue = """BLU_F""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; default = 1; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; };
-                                };
                         };
-                        class faction2 : Combo
+                        class faction2
                         {
-                                property = "ALiVE_mil_opcom_faction2";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                property     = "ALiVE_mil_opcom_faction2";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction2', _value];";
                                 defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
                         };
-                        class faction3 : Combo
+                        class faction3
                         {
-                                property = "ALiVE_mil_opcom_faction3";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                property     = "ALiVE_mil_opcom_faction3";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction3', _value];";
                                 defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
                         };
-                        class faction4 : Combo
+                        class faction4
                         {
-                                property = "ALiVE_mil_opcom_faction4";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                property     = "ALiVE_mil_opcom_faction4";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTION";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction4', _value];";
                                 defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
-                        };
-                        class factions : Edit
-                        {
-                                property = "ALiVE_mil_opcom_factions";
-                                displayName = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
-                                defaultValue = """""";
                         };
 
                         // ---- Objectivest ----------------------------------------

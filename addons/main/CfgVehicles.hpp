@@ -95,6 +95,94 @@ class Cfg3DEN
             attributeLoad = "[_this, [3]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
             attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
         };
+
+        // ALiVE_FactionChoiceMulti family:
+        //   Multi-select counterpart to ALiVE_FactionChoice. Same dynamic
+        //   population (CfgFactionClasses + missionConfig, side filtered,
+        //   civilian blacklist, Cfg3rdPartyFactions registry overrides,
+        //   Phase 3c.1 inferability prediction) but with a multi-select
+        //   ListBox at IDC 100 instead of a single-select Combo.
+        //
+        //   Built by inheriting BI's Combo attribute base (which is a
+        //   controlsGroup with title + value child controls) and overriding
+        //   the inner Value control's type (CT_LISTBOX=5 vs CT_COMBO=4)
+        //   and style flag (LB_MULTI = 0x20 added to ST_FRAME = 16).
+        //   This piggybacks on Combo's value-binding plumbing (attributeLoad/
+        //   Save addressing IDC 100 via controlsGroupCtrl) without having
+        //   to redefine the entire Cfg3DEN attribute framework from scratch.
+        //
+        //   Stored value is an SQF array literal STRING like
+        //   `["BLU_F","OPF_F","IND_F"]`. Load handler also accepts CSV form
+        //   `BLU_F,OPF_F` for backward compatibility with the old Edit-field
+        //   pattern. Save always emits canonical array-literal form.
+        //
+        //   The third element of the load handler's invocation is the logic-
+        //   variable name (default "factions"), allowing the same handler
+        //   to serve modules whose attribute is named differently (e.g.
+        //   "CQB_FACTIONS" for mil_cqb).
+        //
+        //   Three side-filter variants matching the single-select trio:
+        //     ALiVE_FactionChoiceMulti           sides 0/1/2/3 (all)
+        //     ALiVE_FactionChoiceMulti_Military  sides 0/1/2   (no civilians)
+        //     ALiVE_FactionChoiceMulti_Civilian  side 3        (civilians only)
+        //
+        //   Modules pick the variant matching their semantics. mil_opcom
+        //   uses _Military (an OPCOM faction list shouldn't include civilians).
+
+        class ALiVE_FactionChoiceMulti: Combo {
+            // Taller than the default Combo to accommodate ~10 rows of listbox.
+            // 5 grid units for the title + 15 for the listbox = 20 total.
+            h = "20 * GUI_GRID_H";
+            attributeLoad = "[_this, [0,1,2,3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+
+            class Controls: Controls {
+                class Title: Title {};
+                class Value: Value {
+                    // Override Combo's CT_COMBO (4) -> CT_LISTBOX (5).
+                    // Combine ST_FRAME (16) with LB_MULTI (0x20 = 32) so the
+                    // listbox renders as a bordered multi-select. Multi-select
+                    // ListBox accepts Ctrl+click to toggle individual items
+                    // and Shift+click to range-select.
+                    type = 5;
+                    style = 16 + 0x20;
+                    h = "15 * GUI_GRID_H";
+                    rowHeight = "1 * GUI_GRID_H";
+                };
+            };
+        };
+
+        class ALiVE_FactionChoiceMulti_Military: Combo {
+            h = "20 * GUI_GRID_H";
+            attributeLoad = "[_this, [0,1,2], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+
+            class Controls: Controls {
+                class Title: Title {};
+                class Value: Value {
+                    type = 5;
+                    style = 16 + 0x20;
+                    h = "15 * GUI_GRID_H";
+                    rowHeight = "1 * GUI_GRID_H";
+                };
+            };
+        };
+
+        class ALiVE_FactionChoiceMulti_Civilian: Combo {
+            h = "20 * GUI_GRID_H";
+            attributeLoad = "[_this, [3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+
+            class Controls: Controls {
+                class Title: Title {};
+                class Value: Value {
+                    type = 5;
+                    style = 16 + 0x20;
+                    h = "15 * GUI_GRID_H";
+                    rowHeight = "1 * GUI_GRID_H";
+                };
+            };
+        };
     };
     // Configuration of all objects
     class Object
