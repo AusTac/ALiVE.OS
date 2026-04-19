@@ -535,6 +535,20 @@ switch (_operation) do {
                     private _candidateUIDs = _taskPlayers param [0, []];
                     if (count _candidateUIDs > 0) then {
                         _player = [selectRandom _candidateUIDs] call ALIVE_fnc_getPlayerByUID;
+                    } else {
+                        // Mission-maker visibility: surface WHY the task isn't
+                        // being anchored to a player position. This is the
+                        // common "Constant" auto-task case where the side has
+                        // no live playable units - the task will still
+                        // generate but uses _taskData's existing _taskLocation
+                        // (likely empty) instead of a player anchor. Logging
+                        // unconditionally (not debug-gated) so mission-makers
+                        // can correlate "tasks aren't appearing where I
+                        // expected" without having to enable debug mode.
+                        diag_log format [
+                            "ALiVE C2ISTAR generateTask: no playable units of side '%1' at runtime - task '%2' (type=%3, locType=%4) will use existing _taskLocation, NOT a player-position anchor. Likely cause: 'Constant' auto-task mode firing while all players on this side are spectators / side empty / players left mid-mission.",
+                            _taskSide, _taskID, _taskType, _taskLocationType
+                        ];
                     };
                 };
 
