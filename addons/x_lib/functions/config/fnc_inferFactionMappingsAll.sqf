@@ -18,9 +18,11 @@ has loaded its hand-curated mappings. The order matters:
      redirect-only mapping (Phase 3c.1).
   3. Module init proceeds with a complete mapping coverage.
 
-Phase 3c.1 inference is redirect-only: spawned units are vanilla A3 of
-the right side. Phase 3c.2 will add unit substitution so the mod's
-actual units appear.
+Phase 3c.1 inference is redirect-only: the mapping itself just routes
+the faction's groups to the vanilla A3 redirect target. Phase 3c.2
+(2a infantry, 2b vehicles + statics) hooks the spawn pipeline to
+substitute the resulting vanilla classes for mod-faction equivalents,
+so the mod's actual units / vehicles appear in-game.
 
 Parameters:
 None

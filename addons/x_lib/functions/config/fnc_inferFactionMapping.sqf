@@ -12,10 +12,12 @@ A3 faction on the same side.
 
 This is Phase 3c.1 of the mil_placement overhaul - the foundational
 "redirect-only" tier of inference. The faction becomes selectable in
-ALiVE's faction dropdown and will spawn units of the correct side, but
-the units themselves are vanilla A3 (the mod's units are NOT yet
-substituted). Phase 3c.2 will add unit-substitution at spawn time so
-the mod's units actually appear.
+ALiVE's faction dropdown and spawns units of the correct side. Phase
+3c.2a + 3c.2b add spawn-time substitution (infantry, vehicles, and
+statics) so the mod's actual units / vehicles appear instead of the
+vanilla A3 redirect-target's. The Inferred flag this function sets
+on each mapping is what those substitution hooks check to gate the
+swap (curated mappings have no flag and are skipped).
 
 Skips factions where inference is unnecessary or impossible:
   - already mapped via CustomFactions.hpp / sys_orbatcreator output /
@@ -118,18 +120,24 @@ private _mapping = [] call ALiVE_fnc_hashCreate;
 [_mapping, "FactionName", _faction] call ALiVE_fnc_hashSet;
 [_mapping, "GroupFactionName", _redirectTarget] call ALiVE_fnc_hashSet;
 
-// Phase 3c.2 marker: inferred (vs curated) mappings get unit substitution
-// at spawn time so the mod's actual units appear instead of the redirect
-// target's vanilla units. Curated mappings (CustomFactions.hpp / sys_orbat
-// creator output) deliberately use the redirect target's specific groups
-// and don't want substitution applied. The Inferred flag distinguishes.
+// Phase 3c.2 marker: inferred (vs curated) mappings get unit/vehicle/
+// static substitution at spawn time so the mod's actual classes appear
+// instead of the redirect target's vanilla A3 ones. Curated mappings
+// (CustomFactions.hpp / sys_orbatcreator output) deliberately use the
+// redirect target's specific groups and don't want substitution applied.
+// The Inferred flag is what the substitution hooks
+// (substituteFactionUnit / substituteFactionVehicle consumers in
+// sys_profile) check to gate the swap.
 [_mapping, "Inferred", true] call ALiVE_fnc_hashSet;
 
 // Empty GroupFactionTypes + Groups - the consumers (fnc_configGetRandomGroup
-// in particular) fall through to the redirect target's CfgGroups when these
-// are empty. This is the Phase 3c.1 minimum: faction works, vanilla units
-// spawn. Phase 3c.2 will populate Groups with synthesized arrays of the
-// mod's actual unit classes.
+// in particular) fall through to the redirect target's CfgGroups when
+// these are empty. The redirect-target's vanilla groups drive the spawn;
+// Phase 3c.2 substitution swaps the resulting individual units / vehicles
+// to the mod faction's equivalents. This is simpler and more robust than
+// synthesizing Groups arrays from the mod's CfgVehicles (which was the
+// original Tier 2 ambition but isn't needed given the substitution
+// approach).
 private _typeMappings = [] call ALiVE_fnc_hashCreate;
 [_mapping, "GroupFactionTypes", _typeMappings] call ALiVE_fnc_hashSet;
 
