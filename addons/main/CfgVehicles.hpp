@@ -140,59 +140,65 @@ class Cfg3DEN
         //   Modules pick the variant matching their semantics. mil_opcom
         //   uses _Military (an OPCOM faction list shouldn't include civilians).
 
-        class ALiVE_FactionChoiceMulti: Combo {
-            // Taller than the default Combo to accommodate ~10 rows of listbox.
+        // Base class for the three variants. Carries the shared listbox-
+        // shape override (Combo's inner Value -> CT_LISTBOX with multi-
+        // select style) AND the ListScrollBar sub-class that the engine
+        // requires once the inner control switches to CT_LISTBOX (a
+        // "No entry … Value.ListScrollBar" warning fires otherwise -
+        // Combo's Value class doesn't ship a scrollbar config because
+        // CT_COMBO doesn't need one).
+        //
+        // The three variants below differ only in attributeLoad's side-
+        // allowlist parameter; they inherit everything else from _Base.
+        // Don't use _Base directly as a control - the variants are the
+        // entry points modules reference.
+        class ALiVE_FactionChoiceMulti_Base: Combo {
             // 5 grid units for the title + 15 for the listbox = 20 total.
             h = "20 * GUI_GRID_H";
-            attributeLoad = "[_this, [0,1,2,3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
-            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
 
             class Controls: Controls {
                 class Title: Title {};
                 class Value: Value {
                     // Override Combo's CT_COMBO (4) -> CT_LISTBOX (5).
-                    // Combine ST_FRAME (16) with LB_MULTI (0x20 = 32) so the
-                    // listbox renders as a bordered multi-select. Multi-select
-                    // ListBox accepts Ctrl+click to toggle individual items
-                    // and Shift+click to range-select.
+                    // Combine ST_FRAME (16) with LB_MULTI (0x20 = 32) so
+                    // the listbox renders bordered with multi-select
+                    // semantics (Ctrl+click toggles individual items,
+                    // Shift+click range-selects).
                     type = 5;
                     style = 16 + 0x20;
                     h = "15 * GUI_GRID_H";
                     rowHeight = "1 * GUI_GRID_H";
+
+                    // ListBox engine requires this sub-class for the
+                    // scrollbar; missing entry triggers an RPT warning
+                    // even though the listbox renders. Vanilla A3 paths
+                    // for the scrollbar arrow/thumb/border textures.
+                    class ListScrollBar {
+                        color[]         = {1, 1, 1, 0.6};
+                        colorActive[]   = {1, 1, 1, 1};
+                        colorDisabled[] = {1, 1, 1, 0.3};
+                        arrowEmpty = "\A3\ui_f\data\gui\cfg\scrollbar\arrowEmpty_ca.paa";
+                        arrowFull  = "\A3\ui_f\data\gui\cfg\scrollbar\arrowFull_ca.paa";
+                        border     = "\A3\ui_f\data\gui\cfg\scrollbar\border_ca.paa";
+                        thumb      = "\A3\ui_f\data\gui\cfg\scrollbar\thumb_ca.paa";
+                    };
                 };
             };
         };
 
-        class ALiVE_FactionChoiceMulti_Military: Combo {
-            h = "20 * GUI_GRID_H";
+        class ALiVE_FactionChoiceMulti: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, [0,1,2,3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
+        class ALiVE_FactionChoiceMulti_Military: ALiVE_FactionChoiceMulti_Base {
             attributeLoad = "[_this, [0,1,2], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
-
-            class Controls: Controls {
-                class Title: Title {};
-                class Value: Value {
-                    type = 5;
-                    style = 16 + 0x20;
-                    h = "15 * GUI_GRID_H";
-                    rowHeight = "1 * GUI_GRID_H";
-                };
-            };
         };
 
-        class ALiVE_FactionChoiceMulti_Civilian: Combo {
-            h = "20 * GUI_GRID_H";
+        class ALiVE_FactionChoiceMulti_Civilian: ALiVE_FactionChoiceMulti_Base {
             attributeLoad = "[_this, [3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
-
-            class Controls: Controls {
-                class Title: Title {};
-                class Value: Value {
-                    type = 5;
-                    style = 16 + 0x20;
-                    h = "15 * GUI_GRID_H";
-                    rowHeight = "1 * GUI_GRID_H";
-                };
-            };
         };
     };
     // Configuration of all objects
