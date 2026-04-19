@@ -29,6 +29,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 private ["_vehicleClass","_side","_faction","_direction","_spawnGoodPosition","_prefix","_engineOn","_busy","_cargo","_position",
@@ -46,6 +47,18 @@ _busy = if(count _this > 8) then {_this select 8} else {false};
 _cargo = if(count _this > 9) then {_this select 9} else {[]};
 _slingload = if(count _this > 10) then {_this select 10} else {[]};
 _isSPE = if(count _this > 11) then {_this select 11} else {false};
+
+// Phase 3c.2b: vehicle/static substitution for inferred-faction redirects.
+// Same pattern as createProfilesCrewedVehicle (which see for full
+// rationale). When mil_placement spawned a vanilla A3 vehicle here as
+// a side-default fallback, swap it for a same-kindOf vehicle from the
+// mod faction. Curated mappings keep their declared vehicles.
+if (!isNil "ALIVE_factionCustomMappings" && {_faction in (ALIVE_factionCustomMappings select 1)}) then {
+    private _customMappings = [ALIVE_factionCustomMappings, _faction] call ALIVE_fnc_hashGet;
+    if ([_customMappings, "Inferred", false] call ALIVE_fnc_hashGet) then {
+        _vehicleClass = [_vehicleClass, _faction] call ALiVE_fnc_substituteFactionVehicle;
+    };
+};
 
 // get counts of current profiles
 

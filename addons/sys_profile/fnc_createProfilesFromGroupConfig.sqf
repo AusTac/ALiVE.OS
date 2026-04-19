@@ -25,6 +25,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 private [
@@ -137,8 +138,18 @@ if(count _config > 0) then {
             // seperate vehicles and units in the group
             //if((_vehicleType == "Car")||(_vehicleType == "Truck")||(_vehicleType == "Tank")||(_vehicleType == "Armored")||(_vehicleType == "Ship")||(_vehicleType == "Air")||(_vehicleType == "LIB_Medium_Tanks")||(_vehicleType == "LIB_Heavy_Tanks")) then {
             if!(_vehicle isKindOf "Man") then {
-                // Phase 3c.2b (deferred): vehicle substitution by kindOf.
-                // For now inferred redirects keep vanilla A3 vehicles.
+                // Phase 3c.2b: substitute vanilla vehicles/statics with
+                // same-kindOf entries from the mod faction (inferred-
+                // redirect spawns only). Covers vehicles AND static
+                // weapons inside CfgGroups groups (e.g. a Mortar Team's
+                // mortar). Vehicle's native crew is re-derived later
+                // from its own config, so the 3c.2a separate crew sub
+                // becomes redundant for substituted vehicles - left in
+                // as belt-and-braces for the case where substitution
+                // didn't happen (no same-kindOf in target faction).
+                if (_isInferredRedirect) then {
+                    _vehicle = [_vehicle, _originalFaction] call ALiVE_fnc_substituteFactionVehicle;
+                };
                 _groupVehicles pushback [_vehicle,_rank];
             } else {
                 // Phase 3c.2a: if this spawn came through an inferred

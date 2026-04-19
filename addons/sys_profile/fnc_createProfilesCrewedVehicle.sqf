@@ -31,6 +31,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 private ["_vehicleClass","_side","_faction","_rank","_direction","_spawnGoodPosition","_prefix","_engineOn","_busy","_cargo","_position",
@@ -49,6 +50,26 @@ _busy = if(count _this > 9) then {_this select 9} else {false};
 _cargo = if(count _this > 10) then {_this select 10} else {[]};
 _slingload = if(count _this > 11) then {_this select 11} else {[]};
 _isSPE = if(count _this > 12) then {_this select 12} else {false};
+
+// Phase 3c.2b: vehicle/static substitution for inferred-faction redirects.
+// Callers (mil_placement, mil_placement_spe, mil_logistics, mil_c2istar,
+// mil_ato) pass the mod faction directly as _faction. When mil_placement's
+// findVehicleType returned a vanilla A3 vehicle (because the mod faction
+// has no entry in that category), substitute with a same-kindOf vehicle
+// from the mod faction. Curated mappings (CustomFactions.hpp / sys_orbat
+// creator output) deliberately keep their declared vehicles - the
+// Inferred flag distinguishes inferred from curated.
+//
+// Crew (_crew, derived later from _vehicleClass via configGetVehicleCrew)
+// will use the substituted vehicle's NATIVE crew config entry, which is
+// already correct for the mod faction. No separate crew substitution
+// needed at this hook point.
+if (!isNil "ALIVE_factionCustomMappings" && {_faction in (ALIVE_factionCustomMappings select 1)}) then {
+    private _customMappings = [ALIVE_factionCustomMappings, _faction] call ALIVE_fnc_hashGet;
+    if ([_customMappings, "Inferred", false] call ALIVE_fnc_hashGet) then {
+        _vehicleClass = [_vehicleClass, _faction] call ALiVE_fnc_substituteFactionVehicle;
+    };
+};
 
 // get counts of current profiles
 

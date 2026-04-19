@@ -480,6 +480,13 @@ class substituteFactionUnit
 	RECOMPILE;
 };
 
+class substituteFactionVehicle
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_substituteFactionVehicle.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class configGetFactionUnitsByGroups
 {
 	file = "\x\alive\addons\x_lib\functions\config\fnc_configGetFactionUnitsByGroups.sqf";
