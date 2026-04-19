@@ -452,6 +452,20 @@ class configGetFactions
 	RECOMPILE;
 };
 
+class inferFactionMapping
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferFactionMapping.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class inferFactionMappingsAll
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferFactionMappingsAll.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class configGetFactionUnitsByGroups
 {
 	file = "\x\alive\addons\x_lib\functions\config\fnc_configGetFactionUnitsByGroups.sqf";

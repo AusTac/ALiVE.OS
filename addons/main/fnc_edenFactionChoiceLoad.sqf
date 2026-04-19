@@ -249,9 +249,32 @@ private _configPaths = [
                         // (see _civilianBlacklist above).
                         !((toLower _cn) in _civilianBlacklist)
                     } else {
+                        // Military side. Two paths to "usable":
+                        // (a) faction has proper CfgGroups for its side -
+                        //     existing infrastructure handles spawning
+                        // (b) faction has CfgVehicles Man-class units, even
+                        //     without CfgGroups - Phase 3c.1 inference
+                        //     registers a redirect-only mapping at runtime
+                        //     (see ALiVE_fnc_inferFactionMappingsAll), so
+                        //     the faction IS spawnable by mission start.
+                        //     Spawned units are vanilla A3 of the right
+                        //     side until Phase 3c.2 lands unit
+                        //     substitution.
                         private _sideName = _sideCfgGroupsName select _side;
                         private _groupsEntry = configFile >> "CfgGroups" >> _sideName >> _cn;
-                        isClass _groupsEntry && {count _groupsEntry > 0}
+                        if (isClass _groupsEntry && {count _groupsEntry > 0}) then {
+                            true
+                        } else {
+                            // Inferability check: does the faction have any
+                            // CfgVehicles Man-class units? If yes, runtime
+                            // inference will produce a redirect mapping.
+                            private _vehicles = "true" configClasses (configFile >> "CfgVehicles");
+                            private _factionTagLower = toLower _cn;
+                            (_vehicles findIf {
+                                (toLower (getText (_x >> "faction"))) == _factionTagLower &&
+                                {(configName _x) isKindOf "Man"}
+                            }) >= 0
+                        };
                     };
                     if (_usable) then {
                         // Consult Cfg3rdPartyFactions registry for per-
