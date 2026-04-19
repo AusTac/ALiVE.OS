@@ -28,7 +28,15 @@ params [
 ];
 
 if (!isServer) exitWith {};
-if (!ALiVE_advciv_enabled) exitWith {};
+
+// Defensive: AdvCiv globals are published from
+// fnc_civilianPopulationSystemInit. An explosion can fire BEFORE that
+// init runs (early mission preview, intro events). Reading globals
+// while still nil crashes - `!nil` errors on its own, and a nil _range
+// would make nearEntities throw "Type Any, expected Number". Same
+// hardening applied to fnc_advciv_handleFired.
+if (isNil "ALiVE_advciv_enabled" || {!ALiVE_advciv_enabled}) exitWith {};
+if (isNil "ALiVE_advciv_explosionRange") exitWith {};
 
 private _range    = ALiVE_advciv_explosionRange;
 private _nearCivs = _pos nearEntities ["CAManBase", _range];
