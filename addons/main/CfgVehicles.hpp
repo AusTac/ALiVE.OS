@@ -49,6 +49,17 @@ class Cfg3DEN
 
         class Combo; // Forward declaration of BI Combo attribute control
 
+        // Forward declarations needed by ALiVE_FactionChoiceMulti's
+        // nested-class inheritance pattern (`class Controls: Controls`,
+        // `class Title: Title`, `class Value: Value`). Without these
+        // forward decls, rapify fails the build with "missing
+        // inheritence class(es)" because it can't resolve the right-
+        // hand-side parent names when they're nested inside Combo
+        // rather than top-level in this scope.
+        class Controls;
+        class Title;
+        class Value;
+
         // ALiVE_FactionChoice family:
         //   Dynamic faction-selection Combo shared across placement-style
         //   modules. Populated at Eden-panel-open time from loaded
