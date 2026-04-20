@@ -4,194 +4,380 @@
 <Container name="STR_DN">
 <Key ID="STR_ALIVE_ML">
     <English>Military Logistics</English>
-	<Chinesesimp>军事后勤</Chinesesimp>
+    <Chinese>軍事後勤</Chinese>
+    <Chinesesimp>军事后勤</Chinesesimp>
+    <Spanish>Logística militar</Spanish>
+    <French>Logistique militaire</French>
+    <Portuguese>Logística militar</Portuguese>
+    <Russian>Военная логистика</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_COMMENT">
     <English>Strategic Military Logistics</English>
-	<Chinesesimp>战略军事后勤</Chinesesimp>
+    <Chinese>戰略軍事後勤</Chinese>
+    <Chinesesimp>战略军事后勤</Chinesesimp>
+    <Spanish>Logística militar estratégica</Spanish>
+    <French>Logistique militaire stratégique</French>
+    <Portuguese>Logística militar estratégica</Portuguese>
+    <Russian>Стратегическая военная логистика</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_DEBUG">
     <English>Enable Debug:</English>
-	<Chinesesimp>启用调试：</Chinesesimp>
+    <Chinese>啟用調試：</Chinese>
+    <Chinesesimp>启用调试：</Chinesesimp>
+    <Spanish>Activar depuración:</Spanish>
+    <French>Activer le débogage:</French>
+    <Portuguese>Ativar depuração:</Portuguese>
+    <Russian>Включить отладку:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_DEBUG_COMMENT">
-    <English>Enables ML Module Debug</English>
-	<Chinesesimp>启用军事后勤模组调试</Chinesesimp>
+    <English>Enables Military Logistics module debug — diag_log dumps of reinforcement requests, pool deductions and transport assignments.</English>
+    <Chinese>啟用軍事後勤模組調試 — 將增援請求、力量池扣減和運輸指派記錄到 diag_log。</Chinese>
+    <Chinesesimp>启用军事后勤模块调试 — 将增援请求、力量池扣减和运输指派记录到 diag_log。</Chinesesimp>
+    <Spanish>Activa la depuración del módulo de Logística militar — vuelca al diag_log las solicitudes de refuerzo, las deducciones del pool y las asignaciones de transporte.</Spanish>
+    <French>Active le débogage du module de Logistique militaire — journalise dans diag_log les demandes de renforts, les déductions du pool et les affectations de transport.</French>
+    <Portuguese>Ativa a depuração do módulo de Logística militar — registra no diag_log solicitações de reforço, deduções do pool e atribuições de transporte.</Portuguese>
+    <Russian>Включает отладку модуля «Военная логистика» — запись в diag_log запросов подкреплений, списаний из пула и назначений транспорта.</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_PERSISTENT">
     <English>Persistent:</English>
-	<Chinesesimp>持久变量：</Chinesesimp>
+    <Chinese>持久化：</Chinese>
+    <Chinesesimp>持久变量：</Chinesesimp>
+    <Spanish>Persistente:</Spanish>
+    <French>Persistant:</French>
+    <Portuguese>Persistente:</Portuguese>
+    <Russian>Сохраняемый:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_PERSISTENT_COMMENT">
     <English>Enables external Database persistence for military logistics</English>
-	<Chinesesimp>为军事后勤启用外部数据库持久性</Chinesesimp>
+    <Chinese>為軍事後勤啟用外部資料庫持久化</Chinese>
+    <Chinesesimp>为军事后勤启用外部数据库持久性</Chinesesimp>
+    <Spanish>Activa la persistencia mediante base de datos externa para la logística militar</Spanish>
+    <French>Active la persistance via base de données externe pour la logistique militaire</French>
+    <Portuguese>Ativa a persistência via banco de dados externo para a logística militar</Portuguese>
+    <Russian>Включает сохранение через внешнюю БД для военной логистики</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_TYPE">
     <English>Reinforcement Type:</English>
-	<Chinesesimp>增援类型：</Chinesesimp>
+    <Chinese>增援類型：</Chinese>
+    <Chinesesimp>增援类型：</Chinesesimp>
+    <Spanish>Tipo de refuerzo:</Spanish>
+    <French>Type de renfort:</French>
+    <Portuguese>Tipo de reforço:</Portuguese>
+    <Russian>Тип подкреплений:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_TYPE_COMMENT">
-    <English>Select the type of logistics. Dynamic, will fall back to lower priority objectives if lost. Static will only select the closest objective to use as insertion point</English>
-	<Chinesesimp>选择后勤类型。动态的，如果丢失，将退回到较低优先级的目标。静态的，只会选择最近的目标作为插入点。</Chinesesimp>
+    <English>Selects the logistics insertion strategy. Dynamic falls back to lower-priority objectives if the preferred one is lost or contested. Static only ever selects the closest objective as the insertion point.</English>
+    <Chinese>選擇後勤投入策略。動態：若首選目標被佔領或爭奪中，則退而求其次選擇較低優先級的目標。靜態：始終只選擇最近的目標作為投入點。</Chinese>
+    <Chinesesimp>选择后勤投入策略。动态：若首选目标被占领或争夺中，则退而求其次选择较低优先级的目标。静态：始终只选择最近的目标作为投入点。</Chinesesimp>
+    <Spanish>Selecciona la estrategia de inserción logística. Dinámica recurre a objetivos de menor prioridad si el preferido se pierde o está en disputa. Estática siempre elige el objetivo más cercano como punto de inserción.</Spanish>
+    <French>Sélectionne la stratégie d'insertion logistique. Dynamique se rabat sur des objectifs de priorité inférieure si l'objectif préféré est perdu ou contesté. Statique ne sélectionne jamais que l'objectif le plus proche comme point d'insertion.</French>
+    <Portuguese>Seleciona a estratégia de inserção logística. Dinâmica recorre a objetivos de prioridade menor se o preferido for perdido ou disputado. Estática sempre seleciona o objetivo mais próximo como ponto de inserção.</Portuguese>
+    <Russian>Выбирает стратегию ввода подкреплений. Динамическая откатывается к объектам низшего приоритета, если предпочитаемый потерян или оспаривается. Статическая всегда выбирает ближайший объект как точку входа.</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_TYPE_DYNAMIC">
     <English>Dynamic</English>
-	<Chinesesimp>动态的</Chinesesimp>
+    <Chinese>動態</Chinese>
+    <Chinesesimp>动态的</Chinesesimp>
+    <Spanish>Dinámica</Spanish>
+    <French>Dynamique</French>
+    <Portuguese>Dinâmica</Portuguese>
+    <Russian>Динамическая</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_TYPE_STATIC">
     <English>Static</English>
-	<Chinesesimp>静态的</Chinesesimp>
+    <Chinese>靜態</Chinese>
+    <Chinesesimp>静态的</Chinesesimp>
+    <Spanish>Estática</Spanish>
+    <French>Statique</French>
+    <Portuguese>Estática</Portuguese>
+    <Russian>Статическая</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL">
-    <English>Force Pool:</English>
-	<Chinesesimp>力量池：</Chinesesimp>
+    <English>Force Pool (groups):</English>
+    <Chinese>力量池（組）：</Chinese>
+    <Chinesesimp>力量池（组）：</Chinesesimp>
+    <Spanish>Pool de fuerzas (grupos):</Spanish>
+    <French>Réserve de forces (groupes):</French>
+    <Portuguese>Pool de forças (grupos):</Portuguese>
+    <Russian>Пул сил (группы):</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_COMMENT">
-    <English>The number of groups that can be called upon for reinforcements</English>
-	<Chinesesimp>呼叫增援时能呼叫的组的数量</Chinesesimp>
+    <English>Total reinforcement budget in groups. Each reinforcement request decrements the pool by the group's size; the commander stops requesting once the pool is empty. Dynamic = pool scales with current force losses (10 baseline). Infinite = effectively unlimited (100000). Fixed numeric values cap reinforcements at that group total.</English>
+    <Chinese>以「組」為單位的增援總預算。每次增援請求會按組的大小扣減力量池；池耗盡後指揮官停止請求。動態 = 力量池根據當前部隊損失動態調整（基準 10）。無限 = 實際上無上限（100000）。固定數值將增援限制在該組總數。</Chinese>
+    <Chinesesimp>以「组」为单位的增援总预算。每次增援请求会按组的大小扣减力量池；池耗尽后指挥官停止请求。动态 = 力量池根据当前部队损失动态调整（基准 10）。无限 = 实际上无上限（100000）。固定数值将增援限制在该组总数。</Chinesesimp>
+    <Spanish>Presupuesto total de refuerzos en grupos. Cada solicitud de refuerzo descuenta del pool el tamaño del grupo; el comandante deja de solicitar cuando el pool se vacía. Dinámica = el pool se escala con las pérdidas actuales (10 de base). Infinita = prácticamente ilimitada (100000). Los valores numéricos fijos limitan los refuerzos a ese total de grupos.</Spanish>
+    <French>Budget total de renforts en groupes. Chaque demande de renforts décrémente la réserve de la taille du groupe; le commandant cesse de demander une fois la réserve épuisée. Dynamique = la réserve s'ajuste aux pertes actuelles (base de 10). Illimitée = pratiquement sans limite (100000). Les valeurs numériques fixes plafonnent les renforts à ce total de groupes.</French>
+    <Portuguese>Orçamento total de reforços em grupos. Cada pedido de reforço debita do pool o tamanho do grupo; o comandante para de pedir quando o pool se esgota. Dinâmico = o pool escala com as perdas atuais (base 10). Infinito = praticamente ilimitado (100000). Valores numéricos fixos limitam os reforços a esse total de grupos.</Portuguese>
+    <Russian>Общий бюджет подкреплений в группах. Каждый запрос подкреплений уменьшает пул на размер группы; командир прекращает запросы, когда пул исчерпан. Динамический = пул масштабируется по текущим потерям (база 10). Бесконечный = практически без ограничений (100000). Фиксированные числовые значения ограничивают подкрепления этим количеством групп.</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_DYNAMIC">
     <English>Dynamic</English>
-	<Chinesesimp>动态的</Chinesesimp>
+    <Chinese>動態</Chinese>
+    <Chinesesimp>动态的</Chinesesimp>
+    <Spanish>Dinámica</Spanish>
+    <French>Dynamique</French>
+    <Portuguese>Dinâmico</Portuguese>
+    <Russian>Динамический</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_INFINITE">
     <English>Infinite</English>
-	<Chinesesimp>无限的</Chinesesimp>
+    <Chinese>無限</Chinese>
+    <Chinesesimp>无限的</Chinesesimp>
+    <Spanish>Infinita</Spanish>
+    <French>Illimitée</French>
+    <Portuguese>Infinito</Portuguese>
+    <Russian>Бесконечный</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_20000">
     <English>20000</English>
-	<Chinesesimp>20000</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_10000">
     <English>10000</English>
-	<Chinesesimp>10000</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_5000">
     <English>5000</English>
-	<Chinesesimp>5000</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_2500">
     <English>2500</English>
-	<Chinesesimp>2500</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_1000">
     <English>1000</English>
-	<Chinesesimp>1000</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_500">
     <English>500</English>
-	<Chinesesimp>500</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_200">
     <English>200</English>
-	<Chinesesimp>200</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_100">
     <English>100</English>
-	<Chinesesimp>100</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_FORCE_POOL_50">
     <English>50</English>
-	<Chinesesimp>50</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_INF">
     <English>Allow Infantry:</English>
-	<Chinesesimp>允许步兵</Chinesesimp>
+    <Chinese>允許步兵：</Chinese>
+    <Chinesesimp>允许步兵：</Chinesesimp>
+    <Spanish>Permitir infantería:</Spanish>
+    <French>Autoriser l'infanterie:</French>
+    <Portuguese>Permitir infantaria:</Portuguese>
+    <Russian>Разрешить пехоту:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_INF_COMMENT">
     <English>Allow infantry reinforcements</English>
-	<Chinesesimp>允许步兵增援</Chinesesimp>
+    <Chinese>允許步兵增援</Chinese>
+    <Chinesesimp>允许步兵增援</Chinesesimp>
+    <Spanish>Permite refuerzos de infantería</Spanish>
+    <French>Autorise les renforts d'infanterie</French>
+    <Portuguese>Permite reforços de infantaria</Portuguese>
+    <Russian>Разрешает подкрепления пехоты</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_MECH">
     <English>Allow Mechanised:</English>
-	<Chinesesimp>允许机械化</Chinesesimp>
+    <Chinese>允許機械化：</Chinese>
+    <Chinesesimp>允许机械化：</Chinesesimp>
+    <Spanish>Permitir mecanizados:</Spanish>
+    <French>Autoriser mécanisés:</French>
+    <Portuguese>Permitir mecanizados:</Portuguese>
+    <Russian>Разрешить механизированные:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_MECH_COMMENT">
     <English>Allow mechanised reinforcements</English>
-	<Chinesesimp>允许机械化增援</Chinesesimp>
+    <Chinese>允許機械化增援</Chinese>
+    <Chinesesimp>允许机械化增援</Chinesesimp>
+    <Spanish>Permite refuerzos mecanizados</Spanish>
+    <French>Autorise les renforts mécanisés</French>
+    <Portuguese>Permite reforços mecanizados</Portuguese>
+    <Russian>Разрешает механизированные подкрепления</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_MOT">
     <English>Allow Motorised:</English>
-	<Chinesesimp>允许摩托化</Chinesesimp>
+    <Chinese>允許摩托化：</Chinese>
+    <Chinesesimp>允许摩托化：</Chinesesimp>
+    <Spanish>Permitir motorizados:</Spanish>
+    <French>Autoriser motorisés:</French>
+    <Portuguese>Permitir motorizados:</Portuguese>
+    <Russian>Разрешить моторизованные:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_MOT_COMMENT">
     <English>Allow motorised reinforcements</English>
-	<Chinesesimp>允许摩托化增援</Chinesesimp>
+    <Chinese>允許摩托化增援</Chinese>
+    <Chinesesimp>允许摩托化增援</Chinesesimp>
+    <Spanish>Permite refuerzos motorizados</Spanish>
+    <French>Autorise les renforts motorisés</French>
+    <Portuguese>Permite reforços motorizados</Portuguese>
+    <Russian>Разрешает моторизованные подкрепления</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_ARM">
     <English>Allow Armour:</English>
-	<Chinesesimp>允许装甲</Chinesesimp>
+    <Chinese>允許裝甲：</Chinese>
+    <Chinesesimp>允许装甲：</Chinesesimp>
+    <Spanish>Permitir blindados:</Spanish>
+    <French>Autoriser blindés:</French>
+    <Portuguese>Permitir blindados:</Portuguese>
+    <Russian>Разрешить бронетехнику:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_ARM_COMMENT">
     <English>Allow armour reinforcements</English>
-	<Chinesesimp>允许装甲增援</Chinesesimp>
+    <Chinese>允許裝甲增援</Chinese>
+    <Chinesesimp>允许装甲增援</Chinesesimp>
+    <Spanish>Permite refuerzos blindados</Spanish>
+    <French>Autorise les renforts blindés</French>
+    <Portuguese>Permite reforços blindados</Portuguese>
+    <Russian>Разрешает бронетанковые подкрепления</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_HELI">
     <English>Allow Helicopters:</English>
-	<Chinesesimp>允许直升机</Chinesesimp>
+    <Chinese>允許直升機：</Chinese>
+    <Chinesesimp>允许直升机：</Chinesesimp>
+    <Spanish>Permitir helicópteros:</Spanish>
+    <French>Autoriser hélicoptères:</French>
+    <Portuguese>Permitir helicópteros:</Portuguese>
+    <Russian>Разрешить вертолёты:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_HELI_COMMENT">
     <English>Allow helicopters reinforcements</English>
-	<Chinesesimp>允许直升机增援</Chinesesimp>
+    <Chinese>允許直升機增援</Chinese>
+    <Chinesesimp>允许直升机增援</Chinesesimp>
+    <Spanish>Permite refuerzos en helicóptero</Spanish>
+    <French>Autorise les renforts en hélicoptère</French>
+    <Portuguese>Permite reforços de helicóptero</Portuguese>
+    <Russian>Разрешает подкрепления на вертолётах</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_PLANE">
     <English>Allow Planes:</English>
-	<Chinesesimp>允许飞机</Chinesesimp>
+    <Chinese>允許飛機：</Chinese>
+    <Chinesesimp>允许飞机：</Chinesesimp>
+    <Spanish>Permitir aviones:</Spanish>
+    <French>Autoriser avions:</French>
+    <Portuguese>Permitir aviões:</Portuguese>
+    <Russian>Разрешить самолёты:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ALLOW_PLANE_COMMENT">
     <English>Allow planes reinforcements</English>
-	<Chinesesimp>允许飞机增援</Chinesesimp>
+    <Chinese>允許飛機增援</Chinese>
+    <Chinesesimp>允许飞机增援</Chinesesimp>
+    <Spanish>Permite refuerzos en avión</Spanish>
+    <French>Autorise les renforts en avion</French>
+    <Portuguese>Permite reforços de avião</Portuguese>
+    <Russian>Разрешает подкрепления на самолётах</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ENABLE_AIR_TRANSPORT">
     <English>Enable Air Transport:</English>
-	<Chinesesimp>允许空中运输</Chinesesimp>
+    <Chinese>啟用空中運輸：</Chinese>
+    <Chinesesimp>启用空中运输：</Chinesesimp>
+    <Spanish>Activar transporte aéreo:</Spanish>
+    <French>Activer le transport aérien:</French>
+    <Portuguese>Ativar transporte aéreo:</Portuguese>
+    <Russian>Включить воздушный транспорт:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_ENABLE_AIR_TRANSPORT_COMMENT">
     <English>Allow reinforcements to be flown in by air transport</English>
-	<Chinesesimp>允许增援被空中运输飞行</Chinesesimp>
+    <Chinese>允許透過空中運輸投送增援</Chinese>
+    <Chinesesimp>允许通过空中运输投送增援</Chinesesimp>
+    <Spanish>Permite que los refuerzos lleguen por transporte aéreo</Spanish>
+    <French>Permet l'acheminement des renforts par transport aérien</French>
+    <Portuguese>Permite que os reforços cheguem por transporte aéreo</Portuguese>
+    <Russian>Разрешает доставку подкреплений по воздуху</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_LIMIT">
     <English>Air Transport Assets:</English>
-	<Chinesesimp>空中运输资产：</Chinesesimp>
+    <Chinese>空中運輸資產：</Chinese>
+    <Chinesesimp>空中运输资产：</Chinesesimp>
+    <Spanish>Activos de transporte aéreo:</Spanish>
+    <French>Moyens de transport aérien:</French>
+    <Portuguese>Recursos de transporte aéreo:</Portuguese>
+    <Russian>Авиатранспортные средства:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_LIMIT_COMMENT">
-    <English>Limit available air transport assets to faction only or faction and side</English>
-	<Chinesesimp>限制空中运输资产于仅派系，或派系和阵营</Chinesesimp>
+    <English>Which air transport vehicles the commander can call on. Side and Faction (default) — any helicopter or transport plane belonging to the same side may be used, regardless of faction. Faction Only — restricts the pool to vehicles from the exact same faction as the commander.</English>
+    <Chinese>指揮官可呼叫哪些空中運輸載具。陣營與派系（預設）— 同方任何直升機或運輸機都可使用，不論派系。僅派系 — 池僅限與指揮官相同派系的載具。</Chinese>
+    <Chinesesimp>指挥官可呼叫哪些空中运输载具。阵营与派系（默认）— 同方任何直升机或运输机都可使用，不论派系。仅派系 — 池仅限与指挥官相同派系的载具。</Chinesesimp>
+    <Spanish>Qué vehículos de transporte aéreo puede convocar el comandante. Bando y facción (predeterminado) — cualquier helicóptero o avión de transporte del mismo bando, independientemente de la facción. Solo facción — restringe el pool a vehículos exactamente de la misma facción que el comandante.</Spanish>
+    <French>Quels véhicules de transport aérien le commandant peut appeler. Camp et Faction (par défaut) — tout hélicoptère ou avion de transport du même camp, quelle que soit la faction. Faction uniquement — restreint le pool aux véhicules de la même faction exacte que le commandant.</French>
+    <Portuguese>Quais veículos de transporte aéreo o comandante pode acionar. Lado e facção (padrão) — qualquer helicóptero ou avião de transporte do mesmo lado, independentemente da facção. Apenas facção — restringe o pool a veículos exatamente da mesma facção do comandante.</Portuguese>
+    <Russian>Какие авиатранспортные средства может вызывать командир. Сторона и фракция (по умолчанию) — любой вертолёт или транспортный самолёт той же стороны, независимо от фракции. Только фракция — ограничивает пул техникой именно той же фракции, что и у командира.</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_USAGE">
     <English>Place a Military Logistics module to reinforce and resupply factions under control of the synced Military AI Commander module.</English>
-	<Chinesesimp>放置一个军事后勤模块，以在同步的军事人工智能指挥官模块的控制下增援和补给派系。</Chinesesimp>
+    <Chinese>放置軍事後勤模組，用於增援和補給由同步的軍事 AI 指揮官模組控制的派系。</Chinese>
+    <Chinesesimp>放置军事后勤模块，用于增援和补给由同步的军事 AI 指挥官模块控制的派系。</Chinesesimp>
+    <Spanish>Coloca un módulo de Logística militar para reforzar y reabastecer a las facciones bajo control del módulo de Comandante IA militar sincronizado.</Spanish>
+    <French>Placez un module Logistique militaire pour renforcer et réapprovisionner les factions sous le contrôle du module Commandant IA militaire synchronisé.</French>
+    <Portuguese>Coloque um módulo de Logística militar para reforçar e reabastecer as facções sob o controle do módulo Comandante IA militar sincronizado.</Portuguese>
+    <Russian>Разместите модуль «Военная логистика», чтобы пополнять и снабжать фракции под управлением синхронизированного модуля «Военный ИИ-командир».</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_INC">
-  <English>Inc. Force Strength (Obj. Capture)</English>
-	<Chinesesimp>目标占领增强</Chinesesimp>
+    <English>Inc. Force Strength (Obj. Capture):</English>
+    <Chinese>增加部隊兵力（佔領目標）：</Chinese>
+    <Chinesesimp>增加部队兵力（占领目标）：</Chinesesimp>
+    <Spanish>Aumentar fuerza (captura obj.):</Spanish>
+    <French>Augmenter la force (capture obj.):</French>
+    <Portuguese>Aumentar força (captura obj.):</Portuguese>
+    <Russian>Увеличить силу (захват объекта):</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_INC_COMMENT">
-  <English>When an objective is captured OPCOM will increase the force cap used to bring in 'replacements' to get up to strength</English>
-	<Chinesesimp>当占领一个目标时，OPCOM将增加兵力上限，用于引入“增援”以增加兵力</Chinesesimp>
+    <English>When an objective is captured OPCOM will increase the force cap used to bring in 'replacements' to get up to strength</English>
+    <Chinese>佔領目標時，OPCOM 會提高用於引入「補充兵」的兵力上限以達到滿編</Chinese>
+    <Chinesesimp>占领目标时，OPCOM 会提高用于引入「补充兵」的兵力上限以达到满编</Chinesesimp>
+    <Spanish>Al capturar un objetivo, OPCOM aumentará el límite de fuerza usado para traer «reemplazos» y alcanzar la dotación</Spanish>
+    <French>Lorsqu'un objectif est capturé, OPCOM augmente le plafond de force utilisé pour amener des « remplaçants » jusqu'à pleine puissance</French>
+    <Portuguese>Quando um objetivo é capturado, o OPCOM aumenta o limite de força usado para trazer «substitutos» até atingir a dotação</Portuguese>
+    <Russian>При захвате объекта OPCOM увеличивает предел сил, используемый для ввода «пополнений» до полной численности</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_INC_FACTOR">
-  <English>Inc. Force Strength Factor</English>
-	<Chinesesimp>增加系数</Chinesesimp>
+    <English>Inc. Force Strength Factor:</English>
+    <Chinese>兵力增加係數：</Chinese>
+    <Chinesesimp>兵力增加系数：</Chinesesimp>
+    <Spanish>Factor de aumento de fuerza:</Spanish>
+    <French>Facteur d'augmentation de force:</French>
+    <Portuguese>Fator de aumento de força:</Portuguese>
+    <Russian>Коэф. увеличения силы:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_INC_FACTOR_COMMENT">
-  <English>Factor amount to increase startForceStrength on objective capture. Will only increase where value > 0</English>
-	<Chinesesimp>在目标占领时增加初始部队的数量。只在值> 0的地方增加</Chinesesimp>
+    <English>Factor amount to increase startForceStrength on objective capture. Will only increase where value > 0</English>
+    <Chinese>佔領目標時用於增加 startForceStrength 的係數值。僅在值 &gt; 0 時生效</Chinese>
+    <Chinesesimp>占领目标时用于增加 startForceStrength 的系数值。仅在值 &gt; 0 时生效</Chinesesimp>
+    <Spanish>Factor con el que se aumenta startForceStrength al capturar un objetivo. Solo aumenta cuando el valor es &gt; 0</Spanish>
+    <French>Facteur d'augmentation de startForceStrength à la capture d'un objectif. N'augmente que lorsque la valeur est &gt; 0</French>
+    <Portuguese>Fator pelo qual startForceStrength aumenta na captura de um objetivo. Só aumenta quando o valor for &gt; 0</Portuguese>
+    <Russian>Коэффициент увеличения startForceStrength при захвате объекта. Действует только при значении &gt; 0</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_DEC">
-  <English>Dec. Force Strength (Obj. Loss)</English>
-	<Chinesesimp>目标丢失减少</Chinesesimp>
+    <English>Dec. Force Strength (Obj. Loss):</English>
+    <Chinese>減少部隊兵力（失去目標）：</Chinese>
+    <Chinesesimp>减少部队兵力（失去目标）：</Chinesesimp>
+    <Spanish>Reducir fuerza (pérdida obj.):</Spanish>
+    <French>Réduire la force (perte obj.):</French>
+    <Portuguese>Reduzir força (perda obj.):</Portuguese>
+    <Russian>Уменьшить силу (потеря объекта):</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_COMMENT">
-  <English>When an objective is captured OPCOM will decrease the force cap used to bring in 'replacements' to get up to strength</English>
-	<Chinesesimp>当一个目标被占领时，OPCOM 将减少用于引入‘增援’以降低部队上限</Chinesesimp>
+    <English>When an objective is lost, OPCOM will decrease the force cap used to bring in 'replacements' — shrinking the available force as territory is given up.</English>
+    <Chinese>失去目標時，OPCOM 會降低用於引入「補充兵」的兵力上限 — 隨著領土被放棄，可用兵力縮減。</Chinese>
+    <Chinesesimp>失去目标时，OPCOM 会降低用于引入「补充兵」的兵力上限 — 随着领土被放弃，可用兵力缩减。</Chinesesimp>
+    <Spanish>Cuando se pierde un objetivo, OPCOM reducirá el límite de fuerza usado para traer «reemplazos» — encogiendo la fuerza disponible a medida que se cede territorio.</Spanish>
+    <French>Lorsqu'un objectif est perdu, OPCOM réduit le plafond de force utilisé pour amener des « remplaçants » — la force disponible diminue à mesure que du territoire est cédé.</French>
+    <Portuguese>Quando um objetivo é perdido, o OPCOM reduz o limite de força usado para trazer «substitutos» — encolhendo a força disponível à medida que se cede território.</Portuguese>
+    <Russian>При потере объекта OPCOM уменьшает предел сил, используемый для ввода «пополнений» — доступные силы сокращаются по мере уступки территории.</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_FACTOR">
-  <English>Dec. Force Strength Factor</English>
-	<Chinesesimp>减少系数</Chinesesimp>
+    <English>Dec. Force Strength Factor:</English>
+    <Chinese>兵力減少係數：</Chinese>
+    <Chinesesimp>兵力减少系数：</Chinesesimp>
+    <Spanish>Factor de reducción de fuerza:</Spanish>
+    <French>Facteur de réduction de force:</French>
+    <Portuguese>Fator de redução de força:</Portuguese>
+    <Russian>Коэф. уменьшения силы:</Russian>
 </Key>
 <Key ID="STR_ALIVE_ML_START_FORCE_STRENGTH_DEC_FACTOR_COMMENT">
-  <English>Factor amount to decrement startForceStrength on objective loss. Will only decrease where value > 0</English>
-	<Chinesesimp>在目标被占领时减少初始部队的数量。只在值> 0的地方减少</Chinesesimp>
+    <English>Factor amount to decrement startForceStrength on objective loss. Will only decrease where value > 0</English>
+    <Chinese>失去目標時用於減少 startForceStrength 的係數值。僅在值 &gt; 0 時生效</Chinese>
+    <Chinesesimp>失去目标时用于减少 startForceStrength 的系数值。仅在值 &gt; 0 时生效</Chinesesimp>
+    <Spanish>Factor con el que se reduce startForceStrength al perder un objetivo. Solo reduce cuando el valor es &gt; 0</Spanish>
+    <French>Facteur de réduction de startForceStrength à la perte d'un objectif. Ne réduit que lorsque la valeur est &gt; 0</French>
+    <Portuguese>Fator pelo qual startForceStrength reduz na perda de um objetivo. Só reduz quando o valor for &gt; 0</Portuguese>
+    <Russian>Коэффициент уменьшения startForceStrength при потере объекта. Действует только при значении &gt; 0</Russian>
 </Key>
 </Container></Package></Project>
