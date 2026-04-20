@@ -4,198 +4,470 @@
 <Container name="STR_DN">
 <Key ID="STR_ALIVE_OPCOM">
     <English>Military AI Commander</English>
+    <Chinese>軍事人工智慧指揮官</Chinese>
     <Chinesesimp>军事人工智能指挥官</Chinesesimp>
+    <Spanish>Comandante IA militar</Spanish>
+    <French>Commandant IA militaire</French>
+    <Portuguese>Comandante IA militar</Portuguese>
+    <Russian>Военный ИИ-командир</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_COMMENT">
     <English>Virtual AI High Command</English>
+    <Chinese>虛擬 AI 最高指揮部</Chinese>
     <Chinesesimp>虚拟AI最高指令</Chinesesimp>
+    <Spanish>Alto Mando IA virtual</Spanish>
+    <French>Haut Commandement IA virtuel</French>
+    <Portuguese>Alto Comando IA virtual</Portuguese>
+    <Russian>Виртуальное верховное командование ИИ</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_DEBUG">
     <English>Enable Debug:</English>
-    <Chinesesimp>启用调试</Chinesesimp>
+    <Chinese>啟用調試：</Chinese>
+    <Chinesesimp>启用调试：</Chinesesimp>
+    <Spanish>Activar depuración:</Spanish>
+    <French>Activer le débogage:</French>
+    <Portuguese>Ativar depuração:</Portuguese>
+    <Russian>Включить отладку:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_DEBUG_COMMENT">
     <English>Enables Module Debug</English>
+    <Chinese>啟用模組調試</Chinese>
     <Chinesesimp>启用模块调试</Chinesesimp>
+    <Spanish>Activa la depuración del módulo</Spanish>
+    <French>Active le débogage du module</French>
+    <Portuguese>Ativa a depuração do módulo</Portuguese>
+    <Russian>Включает отладку модуля</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_PERSISTENT">
     <English>Persistent:</English>
-    <Chinesesimp>持久的</Chinesesimp>
+    <Chinese>持久化：</Chinese>
+    <Chinesesimp>持久的：</Chinesesimp>
+    <Spanish>Persistente:</Spanish>
+    <French>Persistant:</French>
+    <Portuguese>Persistente:</Portuguese>
+    <Russian>Сохраняемый:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_PERSISTENT_COMMENT">
     <English>Enables external Database persistence for AI Commander</English>
+    <Chinese>為 AI 指揮官啟用外部資料庫持久化</Chinese>
     <Chinesesimp>为AI指挥官启用外部数据库持久性</Chinesesimp>
+    <Spanish>Activa la persistencia mediante base de datos externa para el Comandante IA</Spanish>
+    <French>Active la persistance via base de données externe pour le Commandant IA</French>
+    <Portuguese>Ativa a persistência via banco de dados externo para o Comandante IA</Portuguese>
+    <Russian>Включает сохранение через внешнюю БД для ИИ-командира</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_NAME">
     <English>Custom Name:</English>
-    <Chinesesimp>自定义名称</Chinesesimp>
+    <Chinese>自訂名稱：</Chinese>
+    <Chinesesimp>自定义名称：</Chinesesimp>
+    <Spanish>Nombre personalizado:</Spanish>
+    <French>Nom personnalisé:</French>
+    <Portuguese>Nome personalizado:</Portuguese>
+    <Russian>Своё имя:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_NAME_COMMENT">
-    <English>Sets a custom name for AI Commander in C2ISTAR Module</English>
-    <Chinesesimp>为C2ISTAR模块中的AI指挥官设置自定义名称</Chinesesimp>
+    <English>Optional custom name for this AI Commander. Shown in the ALiVE tablet, commander reports and C2ISTAR task attribution. Leave blank to auto-name from side and control type.</English>
+    <Chinese>此 AI 指揮官的可選自訂名稱。顯示於 ALiVE 平板電腦、指揮官報告和 C2ISTAR 任務歸屬中。留空則根據陣營和控制類型自動命名。</Chinese>
+    <Chinesesimp>此 AI 指挥官的可选自定义名称。显示于 ALiVE 平板电脑、指挥官报告和 C2ISTAR 任务归属中。留空则根据阵营和控制类型自动命名。</Chinesesimp>
+    <Spanish>Nombre personalizado opcional para este Comandante IA. Se muestra en la tableta ALiVE, los informes del comandante y la atribución de tareas C2ISTAR. Déjalo en blanco para autodenominar a partir del bando y el tipo de control.</Spanish>
+    <French>Nom personnalisé facultatif pour ce Commandant IA. Affiché dans la tablette ALiVE, les rapports du commandant et l'attribution des tâches C2ISTAR. Laissez vide pour un nommage automatique à partir du camp et du type de contrôle.</French>
+    <Portuguese>Nome personalizado opcional para este Comandante IA. Exibido no tablet ALiVE, nos relatórios do comandante e na atribuição de tarefas do C2ISTAR. Deixe em branco para nomear automaticamente a partir do lado e do tipo de controle.</Portuguese>
+    <Russian>Необязательное собственное имя для этого ИИ-командира. Отображается в планшете ALiVE, отчётах командира и атрибуции задач C2ISTAR. Оставьте пустым для автоназвания по стороне и типу управления.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_CONTROLTYPE">
     <English>Control Type:</English>
-    <Chinesesimp>控件类型</Chinesesimp>
+    <Chinese>控制類型：</Chinese>
+    <Chinesesimp>控件类型：</Chinesesimp>
+    <Spanish>Tipo de control:</Spanish>
+    <French>Type de contrôle:</French>
+    <Portuguese>Tipo de controle:</Portuguese>
+    <Russian>Тип управления:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_CONTROLTYPE_COMMENT">
-    <English>Type of AI Commander control</English>
-    <Chinesesimp>AI指挥官控制类型</Chinesesimp>
+    <English>Selects the commander's operational doctrine. Invasion: aggressively captures objectives and pushes the front line. Occupation: holds captured objectives with static and patrolling defences; slower to advance. Asymmetric: operates as an insurgent force using recruitment centres, installations (IED factories, HQs), roadblocks and hit-and-run tactics rather than head-on objective capture.</English>
+    <Chinese>選擇指揮官的作戰準則。入侵：積極佔領目標並推進戰線。佔領：以靜態和巡邏防禦守住已佔領目標；推進較慢。非對稱：作為叛亂分子部隊運作，使用招募中心、設施（IED 工廠、總部）、路障和打了就跑戰術，而非正面佔領目標。</Chinese>
+    <Chinesesimp>选择指挥官的作战准则。入侵：积极占领目标并推进战线。占领：以静态和巡逻防御守住已占领目标；推进较慢。非对称：作为叛乱分子部队运作，使用招募中心、设施（IED 工厂、总部）、路障和打了就跑战术，而非正面占领目标。</Chinesesimp>
+    <Spanish>Selecciona la doctrina operativa del comandante. Invasión: captura agresivamente objetivos y empuja la línea del frente. Ocupación: mantiene los objetivos capturados con defensas estáticas y patrullas; avanza más lento. Asimétrico: opera como fuerza insurgente usando centros de reclutamiento, instalaciones (fábricas de IED, cuarteles generales), controles de carretera y tácticas de ataque y huida en lugar de capturar objetivos frontalmente.</Spanish>
+    <French>Sélectionne la doctrine opérationnelle du commandant. Invasion: capture agressivement les objectifs et pousse la ligne de front. Occupation: tient les objectifs capturés avec des défenses statiques et patrouillantes; avance plus lentement. Asymétrique: opère comme une force insurgée utilisant des centres de recrutement, des installations (usines d'IED, QG), des barrages routiers et des tactiques de frappe et de retrait plutôt que la capture frontale d'objectifs.</French>
+    <Portuguese>Seleciona a doutrina operacional do comandante. Invasão: captura objetivos agressivamente e empurra a linha de frente. Ocupação: mantém os objetivos capturados com defesas estáticas e patrulhas; avanço mais lento. Assimétrico: opera como força insurgente usando centros de recrutamento, instalações (fábricas de IED, QGs), bloqueios de estrada e táticas de ataque e fuga em vez de captura frontal de objetivos.</Portuguese>
+    <Russian>Выбирает оперативную доктрину командира. Вторжение: агрессивно захватывает объекты и продвигает линию фронта. Оккупация: удерживает захваченные объекты статичной и патрульной обороной; продвигается медленнее. Асимметричный: действует как повстанческая сила, используя центры вербовки, установки (мастерские СВУ, штабы), блокпосты и тактику «ударил и ушёл», а не прямой захват объектов.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_OCCUPATION">
-    <English>Installations (asymm.):</English>
-    <Chinesesimp>设施(不对称)</Chinesesimp>
+    <English>Installations:</English>
+    <Chinese>設施：</Chinese>
+    <Chinesesimp>设施：</Chinesesimp>
+    <Spanish>Instalaciones:</Spanish>
+    <French>Installations:</French>
+    <Portuguese>Instalações:</Portuguese>
+    <Russian>Установки:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_OCCUPATION_COMMENT">
-    <English>Amount of pre-placed installations like IED factories, HQ (asymmetric mode only)</English>
-    <Chinesesimp>IED工厂、总部(仅限非对称模式)等预设设施的数量</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_OPCOM_SIDE">
-    <English>Side:</English>
-    <Chinesesimp>大小</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_OPCOM_SIDE_COMMENT">
-    <English>AI Commanders side</English>
-    <Chinesesimp>AI指挥官大小</Chinesesimp>
+    <English>Asymmetric mode only. Controls how densely pre-placed insurgent installations (IED factories, HQs, weapon caches) are seeded across the AO. Unused = none. Low = 25%, Medium = 50%, High = 75%, Extreme = 100% of candidate positions populated.</English>
+    <Chinese>僅非對稱模式。控制 AO 中預先放置的叛亂分子設施（IED 工廠、總部、武器藏匿處）的密度。未使用 = 無。低 = 25%，中 = 50%，高 = 75%，極高 = 100% 的候選位置已填充。</Chinese>
+    <Chinesesimp>仅非对称模式。控制 AO 中预先放置的叛乱分子设施（IED 工厂、总部、武器藏匿处）的密度。未使用 = 无。低 = 25%，中 = 50%，高 = 75%，极高 = 100% 的候选位置已填充。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Controla la densidad de instalaciones insurgentes pre-colocadas (fábricas de IED, cuarteles, escondites de armas) en la ZO. Sin usar = ninguna. Bajo = 25%, Medio = 50%, Alto = 75%, Extremo = 100% de las posiciones candidatas pobladas.</Spanish>
+    <French>Mode asymétrique uniquement. Contrôle la densité des installations insurgées préplacées (usines d'IED, QG, caches d'armes) dans la ZO. Inutilisé = aucune. Faible = 25 %, Moyen = 50 %, Élevé = 75 %, Extrême = 100 % des emplacements candidats peuplés.</French>
+    <Portuguese>Apenas no modo assimétrico. Controla a densidade das instalações insurgentes pré-colocadas (fábricas de IED, QGs, esconderijos de armas) na AO. Sem uso = nenhuma. Baixo = 25%, Médio = 50%, Alto = 75%, Extremo = 100% das posições candidatas preenchidas.</Portuguese>
+    <Russian>Только в асимметричном режиме. Управляет плотностью заранее размещённых установок повстанцев (мастерские СВУ, штабы, тайники с оружием) в зоне операций. Не используется = нет. Низко = 25%, Средне = 50%, Высоко = 75%, Экстрим = 100% возможных позиций заполнены.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_REINFORCEMENTS">
     <English>Reinforcements:</English>
-    <Chinesesimp>增援部队</Chinesesimp>
+    <Chinese>增援：</Chinese>
+    <Chinesesimp>增援部队：</Chinesesimp>
+    <Spanish>Refuerzos:</Spanish>
+    <French>Renforts:</French>
+    <Portuguese>Reforços:</Portuguese>
+    <Russian>Подкрепления:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_REINFORCEMENTS_COMMENT">
     <English>Requires Military Logistics Module. Sets the force strength threshold at which the AI Commander requests reinforcements. Aggressive (90%) = requests early, while still near full strength. Moderate (75%) = requests when noticeably weakened. Conservative (50%) = only requests when heavily depleted.</English>
+    <Chinese>需要軍事後勤模組。設定 AI 指揮官請求增援的兵力閾值。激進 (90%) = 早期請求，仍接近滿編時即請求。適中 (75%) = 明顯削弱時請求。保守 (50%) = 僅在嚴重損耗時請求。</Chinese>
     <Chinesesimp>需要军事后勤模块。设置AI指挥官请求增援的兵力阈值。激进(90%)=较早请求，接近满编时即请求。适中(75%)=明显削弱时请求。保守(50%)=仅在严重损耗时请求。</Chinesesimp>
+    <Spanish>Requiere el módulo de Logística militar. Establece el umbral de fuerza con el que el Comandante IA solicita refuerzos. Agresivo (90%) = solicita pronto, aún cerca de la dotación completa. Moderado (75%) = solicita al estar notablemente debilitado. Conservador (50%) = solo solicita al estar muy mermado.</Spanish>
+    <French>Nécessite le module Logistique militaire. Définit le seuil de force auquel le Commandant IA demande des renforts. Agressif (90 %) = demande tôt, encore proche de la pleine force. Modéré (75 %) = demande lorsqu'il est notablement affaibli. Conservateur (50 %) = ne demande que lorsqu'il est fortement réduit.</French>
+    <Portuguese>Requer o módulo de Logística militar. Define o limite de força no qual o Comandante IA solicita reforços. Agressivo (90%) = solicita cedo, ainda perto da força total. Moderado (75%) = solicita quando notavelmente enfraquecido. Conservador (50%) = só solicita quando muito reduzido.</Portuguese>
+    <Russian>Требуется модуль «Военная логистика». Задаёт порог силы, при котором ИИ-командир запрашивает подкрепления. Агрессивно (90%) = запрашивает рано, ещё при почти полной силе. Умеренно (75%) = запрашивает при заметном ослаблении. Консервативно (50%) = запрашивает только при сильном истощении.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_FACTIONS">
-    <English>Override Factions:</English>
-    <Chinesesimp>覆盖势力</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_OPCOM_FACTIONS_COMMENT">
-    <English>Override AI Commander drop downs with f.e. ["BLU_F","BLU_G_F"]. Only use factions of one side!</English>
-    <Chinesesimp>用 f.e. ["BLU_F","BLU_G_F"]. 覆盖AI指挥官下拉列表。只使用一方的势力!</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_OPCOM_FACTION">
-    <English>Faction:</English>
-    <Chinesesimp>阵营</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_OPCOM_FACTION_COMMENT">
-    <English>AI Commander will control this faction. Multiselection is possible!</English>
-    <Chinesesimp>AI指挥官将控制这个派别。可以多选!</Chinesesimp>
+    <English>Factions:</English>
+    <Chinese>陣營：</Chinese>
+    <Chinesesimp>势力：</Chinesesimp>
+    <Spanish>Facciones:</Spanish>
+    <French>Factions:</French>
+    <Portuguese>Facções:</Portuguese>
+    <Russian>Фракции:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_USAGE">
-    <English>Place a Military AI Commander module in the editor and select a faction from the dropdown. Custom factions can be entered in the "override default faction" box. Choose the Control Type in the drop down menu. By default, the AI Commander will take command of all available virtual units (profiles) for its faction. Therefore, it requires a minimum of one synced Placement Module and the Virtual AI module.</English>
-    <Chinesesimp>在编辑器中放置一个军事AI指挥官模块,并从下拉列表中选择一个势力。可以在"覆盖默认势力"框中输入自定义势力。在下拉菜单中选择控制类型。默认情况下,AI指挥官将指挥其势力的所有可用虚拟单位(配置文件)。因此,它至少需要一个同步的放置模块和虚拟AI模块。</Chinesesimp>
+    <English>Place a Military AI Commander module in the editor. Pick one or more factions in the Factions multi-select listbox (auto-populated from loaded mods; Ctrl+click to toggle, Shift+click for range). Use the Factions (manual override) field for factions from mods not currently loaded. Pick a Control Type (Invasion, Occupation, or Asymmetric). The commander will take command of all virtual profiles belonging to its selected factions, so at least one synced Placement Module and the Virtual AI module are required.</English>
+    <Chinese>在編輯器中放置軍事 AI 指揮官模組。在「陣營」多選列表中選擇一個或多個陣營（依載入模組自動填充；Ctrl+點擊切換，Shift+點擊範圍）。對於目前未載入的模組陣營，使用「陣營（手動覆寫）」欄位。選擇控制類型（入侵、佔領或非對稱）。指揮官將接管屬於其所選陣營的所有虛擬設定檔，因此至少需要一個同步的部署模組和虛擬 AI 模組。</Chinese>
+    <Chinesesimp>在编辑器中放置军事 AI 指挥官模块。在「阵营」多选列表中选择一个或多个阵营（依载入模组自动填充；Ctrl+单击切换，Shift+单击范围）。对于当前未载入的模组阵营，使用「阵营（手动覆写）」字段。选择控制类型（入侵、占领或非对称）。指挥官将接管属于其所选阵营的所有虚拟配置文件，因此至少需要一个同步的部署模块和虚拟 AI 模块。</Chinesesimp>
+    <Spanish>Coloca un módulo Comandante IA militar en el editor. Elige una o varias facciones en el cuadro de selección múltiple Facciones (autollenado desde los mods cargados; Ctrl+clic para alternar, Mayús+clic para rango). Usa el campo Facciones (sustitución manual) para facciones de mods no cargados actualmente. Elige un Tipo de control (Invasión, Ocupación o Asimétrico). El comandante asumirá el control de todos los perfiles virtuales de las facciones seleccionadas, por lo que se requiere al menos un módulo de despliegue sincronizado y el módulo IA virtual.</Spanish>
+    <French>Placez un module Commandant IA militaire dans l'éditeur. Choisissez une ou plusieurs factions dans la liste multi-sélection Factions (auto-remplie à partir des mods chargés; Ctrl+clic pour basculer, Maj+clic pour plage). Utilisez le champ Factions (remplacement manuel) pour les factions de mods non chargés actuellement. Choisissez un Type de contrôle (Invasion, Occupation ou Asymétrique). Le commandant prendra le contrôle de tous les profils virtuels appartenant à ses factions sélectionnées, donc au moins un module de déploiement synchronisé et le module IA virtuelle sont requis.</French>
+    <Portuguese>Coloque um módulo Comandante IA militar no editor. Escolha uma ou mais facções na caixa de seleção múltipla Facções (autopreenchida a partir dos mods carregados; Ctrl+clique para alternar, Shift+clique para intervalo). Use o campo Facções (substituição manual) para facções de mods atualmente não carregados. Escolha um Tipo de controle (Invasão, Ocupação ou Assimétrico). O comandante assumirá o controle de todos os perfis virtuais pertencentes às facções selecionadas, portanto é necessário pelo menos um módulo de Posicionamento sincronizado e o módulo IA virtual.</Portuguese>
+    <Russian>Разместите модуль «Военный ИИ-командир» в редакторе. Выберите одну или несколько фракций в списке мультивыбора «Фракции» (автоматически заполняется из загруженных модов; Ctrl+щелчок — переключить, Shift+щелчок — диапазон). Для фракций из модов, не загруженных в данный момент, используйте поле «Фракции (ручное переопределение)». Выберите тип управления (Вторжение, Оккупация или Асимметричный). Командир возьмёт под управление все виртуальные профили выбранных фракций, поэтому требуется хотя бы один синхронизированный модуль размещения и модуль виртуального ИИ.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_INTELCHANCE">
-    <English>INTEL:</English>
-    <Chinesesimp>情报</Chinesesimp>
+    <English>Intel:</English>
+    <Chinese>情報：</Chinese>
+    <Chinesesimp>情报：</Chinesesimp>
+    <Spanish>Inteligencia:</Spanish>
+    <French>Renseignement:</French>
+    <Portuguese>Inteligência:</Portuguese>
+    <Russian>Разведданные:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_INTELCHANCE_COMMENT">
-    <English>Some soldiers can carry viable information about nearby installations</English>
-    <Chinesesimp>一些士兵可以携带附近设施的可用信息</Chinesesimp>
+    <English>Asymmetric mode only. Percent chance for insurgent soldiers killed by players to drop intel items that, when read, reveal nearby installation positions on the map. None = 0%, Seldom = 5%, Often = 10%.</English>
+    <Chinese>僅非對稱模式。被玩家擊殺的叛亂分子士兵掉落情報物品的百分比機率，閱讀後會在地圖上揭示附近設施位置。無 = 0%，偶爾 = 5%，經常 = 10%。</Chinese>
+    <Chinesesimp>仅非对称模式。被玩家击杀的叛乱分子士兵掉落情报物品的百分比几率，阅读后会在地图上揭示附近设施位置。无 = 0%，偶尔 = 5%，经常 = 10%。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Porcentaje de probabilidad de que los soldados insurgentes abatidos por jugadores suelten objetos de inteligencia que, al leerse, revelan en el mapa las posiciones de instalaciones cercanas. Ninguna = 0%, Pocas veces = 5%, A menudo = 10%.</Spanish>
+    <French>Mode asymétrique uniquement. Pourcentage de chance que les soldats insurgés tués par les joueurs lâchent des objets de renseignement qui, lus, révèlent sur la carte la position des installations voisines. Aucune = 0 %, Rarement = 5 %, Souvent = 10 %.</French>
+    <Portuguese>Apenas no modo assimétrico. Porcentagem de chance dos soldados insurgentes mortos por jogadores deixarem itens de inteligência que, ao serem lidos, revelam as posições de instalações próximas no mapa. Nenhuma = 0%, Raramente = 5%, Frequentemente = 10%.</Portuguese>
+    <Russian>Только в асимметричном режиме. Процент вероятности того, что убитые игроками повстанцы уронят предметы разведданных, которые при прочтении раскрывают на карте позиции ближайших установок. Нет = 0%, Изредка = 5%, Часто = 10%.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_ROADBLOCKS">
-    <English>Roadblocks (Asymmetric):</English>
-    <Chinesesimp>路障(不对称)</Chinesesimp>
+    <English>Roadblocks:</English>
+    <Chinese>路障：</Chinese>
+    <Chinesesimp>路障：</Chinesesimp>
+    <Spanish>Controles de carretera:</Spanish>
+    <French>Barrages routiers:</French>
+    <Portuguese>Bloqueios de estrada:</Portuguese>
+    <Russian>Блокпосты:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_ROADBLOCKS_COMMENT">
-    <English>Option to enable or disable roadblocks as an option for asymmetric commanders</English>
-    <Chinesesimp>非对称指挥官可选择启用或禁用路障</Chinesesimp>
+    <English>Asymmetric mode only. Allows the insurgent commander to place roadblocks on key routes as part of its tactical repertoire.</English>
+    <Chinese>僅非對稱模式。允許叛亂分子指揮官在關鍵路線上設置路障，作為其戰術手段之一。</Chinese>
+    <Chinesesimp>仅非对称模式。允许叛乱分子指挥官在关键路线上设置路障，作为其战术手段之一。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Permite al comandante insurgente colocar controles de carretera en rutas clave como parte de su repertorio táctico.</Spanish>
+    <French>Mode asymétrique uniquement. Permet au commandant insurgé de placer des barrages routiers sur les axes clés dans le cadre de son répertoire tactique.</French>
+    <Portuguese>Apenas no modo assimétrico. Permite ao comandante insurgente colocar bloqueios de estrada em rotas-chave como parte do seu repertório tático.</Portuguese>
+    <Russian>Только в асимметричном режиме. Позволяет повстанческому командиру выставлять блокпосты на ключевых маршрутах в рамках своего тактического репертуара.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_SIMULTAN">
     <English>Max. simultan attacks:</English>
-    <Chinesesimp>最大同时攻击数</Chinesesimp>
+    <Chinese>最大同時攻擊數：</Chinese>
+    <Chinesesimp>最大同时攻击数：</Chinesesimp>
+    <Spanish>Máx. ataques simultáneos:</Spanish>
+    <French>Attaques simultanées max.:</French>
+    <Portuguese>Máx. ataques simultâneos:</Portuguese>
+    <Russian>Макс. одновременных атак:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_SIMULTAN_COMMENT">
-    <English>Maximum of objectives engaged at the same time! Reduces speed of progression!</English>
-    <Chinesesimp>同时参与最多个目标!降低进程速度!</Chinesesimp>
+    <English>Maximum number of objectives the commander will engage in parallel. Lower values produce a slower, more focused campaign; higher values spread forces thinner but advance on multiple fronts.</English>
+    <Chinese>指揮官並行交戰的最大目標數量。較低的值會產生較慢、更集中的戰役；較高的值會將兵力分散得更薄但在多條戰線上推進。</Chinese>
+    <Chinesesimp>指挥官并行交战的最大目标数量。较低的值会产生较慢、更集中的战役；较高的值会将兵力分散得更薄但在多条战线上推进。</Chinesesimp>
+    <Spanish>Número máximo de objetivos que el comandante atacará en paralelo. Valores menores producen una campaña más lenta y focalizada; valores mayores dispersan más las fuerzas pero avanzan en varios frentes.</Spanish>
+    <French>Nombre maximum d'objectifs que le commandant engagera en parallèle. Des valeurs plus faibles produisent une campagne plus lente et plus ciblée; des valeurs plus élevées dispersent davantage les forces mais avancent sur plusieurs fronts.</French>
+    <Portuguese>Número máximo de objetivos que o comandante atacará em paralelo. Valores menores produzem uma campanha mais lenta e focada; valores maiores dispersam mais as forças mas avançam em múltiplas frentes.</Portuguese>
+    <Russian>Максимальное число объектов, которые командир будет атаковать параллельно. Меньшие значения дают более медленную, сфокусированную кампанию; большие — рассредоточивают силы, но позволяют наступать на нескольких фронтах.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_MINAGENTS">
     <English>Min. recruitment size:</English>
-    <Chinesesimp>最小招聘规模</Chinesesimp>
+    <Chinese>最小招募規模：</Chinese>
+    <Chinesesimp>最小招聘规模：</Chinesesimp>
+    <Spanish>Tamaño mín. de reclutamiento:</Spanish>
+    <French>Taille min. de recrutement:</French>
+    <Portuguese>Tamanho mín. de recrutamento:</Portuguese>
+    <Russian>Мин. размер вербовки:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_MINAGENTS_COMMENT">
-    <English>Minimum of ALiVE civilians needed per objective for a recruitment center to be set up (Asymmetric Warfare only)!</English>
-    <Chinesesimp>每个目标需要最少ALiVE平民才能建立招募中心(仅限于非对称战争)!</Chinesesimp>
+    <English>Asymmetric mode only. Minimum civilian population an objective needs before the insurgent commander can establish a recruitment centre (HQ) there. Lower values enable recruitment in smaller settlements; higher values restrict it to populous areas.</English>
+    <Chinese>僅非對稱模式。叛亂分子指揮官在某目標處設立招募中心（總部）所需的最低民眾人口。較低的值允許在較小聚居地招募；較高的值則限制在人口稠密區域。</Chinese>
+    <Chinesesimp>仅非对称模式。叛乱分子指挥官在某目标处设立招募中心（总部）所需的最低民众人口。较低的值允许在较小乡镇招募；较高的值则限制在人口稠密区域。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Población civil mínima que necesita un objetivo para que el comandante insurgente establezca allí un centro de reclutamiento (cuartel general). Valores menores permiten reclutar en asentamientos más pequeños; valores mayores lo restringen a áreas pobladas.</Spanish>
+    <French>Mode asymétrique uniquement. Population civile minimale dont un objectif a besoin pour que le commandant insurgé puisse y établir un centre de recrutement (QG). Des valeurs plus faibles permettent le recrutement dans de plus petites agglomérations; des valeurs plus élevées le restreignent aux zones peuplées.</French>
+    <Portuguese>Apenas no modo assimétrico. População civil mínima de que um objetivo precisa para que o comandante insurgente possa estabelecer ali um centro de recrutamento (QG). Valores menores permitem o recrutamento em assentamentos menores; valores maiores o restringem a áreas populosas.</Portuguese>
+    <Russian>Только в асимметричном режиме. Минимальное гражданское население, необходимое объекту, чтобы повстанческий командир смог создать там центр вербовки (штаб). Меньшие значения позволяют вербовку в небольших поселениях; большие — ограничивают её густонаселёнными районами.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT">
     <English>Asymmetric force cap:</English>
+    <Chinese>非對稱部隊上限：</Chinese>
     <Chinesesimp>非对称部队上限:</Chinesesimp>
+    <Spanish>Límite de fuerza asimétrica:</Spanish>
+    <French>Plafond de force asymétrique:</French>
+    <Portuguese>Limite de força assimétrica:</Portuguese>
+    <Russian>Предел асимметричных сил:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_ASYM_FORCE_LIMIT_COMMENT">
     <English>Maximum number of insurgent profiles allowed for this asymmetric commander. Set to -1 for no cap.</English>
+    <Chinese>此非對稱指揮官允許的叛亂分子設定檔最大數量。設為 -1 表示無上限。</Chinese>
     <Chinesesimp>此非对称指挥官允许的 insurgent profile 最大数量。设为 -1 表示不限制。</Chinesesimp>
+    <Spanish>Número máximo de perfiles insurgentes permitidos para este comandante asimétrico. Pon -1 para sin límite.</Spanish>
+    <French>Nombre maximum de profils insurgés autorisés pour ce commandant asymétrique. Mettez -1 pour aucune limite.</French>
+    <Portuguese>Número máximo de perfis insurgentes permitidos para este comandante assimétrico. Defina como -1 para sem limite.</Portuguese>
+    <Russian>Максимальное число профилей повстанцев, разрешённых для этого асимметричного командира. Установите -1 для отсутствия предела.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN">
     <English>Recruit cycle min (mins):</English>
+    <Chinese>招募週期最小值（分鐘）：</Chinese>
     <Chinesesimp>招募周期最小值(分钟):</Chinesesimp>
+    <Spanish>Ciclo recl. mín. (min):</Spanish>
+    <French>Cycle de recrut. min (min):</French>
+    <Portuguese>Ciclo de recrut. mín. (min):</Portuguese>
+    <Russian>Цикл вербовки мин (мин):</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MIN_COMMENT">
     <English>Minimum delay in minutes between asymmetric recruitment attempts.</English>
+    <Chinese>非對稱招募嘗試之間的最小延遲（分鐘）。</Chinese>
     <Chinesesimp>非对称招募尝试之间的最小延迟(分钟)。</Chinesesimp>
+    <Spanish>Retraso mínimo en minutos entre intentos de reclutamiento asimétrico.</Spanish>
+    <French>Délai minimum en minutes entre les tentatives de recrutement asymétrique.</French>
+    <Portuguese>Atraso mínimo em minutos entre tentativas de recrutamento assimétrico.</Portuguese>
+    <Russian>Минимальная задержка в минутах между попытками асимметричной вербовки.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX">
     <English>Recruit cycle max (mins):</English>
+    <Chinese>招募週期最大值（分鐘）：</Chinese>
     <Chinesesimp>招募周期最大值(分钟):</Chinesesimp>
+    <Spanish>Ciclo recl. máx. (min):</Spanish>
+    <French>Cycle de recrut. max (min):</French>
+    <Portuguese>Ciclo de recrut. máx. (min):</Portuguese>
+    <Russian>Цикл вербовки макс (мин):</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_CYCLE_MAX_COMMENT">
     <English>Maximum delay in minutes between asymmetric recruitment attempts.</English>
+    <Chinese>非對稱招募嘗試之間的最大延遲（分鐘）。</Chinese>
     <Chinesesimp>非对称招募尝试之间的最大延迟(分钟)。</Chinesesimp>
+    <Spanish>Retraso máximo en minutos entre intentos de reclutamiento asimétrico.</Spanish>
+    <French>Délai maximum en minutes entre les tentatives de recrutement asymétrique.</French>
+    <Portuguese>Atraso máximo em minutos entre tentativas de recrutamento assimétrico.</Portuguese>
+    <Russian>Максимальная задержка в минутах между попытками асимметричной вербовки.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT">
     <English>Recruit attempt limit:</English>
+    <Chinese>招募嘗試上限：</Chinese>
     <Chinesesimp>招募尝试上限:</Chinesesimp>
+    <Spanish>Límite de intentos de reclutam.:</Spanish>
+    <French>Limite tentatives de recrut.:</French>
+    <Portuguese>Limite de tentativas de recrut.:</Portuguese>
+    <Russian>Предел попыток вербовки:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_ATTEMPT_LIMIT_COMMENT">
     <English>Number of timed recruitment attempts each HQ gets after setup. Set to 0 for one attempt per attached civilian (default behavior), or -1 for unlimited attempts while the HQ survives.</English>
+    <Chinese>每個總部設立後可進行的定時招募嘗試次數。設為 0 表示每個關聯民眾進行一次嘗試（預設行為），設為 -1 表示總部存活期間無限嘗試。</Chinese>
     <Chinesesimp>每个招募总部建立后可进行的定时招募尝试次数。设为 0 表示每个关联平民进行一次尝试（默认行为），设为 -1 表示总部存活期间无限尝试。</Chinesesimp>
+    <Spanish>Número de intentos de reclutamiento temporizados que tiene cada cuartel general tras su instalación. Pon 0 para un intento por civil asociado (comportamiento por defecto), o -1 para intentos ilimitados mientras el cuartel general sobreviva.</Spanish>
+    <French>Nombre de tentatives de recrutement chronométrées dont dispose chaque QG après installation. Mettez 0 pour une tentative par civil associé (comportement par défaut), ou -1 pour des tentatives illimitées tant que le QG survit.</French>
+    <Portuguese>Número de tentativas de recrutamento cronometradas que cada QG recebe após a instalação. Defina 0 para uma tentativa por civil associado (comportamento padrão), ou -1 para tentativas ilimitadas enquanto o QG sobreviver.</Portuguese>
+    <Russian>Число таймированных попыток вербовки, которые получает каждый штаб после создания. Установите 0 для одной попытки на каждого привязанного мирного жителя (поведение по умолчанию) или -1 для неограниченных попыток, пока штаб жив.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE">
     <English>Recruit success chance (%):</English>
+    <Chinese>招募成功率（%）：</Chinese>
     <Chinesesimp>招募成功率(%):</Chinesesimp>
+    <Spanish>Prob. éxito reclutamiento (%):</Spanish>
+    <French>Chance de réussite recrut. (%):</French>
+    <Portuguese>Chance êxito recrutamento (%):</Portuguese>
+    <Russian>Шанс успеха вербовки (%):</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_RECRUIT_SUCCESS_CHANCE_COMMENT">
     <English>Chance per recruitment attempt that a new insurgent group is successfully created. Use 0 to disable recruitment spawns or 100 to make every attempt succeed.</English>
+    <Chinese>每次招募嘗試成功創建一個新叛亂分子小組的機率。使用 0 可禁用招募生成，或 100 使每次嘗試都成功。</Chinese>
     <Chinesesimp>每次招募尝试成功创建一个新 insurgent 小组的概率。设为 0 可禁用招募生成，设为 100 则每次尝试都成功。</Chinesesimp>
+    <Spanish>Probabilidad por intento de reclutamiento de que se cree con éxito un nuevo grupo insurgente. Usa 0 para desactivar la generación por reclutamiento o 100 para que todo intento tenga éxito.</Spanish>
+    <French>Chance par tentative de recrutement qu'un nouveau groupe insurgé soit créé avec succès. Utilisez 0 pour désactiver les apparitions par recrutement ou 100 pour que chaque tentative réussisse.</French>
+    <Portuguese>Chance por tentativa de recrutamento de que um novo grupo insurgente seja criado com sucesso. Use 0 para desativar a geração por recrutamento ou 100 para que toda tentativa tenha êxito.</Portuguese>
+    <Russian>Вероятность за каждую попытку вербовки, что новая повстанческая группа будет успешно создана. 0 отключает спавн через вербовку, 100 делает каждую попытку успешной.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER">
     <English>Hostility presence multiplier:</English>
-    <Chinesesimp>Hostility presence multiplier:</Chinesesimp>
+    <Chinese>敵意存在乘數：</Chinese>
+    <Chinesesimp>敌意存在乘数：</Chinesesimp>
+    <Spanish>Multiplicador de presencia hostil:</Spanish>
+    <French>Multiplicateur de présence hostile:</French>
+    <Portuguese>Multiplicador de presença hostil:</Portuguese>
+    <Russian>Множитель присутствия враждебности:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_PRESENCE_MULTIPLIER_COMMENT">
     <English>Multiplier applied to asymmetric hostility shifts caused by insurgent presence and actions. Use 1 for default behavior or 0 to disable these shifts.</English>
-    <Chinesesimp>Multiplier applied to asymmetric hostility shifts caused by insurgent presence and actions. Use 1 for default behavior or 0 to disable these shifts.</Chinesesimp>
+    <Chinese>應用於由叛亂分子存在和行動引起的非對稱敵意變化的乘數。使用 1 為預設行為，或 0 禁用這些變化。</Chinese>
+    <Chinesesimp>应用于由叛乱分子存在和行动引起的非对称敌意变化的乘数。使用 1 为默认行为，或 0 禁用这些变化。</Chinesesimp>
+    <Spanish>Multiplicador aplicado a los cambios de hostilidad asimétrica causados por la presencia y las acciones insurgentes. Usa 1 para el comportamiento por defecto o 0 para desactivar estos cambios.</Spanish>
+    <French>Multiplicateur appliqué aux variations d'hostilité asymétrique provoquées par la présence et les actions insurgées. Utilisez 1 pour le comportement par défaut ou 0 pour désactiver ces variations.</French>
+    <Portuguese>Multiplicador aplicado às variações de hostilidade assimétrica causadas pela presença e ações insurgentes. Use 1 para comportamento padrão ou 0 para desativar essas variações.</Portuguese>
+    <Russian>Множитель, применяемый к асимметричным изменениям враждебности, вызванным присутствием и действиями повстанцев. 1 — поведение по умолчанию, 0 — отключает эти изменения.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER">
-    <English>Hostility install multiplier:</English>
-    <Chinesesimp>Hostility install multiplier:</Chinesesimp>
+    <English>Hostility installation multiplier:</English>
+    <Chinese>敵意設施乘數：</Chinese>
+    <Chinesesimp>敌意设施乘数：</Chinesesimp>
+    <Spanish>Multiplicador hostil. instalaciones:</Spanish>
+    <French>Multiplicateur hostilité installations:</French>
+    <Portuguese>Multiplicador hostil. instalações:</Portuguese>
+    <Russian>Множитель враждебности установок:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_MULTIPLIER_COMMENT">
     <English>Multiplier applied to periodic asymmetric hostility shifts caused by active insurgent installations. Use 1 for default behavior.</English>
-    <Chinesesimp>Multiplier applied to periodic asymmetric hostility shifts caused by active insurgent installations. Use 1 for default behavior.</Chinesesimp>
+    <Chinese>應用於由活躍叛亂分子設施引起的週期性非對稱敵意變化的乘數。使用 1 為預設行為。</Chinese>
+    <Chinesesimp>应用于由活跃叛乱分子设施引起的周期性非对称敌意变化的乘数。使用 1 为默认行为。</Chinesesimp>
+    <Spanish>Multiplicador aplicado a los cambios periódicos de hostilidad asimétrica causados por instalaciones insurgentes activas. Usa 1 para el comportamiento por defecto.</Spanish>
+    <French>Multiplicateur appliqué aux variations périodiques d'hostilité asymétrique provoquées par les installations insurgées actives. Utilisez 1 pour le comportement par défaut.</French>
+    <Portuguese>Multiplicador aplicado às variações periódicas de hostilidade assimétrica causadas por instalações insurgentes ativas. Use 1 para comportamento padrão.</Portuguese>
+    <Russian>Множитель, применяемый к периодическим асимметричным изменениям враждебности, вызванным активными повстанческими установками. 1 — поведение по умолчанию.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL">
-    <English>Hostility install tick (mins):</English>
-    <Chinesesimp>Hostility install tick (mins):</Chinesesimp>
+    <English>Hostility installation interval (mins):</English>
+    <Chinese>敵意設施間隔（分鐘）：</Chinese>
+    <Chinesesimp>敌意设施间隔（分钟）：</Chinesesimp>
+    <Spanish>Intervalo hostil. instal. (min):</Spanish>
+    <French>Intervalle hostilité install. (min):</French>
+    <Portuguese>Intervalo hostil. instal. (min):</Portuguese>
+    <Russian>Интервал враждебности установок (мин):</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_HOSTILITY_INSTALLATION_INTERVAL_COMMENT">
     <English>Minutes between periodic asymmetric hostility shifts from active insurgent installations. Lower values speed up hostility drift.</English>
-    <Chinesesimp>Minutes between periodic asymmetric hostility shifts from active insurgent installations. Lower values speed up hostility drift.</Chinesesimp>
+    <Chinese>來自活躍叛亂分子設施的週期性非對稱敵意變化之間的分鐘數。較低的值會加快敵意漂移。</Chinese>
+    <Chinesesimp>来自活跃叛乱分子设施的周期性非对称敌意变化之间的分钟数。较低的值会加快敌意漂移。</Chinesesimp>
+    <Spanish>Minutos entre los cambios periódicos de hostilidad asimétrica provocados por instalaciones insurgentes activas. Valores menores aceleran la deriva de hostilidad.</Spanish>
+    <French>Minutes entre les variations périodiques d'hostilité asymétrique issues des installations insurgées actives. Des valeurs plus faibles accélèrent la dérive d'hostilité.</French>
+    <Portuguese>Minutos entre as variações periódicas de hostilidade assimétrica causadas por instalações insurgentes ativas. Valores menores aceleram a deriva de hostilidade.</Portuguese>
+    <Russian>Минуты между периодическими асимметричными изменениями враждебности от активных повстанческих установок. Меньшие значения ускоряют дрейф враждебности.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES">
     <English>Task profile count overrides:</English>
-    <Chinesesimp>Task profile count overrides:</Chinesesimp>
+    <Chinese>任務設定檔數量覆寫：</Chinese>
+    <Chinesesimp>任务配置文件数量覆写：</Chinesesimp>
+    <Spanish>Sustitución cantidad perfiles tarea:</Spanish>
+    <French>Remplacement nombre profils tâche:</French>
+    <Portuguese>Substituição qtd. perfis tarefa:</Portuguese>
+    <Russian>Переопр. кол-ва профилей задач:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_COUNT_OVERRIDES_COMMENT">
     <English>Optional SQF array of [taskName,count] pairs for overriding how many profiles each task can use. Supports attack, defend and reserve for conventional OPCOMs, plus assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks and recruit for asymmetric actions. Recon and capture fall back to attack. Example: [["attack",6],["reserve",0],["ambush",1]].</English>
-    <Chinesesimp>Optional SQF array of [taskName,count] pairs for overriding how many profiles each task can use. Supports attack, defend and reserve for conventional OPCOMs, plus assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks and recruit for asymmetric actions. Recon and capture fall back to attack. Example: [["attack",6],["reserve",0],["ambush",1]].</Chinesesimp>
+    <Chinese>可選的 SQF 陣列，包含 [taskName,count] 對，用於覆寫每個任務可使用的設定檔數量。常規 OPCOM 支援 attack、defend 和 reserve，非對稱行動還支援 assault、ambush、retreat、terrorize、factory、sabotage、ied、suicide、depot、roadblocks 和 recruit。Recon 和 capture 退回到 attack。範例：[["attack",6],["reserve",0],["ambush",1]]。</Chinese>
+    <Chinesesimp>可选的 SQF 数组，包含 [taskName,count] 对，用于覆写每个任务可使用的配置文件数量。常规 OPCOM 支持 attack、defend 和 reserve，非对称行动还支持 assault、ambush、retreat、terrorize、factory、sabotage、ied、suicide、depot、roadblocks 和 recruit。Recon 和 capture 退回到 attack。示例：[["attack",6],["reserve",0],["ambush",1]]。</Chinesesimp>
+    <Spanish>Matriz SQF opcional de pares [taskName,count] para sustituir cuántos perfiles puede usar cada tarea. Admite attack, defend y reserve para OPCOM convencionales, además de assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks y recruit para acciones asimétricas. Recon y capture caen a attack. Ejemplo: [["attack",6],["reserve",0],["ambush",1]].</Spanish>
+    <French>Tableau SQF optionnel de paires [taskName,count] pour remplacer le nombre de profils que chaque tâche peut utiliser. Prend en charge attack, defend et reserve pour les OPCOM conventionnels, ainsi que assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks et recruit pour les actions asymétriques. Recon et capture se rabattent sur attack. Exemple: [["attack",6],["reserve",0],["ambush",1]].</French>
+    <Portuguese>Array SQF opcional de pares [taskName,count] para substituir quantos perfis cada tarefa pode usar. Suporta attack, defend e reserve para OPCOMs convencionais, além de assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks e recruit para ações assimétricas. Recon e capture recorrem a attack. Exemplo: [["attack",6],["reserve",0],["ambush",1]].</Portuguese>
+    <Russian>Необязательный SQF-массив пар [taskName,count] для переопределения числа профилей, которые может использовать каждая задача. Для обычных OPCOM поддерживаются attack, defend и reserve; для асимметричных действий — также assault, ambush, retreat, terrorize, factory, sabotage, ied, suicide, depot, roadblocks и recruit. Recon и capture откатываются к attack. Пример: [["attack",6],["reserve",0],["ambush",1]].</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES">
     <English>Task profile type overrides:</English>
-    <Chinesesimp>Task profile type overrides:</Chinesesimp>
+    <Chinese>任務設定檔類型覆寫：</Chinese>
+    <Chinesesimp>任务配置文件类型覆写：</Chinesesimp>
+    <Spanish>Sustitución tipo perfiles tarea:</Spanish>
+    <French>Remplacement type profils tâche:</French>
+    <Portuguese>Substituição tipo perfis tarefa:</Portuguese>
+    <Russian>Переопр. типов профилей задач:</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_TASK_PROFILE_TYPE_OVERRIDES_COMMENT">
     <English>Optional SQF array of [taskName,[types...]] pairs for overriding profile categories per task. Valid types are infantry, motorized, mechanized, armored, artillery, AAA, air and sea. Supports the same task names as the count override. Example: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</English>
-    <Chinesesimp>Optional SQF array of [taskName,[types...]] pairs for overriding profile categories per task. Valid types are infantry, motorized, mechanized, armored, artillery, AAA, air and sea. Supports the same task names as the count override. Example: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</Chinesesimp>
+    <Chinese>可選的 SQF 陣列，包含 [taskName,[types...]] 對，用於覆寫每個任務的設定檔類別。有效類型為 infantry、motorized、mechanized、armored、artillery、AAA、air 和 sea。支援與數量覆寫相同的任務名稱。範例：[["attack",["mechanized","armored"]],["ambush",["infantry"]]]。</Chinese>
+    <Chinesesimp>可选的 SQF 数组，包含 [taskName,[types...]] 对，用于覆写每个任务的配置文件类别。有效类型为 infantry、motorized、mechanized、armored、artillery、AAA、air 和 sea。支持与数量覆写相同的任务名称。示例：[["attack",["mechanized","armored"]],["ambush",["infantry"]]]。</Chinesesimp>
+    <Spanish>Matriz SQF opcional de pares [taskName,[types...]] para sustituir las categorías de perfil por tarea. Tipos válidos: infantry, motorized, mechanized, armored, artillery, AAA, air y sea. Admite los mismos nombres de tarea que la sustitución de cantidad. Ejemplo: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</Spanish>
+    <French>Tableau SQF optionnel de paires [taskName,[types...]] pour remplacer les catégories de profil par tâche. Types valides: infantry, motorized, mechanized, armored, artillery, AAA, air et sea. Prend en charge les mêmes noms de tâche que le remplacement de nombre. Exemple: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</French>
+    <Portuguese>Array SQF opcional de pares [taskName,[types...]] para substituir as categorias de perfil por tarefa. Tipos válidos: infantry, motorized, mechanized, armored, artillery, AAA, air e sea. Suporta os mesmos nomes de tarefa que a substituição de quantidade. Exemplo: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</Portuguese>
+    <Russian>Необязательный SQF-массив пар [taskName,[types...]] для переопределения категорий профилей по задачам. Допустимые типы: infantry, motorized, mechanized, armored, artillery, AAA, air и sea. Поддерживает те же имена задач, что и переопределение количества. Пример: [["attack",["mechanized","armored"]],["ambush",["infantry"]]].</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER">
+    <English>Civic recruitment multiplier:</English>
+    <Chinese>民意招募乘數：</Chinese>
+    <Chinesesimp>民意招募乘数：</Chinesesimp>
+    <Spanish>Multiplicador reclut. cívico:</Spanish>
+    <French>Multiplicateur recrut. civique:</French>
+    <Portuguese>Multiplicador recrut. cívico:</Portuguese>
+    <Russian>Множитель гражд. вербовки:</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER_COMMENT">
+    <English>Scales how strongly the civic-state model slows insurgent recruitment in contested settlements. 1 = default behaviour, 0 = civic pressure has no effect on recruitment rate.</English>
+    <Chinese>縮放民意狀態模型在爭奪聚居地中減緩叛亂分子招募的強度。1 = 預設行為，0 = 民意壓力對招募率無影響。</Chinese>
+    <Chinesesimp>缩放民意状态模型在争夺乡镇中减缓叛乱分子招募的强度。1 = 默认行为，0 = 民意压力对招募率无影响。</Chinesesimp>
+    <Spanish>Escala con qué fuerza el modelo de estado cívico ralentiza el reclutamiento insurgente en asentamientos en disputa. 1 = comportamiento por defecto, 0 = la presión cívica no afecta la tasa de reclutamiento.</Spanish>
+    <French>Mise à l'échelle de la force avec laquelle le modèle d'état civique ralentit le recrutement insurgé dans les agglomérations contestées. 1 = comportement par défaut, 0 = la pression civique n'a aucun effet sur le taux de recrutement.</French>
+    <Portuguese>Escala a intensidade com que o modelo de estado cívico desacelera o recrutamento insurgente em assentamentos disputados. 1 = comportamento padrão, 0 = a pressão cívica não afeta a taxa de recrutamento.</Portuguese>
+    <Russian>Масштабирует, насколько сильно гражданская модель состояния замедляет вербовку повстанцев в спорных поселениях. 1 = поведение по умолчанию, 0 = гражданское давление не влияет на скорость вербовки.</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER">
+    <English>Civic installation multiplier:</English>
+    <Chinese>民意設施乘數：</Chinese>
+    <Chinesesimp>民意设施乘数：</Chinesesimp>
+    <Spanish>Multiplicador instalaciones cívico:</Spanish>
+    <French>Multiplicateur installations civique:</French>
+    <Portuguese>Multiplicador instalações cívico:</Portuguese>
+    <Russian>Множитель гражд. установок:</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER_COMMENT">
+    <English>Scales how strongly civic pressure weakens installation-driven hostility drift toward insurgents. 1 = default behaviour, 0 = civic pressure has no effect on installation hostility.</English>
+    <Chinese>縮放民意壓力削弱由設施驅動的敵意漂移向叛亂分子方向的強度。1 = 預設行為，0 = 民意壓力對設施敵意無影響。</Chinese>
+    <Chinesesimp>缩放民意压力削弱由设施驱动的敌意漂移向叛乱分子方向的强度。1 = 默认行为，0 = 民意压力对设施敌意无影响。</Chinesesimp>
+    <Spanish>Escala con qué fuerza la presión cívica debilita la deriva de hostilidad provocada por instalaciones hacia los insurgentes. 1 = comportamiento por defecto, 0 = la presión cívica no afecta la hostilidad de las instalaciones.</Spanish>
+    <French>Mise à l'échelle de la force avec laquelle la pression civique affaiblit la dérive d'hostilité provoquée par les installations vers les insurgés. 1 = comportement par défaut, 0 = la pression civique n'a aucun effet sur l'hostilité des installations.</French>
+    <Portuguese>Escala a intensidade com que a pressão cívica enfraquece a deriva de hostilidade provocada por instalações em direção aos insurgentes. 1 = comportamento padrão, 0 = a pressão cívica não afeta a hostilidade das instalações.</Portuguese>
+    <Russian>Масштабирует, насколько сильно гражданское давление ослабляет дрейф враждебности от установок в сторону повстанцев. 1 = поведение по умолчанию, 0 = гражданское давление не влияет на враждебность установок.</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE">
+    <English>Civic retaliation chance (%):</English>
+    <Chinese>民意報復機率（%）：</Chinese>
+    <Chinesesimp>民意报复几率（%）：</Chinesesimp>
+    <Spanish>Probabilidad represalia cívica (%):</Spanish>
+    <French>Chance de représailles civiques (%):</French>
+    <Portuguese>Chance de retaliação cívica (%):</Portuguese>
+    <Russian>Шанс гражд. возмездия (%):</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE_COMMENT">
+    <English>Percent chance for insurgent retaliation after a Hearts and Minds success improves a settlement. 0 disables retaliation; higher values make successful civic outcomes riskier.</English>
+    <Chinese>「人心爭奪」成功改善聚居地後，叛亂分子報復的百分比機率。0 禁用報復；較高的值使成功的民意成果更具風險。</Chinese>
+    <Chinesesimp>「人心争夺」成功改善乡镇后，叛乱分子报复的百分比几率。0 禁用报复；较高的值使成功的民意成果更具风险。</Chinesesimp>
+    <Spanish>Porcentaje de probabilidad de represalia insurgente tras un éxito de «Corazones y Mentes» que mejora un asentamiento. 0 desactiva las represalias; valores mayores hacen que los buenos resultados cívicos sean más arriesgados.</Spanish>
+    <French>Pourcentage de chance de représailles insurgées après qu'un succès « Cœurs et Esprits » améliore une agglomération. 0 désactive les représailles; des valeurs plus élevées rendent les succès civiques plus risqués.</French>
+    <Portuguese>Porcentagem de chance de retaliação insurgente após um sucesso de «Corações e Mentes» melhorar um assentamento. 0 desativa a retaliação; valores maiores tornam resultados cívicos bem-sucedidos mais arriscados.</Portuguese>
+    <Russian>Процент вероятности повстанческого возмездия после того, как успех «Сердец и умов» улучшает поселение. 0 отключает возмездие; большие значения делают успешные гражданские итоги более рискованными.</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY">
+    <English>Civic retaliation intensity:</English>
+    <Chinese>民意報復強度：</Chinese>
+    <Chinesesimp>民意报复强度：</Chinesesimp>
+    <Spanish>Intensidad represalia cívica:</Spanish>
+    <French>Intensité représailles civiques:</French>
+    <Portuguese>Intensidade retaliação cívica:</Portuguese>
+    <Russian>Интенсивность гражд. возмездия:</Russian>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY_COMMENT">
+    <English>Scales the severity of insurgent backlash against improving settlements. 1 = default behaviour; higher values produce stronger retaliatory actions.</English>
+    <Chinese>縮放叛亂分子對改善聚居地的反彈嚴重程度。1 = 預設行為；較高的值會產生更強烈的報復行動。</Chinese>
+    <Chinesesimp>缩放叛乱分子对改善乡镇的反弹严重程度。1 = 默认行为；较高的值会产生更强烈的报复行动。</Chinesesimp>
+    <Spanish>Escala la severidad de la reacción insurgente contra los asentamientos en mejora. 1 = comportamiento por defecto; valores mayores producen acciones de represalia más fuertes.</Spanish>
+    <French>Mise à l'échelle de la sévérité de la réaction insurgée contre les agglomérations en cours d'amélioration. 1 = comportement par défaut; des valeurs plus élevées produisent des actions de représailles plus fortes.</French>
+    <Portuguese>Escala a severidade da reação insurgente contra assentamentos em melhoria. 1 = comportamento padrão; valores maiores produzem ações de retaliação mais fortes.</Portuguese>
+    <Russian>Масштабирует тяжесть повстанческой реакции против улучшающихся поселений. 1 = поведение по умолчанию; большие значения вызывают более сильные ответные действия.</Russian>
 </Key>
 </Container></Package></Project>

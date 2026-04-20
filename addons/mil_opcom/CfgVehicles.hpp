@@ -70,33 +70,6 @@ class CfgVehicles {
                                     class asymmetric { name = "Asymmetric"; value = "asymmetric"; };
                                 };
                         };
-                        class asym_occupation : Combo
-                        {
-                                property = "ALiVE_mil_opcom_asym_occupation";
-                                displayName = "$STR_ALIVE_OPCOM_OCCUPATION";
-                                tooltip = "$STR_ALIVE_OPCOM_OCCUPATION_COMMENT";
-                                defaultValue = """-100""";
-                                class Values
-                                {
-                                    class unused { name = "Unused"; value = -100; default = 1; };
-                                    class low { name = "Low"; value = 25; };
-                                    class medium { name = "Medium"; value = 50; };
-                                    class high { name = "High"; value = 75; };
-                                    class extreme { name = "Extreme"; value = 100; };
-                                };
-                        };
-                        class roadblocks : Combo
-                        {
-                                property = "ALiVE_mil_opcom_roadblocks";
-                                displayName = "$STR_ALIVE_OPCOM_ROADBLOCKS";
-                                tooltip = "$STR_ALIVE_OPCOM_ROADBLOCKS_COMMENT";
-                                defaultValue = """1""";
-                                class Values
-                                {
-                                    class Yes { name = "Yes"; value = 1; default = 1; };
-                                    class No { name = "No"; value = 0; };
-                                };
-                        };
                         class reinforcements : Combo
                         {
                                 property = "ALiVE_mil_opcom_reinforcements";
@@ -108,19 +81,6 @@ class CfgVehicles {
                                     class Aggressive   { name = "Aggressive (90%)";   value = "0.9";  };
                                     class Moderate     { name = "Moderate (75%)";     value = "0.75"; default = 1; };
                                     class Conservative { name = "Conservative (50%)"; value = "0.5";  };
-                                };
-                        };
-                        class intelchance : Combo
-                        {
-                                property = "ALiVE_mil_opcom_intelchance";
-                                displayName = "$STR_ALIVE_OPCOM_INTELCHANCE";
-                                tooltip = "$STR_ALIVE_OPCOM_INTELCHANCE_COMMENT";
-                                defaultValue = """0""";
-                                class Values
-                                {
-                                    class none { name = "None"; value = 0; default = 1; };
-                                    class seldom { name = "seldom"; value = 5; };
-                                    class often { name = "often"; value = 10; };
                                 };
                         };
 
@@ -169,7 +129,7 @@ class CfgVehicles {
                         class factionsManual : Edit
                         {
                                 property     = "ALiVE_mil_opcom_factionsManual";
-                                displayName  = "Factions (manual override)";
+                                displayName  = "Factions (manual override):";
                                 tooltip      = "Optional. Type extra faction classnames here for mods not currently loaded but expected at mission time (e.g. when authoring for someone else's modset), or to supplement the visual selection above. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Combined (unioned) with the Factions multi-select at runtime.";
                                 defaultValue = """""";
                         };
@@ -220,6 +180,46 @@ class CfgVehicles {
                         };
                         // ----  Recruitment ----------------------------------------
                         class ASYM_SET : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_ASYM_SET"; displayName = "ASYMMETRIC SETTINGS"; };
+                        class asym_occupation : Combo
+                        {
+                                property = "ALiVE_mil_opcom_asym_occupation";
+                                displayName = "$STR_ALIVE_OPCOM_OCCUPATION";
+                                tooltip = "$STR_ALIVE_OPCOM_OCCUPATION_COMMENT";
+                                defaultValue = """-100""";
+                                class Values
+                                {
+                                    class unused { name = "Unused"; value = -100; default = 1; };
+                                    class low { name = "Low"; value = 25; };
+                                    class medium { name = "Medium"; value = 50; };
+                                    class high { name = "High"; value = 75; };
+                                    class extreme { name = "Extreme"; value = 100; };
+                                };
+                        };
+                        class roadblocks : Combo
+                        {
+                                property = "ALiVE_mil_opcom_roadblocks";
+                                displayName = "$STR_ALIVE_OPCOM_ROADBLOCKS";
+                                tooltip = "$STR_ALIVE_OPCOM_ROADBLOCKS_COMMENT";
+                                defaultValue = """1""";
+                                class Values
+                                {
+                                    class Yes { name = "Yes"; value = 1; default = 1; };
+                                    class No { name = "No"; value = 0; };
+                                };
+                        };
+                        class intelchance : Combo
+                        {
+                                property = "ALiVE_mil_opcom_intelchance";
+                                displayName = "$STR_ALIVE_OPCOM_INTELCHANCE";
+                                tooltip = "$STR_ALIVE_OPCOM_INTELCHANCE_COMMENT";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                    class none { name = "None"; value = 0; default = 1; };
+                                    class seldom { name = "Seldom"; value = 5; };
+                                    class often { name = "Often"; value = 10; };
+                                };
+                        };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";
@@ -317,32 +317,32 @@ class CfgVehicles {
                         class civicRecruitmentMultiplier : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRecruitmentMultiplier";
-                                displayName = "Civic Pressure Recruitment Multiplier";
-                                tooltip = "Scales how strongly the civic-state model slows insurgent recruitment in contested settlements.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };
                         class civicInstallationMultiplier : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicInstallationMultiplier";
-                                displayName = "Civic Pressure Installation Multiplier";
-                                tooltip = "Scales how strongly civic pressure weakens installation-driven hostility drift toward insurgents.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };
                         class civicRetaliationChance : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRetaliationChance";
-                                displayName = "Civic Retaliation Chance";
-                                tooltip = "Base percent chance for insurgent retaliation after Hearts and Minds success in improving settlements. Use 0 to disable.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE_COMMENT";
                                 defaultValue = """0""";
                                 typeName = "NUMBER";
                         };
                         class civicRetaliationIntensity : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRetaliationIntensity";
-                                displayName = "Civic Retaliation Intensity";
-                                tooltip = "Scales the severity of insurgent backlash against improving settlements.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };
