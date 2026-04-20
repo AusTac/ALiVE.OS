@@ -44,8 +44,8 @@ class CfgVehicles {
                         class integrationChoice
                         {
                                 property     = "ALiVE_mil_ied_integrationChoice";
-                                displayName  = "Integration";
-                                tooltip      = "Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time - only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to <mod> uses that specific mod's mode. See RPT for detection details at mission start.";
+                                displayName  = "$STR_ALIVE_IED_INTEGRATION";
+                                tooltip      = "$STR_ALIVE_IED_INTEGRATION_COMMENT";
                                 control      = "ALiVE_IntegrationChoice";
                                 // typeName + expression + defaultValue wire the attribute value
                                 // into Eden's SQM serialization + mission-load entity-apply path.
@@ -62,61 +62,61 @@ class CfgVehicles {
                         class HDR_IED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_IED"; displayName = "IED THREAT"; };
                         class IED_Threat : Combo
                         {
-                                property = "ALiVE_mil_ied_IED_Threat"; displayName = "$STR_ALIVE_ied_IED_Threat"; tooltip = "$STR_ALIVE_ied_IED_Threat_COMMENT"; defaultValue = """0""";
+                                property = "ALiVE_mil_ied_IED_Threat"; displayName = "$STR_ALIVE_IED_IED_THREAT"; tooltip = "$STR_ALIVE_IED_IED_THREAT_COMMENT"; defaultValue = """0""";
                                 class Values { class None{name="None";value=0;default=1;}; class Low{name="Low";value=50;}; class Med{name="Medium";value=100;}; class High{name="High";value=200;}; class Extreme{name="Extreme";value=350;}; };
                         };
                         class IED_Starting_Threat : Combo
                         {
-                                property = "ALiVE_mil_ied_IED_Starting_Threat"; displayName = "$STR_ALIVE_ied_IED_Starting_Threat"; tooltip = "$STR_ALIVE_ied_IED_Starting_Threat_COMMENT"; defaultValue = """0""";
+                                property = "ALiVE_mil_ied_IED_Starting_Threat"; displayName = "$STR_ALIVE_IED_IED_STARTING_THREAT"; tooltip = "$STR_ALIVE_IED_IED_STARTING_THREAT_COMMENT"; defaultValue = """0""";
                                 class Values { class None{name="None";value=0;default=1;}; class Low{name="Low";value=50;}; class Med{name="Medium";value=100;}; class High{name="High";value=200;}; class Extreme{name="Extreme";value=350;}; };
                         };
                         class IED_Detection : Combo
                         {
-                                property = "ALiVE_mil_ied_IED_Detection"; displayName = "$STR_ALIVE_ied_IED_Detection"; tooltip = "$STR_ALIVE_ied_IED_Detection_COMMENT"; defaultValue = """1""";
+                                property = "ALiVE_mil_ied_IED_Detection"; displayName = "$STR_ALIVE_IED_IED_DETECTION"; tooltip = "$STR_ALIVE_IED_IED_DETECTION_COMMENT"; defaultValue = """1""";
                                 class Values { class None{name="None";value=0;}; class Text{name="Text";value=1;default=1;}; class Audio{name="Audio";value=2;}; };
                         };
-                        class IED_Detection_Device : Edit { property = "ALiVE_mil_ied_IED_Detection_Device"; displayName = "$STR_ALIVE_IED_IED_Detection_Device"; tooltip = "$STR_ALIVE_IED_IED_Detection_Device_COMMENT"; defaultValue = """MineDetector"""; };
+                        class IED_Detection_Device : Edit { property = "ALiVE_mil_ied_IED_Detection_Device"; displayName = "$STR_ALIVE_IED_IED_DETECTION_DEVICE"; tooltip = "$STR_ALIVE_IED_IED_DETECTION_DEVICE_COMMENT"; defaultValue = """MineDetector"""; };
                         // ---- Suicide Bombers ------------------------------------------------
                         class HDR_BOMBER : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_BOMBER"; displayName = "SUICIDE BOMBERS"; };
                         class Bomber_Threat : Combo
                         {
-                                property = "ALiVE_mil_ied_Bomber_Threat"; displayName = "$STR_ALIVE_ied_Bomber_Threat"; tooltip = "$STR_ALIVE_ied_Bomber_Threat_COMMENT"; defaultValue = """0""";
+                                property = "ALiVE_mil_ied_Bomber_Threat"; displayName = "$STR_ALIVE_IED_BOMBER_THREAT"; tooltip = "$STR_ALIVE_IED_BOMBER_THREAT_COMMENT"; defaultValue = """0""";
                                 class Values { class None{name="None";value=0;default=1;}; class Low{name="Low";value=10;}; class Med{name="Medium";value=20;}; class High{name="High";value=30;}; class Extreme{name="Extreme";value=50;}; };
                         };
-                        class Bomber_Type : Edit { property = "ALiVE_mil_ied_Bomber_Type"; displayName = "$STR_ALIVE_IED_Bomber_Type"; tooltip = "$STR_ALIVE_IED_BOMBER_TYPE_COMMENT"; defaultValue = """"""; };
-                        class Bomber_Vest : Edit { property = "ALiVE_mil_ied_Bomber_Vest"; displayName = "$STR_ALIVE_IED_Bomber_Vest"; tooltip = "$STR_ALIVE_IED_BOMBER_VEST_COMMENT"; defaultValue = """V_ALiVE_Suicide_Vest"""; };
+                        class Bomber_Type : Edit { property = "ALiVE_mil_ied_Bomber_Type"; displayName = "$STR_ALIVE_IED_BOMBER_TYPE"; tooltip = "$STR_ALIVE_IED_BOMBER_TYPE_COMMENT"; defaultValue = """"""; };
+                        class Bomber_Vest : Edit { property = "ALiVE_mil_ied_Bomber_Vest"; displayName = "$STR_ALIVE_IED_BOMBER_VEST"; tooltip = "$STR_ALIVE_IED_BOMBER_VEST_COMMENT"; defaultValue = """V_ALiVE_Suicide_Vest"""; };
                         // ---- Vehicle-Borne IED ----------------------------------------------
                         class HDR_VBIED : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_VBIED"; displayName = "VEHICLE-BORNE IED"; };
                         class VB_IED_Threat : Combo
                         {
-                                property = "ALiVE_mil_ied_VB_IED_Threat"; displayName = "$STR_ALIVE_ied_VB_IED_Threat"; tooltip = "$STR_ALIVE_ied_VB_IED_Threat_COMMENT"; defaultValue = """0""";
+                                property = "ALiVE_mil_ied_VB_IED_Threat"; displayName = "$STR_ALIVE_IED_VB_IED_THREAT"; tooltip = "$STR_ALIVE_IED_VB_IED_THREAT_COMMENT"; defaultValue = """0""";
                                 class Values { class None{name="None";value=0;default=1;}; class Low{name="Low";value=10;}; class Med{name="Medium";value=20;}; class High{name="High";value=50;}; class Extreme{name="Extreme";value=70;}; };
                         };
                         class VB_IED_Side : Combo
                         {
-                                property = "ALiVE_mil_ied_VB_IED_Side"; displayName = "$STR_ALIVE_ied_VB_IED_Side"; tooltip = "$STR_ALIVE_ied_VB_IED_Side_COMMENT"; defaultValue = """CIV""";
+                                property = "ALiVE_mil_ied_VB_IED_Side"; displayName = "$STR_ALIVE_IED_VB_IED_SIDE"; tooltip = "$STR_ALIVE_IED_VB_IED_SIDE_COMMENT"; defaultValue = """CIV""";
                                 class Values { class Civ{name="CIV";value="CIV";default=1;}; class East{name="EAST";value="EAST";}; class West{name="WEST";value="WEST";}; class Ind{name="IND";value="GUER";}; };
                         };
                         class Locs_IED : Combo
                         {
-                                property = "ALiVE_mil_ied_Locs_IED"; displayName = "$STR_ALIVE_ied_Locs_IED"; tooltip = "$STR_ALIVE_ied_Locs_IED_COMMENT"; defaultValue = """0""";
-                                class Values { class Random{name="Random";value=0;default=1;}; class Occupied{name="Enemy Occupied";value=1;}; class Unoccupied{name="Unoccupied";value=2;}; };
+                                property = "ALiVE_mil_ied_Locs_IED"; displayName = "$STR_ALIVE_IED_LOCS_IED"; tooltip = "$STR_ALIVE_IED_LOCS_IED_COMMENT"; defaultValue = """0""";
+                                class Values { class Random{name="Random";value=0;default=1;}; class Occupied{name="Enemy-Occupied Areas";value=1;}; class Unoccupied{name="Unoccupied";value=2;}; };
                         };
                         // ---- Engineer Challenge ---------------------------------------------
                         class HDR_ENGINEER : ALiVE_ModuleSubTitle { property = "ALiVE_mil_ied_HDR_ENGINEER"; displayName = "ENGINEER CHALLENGE"; };
                         class IED_Engineer_Challenge : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Challenge";
-                                displayName = "Engineer Challenge";
-                                tooltip = "If No, engineers (mine detector / Explosive Specialist / CBA EOD trait) are fully immune to IED proximity detonation (legacy behaviour). If Yes, engineers accumulate trip pressure based on distance, stance, movement speed and skill - careless approach can detonate the IED before they defuse.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_CHALLENGE";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_CHALLENGE_COMMENT";
                                 defaultValue = """1""";
                                 class Values { class No{name="No";value=0;}; class Yes{name="Yes";value=1;default=1;}; };
                         };
                         class IED_Engineer_Trip_Base : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Trip_Base";
-                                displayName = "Trip Rate";
-                                tooltip = "Base per-tick (0.5s) trip-pressure increment for engineers. Scaled by distance, stance, speed and skill. Higher = IEDs detonate sooner under careless approach.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_TRIP_BASE";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_TRIP_BASE_COMMENT";
                                 defaultValue = """0.02""";
                                 class Values
                                 {
@@ -129,8 +129,8 @@ class CfgVehicles {
                         class IED_Engineer_Trip_ThresholdMin : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Trip_ThresholdMin";
-                                displayName = "Trip Threshold Min";
-                                tooltip = "Lower bound of the per-IED randomized trip threshold. Each IED rolls its own threshold in [Min, Max] on creation. Lower = quicker to trip.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMIN";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMIN_COMMENT";
                                 defaultValue = """0.7""";
                                 class Values
                                 {
@@ -143,8 +143,8 @@ class CfgVehicles {
                         class IED_Engineer_Trip_ThresholdMax : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Trip_ThresholdMax";
-                                displayName = "Trip Threshold Max";
-                                tooltip = "Upper bound of the per-IED randomized trip threshold. Must be >= Min; if Max < Min the threshold is constant at Min.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMAX";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMAX_COMMENT";
                                 defaultValue = """1.3""";
                                 class Values
                                 {
@@ -157,8 +157,8 @@ class CfgVehicles {
                         class IED_Engineer_Decay_Rate : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Decay_Rate";
-                                displayName = "Trip Decay Rate";
-                                tooltip = "Per-tick (0.5s) decay of accumulated trip pressure once an engineer leaves the IED's proximity radius. Higher = retreating resets pressure faster.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_DECAY_RATE";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_DECAY_RATE_COMMENT";
                                 defaultValue = """0.01""";
                                 class Values
                                 {
@@ -171,8 +171,8 @@ class CfgVehicles {
                         class IED_Engineer_Disarm_BaseTime : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Disarm_BaseTime";
-                                displayName = "Disarm Base Time";
-                                tooltip = "Seconds required to disarm an IED at skill 1.0 (scales up to 1.5x at skill 0, floored at 50%% of base). The IED remains vulnerable to detonation throughout this window.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_DISARM_BASETIME";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_DISARM_BASETIME_COMMENT";
                                 defaultValue = """60""";
                                 class Values
                                 {
@@ -186,8 +186,8 @@ class CfgVehicles {
                         class IED_Engineer_Disarm_NewDeviceBase : Combo
                         {
                                 property = "ALiVE_mil_ied_IED_Engineer_Disarm_NewDeviceBase";
-                                displayName = "Wire-Guess Threshold";
-                                tooltip = "Baseline threshold for the 'new device' wire-guess minigame. Effective trigger rate: ~10%% at skill 1.0, ~25%% at skill 0, clamped [0.70, 0.90]. Lower value = wire-guess fires more often.";
+                                displayName = "$STR_ALIVE_IED_ENGINEER_DISARM_NEWDEVICE";
+                                tooltip = "$STR_ALIVE_IED_ENGINEER_DISARM_NEWDEVICE_COMMENT";
                                 defaultValue = """0.75""";
                                 class Values
                                 {
@@ -203,15 +203,15 @@ class CfgVehicles {
                         class roadIEDClasses_additional : Edit
                         {
                                 property = "ALiVE_mil_ied_roadIEDClasses_additional";
-                                displayName = "Road IED - Additional Classes";
-                                tooltip = "Comma-separated extra classes to merge into the road IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                displayName = "$STR_ALIVE_IED_ROADIED_ADDITIONAL";
+                                tooltip = "$STR_ALIVE_IED_ROADIED_ADDITIONAL_COMMENT";
                                 defaultValue = """""";
                         };
                         class roadIEDClasses_autoDetect : Combo
                         {
                                 property = "ALiVE_mil_ied_roadIEDClasses_autoDetect";
-                                displayName = "Road IED - Auto-detect Source";
-                                tooltip = "Whether the road IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
+                                displayName = "$STR_ALIVE_IED_ROADIED_AUTODETECT";
+                                tooltip = "$STR_ALIVE_IED_ROADIED_AUTODETECT_COMMENT";
                                 defaultValue = """0""";
                                 class Values
                                 {
@@ -224,15 +224,15 @@ class CfgVehicles {
                         class urbanIEDClasses_additional : Edit
                         {
                                 property = "ALiVE_mil_ied_urbanIEDClasses_additional";
-                                displayName = "Urban IED - Additional Classes";
-                                tooltip = "Comma-separated extra classes to merge into the urban IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                displayName = "$STR_ALIVE_IED_URBANIED_ADDITIONAL";
+                                tooltip = "$STR_ALIVE_IED_URBANIED_ADDITIONAL_COMMENT";
                                 defaultValue = """""";
                         };
                         class urbanIEDClasses_autoDetect : Combo
                         {
                                 property = "ALiVE_mil_ied_urbanIEDClasses_autoDetect";
-                                displayName = "Urban IED - Auto-detect Source";
-                                tooltip = "Whether the urban IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
+                                displayName = "$STR_ALIVE_IED_URBANIED_AUTODETECT";
+                                tooltip = "$STR_ALIVE_IED_URBANIED_AUTODETECT_COMMENT";
                                 defaultValue = """0""";
                                 class Values
                                 {
@@ -245,15 +245,15 @@ class CfgVehicles {
                         class clutterClasses_additional : Edit
                         {
                                 property = "ALiVE_mil_ied_clutterClasses_additional";
-                                displayName = "Clutter - Additional Classes";
-                                tooltip = "Comma-separated extra classes to merge into the camouflage clutter pool placed near IEDs. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).";
+                                displayName = "$STR_ALIVE_IED_CLUTTER_ADDITIONAL";
+                                tooltip = "$STR_ALIVE_IED_CLUTTER_ADDITIONAL_COMMENT";
                                 defaultValue = """""";
                         };
                         class clutterClasses_autoDetect : Combo
                         {
                                 property = "ALiVE_mil_ied_clutterClasses_autoDetect";
-                                displayName = "Clutter - Auto-detect Source";
-                                tooltip = "Whether the clutter pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category - always use the base list.";
+                                displayName = "$STR_ALIVE_IED_CLUTTER_AUTODETECT";
+                                tooltip = "$STR_ALIVE_IED_CLUTTER_AUTODETECT_COMMENT";
                                 defaultValue = """0""";
                                 class Values
                                 {
