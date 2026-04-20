@@ -4,378 +4,824 @@
 <Container name="STR_DN">
 <Key ID="STR_ALIVE_MP">
     <English>Military Placement (Mil. Obj.)</English>
+    <Chinese>軍事部署（軍事目標）</Chinese>
     <Chinesesimp>军事安置（军事目标）</Chinesesimp>
+    <Spanish>Despliegue militar (obj. mil.)</Spanish>
+    <French>Déploiement militaire (obj. mil.)</French>
+    <Portuguese>Posicionamento militar (obj. mil.)</Portuguese>
+    <Russian>Военное размещение (воен. объекты)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_COMMENT">
     <English>Strategic Military Placement at Military Objectives</English>
+    <Chinese>軍事目標的戰略軍事部署</Chinese>
     <Chinesesimp>军事目标的战略军事部署</Chinesesimp>
+    <Spanish>Despliegue militar estratégico en objetivos militares</Spanish>
+    <French>Déploiement militaire stratégique aux objectifs militaires</French>
+    <Portuguese>Posicionamento militar estratégico em objetivos militares</Portuguese>
+    <Russian>Стратегическое размещение военных сил на военных объектах</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_DEBUG">
     <English>Enable Debug:</English>
-    <Chinesesimp>启用调试</Chinesesimp>
+    <Chinese>啟用調試：</Chinese>
+    <Chinesesimp>启用调试：</Chinesesimp>
+    <Spanish>Activar depuración:</Spanish>
+    <French>Activer le débogage:</French>
+    <Portuguese>Ativar depuração:</Portuguese>
+    <Russian>Включить отладку:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_DEBUG_COMMENT">
     <English>Enables MP Module Debug</English>
+    <Chinese>啟用軍事部署模組調試</Chinese>
     <Chinesesimp>启用MP模块调试</Chinesesimp>
+    <Spanish>Activa la depuración del módulo de despliegue militar</Spanish>
+    <French>Active le débogage du module de déploiement militaire</French>
+    <Portuguese>Ativa a depuração do módulo de posicionamento militar</Portuguese>
+    <Russian>Включает отладку модуля военного размещения</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_RANDOMCAMPS">
     <English>Random Camps:</English>
-    <Chinesesimp>随机营地</Chinesesimp>
+    <Chinese>隨機營地：</Chinese>
+    <Chinesesimp>随机营地：</Chinesesimp>
+    <Spanish>Campamentos aleatorios:</Spanish>
+    <French>Camps aléatoires:</French>
+    <Portuguese>Acampamentos aleatórios:</Portuguese>
+    <Russian>Случайные лагеря:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_RANDOMCAMPS_COMMENT">
-    <English>Spawns random field camps in flat open terrain within the TAOR, spaced at the specified minimum distance (metres). Use to add unpredictable forward operating bases beyond fixed military objectives.</English>
-    <Chinesesimp>随机营地等级</Chinesesimp>
+    <English>Spawns random field camps in flat open terrain within the TAOR. The setting controls camp density via the minimum spacing between camps: None = off, Low = 2500m apart (sparse), Medium = 1500m apart, High = 1000m apart (dense). Higher density adds more unpredictable forward operating bases beyond fixed military objectives.</English>
+    <Chinese>在 TAOR 內的平坦開闊地形上生成隨機野戰營地。該設定透過營地之間的最小間距控制密度：無 = 關閉，低 = 相距 2500 公尺（稀疏），中 = 相距 1500 公尺，高 = 相距 1000 公尺（密集）。密度越高，會在固定軍事目標之外增加更多不可預測的前進作戰基地。</Chinese>
+    <Chinesesimp>在 TAOR 内的平坦开阔地形上生成随机野战营地。该设置通过营地之间的最小间距控制密度：无 = 关闭，低 = 相距 2500 米（稀疏），中 = 相距 1500 米，高 = 相距 1000 米（密集）。密度越高，会在固定军事目标之外增加更多不可预测的前进作战基地。</Chinesesimp>
+    <Spanish>Genera campamentos de campaña aleatorios en terreno llano y abierto dentro del TAOR. El ajuste controla la densidad mediante el espaciado mínimo entre campamentos: Ninguno = apagado, Bajo = a 2500 m de distancia (escaso), Medio = a 1500 m, Alto = a 1000 m (denso). Una densidad mayor añade más bases operativas avanzadas impredecibles más allá de los objetivos militares fijos.</Spanish>
+    <French>Génère des camps de campagne aléatoires en terrain plat et dégagé dans la TAOR. Le réglage contrôle la densité via l'espacement minimum entre camps: Aucun = désactivé, Faible = écart de 2500 m (rare), Moyen = 1500 m, Élevé = 1000 m (dense). Une densité plus élevée ajoute davantage de bases opérationnelles avancées imprévisibles au-delà des objectifs militaires fixes.</French>
+    <Portuguese>Gera acampamentos de campo aleatórios em terreno plano e aberto dentro da TAOR. A configuração controla a densidade pela distância mínima entre acampamentos: Nenhum = desligado, Baixo = a 2500 m (esparso), Médio = a 1500 m, Alto = a 1000 m (denso). Maior densidade adiciona mais bases operacionais avançadas imprevisíveis além dos objetivos militares fixos.</Portuguese>
+    <Russian>Создаёт случайные полевые лагеря на ровной открытой местности в пределах TAOR. Параметр управляет плотностью через минимальное расстояние между лагерями: Нет = выкл., Низко = 2500 м между ними (разрежено), Средне = 1500 м, Высоко = 1000 м (плотно). Большая плотность добавляет больше непредсказуемых передовых оперативных баз помимо стационарных военных объектов.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TAOR">
     <English>TAOR Marker:</English>
-    <Chinesesimp>TAOR标记</Chinesesimp>
+    <Chinese>TAOR 標記：</Chinese>
+    <Chinesesimp>TAOR 标记：</Chinesesimp>
+    <Spanish>Marcador TAOR:</Spanish>
+    <French>Marqueur TAOR:</French>
+    <Portuguese>Marcador TAOR:</Portuguese>
+    <Russian>Маркер TAOR:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TAOR_COMMENT">
     <English>Restricts placement to objectives inside this marker (or markers). Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2. Leave blank to use the entire map.</English>
-    <Chinesesimp>战术区作战责任标记</Chinesesimp>
+    <Chinese>將部署限制在此標記（或多個標記）內的目標。輸入編輯器中放置的標記的確切名稱。多個標記：用逗號分隔，無空格，無引號 — 例如 marker1,marker2。留空表示使用整張地圖。</Chinese>
+    <Chinesesimp>将部署限制在此标记（或多个标记）内的目标。输入编辑器中放置的标记的确切名称。多个标记：用逗号分隔，无空格，无引号 — 例如 marker1,marker2。留空表示使用整张地图。</Chinesesimp>
+    <Spanish>Restringe el despliegue a los objetivos dentro de este marcador (o marcadores). Introduce el nombre del marcador tal como está colocado en el editor. Varios marcadores: sepáralos con coma, sin espacios ni comillas — p. ej. marker1,marker2. Déjalo en blanco para usar todo el mapa.</Spanish>
+    <French>Restreint le déploiement aux objectifs situés à l'intérieur de ce marqueur (ou de ces marqueurs). Saisissez le nom du marqueur exactement tel que placé dans l'éditeur. Plusieurs marqueurs: séparez-les par une virgule, sans espace ni guillemets — p. ex. marker1,marker2. Laissez vide pour utiliser toute la carte.</French>
+    <Portuguese>Restringe o posicionamento aos objetivos dentro deste marcador (ou marcadores). Digite o nome do marcador exatamente como colocado no editor. Vários marcadores: separe com vírgula, sem espaços nem aspas — ex. marker1,marker2. Deixe em branco para usar o mapa inteiro.</Portuguese>
+    <Russian>Ограничивает размещение объектами внутри этого маркера (или маркеров). Введите имя маркера точно так, как оно задано в редакторе. Несколько маркеров: разделяйте запятой, без пробелов и кавычек — например, marker1,marker2. Оставьте пустым, чтобы использовать всю карту.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_BLACKLIST">
     <English>Blacklist Marker:</English>
-    <Chinesesimp>黑名单标记</Chinesesimp>
+    <Chinese>黑名單標記：</Chinese>
+    <Chinesesimp>黑名单标记：</Chinesesimp>
+    <Spanish>Marcador de lista negra:</Spanish>
+    <French>Marqueur de liste noire:</French>
+    <Portuguese>Marcador de lista negra:</Portuguese>
+    <Russian>Маркер чёрного списка:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_BLACKLIST_COMMENT">
     <English>Excludes objectives inside this marker (or markers) from placement. Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2.</English>
-    <Chinesesimp>排除标记</Chinesesimp>
+    <Chinese>將此標記（或多個標記）內的目標排除在部署之外。輸入編輯器中放置的標記的確切名稱。多個標記：用逗號分隔，無空格，無引號 — 例如 marker1,marker2。</Chinese>
+    <Chinesesimp>将此标记（或多个标记）内的目标排除在部署之外。输入编辑器中放置的标记的确切名称。多个标记：用逗号分隔，无空格，无引号 — 例如 marker1,marker2。</Chinesesimp>
+    <Spanish>Excluye los objetivos dentro de este marcador (o marcadores) del despliegue. Introduce el nombre del marcador tal como está colocado en el editor. Varios marcadores: sepáralos con coma, sin espacios ni comillas — p. ej. marker1,marker2.</Spanish>
+    <French>Exclut du déploiement les objectifs situés à l'intérieur de ce marqueur (ou de ces marqueurs). Saisissez le nom du marqueur exactement tel que placé dans l'éditeur. Plusieurs marqueurs: séparez-les par une virgule, sans espace ni guillemets — p. ex. marker1,marker2.</French>
+    <Portuguese>Exclui do posicionamento os objetivos dentro deste marcador (ou marcadores). Digite o nome do marcador exatamente como colocado no editor. Vários marcadores: separe com vírgula, sem espaços nem aspas — ex. marker1,marker2.</Portuguese>
+    <Russian>Исключает из размещения объекты внутри этого маркера (или маркеров). Введите имя маркера точно так, как оно задано в редакторе. Несколько маркеров: разделяйте запятой, без пробелов и кавычек — например, marker1,marker2.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER">
     <English>Objective Size Filter:</English>
-    <Chinesesimp>目标大小过滤器</Chinesesimp>
+    <Chinese>目標大小篩選器：</Chinese>
+    <Chinesesimp>目标大小过滤器：</Chinesesimp>
+    <Spanish>Filtro de tamaño de objetivo:</Spanish>
+    <French>Filtre de taille d'objectif:</French>
+    <Portuguese>Filtro de tamanho de objetivo:</Portuguese>
+    <Russian>Фильтр размера объекта:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_COMMENT">
-    <English>Filter objectives less than selected size</English>
-    <Chinesesimp>筛选小于选定大小的目标</Chinesesimp>
+    <English>Restrict placement to objectives of certain sizes. The "Ignore..." options exclude objectives at or below the chosen size; the "Only..." options keep objectives at or above (or for "Only small + medium objectives" / "Only huge and smaller objectives", invert the cut to keep the smaller side).</English>
+    <Chinese>將部署限制在特定大小的目標。「忽略...」選項排除選定大小及以下的目標；「只有...」選項保留選定大小及以上的目標（或對於「只有中小型目標」／「只有大型和較小目標」，反轉切點以保留較小一側）。</Chinese>
+    <Chinesesimp>将部署限制在特定大小的目标。「忽略...」选项排除选定大小及以下的目标；「只有...」选项保留选定大小及以上的目标（或对于「只有中小型目标」／「只有大型和较小目标」，反转切点以保留较小一侧）。</Chinesesimp>
+    <Spanish>Restringe el despliegue a objetivos de ciertos tamaños. Las opciones "Ignorar..." excluyen objetivos del tamaño elegido o inferior; las opciones "Solo..." mantienen objetivos del tamaño elegido o superior (o, para "Solo objetivos pequeños + medianos" / "Solo objetivos enormes y menores", invierten el corte para mantener el lado más pequeño).</Spanish>
+    <French>Restreint le déploiement aux objectifs de certaines tailles. Les options « Ignorer... » excluent les objectifs de la taille choisie ou inférieure; les options « Uniquement... » conservent les objectifs de la taille choisie ou supérieure (ou, pour « Uniquement les petits + moyens objectifs » / « Uniquement les énormes objectifs et plus petits », inversent la coupe pour conserver le côté plus petit).</French>
+    <Portuguese>Restringe o posicionamento a objetivos de certos tamanhos. As opções "Ignorar..." excluem objetivos do tamanho escolhido ou menor; as opções "Apenas..." mantêm objetivos do tamanho escolhido ou maior (ou, para "Apenas objetivos pequenos + médios" / "Apenas objetivos enormes e menores", invertem o corte para manter o lado menor).</Portuguese>
+    <Russian>Ограничивает размещение объектами определённых размеров. Варианты «Игнорировать...» исключают объекты выбранного размера и меньше; варианты «Только...» сохраняют объекты выбранного размера и больше (или для «Только малые + средние объекты» / «Только крупные и меньшие объекты» — инвертируют отсечение, оставляя меньшую сторону).</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_NONE">
     <English>Do not filter</English>
+    <Chinese>不篩選</Chinese>
     <Chinesesimp>不筛选</Chinesesimp>
+    <Spanish>No filtrar</Spanish>
+    <French>Ne pas filtrer</French>
+    <Portuguese>Não filtrar</Portuguese>
+    <Russian>Не фильтровать</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_SMALL">
     <English>Ignore small objectives</English>
+    <Chinese>忽略小目標</Chinese>
     <Chinesesimp>忽略小目标</Chinesesimp>
+    <Spanish>Ignorar objetivos pequeños</Spanish>
+    <French>Ignorer les petits objectifs</French>
+    <Portuguese>Ignorar objetivos pequenos</Portuguese>
+    <Russian>Игнорировать малые объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_MEDIUM">
     <English>Ignore small + medium objectives</English>
+    <Chinese>忽略中小目標</Chinese>
     <Chinesesimp>忽略中小目标</Chinesesimp>
+    <Spanish>Ignorar objetivos pequeños y medianos</Spanish>
+    <French>Ignorer les petits et moyens objectifs</French>
+    <Portuguese>Ignorar objetivos pequenos e médios</Portuguese>
+    <Russian>Игнорировать малые и средние объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_LARGE">
     <English>Only huge objectives</English>
+    <Chinese>只有大型目標</Chinese>
     <Chinesesimp>只有巨大的目标</Chinesesimp>
+    <Spanish>Solo objetivos enormes</Spanish>
+    <French>Uniquement les énormes objectifs</French>
+    <Portuguese>Apenas objetivos enormes</Portuguese>
+    <Russian>Только крупные объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_SMALL_INVERSE">
     <English>Only small objectives</English>
+    <Chinese>只有小目標</Chinese>
     <Chinesesimp>只有小目标</Chinesesimp>
+    <Spanish>Solo objetivos pequeños</Spanish>
+    <French>Uniquement les petits objectifs</French>
+    <Portuguese>Apenas objetivos pequenos</Portuguese>
+    <Russian>Только малые объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_MEDIUM_INVERSE">
     <English>Only small + medium objectives</English>
+    <Chinese>僅中小型目標</Chinese>
     <Chinesesimp>仅中小型目标</Chinesesimp>
+    <Spanish>Solo objetivos pequeños y medianos</Spanish>
+    <French>Uniquement les petits et moyens objectifs</French>
+    <Portuguese>Apenas objetivos pequenos e médios</Portuguese>
+    <Russian>Только малые и средние объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_FILTER_LARGE_INVERSE">
     <English>Only huge and smaller objectives</English>
+    <Chinese>只有大型和較小目標</Chinese>
     <Chinesesimp>只有巨大和较小的目标</Chinesesimp>
+    <Spanish>Solo objetivos enormes y menores</Spanish>
+    <French>Uniquement les énormes objectifs et plus petits</French>
+    <Portuguese>Apenas objetivos enormes e menores</Portuguese>
+    <Russian>Только крупные и меньшие объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER">
     <English>Objective Priority Filter:</English>
-    <Chinesesimp>目标优先级过滤器</Chinesesimp>
+    <Chinese>目標優先級篩選器：</Chinese>
+    <Chinesesimp>目标优先级过滤器：</Chinesesimp>
+    <Spanish>Filtro de prioridad de objetivo:</Spanish>
+    <French>Filtre de priorité d'objectif:</French>
+    <Portuguese>Filtro de prioridade de objetivo:</Portuguese>
+    <Russian>Фильтр приоритета объекта:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER_COMMENT">
     <English>Filter objectives less than selected priority</English>
+    <Chinese>篩選低於選定優先級的目標</Chinese>
     <Chinesesimp>筛选低于选定优先级的目标</Chinesesimp>
+    <Spanish>Filtra los objetivos por debajo de la prioridad seleccionada</Spanish>
+    <French>Filtre les objectifs en dessous de la priorité sélectionnée</French>
+    <Portuguese>Filtra os objetivos abaixo da prioridade selecionada</Portuguese>
+    <Russian>Фильтрует объекты ниже выбранного приоритета</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER_NONE">
     <English>Do not filter</English>
+    <Chinese>不篩選</Chinese>
     <Chinesesimp>不筛选</Chinesesimp>
+    <Spanish>No filtrar</Spanish>
+    <French>Ne pas filtrer</French>
+    <Portuguese>Não filtrar</Portuguese>
+    <Russian>Не фильтровать</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER_LOW">
     <English>Ignore low priority objectives</English>
+    <Chinese>忽略低優先級目標</Chinese>
     <Chinesesimp>忽略低优先级目标</Chinesesimp>
+    <Spanish>Ignorar objetivos de baja prioridad</Spanish>
+    <French>Ignorer les objectifs de faible priorité</French>
+    <Portuguese>Ignorar objetivos de baixa prioridade</Portuguese>
+    <Russian>Игнорировать объекты низкого приоритета</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER_MEDIUM">
     <English>Ignore low + medium priority objectives</English>
+    <Chinese>忽略低+中優先級目標</Chinese>
     <Chinesesimp>忽略低+中优先级目标</Chinesesimp>
+    <Spanish>Ignorar objetivos de prioridad baja y media</Spanish>
+    <French>Ignorer les objectifs de priorité faible et moyenne</French>
+    <Portuguese>Ignorar objetivos de prioridade baixa e média</Portuguese>
+    <Russian>Игнорировать объекты низкого и среднего приоритета</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PRIORITY_FILTER_HIGH">
     <English>Only high priority objectives</English>
+    <Chinese>僅高優先級目標</Chinese>
     <Chinesesimp>仅高优先级目标</Chinesesimp>
+    <Spanish>Solo objetivos de alta prioridad</Spanish>
+    <French>Uniquement les objectifs de haute priorité</French>
+    <Portuguese>Apenas objetivos de alta prioridade</Portuguese>
+    <Russian>Только объекты высокого приоритета</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_READINESS_LEVEL">
     <English>Readiness:</English>
-    <Chinesesimp>准备就绪</Chinesesimp>
+    <Chinese>戰備：</Chinese>
+    <Chinesesimp>战备：</Chinesesimp>
+    <Spanish>Disponibilidad:</Spanish>
+    <French>Disponibilité:</French>
+    <Portuguese>Prontidão:</Portuguese>
+    <Russian>Готовность:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_READINESS_LEVEL_COMMENT">
     <English>The proportion of the force that will be actively on duty and patrolling at mission start. Lower values leave more units in reserve.</English>
-    <Chinesesimp>执勤和巡逻的部队数量</Chinesesimp>
+    <Chinese>任務開始時主動值勤和巡邏的部隊比例。較低的值會讓更多單位留作預備隊。</Chinese>
+    <Chinesesimp>任务开始时主动值勤和巡逻的部队比例。较低的值会让更多单位留作预备队。</Chinesesimp>
+    <Spanish>La proporción de la fuerza que estará activamente de servicio y patrullando al inicio de la misión. Valores menores dejan más unidades en reserva.</Spanish>
+    <French>La proportion de la force qui sera activement en service et en patrouille au début de la mission. Des valeurs plus faibles laissent plus d'unités en réserve.</French>
+    <Portuguese>A proporção da força que estará ativamente em serviço e patrulhando no início da missão. Valores mais baixos deixam mais unidades de reserva.</Portuguese>
+    <Russian>Доля сил, которые будут на активном дежурстве и патрулировании при старте миссии. Меньшие значения оставляют больше юнитов в резерве.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT">
     <English>Place units:</English>
-    <Chinesesimp>放置单位</Chinesesimp>
+    <Chinese>放置單位：</Chinese>
+    <Chinesesimp>放置单位：</Chinesesimp>
+    <Spanish>Colocar unidades:</Spanish>
+    <French>Placer les unités:</French>
+    <Portuguese>Posicionar unidades:</Portuguese>
+    <Russian>Размещать юниты:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT_COMMENT">
     <English>Place Units: spawns both units and registers objectives. Objectives Only: registers objectives for an AI Commander without placing any units — useful when OPCOM manages forces separately.</English>
-    <Chinesesimp>仅放置单元或目标</Chinesesimp>
+    <Chinese>放置單位：同時生成單位並註冊目標。僅目標：為 AI 指揮官註冊目標但不放置任何單位 — 當 OPCOM 單獨管理部隊時很有用。</Chinese>
+    <Chinesesimp>放置单位：同时生成单位并注册目标。仅目标：为 AI 指挥官注册目标但不放置任何单位 — 当 OPCOM 单独管理部队时很有用。</Chinesesimp>
+    <Spanish>Colocar unidades: genera unidades y registra objetivos. Solo objetivos: registra objetivos para un comandante IA sin colocar unidades — útil cuando OPCOM gestiona las fuerzas por separado.</Spanish>
+    <French>Placer les unités: fait apparaître les unités et enregistre les objectifs. Objectifs uniquement: enregistre les objectifs pour un commandant IA sans placer d'unités — utile lorsque l'OPCOM gère les forces séparément.</French>
+    <Portuguese>Posicionar unidades: gera unidades e registra objetivos. Apenas objetivos: registra objetivos para um Comandante IA sem posicionar unidades — útil quando o OPCOM gerencia as forças separadamente.</Portuguese>
+    <Russian>Размещать юниты: создаёт юниты и регистрирует объекты. Только объекты: регистрирует объекты для ИИ-командира без размещения юнитов — полезно, когда OPCOM управляет силами отдельно.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT_YES">
     <English>Place Units</English>
+    <Chinese>放置單位</Chinese>
     <Chinesesimp>放置单位</Chinesesimp>
+    <Spanish>Colocar unidades</Spanish>
+    <French>Placer les unités</French>
+    <Portuguese>Posicionar unidades</Portuguese>
+    <Russian>Размещать юниты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT_NO">
     <English>Objectives Only</English>
+    <Chinese>僅目標</Chinese>
     <Chinesesimp>仅目标</Chinesesimp>
+    <Spanish>Solo objetivos</Spanish>
+    <French>Objectifs uniquement</French>
+    <Portuguese>Apenas objetivos</Portuguese>
+    <Russian>Только объекты</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE">
     <English>Force Size:</English>
-    <Chinesesimp>武力等级</Chinesesimp>
+    <Chinese>武力等級：</Chinese>
+    <Chinesesimp>武力等级：</Chinesesimp>
+    <Spanish>Tamaño de fuerza:</Spanish>
+    <French>Taille de la force:</French>
+    <Portuguese>Tamanho da força:</Portuguese>
+    <Russian>Размер сил:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_COMMENT">
     <English>Total number of virtual unit slots to fill across all objectives. Distributed proportionally between objectives based on their size and priority.</English>
-    <Chinesesimp>要放置的单元数</Chinesesimp>
+    <Chinese>跨所有目標填充的虛擬單位槽位總數。根據目標的大小和優先級按比例分配。</Chinese>
+    <Chinesesimp>跨所有目标填充的虚拟单位槽位总数。根据目标的大小和优先级按比例分配。</Chinesesimp>
+    <Spanish>Número total de plazas de unidad virtual a rellenar entre todos los objetivos. Se distribuyen proporcionalmente entre los objetivos según su tamaño y prioridad.</Spanish>
+    <French>Nombre total d'emplacements d'unités virtuelles à remplir sur l'ensemble des objectifs. Réparti proportionnellement entre les objectifs selon leur taille et leur priorité.</French>
+    <Portuguese>Número total de vagas de unidades virtuais a preencher entre todos os objetivos. Distribuído proporcionalmente entre os objetivos com base no tamanho e prioridade.</Portuguese>
+    <Russian>Общее число слотов виртуальных юнитов, которые нужно заполнить по всем объектам. Распределяется пропорционально между объектами с учётом их размера и приоритета.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_BNx3">
     <English>Battalion (1200)</English>
-    <Chinesesimp>营(1200)</Chinesesimp>
+    <Chinese>營（1200）</Chinese>
+    <Chinesesimp>营（1200）</Chinesesimp>
+    <Spanish>Batallón (1200)</Spanish>
+    <French>Bataillon (1200)</French>
+    <Portuguese>Batalhão (1200)</Portuguese>
+    <Russian>Батальон (1200)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_BNx2">
     <English>Battalion (800)</English>
-    <Chinesesimp>营(800)</Chinesesimp>
+    <Chinese>營（800）</Chinese>
+    <Chinesesimp>营（800）</Chinesesimp>
+    <Spanish>Batallón (800)</Spanish>
+    <French>Bataillon (800)</French>
+    <Portuguese>Batalhão (800)</Portuguese>
+    <Russian>Батальон (800)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_BN">
     <English>Battalion (400)</English>
-    <Chinesesimp>营(400)</Chinesesimp>
+    <Chinese>營（400）</Chinese>
+    <Chinesesimp>营（400）</Chinesesimp>
+    <Spanish>Batallón (400)</Spanish>
+    <French>Bataillon (400)</French>
+    <Portuguese>Batalhão (400)</Portuguese>
+    <Russian>Батальон (400)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_CYx2">
     <English>Company (200)</English>
-    <Chinesesimp>连队(200)</Chinesesimp>
+    <Chinese>連（200）</Chinese>
+    <Chinesesimp>连（200）</Chinesesimp>
+    <Spanish>Compañía (200)</Spanish>
+    <French>Compagnie (200)</French>
+    <Portuguese>Companhia (200)</Portuguese>
+    <Russian>Рота (200)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_CY">
     <English>Company (100)</English>
-    <Chinesesimp>连队(100)</Chinesesimp>
+    <Chinese>連（100）</Chinese>
+    <Chinesesimp>连（100）</Chinesesimp>
+    <Spanish>Compañía (100)</Spanish>
+    <French>Compagnie (100)</French>
+    <Portuguese>Companhia (100)</Portuguese>
+    <Russian>Рота (100)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_PLx2">
     <English>Platoon (60)</English>
-    <Chinesesimp>排(60)</Chinesesimp>
+    <Chinese>排（60）</Chinese>
+    <Chinesesimp>排（60）</Chinesesimp>
+    <Spanish>Pelotón (60)</Spanish>
+    <French>Peloton (60)</French>
+    <Portuguese>Pelotão (60)</Portuguese>
+    <Russian>Взвод (60)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_SIZE_PL">
     <English>Platoon (30)</English>
-    <Chinesesimp>排(30)</Chinesesimp>
+    <Chinese>排（30）</Chinese>
+    <Chinesesimp>排（30）</Chinesesimp>
+    <Spanish>Pelotón (30)</Spanish>
+    <French>Peloton (30)</French>
+    <Portuguese>Pelotão (30)</Portuguese>
+    <Russian>Взвод (30)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE">
     <English>Force Weighting:</English>
-    <Chinesesimp>武力权重</Chinesesimp>
+    <Chinese>武力權重：</Chinese>
+    <Chinesesimp>武力权重：</Chinesesimp>
+    <Spanish>Ponderación de fuerza:</Spanish>
+    <French>Pondération de la force:</French>
+    <Portuguese>Ponderação da força:</Portuguese>
+    <Russian>Весовой состав сил:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_COMMENT">
     <English>Preferred composition of the force. Weighted towards the selected type but not exclusive — other unit types will still appear in smaller numbers.</English>
-    <Chinesesimp>部署的首选部队类型</Chinesesimp>
+    <Chinese>部隊的首選組成。偏向所選類型但非獨佔 — 其他單位類型仍會以較少數量出現。</Chinese>
+    <Chinesesimp>部队的首选组成。偏向所选类型但非独占 — 其他单位类型仍会以较少数量出现。</Chinesesimp>
+    <Spanish>Composición preferida de la fuerza. Ponderada hacia el tipo seleccionado pero no exclusiva — otros tipos de unidad seguirán apareciendo en menor número.</Spanish>
+    <French>Composition préférée de la force. Pondérée vers le type sélectionné mais non exclusive — d'autres types d'unités apparaîtront tout de même en plus petit nombre.</French>
+    <Portuguese>Composição preferida da força. Ponderada para o tipo selecionado mas não exclusiva — outros tipos de unidade ainda aparecerão em menor número.</Portuguese>
+    <Russian>Предпочтительный состав сил. Смещён в сторону выбранного типа, но не исключителен — другие типы юнитов всё равно появятся в меньшем количестве.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_RANDOM">
     <English>Random</English>
+    <Chinese>隨機</Chinese>
     <Chinesesimp>随机的</Chinesesimp>
+    <Spanish>Aleatorio</Spanish>
+    <French>Aléatoire</French>
+    <Portuguese>Aleatório</Portuguese>
+    <Russian>Случайный</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_ARMOR">
     <English>Armoured</English>
+    <Chinese>裝甲化</Chinese>
     <Chinesesimp>装甲化</Chinesesimp>
+    <Spanish>Acorazado</Spanish>
+    <French>Blindé</French>
+    <Portuguese>Blindado</Portuguese>
+    <Russian>Бронетанковый</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_MECH">
     <English>Mechanised</English>
+    <Chinese>機械化</Chinese>
     <Chinesesimp>机械化</Chinesesimp>
+    <Spanish>Mecanizado</Spanish>
+    <French>Mécanisé</French>
+    <Portuguese>Mecanizado</Portuguese>
+    <Russian>Механизированный</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_MOTOR">
     <English>Motorised</English>
+    <Chinese>摩托化</Chinese>
     <Chinesesimp>摩托化</Chinesesimp>
+    <Spanish>Motorizado</Spanish>
+    <French>Motorisé</French>
+    <Portuguese>Motorizado</Portuguese>
+    <Russian>Моторизованный</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_LIGHT">
     <English>Light Infantry</English>
+    <Chinese>輕型步兵</Chinese>
     <Chinesesimp>轻型步兵</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_MP_TYPE_AIRBORNE">
-    <English>Airborne</English>
-    <Chinesesimp>空运</Chinesesimp>
+    <Spanish>Infantería ligera</Spanish>
+    <French>Infanterie légère</French>
+    <Portuguese>Infantaria leve</Portuguese>
+    <Russian>Лёгкая пехота</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_TYPE_SPECOPS">
     <English>Spec Ops</English>
+    <Chinese>特種部隊</Chinese>
     <Chinesesimp>特种部队</Chinesesimp>
+    <Spanish>Operaciones especiales</Spanish>
+    <French>Forces spéciales</French>
+    <Portuguese>Operações especiais</Portuguese>
+    <Russian>Спецназ</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_INFANTRY_COUNT">
     <English>Override Infantry:</English>
-    <Chinesesimp>操控士兵</Chinesesimp>
+    <Chinese>覆寫步兵：</Chinese>
+    <Chinesesimp>覆写步兵：</Chinesesimp>
+    <Spanish>Sustituir infantería:</Spanish>
+    <French>Remplacer l'infanterie:</French>
+    <Portuguese>Substituir infantaria:</Portuguese>
+    <Russian>Переопределить пехоту:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_INFANTRY_COUNT_COMMENT">
     <English>Override the calculated infantry group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no infantry groups.</English>
-    <Chinesesimp>设置要生成的步兵组的自定义计数</Chinesesimp>
+    <Chinese>覆寫計算出的步兵組數量。輸入整數。留空表示使用根據武力等級和權重計算的值。設為 0 表示不生成步兵組。</Chinese>
+    <Chinesesimp>覆写计算出的步兵组数量。输入整数。留空表示使用根据武力等级和权重计算的值。设为 0 表示不生成步兵组。</Chinesesimp>
+    <Spanish>Sustituye el número calculado de grupos de infantería. Introduce un número entero. Déjalo en blanco para usar el valor calculado a partir del tamaño y la ponderación de la fuerza. Pon 0 para no generar grupos de infantería.</Spanish>
+    <French>Remplace le nombre calculé de groupes d'infanterie. Saisissez un nombre entier. Laissez vide pour utiliser la valeur calculée à partir de la taille et de la pondération de la force. Mettez 0 pour ne générer aucun groupe d'infanterie.</French>
+    <Portuguese>Substitui a quantidade calculada de grupos de infantaria. Digite um número inteiro. Deixe em branco para usar o valor calculado a partir do Tamanho e da Ponderação da Força. Defina como 0 para não gerar grupos de infantaria.</Portuguese>
+    <Russian>Переопределяет рассчитанное количество групп пехоты. Введите целое число. Оставьте пустым, чтобы использовать значение, рассчитанное из размера и весового состава сил. Установите 0, чтобы не создавать группы пехоты.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MOTORISED_COUNT">
     <English>Override Motorised:</English>
-    <Chinesesimp>操控摩托化</Chinesesimp>
+    <Chinese>覆寫摩托化：</Chinese>
+    <Chinesesimp>覆写摩托化：</Chinesesimp>
+    <Spanish>Sustituir motorizadas:</Spanish>
+    <French>Remplacer motorisées:</French>
+    <Portuguese>Substituir motorizadas:</Portuguese>
+    <Russian>Переопределить моторизованные:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MOTORISED_COUNT_COMMENT">
     <English>Override the calculated motorised group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no motorised groups.</English>
-    <Chinesesimp>设置要生成的摩托化组的自定义计数</Chinesesimp>
+    <Chinese>覆寫計算出的摩托化組數量。輸入整數。留空表示使用根據武力等級和權重計算的值。設為 0 表示不生成摩托化組。</Chinese>
+    <Chinesesimp>覆写计算出的摩托化组数量。输入整数。留空表示使用根据武力等级和权重计算的值。设为 0 表示不生成摩托化组。</Chinesesimp>
+    <Spanish>Sustituye el número calculado de grupos motorizados. Introduce un número entero. Déjalo en blanco para usar el valor calculado a partir del tamaño y la ponderación de la fuerza. Pon 0 para no generar grupos motorizados.</Spanish>
+    <French>Remplace le nombre calculé de groupes motorisés. Saisissez un nombre entier. Laissez vide pour utiliser la valeur calculée à partir de la taille et de la pondération de la force. Mettez 0 pour ne générer aucun groupe motorisé.</French>
+    <Portuguese>Substitui a quantidade calculada de grupos motorizados. Digite um número inteiro. Deixe em branco para usar o valor calculado a partir do Tamanho e da Ponderação da Força. Defina como 0 para não gerar grupos motorizados.</Portuguese>
+    <Russian>Переопределяет рассчитанное количество моторизованных групп. Введите целое число. Оставьте пустым, чтобы использовать значение, рассчитанное из размера и весового состава сил. Установите 0, чтобы не создавать моторизованные группы.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MECHANISED_COUNT">
     <English>Override Mechanised:</English>
-    <Chinesesimp>操控机械化</Chinesesimp>
+    <Chinese>覆寫機械化：</Chinese>
+    <Chinesesimp>覆写机械化：</Chinesesimp>
+    <Spanish>Sustituir mecanizadas:</Spanish>
+    <French>Remplacer mécanisées:</French>
+    <Portuguese>Substituir mecanizadas:</Portuguese>
+    <Russian>Переопределить механизированные:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_MECHANISED_COUNT_COMMENT">
     <English>Override the calculated mechanised group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no mechanised groups.</English>
-    <Chinesesimp>设置要生成的机械化组的自定义计数</Chinesesimp>
+    <Chinese>覆寫計算出的機械化組數量。輸入整數。留空表示使用根據武力等級和權重計算的值。設為 0 表示不生成機械化組。</Chinese>
+    <Chinesesimp>覆写计算出的机械化组数量。输入整数。留空表示使用根据武力等级和权重计算的值。设为 0 表示不生成机械化组。</Chinesesimp>
+    <Spanish>Sustituye el número calculado de grupos mecanizados. Introduce un número entero. Déjalo en blanco para usar el valor calculado a partir del tamaño y la ponderación de la fuerza. Pon 0 para no generar grupos mecanizados.</Spanish>
+    <French>Remplace le nombre calculé de groupes mécanisés. Saisissez un nombre entier. Laissez vide pour utiliser la valeur calculée à partir de la taille et de la pondération de la force. Mettez 0 pour ne générer aucun groupe mécanisé.</French>
+    <Portuguese>Substitui a quantidade calculada de grupos mecanizados. Digite um número inteiro. Deixe em branco para usar o valor calculado a partir do Tamanho e da Ponderação da Força. Defina como 0 para não gerar grupos mecanizados.</Portuguese>
+    <Russian>Переопределяет рассчитанное количество механизированных групп. Введите целое число. Оставьте пустым, чтобы использовать значение, рассчитанное из размера и весового состава сил. Установите 0, чтобы не создавать механизированные группы.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_ARMOUR_COUNT">
     <English>Override Armour:</English>
-    <Chinesesimp>操控装甲</Chinesesimp>
+    <Chinese>覆寫裝甲：</Chinese>
+    <Chinesesimp>覆写装甲：</Chinesesimp>
+    <Spanish>Sustituir blindados:</Spanish>
+    <French>Remplacer blindés:</French>
+    <Portuguese>Substituir blindados:</Portuguese>
+    <Russian>Переопределить бронетехнику:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_ARMOUR_COUNT_COMMENT">
     <English>Override the calculated armour group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no armour groups.</English>
-    <Chinesesimp>设置要生成的装甲组的自定义计数</Chinesesimp>
+    <Chinese>覆寫計算出的裝甲組數量。輸入整數。留空表示使用根據武力等級和權重計算的值。設為 0 表示不生成裝甲組。</Chinese>
+    <Chinesesimp>覆写计算出的装甲组数量。输入整数。留空表示使用根据武力等级和权重计算的值。设为 0 表示不生成装甲组。</Chinesesimp>
+    <Spanish>Sustituye el número calculado de grupos blindados. Introduce un número entero. Déjalo en blanco para usar el valor calculado a partir del tamaño y la ponderación de la fuerza. Pon 0 para no generar grupos blindados.</Spanish>
+    <French>Remplace le nombre calculé de groupes blindés. Saisissez un nombre entier. Laissez vide pour utiliser la valeur calculée à partir de la taille et de la pondération de la force. Mettez 0 pour ne générer aucun groupe blindé.</French>
+    <Portuguese>Substitui a quantidade calculada de grupos blindados. Digite um número inteiro. Deixe em branco para usar o valor calculado a partir do Tamanho e da Ponderação da Força. Defina como 0 para não gerar grupos blindados.</Portuguese>
+    <Russian>Переопределяет рассчитанное количество бронетанковых групп. Введите целое число. Оставьте пустым, чтобы использовать значение, рассчитанное из размера и весового состава сил. Установите 0, чтобы не создавать бронетанковые группы.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_SPECOPS_COUNT">
     <English>Override SpecOps:</English>
-    <Chinesesimp>操控支援</Chinesesimp>
+    <Chinese>覆寫特種部隊：</Chinese>
+    <Chinesesimp>覆写特种部队：</Chinesesimp>
+    <Spanish>Sustituir operaciones especiales:</Spanish>
+    <French>Remplacer forces spéciales:</French>
+    <Portuguese>Substituir operações especiais:</Portuguese>
+    <Russian>Переопределить спецназ:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CUSTOM_SPECOPS_COUNT_COMMENT">
     <English>Override the calculated spec ops group count. Enter a whole number. Leave blank to use the calculated value from Force Size and Weighting. Set to 0 to spawn no spec ops groups.</English>
-    <Chinesesimp>设置要生成的支援组的自定义计数</Chinesesimp>
+    <Chinese>覆寫計算出的特種部隊組數量。輸入整數。留空表示使用根據武力等級和權重計算的值。設為 0 表示不生成特種部隊組。</Chinese>
+    <Chinesesimp>覆写计算出的特种部队组数量。输入整数。留空表示使用根据武力等级和权重计算的值。设为 0 表示不生成特种部队组。</Chinesesimp>
+    <Spanish>Sustituye el número calculado de grupos de operaciones especiales. Introduce un número entero. Déjalo en blanco para usar el valor calculado a partir del tamaño y la ponderación de la fuerza. Pon 0 para no generar grupos de operaciones especiales.</Spanish>
+    <French>Remplace le nombre calculé de groupes de forces spéciales. Saisissez un nombre entier. Laissez vide pour utiliser la valeur calculée à partir de la taille et de la pondération de la force. Mettez 0 pour ne générer aucun groupe de forces spéciales.</French>
+    <Portuguese>Substitui a quantidade calculada de grupos de operações especiais. Digite um número inteiro. Deixe em branco para usar o valor calculado a partir do Tamanho e da Ponderação da Força. Defina como 0 para não gerar grupos de operações especiais.</Portuguese>
+    <Russian>Переопределяет рассчитанное количество групп спецназа. Введите целое число. Оставьте пустым, чтобы использовать значение, рассчитанное из размера и весового состава сил. Установите 0, чтобы не создавать группы спецназа.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_FACTION">
     <English>Force Faction:</English>
-    <Chinesesimp>武力派别</Chinesesimp>
+    <Chinese>武力派別：</Chinese>
+    <Chinesesimp>武力派别：</Chinesesimp>
+    <Spanish>Facción de fuerza:</Spanish>
+    <French>Faction de la force:</French>
+    <Portuguese>Facção da força:</Portuguese>
+    <Russian>Фракция сил:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_FACTION_COMMENT">
-    <English>The faction whose unit roster this module will draw from. Enter a single faction classname — e.g. OPF_F. For multiple factions on the same side use the Override Factions field on the synced AI Commander instead.</English>
-    <Chinesesimp>要放置的单位阵营</Chinesesimp>
+    <English>The faction whose unit roster this module will draw from. Pick from the auto-populated dropdown (currently-loaded factions filtered to the chosen side). For multiple factions on the same side use the Factions multi-select on the synced AI Commander instead.</English>
+    <Chinese>此模組將從中抽取單位名冊的陣營。從自動填充的下拉選單中選擇（目前已載入的陣營，依選定方過濾）。如需同一方的多個陣營，請改用同步的 AI 指揮官上的「陣營」多選。</Chinese>
+    <Chinesesimp>此模块将从中抽取单位名册的阵营。从自动填充的下拉菜单中选择（当前已载入的阵营，按选定方过滤）。如需同一方的多个阵营，请改用同步的 AI 指挥官上的「阵营」多选。</Chinesesimp>
+    <Spanish>La facción de cuyo plantel de unidades este módulo extraerá. Selecciónala del menú desplegable autollenado (facciones actualmente cargadas, filtradas por el bando elegido). Para varias facciones del mismo bando, usa el selector múltiple Facciones del Comandante IA sincronizado.</Spanish>
+    <French>La faction dont ce module utilisera l'effectif. Choisissez dans la liste déroulante auto-remplie (factions actuellement chargées, filtrées selon le camp choisi). Pour plusieurs factions du même camp, utilisez plutôt la sélection multiple Factions du Commandant IA synchronisé.</French>
+    <Portuguese>A facção de cujo efetivo de unidades este módulo extrairá. Escolha no menu suspenso autopreenchido (facções atualmente carregadas, filtradas pelo lado escolhido). Para várias facções do mesmo lado, use a seleção múltipla Facções no Comandante IA sincronizado.</Portuguese>
+    <Russian>Фракция, из чьего ростера юнитов этот модуль будет брать состав. Выберите из автоматически заполняемого списка (загруженные сейчас фракции, отфильтрованные по выбранной стороне). Для нескольких фракций одной стороны используйте мультивыбор «Фракции» на синхронизированном ИИ-командире.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_HQ">
     <English>Create HQ:</English>
-    <Chinesesimp>创建总部</Chinesesimp>
+    <Chinese>建立指揮部：</Chinese>
+    <Chinesesimp>创建指挥部：</Chinesesimp>
+    <Spanish>Crear cuartel general:</Spanish>
+    <French>Créer un QG:</French>
+    <Portuguese>Criar QG:</Portuguese>
+    <Russian>Создать штаб:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_HQ_COMMENT">
     <English>Selects a suitable HQ building near the module and garrisons it. Also marks the location as highest priority for the AI Commander.</English>
-    <Chinesesimp>选择靠近模块的总部目标</Chinesesimp>
+    <Chinese>選擇模組附近合適的指揮部建築並進行駐防。同時將該位置標記為 AI 指揮官的最高優先級。</Chinese>
+    <Chinesesimp>选择模块附近合适的指挥部建筑并进行驻防。同时将该位置标记为 AI 指挥官的最高优先级。</Chinesesimp>
+    <Spanish>Selecciona un edificio adecuado para cuartel general cerca del módulo y lo guarnece. También marca la ubicación como prioridad máxima para el Comandante IA.</Spanish>
+    <French>Sélectionne un bâtiment de QG approprié près du module et le met en garnison. Marque également l'emplacement comme priorité maximale pour le Commandant IA.</French>
+    <Portuguese>Seleciona um edifício adequado para QG perto do módulo e o guarnece. Também marca a localização como prioridade máxima para o Comandante IA.</Portuguese>
+    <Russian>Выбирает подходящее здание для штаба рядом с модулем и гарнизонирует его. Также помечает локацию как наивысший приоритет для ИИ-командира.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_FIELDHQ">
     <English>Create Field HQ:</English>
-    <Chinesesimp>创建现场总部</Chinesesimp>
+    <Chinese>建立野戰指揮部：</Chinese>
+    <Chinesesimp>创建野战指挥部：</Chinesesimp>
+    <Spanish>Crear cuartel de campaña:</Spanish>
+    <French>Créer un QG de campagne:</French>
+    <Portuguese>Criar QG de campo:</Portuguese>
+    <Russian>Создать полевой штаб:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_CREATE_FIELDHQ_COMMENT">
     <English>Places a Field HQ composition (tents, vehicles) near the module in flat terrain. Supplements the main HQ as a forward command post.</English>
-    <Chinesesimp>将现场总部靠近模块</Chinesesimp>
+    <Chinese>在模組附近平坦地形上放置野戰指揮部組合（帳篷、車輛）。作為前進指揮所補充主指揮部。</Chinese>
+    <Chinesesimp>在模块附近平坦地形上放置野战指挥部组合（帐篷、车辆）。作为前进指挥所补充主指挥部。</Chinesesimp>
+    <Spanish>Coloca una composición de cuartel de campaña (tiendas, vehículos) cerca del módulo en terreno llano. Complementa al cuartel general principal como puesto de mando avanzado.</Spanish>
+    <French>Place une composition de QG de campagne (tentes, véhicules) près du module en terrain plat. Complète le QG principal en tant que poste de commandement avancé.</French>
+    <Portuguese>Coloca uma composição de QG de campo (tendas, veículos) perto do módulo em terreno plano. Complementa o QG principal como posto de comando avançado.</Portuguese>
+    <Russian>Размещает композицию полевого штаба (палатки, транспорт) рядом с модулем на ровной местности. Дополняет главный штаб как передовой командный пункт.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_HELI">
     <English>Place air units:</English>
-    <Chinesesimp>放置空中单位</Chinesesimp>
+    <Chinese>放置空中單位：</Chinese>
+    <Chinesesimp>放置空中单位：</Chinesesimp>
+    <Spanish>Colocar unidades aéreas:</Spanish>
+    <French>Placer les unités aériennes:</French>
+    <Portuguese>Posicionar unidades aéreas:</Portuguese>
+    <Russian>Размещать авиаюниты:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_HELI_COMMENT">
     <English>Spawns helicopters and fixed-wing aircraft at helipads and hangars within military objectives. Requires suitable landing infrastructure to exist at objectives.</English>
-    <Chinesesimp>将空中单位放置在目标中</Chinesesimp>
+    <Chinese>在軍事目標內的直升機停機坪和機庫處生成直升機和固定翼飛機。需要目標處存在合適的降落基礎設施。</Chinese>
+    <Chinesesimp>在军事目标内的直升机停机坪和机库处生成直升机和固定翼飞机。需要目标处存在合适的降落基础设施。</Chinesesimp>
+    <Spanish>Genera helicópteros y aeronaves de ala fija en helipuertos y hangares dentro de los objetivos militares. Requiere que exista infraestructura de aterrizaje adecuada en los objetivos.</Spanish>
+    <French>Fait apparaître des hélicoptères et des avions à voilure fixe sur les hélipads et dans les hangars des objectifs militaires. Nécessite la présence d'infrastructures d'atterrissage adaptées aux objectifs.</French>
+    <Portuguese>Gera helicópteros e aeronaves de asa fixa em heliportos e hangares dentro dos objetivos militares. Requer infraestrutura de pouso adequada nos objetivos.</Portuguese>
+    <Russian>Создаёт вертолёты и самолёты на вертолётных площадках и в ангарах в пределах военных объектов. Требует наличия подходящей посадочной инфраструктуры на объектах.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_SUPPLIES">
     <English>Place supplies:</English>
-    <Chinesesimp>放置物品</Chinesesimp>
+    <Chinese>放置物資：</Chinese>
+    <Chinesesimp>放置物资：</Chinesesimp>
+    <Spanish>Colocar suministros:</Spanish>
+    <French>Placer les ravitaillements:</French>
+    <Portuguese>Posicionar suprimentos:</Portuguese>
+    <Russian>Размещать припасы:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACE_SUPPLIES_COMMENT">
     <English>Places faction-appropriate supply boxes inside storage buildings at objectives. Does not affect the AI logistics system — for AI resupply use the Military Logistics module.</English>
-    <Chinesesimp>在目标中放置物资箱</Chinesesimp>
+    <Chinese>在目標處的儲存建築內放置適合該陣營的物資箱。不影響 AI 後勤系統 — AI 補給請使用軍事後勤模組。</Chinese>
+    <Chinesesimp>在目标处的存储建筑内放置适合该阵营的物资箱。不影响 AI 后勤系统 — AI 补给请使用军事后勤模块。</Chinesesimp>
+    <Spanish>Coloca cajas de suministros apropiadas para la facción dentro de los edificios de almacenamiento en los objetivos. No afecta al sistema de logística de la IA — para el reabastecimiento de la IA usa el módulo de Logística militar.</Spanish>
+    <French>Place des caisses de ravitaillement adaptées à la faction à l'intérieur des bâtiments de stockage des objectifs. N'affecte pas le système de logistique de l'IA — pour le réapprovisionnement de l'IA, utilisez le module Logistique militaire.</French>
+    <Portuguese>Coloca caixas de suprimentos apropriadas à facção dentro dos edifícios de armazenamento nos objetivos. Não afeta o sistema de logística da IA — para reabastecimento da IA use o módulo de Logística militar.</Portuguese>
+    <Russian>Размещает соответствующие фракции ящики припасов внутри складских зданий на объектах. Не влияет на систему логистики ИИ — для пополнения ИИ используйте модуль «Военная логистика».</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT">
-    <English>Place ambient vehicles</English>
-    <Chinesesimp>放置周围车辆</Chinesesimp>
+    <English>Place ambient vehicles:</English>
+    <Chinese>放置環境車輛：</Chinese>
+    <Chinesesimp>放置周围车辆：</Chinesesimp>
+    <Spanish>Colocar vehículos ambientales:</Spanish>
+    <French>Placer les véhicules d'ambiance:</French>
+    <Portuguese>Posicionar veículos ambientais:</Portuguese>
+    <Russian>Размещать фоновый транспорт:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_COMMENT">
     <English>Spawns parked vehicles at objectives to add visual density. These are uncrewed and static — they do not patrol or respond to combat.</English>
-    <Chinesesimp>将周围车辆放置在适当位置</Chinesesimp>
+    <Chinese>在目標處生成停放的車輛以增加視覺密度。這些車輛無人駕駛且靜態 — 不會巡邏或對戰鬥做出反應。</Chinese>
+    <Chinesesimp>在目标处生成停放的车辆以增加视觉密度。这些车辆无人驾驶且静态 — 不会巡逻或对战斗做出反应。</Chinesesimp>
+    <Spanish>Genera vehículos aparcados en los objetivos para añadir densidad visual. No tienen tripulación y son estáticos — no patrullan ni responden al combate.</Spanish>
+    <French>Fait apparaître des véhicules stationnés aux objectifs pour ajouter de la densité visuelle. Ils sont sans équipage et statiques — ils ne patrouillent pas et ne réagissent pas au combat.</French>
+    <Portuguese>Gera veículos estacionados nos objetivos para adicionar densidade visual. Ficam sem tripulação e estáticos — não patrulham nem respondem ao combate.</Portuguese>
+    <Russian>Создаёт припаркованный транспорт на объектах для увеличения визуальной плотности. Без экипажа и статичен — не патрулирует и не реагирует на бой.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_NONE">
     <English>None</English>
+    <Chinese>無</Chinese>
     <Chinesesimp>无</Chinesesimp>
+    <Spanish>Ninguno</Spanish>
+    <French>Aucun</French>
+    <Portuguese>Nenhum</Portuguese>
+    <Russian>Нет</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_LOW">
     <English>Low</English>
+    <Chinese>少量</Chinese>
     <Chinesesimp>少量</Chinesesimp>
+    <Spanish>Bajo</Spanish>
+    <French>Faible</French>
+    <Portuguese>Baixo</Portuguese>
+    <Russian>Низко</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_MEDIUM">
     <English>Medium</English>
+    <Chinese>中等</Chinese>
     <Chinesesimp>中等</Chinesesimp>
+    <Spanish>Medio</Spanish>
+    <French>Moyen</French>
+    <Portuguese>Médio</Portuguese>
+    <Russian>Средне</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_VEHICLE_AMOUNT_HIGH">
     <English>High</English>
+    <Chinese>較多</Chinese>
     <Chinesesimp>较多</Chinesesimp>
+    <Spanish>Alto</Spanish>
+    <French>Élevé</French>
+    <Portuguese>Alto</Portuguese>
+    <Russian>Высоко</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT">
-    <English>Garrisoned Infantry Groups</English>
-    <Chinesesimp>驻防步兵组</Chinesesimp>
+    <English>Garrisoned Infantry Groups:</English>
+    <Chinese>駐防步兵組：</Chinese>
+    <Chinesesimp>驻防步兵组：</Chinesesimp>
+    <Spanish>Grupos de infantería de guarnición:</Spanish>
+    <French>Groupes d'infanterie en garnison:</French>
+    <Portuguese>Grupos de infantaria de guarnição:</Portuguese>
+    <Russian>Группы пехоты гарнизона:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_COMMENT">
     <English>Number of infantry groups assigned to garrison and patrol buildings within each objective. Has no effect if no infantry groups are spawned.</English>
-    <Chinesesimp>步兵小组守卫地点</Chinesesimp>
+    <Chinese>分配到每個目標內駐防和巡邏建築物的步兵組數量。如果沒有生成步兵組，則沒有效果。</Chinese>
+    <Chinesesimp>分配到每个目标内驻防和巡逻建筑物的步兵组数量。如果没有生成步兵组，则没有效果。</Chinesesimp>
+    <Spanish>Número de grupos de infantería asignados a guarnecer y patrullar edificios dentro de cada objetivo. No tiene efecto si no se generan grupos de infantería.</Spanish>
+    <French>Nombre de groupes d'infanterie affectés à la garnison et à la patrouille des bâtiments à l'intérieur de chaque objectif. Sans effet si aucun groupe d'infanterie n'est généré.</French>
+    <Portuguese>Quantidade de grupos de infantaria designados a guarnição e patrulha de edifícios dentro de cada objetivo. Sem efeito se nenhum grupo de infantaria for gerado.</Portuguese>
+    <Russian>Количество групп пехоты, назначенных гарнизонировать и патрулировать здания внутри каждого объекта. Не действует, если группы пехоты не созданы.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_NONE">
     <English>None</English>
+    <Chinese>無</Chinese>
     <Chinesesimp>无</Chinesesimp>
+    <Spanish>Ninguno</Spanish>
+    <French>Aucun</French>
+    <Portuguese>Nenhum</Portuguese>
+    <Russian>Нет</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_LOW">
     <English>Low (1-2 Groups)</English>
+    <Chinese>少量（1-2 組）</Chinese>
     <Chinesesimp>少量(1-2组)</Chinesesimp>
+    <Spanish>Bajo (1-2 grupos)</Spanish>
+    <French>Faible (1-2 groupes)</French>
+    <Portuguese>Baixo (1-2 grupos)</Portuguese>
+    <Russian>Низко (1-2 группы)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_MEDIUM">
     <English>Medium (3-4 Groups)</English>
+    <Chinese>中等（3-4 組）</Chinese>
     <Chinesesimp>中等(3-4组)</Chinesesimp>
+    <Spanish>Medio (3-4 grupos)</Spanish>
+    <French>Moyen (3-4 groupes)</French>
+    <Portuguese>Médio (3-4 grupos)</Portuguese>
+    <Russian>Средне (3-4 группы)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_HIGH">
     <English>High (5-6 Groups)</English>
+    <Chinese>大量（5-6 組）</Chinese>
     <Chinesesimp>大量(5-6组)</Chinesesimp>
+    <Spanish>Alto (5-6 grupos)</Spanish>
+    <French>Élevé (5-6 groupes)</French>
+    <Portuguese>Alto (5-6 grupos)</Portuguese>
+    <Russian>Высоко (5-6 групп)</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_RADIUS">
-    <English>Garrisoned Infantry Radius</English>
-    <Chinesesimp>驻防步兵半径</Chinesesimp>
+    <English>Garrisoned Infantry Radius (m):</English>
+    <Chinese>駐防步兵半徑（米）：</Chinese>
+    <Chinesesimp>驻防步兵半径 (米):</Chinesesimp>
+    <Spanish>Radio de infantería de guarnición (m):</Spanish>
+    <French>Rayon d'infanterie en garnison (m):</French>
+    <Portuguese>Raio da infantaria de guarnição (m):</Portuguese>
+    <Russian>Радиус пехоты гарнизона (м):</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_RADIUS_COMMENT">
     <English>Radius in metres within which garrison groups search for enterable buildings to occupy. Increase for large spread-out objectives.</English>
-    <Chinesesimp>搜索可进入建筑物的径向范围(米)</Chinesesimp>
+    <Chinese>駐防組搜索可進入建築物以佔領的半徑（米）。對於大型分散目標應增大。</Chinese>
+    <Chinesesimp>驻防组搜索可进入建筑物以占领的半径（米）。对于大型分散目标应增大。</Chinesesimp>
+    <Spanish>Radio en metros dentro del cual los grupos de guarnición buscan edificios accesibles para ocupar. Aumenta el valor para objetivos grandes y dispersos.</Spanish>
+    <French>Rayon en mètres dans lequel les groupes de garnison cherchent des bâtiments accessibles à occuper. Augmentez pour les grands objectifs étendus.</French>
+    <Portuguese>Raio em metros dentro do qual os grupos de guarnição procuram edifícios acessíveis para ocupar. Aumente para objetivos grandes e dispersos.</Portuguese>
+    <Russian>Радиус в метрах, в пределах которого гарнизонные группы ищут здания для занятия. Увеличьте для больших разбросанных объектов.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_PATROL_PERCENT">
-    <English>Garrisoned Infantry Building Patrol</English>
-    <Chinesesimp>驻防步兵建筑巡逻</Chinesesimp>
+    <English>Garrisoned Building Patrol (%):</English>
+    <Chinese>駐防建築巡邏（%）：</Chinese>
+    <Chinesesimp>驻防建筑巡逻 (%):</Chinesesimp>
+    <Spanish>Patrulla de edificios guarnecidos (%):</Spanish>
+    <French>Patrouille de bâtiments en garnison (%):</French>
+    <Portuguese>Patrulha de edifícios guarnecidos (%):</Portuguese>
+    <Russian>Патрулирование зданий гарнизоном (%):</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_GUARD_PATROL_PERCENT_COMMENT">
     <English>Percentage of garrison groups that will actively patrol between buildings rather than remaining static. Higher values create more visible activity but increase CPU load.</English>
-    <Chinesesimp>在警戒半径内巡逻建筑物的单位百分比</Chinesesimp>
+    <Chinese>主動在建築物之間巡邏而非保持靜止的駐防組百分比。較高的值會產生更多可見活動但會增加 CPU 負載。</Chinese>
+    <Chinesesimp>主动在建筑物之间巡逻而非保持静止的驻防组百分比。较高的值会产生更多可见活动但会增加 CPU 负载。</Chinesesimp>
+    <Spanish>Porcentaje de grupos de guarnición que patrullarán activamente entre edificios en lugar de permanecer estáticos. Valores mayores generan más actividad visible pero aumentan la carga de CPU.</Spanish>
+    <French>Pourcentage des groupes de garnison qui patrouilleront activement entre les bâtiments plutôt que de rester statiques. Des valeurs plus élevées génèrent plus d'activité visible mais augmentent la charge CPU.</French>
+    <Portuguese>Porcentagem de grupos de guarnição que patrulharão ativamente entre edifícios em vez de permanecerem estáticos. Valores mais altos geram mais atividade visível mas aumentam a carga de CPU.</Portuguese>
+    <Russian>Процент гарнизонных групп, которые будут активно патрулировать между зданиями, а не оставаться на месте. Более высокие значения создают больше видимой активности, но увеличивают нагрузку на CPU.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_NONE">
     <English>None</English>
+    <Chinese>無</Chinese>
     <Chinesesimp>无</Chinesesimp>
+    <Spanish>Ninguno</Spanish>
+    <French>Aucun</French>
+    <Portuguese>Nenhum</Portuguese>
+    <Russian>Нет</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_LOW">
     <English>25%</English>
-    <Chinesesimp>25%</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_MEDIUM">
     <English>50%</English>
-    <Chinesesimp>50%</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_HIGH">
     <English>75%</English>
-    <Chinesesimp>75%</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_AMBIENT_PATROL_PERCENT_ALL">
     <English>100%</English>
-    <Chinesesimp>100%</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_MP_ON_EACH_SPAWN">
     <English>On unit spawn (SQF):</English>
+    <Chinese>單位生成時（SQF）：</Chinese>
+    <Chinesesimp>单位生成时（SQF）：</Chinesesimp>
+    <Spanish>Al generar unidad (SQF):</Spanish>
+    <French>À l'apparition d'une unité (SQF):</French>
+    <Portuguese>Ao gerar unidade (SQF):</Portuguese>
+    <Russian>При создании юнита (SQF):</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_COMMENT">
     <English>SQF code executed each time a unit from this module spawns. _this = [unit, profileID, side, faction]. Runs server-side in a scheduled thread. To affect all clients use remoteExec or publicVariable. hint and player commands will have no effect. Example: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</English>
+    <Chinese>每次此模組的單位生成時執行的 SQF 程式碼。_this = [unit, profileID, side, faction]。在排程執行緒中於伺服器端執行。要影響所有客戶端，請使用 remoteExec 或 publicVariable。hint 和玩家指令沒有效果。範例：_this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</Chinese>
+    <Chinesesimp>每次此模块的单位生成时执行的 SQF 代码。_this = [unit, profileID, side, faction]。在调度线程中于服务器端执行。要影响所有客户端，请使用 remoteExec 或 publicVariable。hint 和玩家指令没有效果。示例：_this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</Chinesesimp>
+    <Spanish>Código SQF ejecutado cada vez que se genera una unidad de este módulo. _this = [unit, profileID, side, faction]. Se ejecuta en el servidor en un hilo programado. Para afectar a todos los clientes usa remoteExec o publicVariable. hint y los comandos de jugador no tendrán efecto. Ejemplo: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</Spanish>
+    <French>Code SQF exécuté à chaque apparition d'une unité de ce module. _this = [unit, profileID, side, faction]. S'exécute côté serveur dans un thread planifié. Pour affecter tous les clients, utilisez remoteExec ou publicVariable. hint et les commandes joueur n'auront aucun effet. Exemple: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</French>
+    <Portuguese>Código SQF executado a cada vez que uma unidade deste módulo é gerada. _this = [unit, profileID, side, faction]. Executa no servidor em uma thread agendada. Para afetar todos os clientes use remoteExec ou publicVariable. hint e comandos de jogador não terão efeito. Exemplo: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</Portuguese>
+    <Russian>Код SQF, выполняемый каждый раз при создании юнита этим модулем. _this = [unit, profileID, side, faction]. Выполняется на стороне сервера в запланированном потоке. Чтобы повлиять на всех клиентов, используйте remoteExec или publicVariable. hint и команды игрока не действуют. Пример: _this params ["_unit"]; ["fnc_mySetup", _unit] remoteExec ["BIS_fnc_call"];</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_ONCE">
     <English>Run once per unit:</English>
+    <Chinese>每個單位執行一次：</Chinese>
+    <Chinesesimp>每个单位执行一次：</Chinesesimp>
+    <Spanish>Ejecutar una vez por unidad:</Spanish>
+    <French>Exécuter une fois par unité:</French>
+    <Portuguese>Executar uma vez por unidade:</Portuguese>
+    <Russian>Выполнить один раз для юнита:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_ON_EACH_SPAWN_ONCE_COMMENT">
     <English>Yes: the SQF hook runs only on the first spawn of each unit profile — useful for one-time setup like adding event handlers. No: runs every time the profile re-spawns after being virtual.</English>
+    <Chinese>是：SQF 鉤子只在每個單位設定檔的首次生成時執行 — 適用於一次性設定如新增事件處理器。否：每次設定檔在虛擬化後重新生成時都執行。</Chinese>
+    <Chinesesimp>是：SQF 钩子只在每个单位配置文件的首次生成时执行 — 适用于一次性设置如添加事件处理器。否：每次配置文件在虚拟化后重新生成时都执行。</Chinesesimp>
+    <Spanish>Sí: el gancho SQF se ejecuta solo en la primera aparición de cada perfil de unidad — útil para configuración puntual como añadir manejadores de eventos. No: se ejecuta cada vez que el perfil reaparece tras estar virtual.</Spanish>
+    <French>Oui: le hook SQF ne s'exécute qu'à la première apparition de chaque profil d'unité — utile pour la configuration ponctuelle comme l'ajout de gestionnaires d'événements. Non: s'exécute à chaque réapparition du profil après avoir été virtuel.</French>
+    <Portuguese>Sim: o hook SQF é executado apenas na primeira aparição de cada perfil de unidade — útil para configuração única como adicionar manipuladores de eventos. Não: executa toda vez que o perfil é gerado novamente após ser virtual.</Portuguese>
+    <Russian>Да: SQF-хук выполняется только при первом создании каждого профиля юнита — полезно для одноразовой настройки, например, добавления обработчиков событий. Нет: выполняется каждый раз при пересоздании профиля после виртуализации.</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_USAGE">
-    <English>Place the Military Placement module in the editor, select the desired Size, Weighting and Faction from the drop down. Custom factions can be entered in the text box (separated by a comma). These will overwrite the default factions in the drop down.</English>
-    <Chinesesimp>将军事布局模块置于编辑器中,从下拉列表中选择所需的大小、权重和派别。可以在文本框中输入自定义派别（用逗号分隔）。这些将覆盖下拉列表中的默认派别</Chinesesimp>
+    <English>Place the Military Placement module in the editor. Pick a Force Size, Weighting and Faction (the Faction dropdown is auto-populated from currently-loaded mods, with non-conforming factions flagged so you know whether they will spawn natively or via the inference layer). Place a TAOR marker if you want to restrict placement to part of the map. For multi-faction control, sync to a Military AI Commander whose Factions multi-select holds the additional factions.</English>
+    <Chinese>在編輯器中放置軍事部署模組。選擇武力等級、權重和陣營（陣營下拉選單會根據目前載入的模組自動填充，並標記不符合規範的陣營，以便您了解它們會原生生成還是透過推論層生成）。如果要將部署限制在地圖的一部分，請放置 TAOR 標記。如需多陣營控制，請同步到軍事 AI 指揮官，其「陣營」多選中包含額外的陣營。</Chinese>
+    <Chinesesimp>在编辑器中放置军事部署模块。选择武力等级、权重和阵营（阵营下拉菜单会根据当前载入的模组自动填充，并标记不符合规范的阵营，以便您了解它们会原生生成还是通过推断层生成）。如果要将部署限制在地图的一部分，请放置 TAOR 标记。如需多阵营控制，请同步到军事 AI 指挥官，其「阵营」多选中包含额外的阵营。</Chinesesimp>
+    <Spanish>Coloca el módulo Despliegue militar en el editor. Elige Tamaño de fuerza, Ponderación y Facción (el desplegable de Facción se autollena desde los mods cargados, con las facciones no conformes marcadas para que sepas si aparecerán de forma nativa o vía la capa de inferencia). Coloca un marcador TAOR si quieres restringir el despliegue a una parte del mapa. Para control multi-facción, sincroniza con un Comandante IA cuya selección múltiple Facciones contenga las facciones adicionales.</Spanish>
+    <French>Placez le module Déploiement militaire dans l'éditeur. Choisissez la Taille de la force, la Pondération et la Faction (la liste déroulante Faction est auto-remplie à partir des mods chargés, les factions non conformes étant signalées pour que vous sachiez si elles apparaîtront nativement ou via la couche d'inférence). Placez un marqueur TAOR si vous souhaitez restreindre le déploiement à une partie de la carte. Pour le contrôle multi-faction, synchronisez avec un Commandant IA dont la sélection multiple Factions contient les factions supplémentaires.</French>
+    <Portuguese>Coloque o módulo Posicionamento militar no editor. Escolha Tamanho da força, Ponderação e Facção (o menu suspenso Facção é autopreenchido a partir dos mods carregados, com facções não conformes sinalizadas para que você saiba se irão surgir nativamente ou via camada de inferência). Coloque um marcador TAOR se quiser restringir o posicionamento a uma parte do mapa. Para controle multi-facção, sincronize com um Comandante IA cuja seleção múltipla Facções contenha as facções adicionais.</Portuguese>
+    <Russian>Разместите модуль «Военное размещение» в редакторе. Выберите размер сил, весовой состав и фракцию (список фракций автоматически заполняется из загруженных модов; нестандартные фракции помечаются, чтобы вы видели, появятся ли они нативно или через слой инференса). Разместите маркер TAOR, если хотите ограничить размещение частью карты. Для управления несколькими фракциями синхронизируйте с ИИ-командиром, в мультивыборе «Фракции» которого заданы дополнительные фракции.</Russian>
 </Key>
 </Container></Package></Project>

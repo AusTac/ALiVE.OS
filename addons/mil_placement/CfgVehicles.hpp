@@ -70,11 +70,6 @@ class CfgVehicles {
                                 property = "ALiVE_mil_placement_type"; displayName = "$STR_ALIVE_MP_TYPE"; tooltip = "$STR_ALIVE_MP_TYPE_COMMENT"; defaultValue = """Random""";
                                 class Values { class RANDOM{name="$STR_ALIVE_MP_TYPE_RANDOM";value="Random";default=1;}; class ARMOR{name="$STR_ALIVE_MP_TYPE_ARMOR";value="Armored";}; class MECH{name="$STR_ALIVE_MP_TYPE_MECH";value="Mechanized";}; class MOTOR{name="$STR_ALIVE_MP_TYPE_MOTOR";value="Motorized";}; class LIGHT{name="$STR_ALIVE_MP_TYPE_LIGHT";value="Infantry";}; class SPECOPS{name="$STR_ALIVE_MP_TYPE_SPECOPS";value="Specops";}; };
                         };
-                        class randomcamps : Combo
-                        {
-                                property = "ALiVE_mil_placement_randomcamps"; displayName = "$STR_ALIVE_MP_RANDOMCAMPS"; tooltip = "$STR_ALIVE_MP_RANDOMCAMPS_COMMENT"; defaultValue = """0""";
-                                class Values { class NONE{name="None";value="0";default=1;}; class LOW{name="Low";value="2500";}; class MEDIUM{name="Medium";value="1500";}; class HIGH{name="High";value="1000";}; };
-                        };
                         class readinessLevel : Combo
                         {
                                 property = "ALiVE_mil_placement_readinessLevel"; displayName = "$STR_ALIVE_MP_READINESS_LEVEL"; tooltip = "$STR_ALIVE_MP_READINESS_LEVEL_COMMENT"; defaultValue = """1""";
@@ -88,6 +83,11 @@ class CfgVehicles {
 
                         // ---- Ambient Presence -----------------------------------------------
                         class HDR_AMBIENT : ALiVE_ModuleSubTitle { property = "ALiVE_mil_placement_HDR_AMBIENT"; displayName = "AMBIENT PRESENCE"; };
+                        class randomcamps : Combo
+                        {
+                                property = "ALiVE_mil_placement_randomcamps"; displayName = "$STR_ALIVE_MP_RANDOMCAMPS"; tooltip = "$STR_ALIVE_MP_RANDOMCAMPS_COMMENT"; defaultValue = """0""";
+                                class Values { class NONE{name="None";value="0";default=1;}; class LOW{name="Low";value="2500";}; class MEDIUM{name="Medium";value="1500";}; class HIGH{name="High";value="1000";}; };
+                        };
                         class guardProbability : Combo
                         {
                                 property = "ALiVE_mil_placement_guardProbability"; displayName = "$STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT"; tooltip = "$STR_ALIVE_MP_AMBIENT_GUARD_AMOUNT_COMMENT"; defaultValue = """0.2""";
