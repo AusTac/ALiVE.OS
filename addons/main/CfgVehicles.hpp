@@ -248,30 +248,32 @@ class Cfg3DEN
                     w = "82 * (pixelW * pixelGrid * 0.5)";
                     h = "50 * (pixelH * pixelGrid * 0.5)";
 
-                    color[]                  = {1, 1, 1, 1};
+                    // color[] is the listbox frame / line rendering
+                    // colour (paired with ST_FRAME style bit). Matches
+                    // the selection BG so any frame-like stroke blends.
+                    color[]                  = {1, 0.62, 0, 1};
+                    // Cursor / focus-ring properties drawn around a
+                    // user-clicked row (engine draws these only on
+                    // click - programmatic selection via lbSetCurSel
+                    // doesn't trigger them). Match BG orange to hide.
+                    colorActive[]            = {1, 0.62, 0, 1};
+                    colorFocused[]           = {1, 0.62, 0, 1};
+                    colorHover[]             = {1, 0.62, 0, 1};
                     colorText[]              = {1, 1, 1, 1};
                     colorBackground[]        = {0, 0, 0, 0.5};
-                    // Selection background follows the user's GUI
-                    // background colour (Options > Game > Layout >
-                    // Background colour) so the highlight always
-                    // matches the Eden window-title chrome whatever
-                    // the player has picked. Defaults preserve the
-                    // previous orange-yellow look for users who
-                    // haven't customised. Black text for contrast.
-                    colorSelect[]            = {0, 0, 0, 1};
-                    colorSelect2[]           = {0, 0, 0, 1};
-                    colorSelectBackground[]  = {
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_R',1])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_G',0.62])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_B',0])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_A',1])"
-                    };
-                    colorSelectBackground2[] = {
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_R',1])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_G',0.62])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_B',0])",
-                        "(profilenamespace getvariable ['GUI_BCG_RGB_A',1])"
-                    };
+                    // Selection highlight: hardcoded Eden-title orange-
+                    // yellow with white text so every mission-maker sees
+                    // the same visual, matching the module dialog's own
+                    // title bar. The profilenamespace GUI_BCG_RGB_*
+                    // macros would track the user's GUI Background
+                    // colour (Options > Game > Layout) which is often
+                    // very different from the Eden title chrome and
+                    // produces a mismatched darker highlight on
+                    // customised profiles.
+                    colorSelect[]            = {1, 1, 1, 1};
+                    colorSelect2[]           = {1, 1, 1, 1};
+                    colorSelectBackground[]  = {1, 0.62, 0, 1};
+                    colorSelectBackground2[] = {1, 0.62, 0, 1};
                     colorDisabled[]          = {1, 1, 1, 0.25};
                     colorShadow[]            = {0, 0, 0, 0.5};
 
