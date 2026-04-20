@@ -24,10 +24,10 @@ class CfgVehicles {
             // ---- General --------------------------------------------------------
             class HDR_GENERAL : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_GENERAL"; displayName = "GENERAL"; };
             class debug : Combo { property = "ALiVE_amb_civ_population_debug"; displayName = "$STR_ALIVE_CIV_POP_DEBUG"; tooltip = "$STR_ALIVE_CIV_POP_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
-            class spawnRadius : Edit { property = "ALiVE_amb_civ_population_spawnRadius"; displayName = "$STR_ALIVE_CIV_POP_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_SPAWN_RADIUS_COMMENT"; defaultValue = """900"""; };
-            class spawnTypeHeliRadius : Edit { property = "ALiVE_amb_civ_population_spawnTypeHeliRadius"; displayName = "$STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS_COMMENT"; defaultValue = """900"""; };
+            class spawnRadius : Edit { property = "ALiVE_amb_civ_population_spawnRadius"; displayName = "$STR_ALIVE_CIV_POP_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_SPAWN_RADIUS_COMMENT"; defaultValue = """1500"""; };
+            class spawnTypeHeliRadius : Edit { property = "ALiVE_amb_civ_population_spawnTypeHeliRadius"; displayName = "$STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS_COMMENT"; defaultValue = """1500"""; };
             class spawnTypeJetRadius : Edit { property = "ALiVE_amb_civ_population_spawnTypeJetRadius"; displayName = "$STR_ALIVE_CIV_POP_SPAWN_JET_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_SPAWN_JET_RADIUS_COMMENT"; defaultValue = """0"""; };
-            class activeLimiter : Edit { property = "ALiVE_amb_civ_population_activeLimiter"; displayName = "$STR_ALIVE_CIV_POP_ACTIVE_LIMITER"; tooltip = "$STR_ALIVE_CIV_POP_ACTIVE_LIMITER_COMMENT"; defaultValue = """25"""; };
+            class activeLimiter : Edit { property = "ALiVE_amb_civ_population_activeLimiter"; displayName = "$STR_ALIVE_CIV_POP_ACTIVE_LIMITER"; tooltip = "$STR_ALIVE_CIV_POP_ACTIVE_LIMITER_COMMENT"; defaultValue = """30"""; };
 
             // ---- Hostility ------------------------------------------------------
             class HDR_HOSTILITY : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_HOSTILITY"; displayName = "CIVILIAN HOSTILITY"; };
@@ -50,11 +50,11 @@ class CfgVehicles {
                         class EASTERN { name = "$STR_ALIVE_CIV_POP_CIVILIAN_ROLES_EAST"; value = ["townelder","muezzin","politician"]; };
                     };
             };
-            class enableInteraction : Combo { property = "ALiVE_amb_civ_population_enableInteraction"; displayName = "Enable Interaction"; tooltip = "Enable advanced interaction with civilians"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
-            class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "Limit Interaction"; tooltip = "To limit civilian interaction to specific classes or players, specify the classnames or player IDs here."; defaultValue = """"""; };
-            class insurgentFaction : Edit { property = "ALiVE_amb_civ_population_insurgentFaction"; displayName = "Insurgent Faction"; tooltip = "Specify the faction that civilians will inform on to players during interactions."; defaultValue = """"""; };
-            class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """50"""; };
-            class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """3"""; };
+            class enableInteraction : Combo { property = "ALiVE_amb_civ_population_enableInteraction"; displayName = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+            class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
+            class insurgentFaction : Edit { property = "ALiVE_amb_civ_population_insurgentFaction"; displayName = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION"; tooltip = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION_COMMENT"; defaultValue = """"""; };
+            class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
+            class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };
             class ambientCrowdLimit : Edit { property = "ALiVE_amb_civ_population_ambientCrowdLimit"; displayName = "$STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER_COMMENT"; defaultValue = """50"""; };
             class ambientCrowdFaction : Edit { property = "ALiVE_amb_civ_population_ambientCrowdFaction"; displayName = "$STR_ALIVE_CIV_POP_CROWD_FACTION"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_FACTION_COMMENT"; defaultValue = """"""; };
 
