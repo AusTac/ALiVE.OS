@@ -497,8 +497,38 @@ switch(_operation) do {
                         [_errorMessage,_error1,_error2,_factions] call ALIVE_fnc_dump;
                     };
 
-                    //Check if there are any profiles available
-                    _errorMessage = "There are are no groups for OPCOM faction(s) %1! %2";
+                    //Check if there are any profiles available.
+                    //
+                    //Enumerate factions offered by synced placement modules
+                    //so an OPCOM Factions vs placement-module faction mismatch
+                    //surfaces clearly in the RPT. Fires unconditionally (not
+                    //debug-gated) because this is the commonest OPCOM-init
+                    //misconfiguration: mission-maker picks faction X in OPCOM
+                    //but the synced Mil Placement was left on its OPF_F
+                    //default, so there are zero profiles for X and OPCOM
+                    //silently refuses to run.
+                    private _availableFactions = [];
+                    {
+                        if ((typeOf _x) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom","ALiVE_mil_placement_spe"]) then {
+                            private _fac = _x getVariable ["faction", ""];
+                            if (_fac != "" && {!(_fac in _availableFactions)}) then {
+                                _availableFactions pushBack _fac;
+                            };
+                        };
+                    } forEach (synchronizedObjects _logic);
+
+                    private _unmatchedFactions = _factions select {!(_x in _availableFactions)};
+                    if (count _unmatchedFactions > 0) then {
+                        diag_log format [
+                            "ALiVE OPCOM init MISMATCH: AI Commander '%1' has Factions [%2] but synced placement modules only provide factions [%3]. Unmatched: [%4]. Fix: either change the OPCOM Factions multi-select to match a placement module's faction, or add / sync a Mil Placement (or Mil Placement (Civ Obj)) module with the missing faction to this OPCOM.",
+                            _customName,
+                            _factions joinString ", ",
+                            _availableFactions joinString ", ",
+                            _unmatchedFactions joinString ", "
+                        ];
+                    };
+
+                    _errorMessage = "There are no groups for OPCOM faction(s) %1! %2";
                     _error1 = _factions;
                     _error2 = "Please check you chose the correct faction(s), and that factions have groups defined in the ArmA 3 default categories infantry, motorized, mechanized, armored, air, sea!";
                     private _profiles_count = 0;
