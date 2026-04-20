@@ -3,6 +3,20 @@
 
 // Add a game logic which does nothing except requires the addon in the mission.
 
+// Forward declarations for engine-level UI control classes used as
+// inheritance targets by the ALiVE_FactionChoiceMulti / ALiVE_HiddenAttribute
+// custom attribute bases below. MUST live at top-level scope - declaring
+// them inside `class Cfg3DEN > class Attributes` creates shadow classes at
+// Cfg3DEN/Attributes/ctrl* that rapify then resolves above BI's global
+// ctrl* classes, breaking BI attribute classes (Type, EditCode, ...) whose
+// Controls/Title sub-controls inherit from ctrlStatic. Symptom was:
+//   "No entry bin\config.bin/Cfg3DEN/Attributes/Type/Controls/Title.type"
+//   (and matching .idc / .y / .colorText / .font / .sizeEx / .text)
+// cascading across every BI attribute that chains through ctrlStatic.
+class ctrlControlsGroupNoScrollbars;
+class ctrlListBox;
+class ctrlStatic;
+
 class CfgFactionClasses {
     class Alive {
         displayName = "$STR_ALIVE_MODULE";
@@ -49,14 +63,12 @@ class Cfg3DEN
 
         class Combo; // Forward declaration of BI Combo attribute control
 
-        // Forward declarations for vanilla A3 control classes used by
-        // the ALiVE_FactionChoiceMulti / ALiVE_HiddenAttribute custom
-        // attributes below. These are top-level engine controls, not
-        // Cfg3DEN attribute bases - a forward decl is all rapify needs
-        // to accept them as inheritance targets.
-        class ctrlControlsGroupNoScrollbars;
-        class ctrlListBox;
-        class ctrlStatic;
+        // ctrlControlsGroupNoScrollbars / ctrlListBox / ctrlStatic forward
+        // declarations live at top-of-file (outside class Cfg3DEN), not
+        // here - see the rationale there. Attempting to forward-decl them
+        // inside class Attributes shadows BI's global ctrl* classes and
+        // breaks BI attributes (Type, EditCode, ...) that chain through
+        // them. See fix in 2026-04-20 commit referencing this note.
 
         // ALiVE_FactionChoice family:
         //   Dynamic faction-selection Combo shared across placement-style
