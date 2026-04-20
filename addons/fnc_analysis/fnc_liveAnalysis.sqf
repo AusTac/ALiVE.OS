@@ -29,6 +29,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -558,8 +559,10 @@ switch(_operation) do {
                         };
                     };
 
-                    // create type marker
-                    _m = createMarker [format[MTEMPLATE, format["%1_type", _objectiveID]], _center];
+                    // create type marker - offset east so its text label
+                    // doesn't overlap the strategic cluster / opcom labels
+                    // that also render at _center (see ALiVE_fnc_debugMarkerOffset).
+                    _m = createMarker [format[MTEMPLATE, format["%1_type", _objectiveID]], ["analysis.live", _center] call ALiVE_fnc_debugMarkerOffset];
                     _m setMarkerShape "ICON";
                     _m setMarkerSize [0.5, 0.5];
                     _m setMarkerType _icon;

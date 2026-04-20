@@ -34,6 +34,7 @@ See Also:
 
 Author:
 Wolffy.au
+Jman
 
 Peer reviewed:
 nil
@@ -93,7 +94,10 @@ _createMarkers = {
         _priority = [_logic, "priority"] call MAINCLASS;
         _type = [_logic, "type"] call MAINCLASS;
         _id = [_logic, "clusterID", ""] call ALIVE_fnc_hashGet;
-        _m = createMarker [format[MTEMPLATE, _random, count _markers], _center];
+        // Anchor slot in the shared debug-marker offset registry -
+        // other emitters (mil_opcom, fnc_analysis) fan out around the
+        // cluster centre so their labels don't overlap this one.
+        _m = createMarker [format[MTEMPLATE, _random, count _markers], ["strategic", _center] call ALiVE_fnc_debugMarkerOffset];
         _m setMarkerShape "Icon";
         _m setMarkerSize [0.75, 0.75];
         _m setMarkerType "mil_dot";

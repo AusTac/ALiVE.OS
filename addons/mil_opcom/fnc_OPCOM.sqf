@@ -1394,7 +1394,7 @@ switch(_operation) do {
                         _center = [_x,"center"] call ALiVE_fnc_HashGet;
                         _id = [_x,"objectiveID"] call ALiVE_fnc_HashGet;
 
-                        [format[MTEMPLATE, _id], _center,"ICON", [0.5,0.5],_color,format["%1 #%2",_side,_foreachIndex],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
+                        [format[MTEMPLATE, _id], ["opcom", _center] call ALiVE_fnc_debugMarkerOffset, "ICON", [0.5,0.5],_color,format["%1 #%2",_side,_foreachIndex],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
                     } foreach _objectives;
                 };
 
@@ -2720,7 +2720,7 @@ switch(_operation) do {
                                 default {"COLORYELLOW"};
                             };
 
-                            [format[MTEMPLATE, _id], _pos,"ICON", [0.5,0.5],_color,format["%1 #%2",_side,_id],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
+                            [format[MTEMPLATE, _id], ["opcom", _pos] call ALiVE_fnc_debugMarkerOffset, "ICON", [0.5,0.5],_color,format["%1 #%2",_side,_id],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
                         };
                     };
 

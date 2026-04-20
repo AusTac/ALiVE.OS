@@ -1390,6 +1390,13 @@ class createTraceGrid
 	RECOMPILE;
 };
 
+class debugMarkerOffset
+{
+	file = "\x\alive\addons\x_lib\functions\markers\fnc_debugMarkerOffset.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class deleteLink
 {
 	file = "\x\alive\addons\x_lib\functions\markers\fnc_deleteLink.sqf";
