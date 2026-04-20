@@ -38,37 +38,6 @@ class Cfg3DEN
             };
         };
 
-        // Hidden attribute control - renders zero UI (h = 0, single
-        // child Title control collapsed to zero dimensions with empty
-        // text). Used by legacy attributes that need to round-trip
-        // SQM data through their `expression` without surfacing in
-        // the Eden attribute panel - notably the pre-Phase-4
-        // mil_opcom faction1-4 single-faction slots, which the
-        // multi-select factionsList control supersedes but whose
-        // saved data old missions still depend on.
-        //
-        // Cannot inherit from Default and just set h=0 because rapify
-        // then can't find a control to render and emits cascading
-        // "No entry .type / .idc / .style / ..." warnings. The
-        // empty-but-present Controls block + zero-dimensioned Title
-        // child gives rapify something to bind to without surfacing
-        // anything visible.
-        class ALiVE_HiddenAttribute: TitleWide
-        {
-            h = 0;
-            class Controls: Controls
-            {
-                class Title: Title
-                {
-                    x = 0;
-                    y = 0;
-                    w = 0;
-                    h = 0;
-                    text = "";
-                };
-            };
-        };
-
         class EditMulti3; // Forward declaration of native A3 multiline edit control
 
         // Multiline SQF code input — used for onEachSpawn hook fields across all placement modules.
@@ -308,11 +277,6 @@ class CfgVehicles {
             class ALiVE_ModuleSubTitle : Default
             {
                 control = "ALiVE_ModuleSubTitle";
-                defaultValue = "''";
-            };
-            class ALiVE_HiddenAttribute : Default
-            {
-                control = "ALiVE_HiddenAttribute";
                 defaultValue = "''";
             };
             class ALiVE_EditMulti3 : Default

@@ -133,16 +133,24 @@ switch(_operation) do {
                     _type = _logic getvariable ["controltype","invasion"];
                     _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
                     _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
-                    // Phase 4: four faction-source slots, all unioned below.
-                    //   factionsList    : multi-select listbox (primary new UX)
-                    //   factions        : Edit field (manual override + old missions' data slot)
-                    //   faction1-4      : hidden legacy attributes (round-trip SQM data)
-                    private _factionsList = [_logic, "convert", _logic getvariable ["factionsList",[]]] call ALiVE_fnc_OPCOM;
-                    _factions             = [_logic, "convert", _logic getvariable ["factions",[]]]     call ALiVE_fnc_OPCOM;
-                    _faction1 = _logic getvariable ["faction1",""];
-                    _faction2 = _logic getvariable ["faction2",""];
-                    _faction3 = _logic getvariable ["faction3",""];
-                    _faction4 = _logic getvariable ["faction4",""];
+                    // Phase 4: two faction-source slots, unioned below.
+                    //   factions       : multi-select listbox (primary UX,
+                    //                    uses ORIGINAL pre-Phase-4 property
+                    //                    so old missions whose `factions`
+                    //                    Edit held CSV / SQF-array data
+                    //                    load cleanly via the multi-select
+                    //                    Load handler's backward-compat
+                    //                    parser).
+                    //   factionsManual : Edit field (manual override for
+                    //                    unloaded mod factions, NEW
+                    //                    attribute + NEW property).
+                    //
+                    // The pre-Phase-4 faction1-faction4 attributes are
+                    // removed; missions saved with values in those slots
+                    // lose them on first re-save. Mission-makers re-pick
+                    // their factions in the multi-select.
+                    _factions               = [_logic, "convert", _logic getvariable ["factions",[]]]       call ALiVE_fnc_OPCOM;
+                    private _factionsManual = [_logic, "convert", _logic getvariable ["factionsManual",[]]] call ALiVE_fnc_OPCOM;
                     _simultanObjectives = parseNumber str (_logic getvariable ["simultanObjectives",10]);
                     _minAgents = parseNumber str (_logic getvariable ["minAgents",2]);
                     _asymForceLimit = floor (parseNumber str (_logic getvariable ["asymForceLimit",-1]));
@@ -173,21 +181,9 @@ switch(_operation) do {
                     //Get position
                     _position = getposATL _logic;
 
-                    //Collect factions from all four sources and union into _factions.
-                    //Order: _factionsList (multi-select) is taken as the primary
-                    //base; _factions (Edit field), then _faction1-4 (legacy hidden
-                    //slots) are merged in, deduplicating and filtering out the
-                    //"NONE" sentinel and empty strings (legacy slots default to
-                    //"" so absent ones are skipped).
-                    private _allFactionSources = [];
-                    {
-                        _allFactionSources append _x;
-                    } forEach [
-                        _factionsList,
-                        _factions,
-                        [_faction1, _faction2, _faction3, _faction4]
-                    ];
-
+                    //Union the two faction sources into _factions, dedup,
+                    //drop the "NONE" sentinel and empty strings.
+                    private _allFactionSources = _factions + _factionsManual;
                     _factions = [];
                     {
                         if (typeName _x == "STRING" && {_x != ""} && {_x != "NONE"} && {!(_x in _factions)}) then {
@@ -204,7 +200,7 @@ switch(_operation) do {
                     //to populate Factions.
                     if (count _factions == 0) then {
                         diag_log format [
-                            "ALiVE OPCOM init WARNING: AI Commander '%1' has no factions configured (multi-select Factions empty, manual Factions field empty, no legacy faction1-4 slots populated). Defaulting to ['BLU_F']. Pick at least one faction in the Factions section to silence this.",
+                            "ALiVE OPCOM init WARNING: AI Commander '%1' has no factions configured (Factions multi-select empty AND Factions manual override empty). Defaulting to ['BLU_F']. Pick at least one faction in the Factions multi-select to silence this.",
                             _customName
                         ];
                         _factions pushBack "BLU_F";

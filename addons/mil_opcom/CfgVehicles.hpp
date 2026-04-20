@@ -2,11 +2,11 @@ class CfgVehicles {
     class Logic;
     class Module_F : Logic
     {
-        class AttributesBase { class Edit; class Combo; class Default; class ModuleDescription; };
+        class AttributesBase { class Edit; class Combo; class ModuleDescription; };
     };
     class ModuleAliveBase : Module_F
     {
-        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; class ALiVE_HiddenAttribute; };
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
         class ModuleDescription;
     };
         class ADDON : ModuleAliveBase
@@ -126,90 +126,51 @@ class CfgVehicles {
 
                         // ---- Factions -------------------------------------------------------
                         // Phase 4 design:
-                        //   - `factionsList` (multi-select listbox, NEW
-                        //     attribute) is the primary UI: visual pick from
-                        //     currently-loaded factions, dynamic enumeration.
-                        //     Stored as SQF array literal STRING.
-                        //   - `factions` (Edit field, ORIGINAL pre-Phase-4
-                        //     attribute) is preserved unchanged for two roles:
-                        //     manual override for unloaded mod factions
-                        //     (authoring for someone else's modset), and as
-                        //     the data slot that old missions saved their
-                        //     faction list into. New missions can leave it
-                        //     empty.
-                        //   - `faction1` through `faction4` (zero-height
-                        //     hidden attributes) - kept defined so old SQMs
-                        //     that populated those slots still round-trip
-                        //     their data through the runtime. Render no UI.
-                        //   - Runtime in fnc_OPCOM.sqf unions all four
-                        //     sources, deduplicates, drops the "NONE"
-                        //     sentinel, defaults to ["BLU_F"] if everything
-                        //     is empty.
+                        //   - `factions` (multi-select listbox) is the primary
+                        //     UI. Inherits ALiVE_FactionChoiceMulti_Military
+                        //     directly - control class's Save handler writes
+                        //     to logic.factions, matching the attribute name.
+                        //     Multi-select Load handler accepts SQF array
+                        //     literal AND CSV AND single-faction string for
+                        //     backward compat, so old missions that used
+                        //     this slot as a free-text Edit (CSV / array)
+                        //     load cleanly into the visual ticked state.
+                        //   - `factionsManual` (Edit field, NEW attribute and
+                        //     property) is the manual override: type extra
+                        //     classnames here for mods not currently loaded
+                        //     (authoring for someone else's modset) or as a
+                        //     free-text supplement to the visual selection
+                        //     above. Combined with `factions` at runtime.
+                        //
+                        // Pre-Phase-4 mil_opcom had separate faction1-faction4
+                        // single-faction Combo dropdowns (each with hardcoded
+                        // 9-option lists). Those are removed - the multi-
+                        // select supersedes them. Missions saved with values
+                        // in those four slots will lose those values on first
+                        // re-save in this version (the SQM data still exists
+                        // but no attribute reads it). Mission-makers re-pick
+                        // their factions in the multi-select on first open.
                         //
                         // Multi-select UX hint: Ctrl+click toggles an
                         // individual row in/out of the selection.
                         // Shift+click range-selects. Plain click replaces
                         // the selection with just that one item.
                         class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_FACTIONS"; displayName = "FACTIONS"; };
-                        class factionsList
-                        {
-                                property     = "ALiVE_mil_opcom_factionsList";
-                                displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip      = "Primary input. Pick one or more factions for the AI Commander to control - dynamically populated from currently-loaded faction mods. Ctrl+click to toggle individual items, Shift+click to range-select, plain click to replace selection. The runtime unions this with the manual Factions override field below.";
-                                control      = "ALiVE_FactionChoiceMulti_Military";
-                                typeName     = "STRING";
-                                expression   = "_this setVariable ['factionsList', _value];";
-                                defaultValue = """[]""";
-                                // Override the multi-select control's default
-                                // 'factions' varName - this attribute is named
-                                // `factionsList` so the Load/Save handlers must
-                                // address that variable on the logic. The
-                                // original `factions` property is preserved
-                                // below as the manual-override Edit field
-                                // (original pre-Phase-4 use case).
-                                attributeLoad = "[_this, [0,1,2], 'factionsList'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
-                                attributeSave = "[_this, 'factionsList'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
-                        };
-                        class factions : Edit
+                        class factions
                         {
                                 property     = "ALiVE_mil_opcom_factions";
                                 displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip      = "Optional manual override / supplement. Type faction classnames here for mods not currently loaded but expected at mission time, or as a free-text override. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Old missions that used this field as their primary input continue to work - the runtime unions this with the multi-select above.";
-                                defaultValue = """""";
-                        };
-                        // Hidden legacy faction slots - render nothing in the
-                        // attribute panel (h=0, no `control` property) but the
-                        // `expression` still applies SQM-saved values to the
-                        // logic at mission start. Old missions that picked
-                        // factions through these four slots continue to work
-                        // because fnc_OPCOM.sqf still reads them as one of
-                        // the four faction sources it unions.
-                        class faction1 : ALiVE_HiddenAttribute
-                        {
-                                property     = "ALiVE_mil_opcom_faction1";
+                                tooltip      = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
+                                control      = "ALiVE_FactionChoiceMulti_Military";
                                 typeName     = "STRING";
-                                expression   = "_this setVariable ['faction1', _value];";
-                                defaultValue = """""";
+                                expression   = "_this setVariable ['factions', _value];";
+                                defaultValue = """[]""";
                         };
-                        class faction2 : ALiVE_HiddenAttribute
+                        class factionsManual : Edit
                         {
-                                property     = "ALiVE_mil_opcom_faction2";
-                                typeName     = "STRING";
-                                expression   = "_this setVariable ['faction2', _value];";
-                                defaultValue = """""";
-                        };
-                        class faction3 : ALiVE_HiddenAttribute
-                        {
-                                property     = "ALiVE_mil_opcom_faction3";
-                                typeName     = "STRING";
-                                expression   = "_this setVariable ['faction3', _value];";
-                                defaultValue = """""";
-                        };
-                        class faction4 : ALiVE_HiddenAttribute
-                        {
-                                property     = "ALiVE_mil_opcom_faction4";
-                                typeName     = "STRING";
-                                expression   = "_this setVariable ['faction4', _value];";
+                                property     = "ALiVE_mil_opcom_factionsManual";
+                                displayName  = "Factions (manual override)";
+                                tooltip      = "Optional. Type extra faction classnames here for mods not currently loaded but expected at mission time (e.g. when authoring for someone else's modset), or to supplement the visual selection above. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Combined (unioned) with the Factions multi-select at runtime.";
                                 defaultValue = """""";
                         };
 
