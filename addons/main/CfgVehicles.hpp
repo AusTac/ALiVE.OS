@@ -239,14 +239,27 @@ class Cfg3DEN
                     color[]                  = {1, 1, 1, 1};
                     colorText[]              = {1, 1, 1, 1};
                     colorBackground[]        = {0, 0, 0, 0.5};
-                    // Selection background matches Eden's window-title
-                    // orange-yellow for visual consistency with the
-                    // panel chrome. Black text for contrast on the
-                    // bright highlight.
+                    // Selection background follows the user's GUI
+                    // background colour (Options > Game > Layout >
+                    // Background colour) so the highlight always
+                    // matches the Eden window-title chrome whatever
+                    // the player has picked. Defaults preserve the
+                    // previous orange-yellow look for users who
+                    // haven't customised. Black text for contrast.
                     colorSelect[]            = {0, 0, 0, 1};
                     colorSelect2[]           = {0, 0, 0, 1};
-                    colorSelectBackground[]  = {1, 0.62, 0, 1};
-                    colorSelectBackground2[] = {1, 0.62, 0, 1};
+                    colorSelectBackground[]  = {
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_R',1])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_G',0.62])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_B',0])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_A',1])"
+                    };
+                    colorSelectBackground2[] = {
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_R',1])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_G',0.62])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_B',0])",
+                        "(profilenamespace getvariable ['GUI_BCG_RGB_A',1])"
+                    };
                     colorDisabled[]          = {1, 1, 1, 0.25};
                     colorShadow[]            = {0, 0, 0, 0.5};
 
