@@ -146,6 +146,20 @@ class CfgVehicles {
                                     class LOW { name = "25%"; value = "0.25"; };
                                 };
                         };
+                        class customInfantryCount : Edit { property = "ALiVE_civ_placement_customInfantryCount"; displayName = "$STR_ALIVE_CP_CUSTOM_INFANTRY_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_INFANTRY_COUNT_COMMENT"; defaultValue = """"""; };
+                        class customMotorisedCount : Edit { property = "ALiVE_civ_placement_customMotorisedCount"; displayName = "$STR_ALIVE_CP_CUSTOM_MOTORISED_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_MOTORISED_COUNT_COMMENT"; defaultValue = """"""; };
+                        class customMechanisedCount : Edit { property = "ALiVE_civ_placement_customMechanisedCount"; displayName = "$STR_ALIVE_CP_CUSTOM_MECHANISED_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_MECHANISED_COUNT_COMMENT"; defaultValue = """"""; };
+                        class customArmourCount : Edit { property = "ALiVE_civ_placement_customArmourCount"; displayName = "$STR_ALIVE_CP_CUSTOM_ARMOUR_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_ARMOUR_COUNT_COMMENT"; defaultValue = """"""; };
+                        class customSpecOpsCount : Edit { property = "ALiVE_civ_placement_customSpecOpsCount"; displayName = "$STR_ALIVE_CP_CUSTOM_SPECOPS_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_SPECOPS_COUNT_COMMENT"; defaultValue = """"""; };
+                        // Cross-module attribute: read at runtime by the synced mil_opcom
+                        // (asymmetric mode) to override how many installations of each
+                        // type get seeded on this module's objectives. Lives here for
+                        // mission-maker convenience but isn't consumed by civ_placement
+                        // itself.
+                        class asymmetricInstallationCountOverrides : Edit { property = "ALiVE_civ_placement_asymmetricInstallationCountOverrides"; displayName = "$STR_ALIVE_CP_ASYM_INSTALLATION_COUNT_OVERRIDES"; tooltip = "$STR_ALIVE_CP_ASYM_INSTALLATION_COUNT_OVERRIDES_COMMENT"; defaultValue = """"""; };
+
+                        // ---- Ambient Presence -----------------------------------------------
+                        class HDR_AMBIENT : ALiVE_ModuleSubTitle { property = "ALiVE_civ_placement_HDR_AMBIENT"; displayName = "AMBIENT PRESENCE"; };
                         class roadblocks : Combo
                         {
                                 property = "ALiVE_civ_placement_roadblocks";
@@ -159,7 +173,7 @@ class CfgVehicles {
                                     class EXTREME { name = "Extreme"; value = "75"; };
                                     class HIGH { name = "High"; value = "50"; };
                                     class MEDIUM { name = "Medium"; value = "35"; };
-                                    class LOW { name = "low"; value = "15"; };
+                                    class LOW { name = "Low"; value = "15"; };
                                 };
                         };
                         class placeSeaPatrols : Combo
@@ -178,15 +192,6 @@ class CfgVehicles {
                                     class LOW { name = "Low"; value = 0.2; };
                                 };
                         };
-                        class customInfantryCount : Edit { property = "ALiVE_civ_placement_customInfantryCount"; displayName = "$STR_ALIVE_CP_CUSTOM_INFANTRY_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_INFANTRY_COUNT_COMMENT"; defaultValue = """"""; };
-                        class customMotorisedCount : Edit { property = "ALiVE_civ_placement_customMotorisedCount"; displayName = "$STR_ALIVE_CP_CUSTOM_MOTORISED_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_MOTORISED_COUNT_COMMENT"; defaultValue = """"""; };
-                        class customMechanisedCount : Edit { property = "ALiVE_civ_placement_customMechanisedCount"; displayName = "$STR_ALIVE_CP_CUSTOM_MECHANISED_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_MECHANISED_COUNT_COMMENT"; defaultValue = """"""; };
-                        class customArmourCount : Edit { property = "ALiVE_civ_placement_customArmourCount"; displayName = "$STR_ALIVE_CP_CUSTOM_ARMOUR_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_ARMOUR_COUNT_COMMENT"; defaultValue = """"""; };
-                        class customSpecOpsCount : Edit { property = "ALiVE_civ_placement_customSpecOpsCount"; displayName = "$STR_ALIVE_CP_CUSTOM_SPECOPS_COUNT"; tooltip = "$STR_ALIVE_CP_CUSTOM_SPECOPS_COUNT_COMMENT"; defaultValue = """"""; };
-                        class asymmetricInstallationCountOverrides : Edit { property = "ALiVE_civ_placement_asymmetricInstallationCountOverrides"; displayName = "$STR_ALIVE_CP_ASYM_INSTALLATION_COUNT_OVERRIDES"; tooltip = "$STR_ALIVE_CP_ASYM_INSTALLATION_COUNT_OVERRIDES_COMMENT"; defaultValue = """"""; };
-
-                        // ---- Ambient Presence -----------------------------------------------
-                        class HDR_AMBIENT : ALiVE_ModuleSubTitle { property = "ALiVE_civ_placement_HDR_AMBIENT"; displayName = "AMBIENT PRESENCE"; };
                         class guardProbability : Combo
                         {
                                 property = "ALiVE_civ_placement_guardProbability";
