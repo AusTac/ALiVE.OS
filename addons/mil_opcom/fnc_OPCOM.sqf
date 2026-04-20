@@ -406,6 +406,24 @@ switch(_operation) do {
 
                                 _obj = [_mod,"objectives",objNull,[]] call ALIVE_fnc_OOsimpleOperation;
 
+                                // Stamp objectiveType per source-module class so downstream
+                                // marker / C2ISTAR / tour consumers can differentiate which
+                                // placement module each objective came from. Previously all
+                                // five classes defaulted to "MIL" (via the HashGet default at
+                                // the assignment sites), giving mission-makers no way to tell
+                                // OPCOM-held objectives apart on the map. Issue #809.
+                                private _modLabel = switch (typeof _mod) do {
+                                    case "ALiVE_mil_placement":        {"MIL"};
+                                    case "ALiVE_mil_placement_custom": {"CUS"};
+                                    case "ALiVE_mil_placement_spe":    {"GAR"};
+                                    case "ALiVE_civ_placement":        {"CIV"};
+                                    case "ALiVE_civ_placement_custom": {"CCU"};
+                                    default {"MIL"};
+                                };
+                                {
+                                    [_x, "objectiveType", _modLabel] call ALiVE_fnc_HashSet;
+                                } forEach _obj;
+
                                 if (_type == "asymmetric" && {(typeof _mod) in ["ALiVE_civ_placement","ALiVE_civ_placement_custom"]}) then {
                                     private _asymmetricInstallationCountOverrides = [_handler, "parseAsymmetricInstallationCountOverrides", _mod getVariable ["asymmetricInstallationCountOverrides", ""]] call ALiVE_fnc_OPCOM;
 
