@@ -6,7 +6,7 @@ class CfgVehicles {
     };
     class ModuleAliveBase : Module_F
     {
-        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; class ALiVE_HiddenAttribute; };
         class ModuleDescription;
     };
         class ADDON : ModuleAliveBase
@@ -160,7 +160,7 @@ class CfgVehicles {
                         {
                                 property     = "ALiVE_mil_opcom_factions";
                                 displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip      = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
+                                tooltip      = "Pick one or more factions for this AI Commander to control.\n\nLeft-click = replace selection with just that item.\nCtrl + Left-click = toggle individual item (multi-select).\nShift + Left-click = select range.\n\nList is auto-populated from currently-loaded faction mods. Selections here are combined with the manual override field below at runtime.";
                                 control      = "ALiVE_FactionChoiceMulti_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['factions', _value];";
@@ -171,6 +171,40 @@ class CfgVehicles {
                                 property     = "ALiVE_mil_opcom_factionsManual";
                                 displayName  = "Factions (manual override)";
                                 tooltip      = "Optional. Type extra faction classnames here for mods not currently loaded but expected at mission time (e.g. when authoring for someone else's modset), or to supplement the visual selection above. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Combined (unioned) with the Factions multi-select at runtime.";
+                                defaultValue = """""";
+                        };
+                        // Hidden legacy slots - render no UI but apply
+                        // SQM-saved values via expression at module init
+                        // so missions that picked factions through the
+                        // pre-Phase-4 single-faction dropdowns continue
+                        // to work. Runtime in fnc_OPCOM.sqf reads them
+                        // alongside the multi-select and manual override.
+                        class faction1 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction1";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction1', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction2 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction2";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction2', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction3 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction3";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction3', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction4 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction4";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction4', _value];";
                                 defaultValue = """""";
                         };
 

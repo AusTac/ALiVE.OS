@@ -49,16 +49,14 @@ class Cfg3DEN
 
         class Combo; // Forward declaration of BI Combo attribute control
 
-        // Forward declarations needed by ALiVE_FactionChoiceMulti's
-        // nested-class inheritance pattern (`class Controls: Controls`,
-        // `class Title: Title`, `class Value: Value`). Without these
-        // forward decls, rapify fails the build with "missing
-        // inheritence class(es)" because it can't resolve the right-
-        // hand-side parent names when they're nested inside Combo
-        // rather than top-level in this scope.
-        class Controls;
-        class Title;
-        class Value;
+        // Forward declarations for vanilla A3 control classes used by
+        // the ALiVE_FactionChoiceMulti / ALiVE_HiddenAttribute custom
+        // attributes below. These are top-level engine controls, not
+        // Cfg3DEN attribute bases - a forward decl is all rapify needs
+        // to accept them as inheritance targets.
+        class ctrlControlsGroupNoScrollbars;
+        class ctrlListBox;
+        class ctrlStatic;
 
         // ALiVE_FactionChoice family:
         //   Dynamic faction-selection Combo shared across placement-style
@@ -140,39 +138,139 @@ class Cfg3DEN
         //   Modules pick the variant matching their semantics. mil_opcom
         //   uses _Military (an OPCOM faction list shouldn't include civilians).
 
-        // Base class for the three variants. Carries the shared listbox-
-        // shape override (Combo's inner Value -> CT_LISTBOX with multi-
-        // select style) AND the ListScrollBar sub-class that the engine
-        // requires once the inner control switches to CT_LISTBOX (a
-        // "No entry … Value.ListScrollBar" warning fires otherwise -
-        // Combo's Value class doesn't ship a scrollbar config because
-        // CT_COMBO doesn't need one).
+        // Multi-select faction listbox - tall Cfg3DEN attribute that
+        // renders as a multi-row listbox with Ctrl+click toggle and
+        // shift+click range-select semantics (LB_MULTI style).
         //
-        // The three variants below differ only in attributeLoad's side-
-        // allowlist parameter; they inherit everything else from _Base.
-        // Don't use _Base directly as a control - the variants are the
-        // entry points modules reference.
-        class ALiVE_FactionChoiceMulti_Base: Combo {
-            // 5 grid units for the title + 15 for the listbox = 20 total.
-            h = "20 * GUI_GRID_H";
+        // Pattern: inherit ctrlControlsGroupNoScrollbars (NOT BI's
+        // Combo). Attribute panel slot height is taken from the
+        // outer h here; explicit child positions inside `controls`
+        // (note lowercase, NOT Controls) lay out the listbox. ACE3
+        // Arsenal's Cfg3DEN attribute uses this same pattern - the
+        // only known way to ship a tall multi-row Cfg3DEN attribute,
+        // since Combo / Edit / Title bases enforce a single-row slot
+        // and silently ignore any h override.
+        //
+        // The three variants below differ only in attributeLoad's
+        // side-allowlist parameter; they inherit everything else
+        // from _Base.
+        class ALiVE_FactionChoiceMulti_Base: ctrlControlsGroupNoScrollbars {
+            // Forward decl of ctrlControlsGroupNoScrollbars doesn't
+            // pull through the body's default properties (type, style,
+            // colorBackground, etc), so they need to be set explicitly
+            // here. type = 15 = CT_CONTROLS_GROUP_NO_SCROLLBARS is the
+            // critical one - without it, Eden treats this as a bare
+            // CT_STATIC and never descends into `class controls`,
+            // causing the inner listbox to not exist (Load handler
+            // reports "listbox control (IDC 100) not found").
+            //
+            // Layout: Eden does NOT auto-render the per-attribute
+            // displayName as a row label for custom controlsGroup
+            // attributes (only for simple Combo / Edit / Checkbox
+            // bases), so we render the field label ourselves via a
+            // Title sub-control positioned in the row's left column.
+            // The listbox sits in the right (value) column to align
+            // with where standard Eden value controls would.
+            type  = 15;
+            style = 0;
+            idc   = -1;
+            x = 0;
+            y = 0;
+            // Outer width spans the full standard Eden attribute row
+            // so children can align with where other attributes' labels
+            // and value controls sit.
+            // Outer height includes 5 grid units of bottom padding so
+            // the next attribute below has breathing room without an
+            // excessive gap.
+            w = "130 * (pixelW * pixelGrid * 0.5)";
+            h = "55 * (pixelH * pixelGrid * 0.5)";
+            colorBackground[] = {0, 0, 0, 0};
+            colorText[]       = {1, 1, 1, 1};
+            text   = "";
+            font   = "RobotoCondensed";
+            sizeEx = "pixelH * pixelGrid * 2.2";
 
-            class Controls: Controls {
-                class Title: Title {};
-                class Value: Value {
-                    // Override Combo's CT_COMBO (4) -> CT_LISTBOX (5).
-                    // Combine ST_FRAME (16) with LB_MULTI (0x20 = 32) so
-                    // the listbox renders bordered with multi-select
-                    // semantics (Ctrl+click toggles individual items,
-                    // Shift+click range-selects).
-                    type = 5;
-                    style = 16 + 0x20;
-                    h = "15 * GUI_GRID_H";
-                    rowHeight = "1 * GUI_GRID_H";
+            // controlsGroup engine expects VScrollbar / HScrollbar
+            // sub-classes even on the "NoScrollbars" variant - empty
+            // blocks silence the RPT warnings.
+            class VScrollbar {};
+            class HScrollbar {};
 
-                    // ListBox engine requires this sub-class for the
-                    // scrollbar; missing entry triggers an RPT warning
-                    // even though the listbox renders. Vanilla A3 paths
-                    // for the scrollbar arrow/thumb/border textures.
+            class controls {
+                // Title (field label) - sits in the left column of
+                // the row, vertically centred against the listbox to
+                // its right. Right-aligned text matches Eden's
+                // convention for attribute labels (style = 1 = ST_RIGHT).
+                // Tooltip on hover with explicit colors so it's
+                // legible (Eden's default attribute tooltip is too
+                // transparent).
+                class Title: ctrlStatic {
+                    idc      = 101;
+                    type     = 0;
+                    style    = 1;
+                    x        = 0;
+                    y        = 0;
+                    w        = "48 * (pixelW * pixelGrid * 0.5)";
+                    h        = "5 * (pixelH * pixelGrid * 0.5)";
+                    colorBackground[] = {0, 0, 0, 0};
+                    colorText[]       = {1, 1, 1, 0.9};
+                    text     = "Override Factions:";
+                    font     = "RobotoCondensed";
+                    sizeEx   = "pixelH * pixelGrid * 2.0";
+                    tooltip  = "Pick one or more factions for this AI Commander to control. Left-click = replace selection. Ctrl+click = toggle individual item (multi-select). Shift+click = select range.";
+                    tooltipColorShade[] = {0, 0, 0, 1};
+                    tooltipColorText[]  = {1, 1, 1, 1};
+                    tooltipColorBox[]   = {0, 0, 0, 1};
+                };
+
+                class List: ctrlListBox {
+                    idc = 100;
+                    type = 5;            // CT_LISTBOX
+                    style = 16 + 0x20;   // ST_FRAME + LB_MULTI
+                    // Right column: aligns flush with the standard
+                    // Eden value column (where Combo / Edit inputs on
+                    // adjacent rows begin), fills to the
+                    // controlsGroup's right edge.
+                    x = "48 * (pixelW * pixelGrid * 0.5)";
+                    y = 0;
+                    w = "82 * (pixelW * pixelGrid * 0.5)";
+                    h = "50 * (pixelH * pixelGrid * 0.5)";
+
+                    color[]                  = {1, 1, 1, 1};
+                    colorText[]              = {1, 1, 1, 1};
+                    colorBackground[]        = {0, 0, 0, 0.5};
+                    // Selection background matches Eden's window-title
+                    // orange-yellow for visual consistency with the
+                    // panel chrome. Black text for contrast on the
+                    // bright highlight.
+                    colorSelect[]            = {0, 0, 0, 1};
+                    colorSelect2[]           = {0, 0, 0, 1};
+                    colorSelectBackground[]  = {1, 0.62, 0, 1};
+                    colorSelectBackground2[] = {1, 0.62, 0, 1};
+                    colorDisabled[]          = {1, 1, 1, 0.25};
+                    colorShadow[]            = {0, 0, 0, 0.5};
+
+                    // Solid black tooltip background + matching black
+                    // border for legibility (Eden's default attribute
+                    // tooltip is too transparent; yellow border was
+                    // visually distracting).
+                    tooltipColorShade[] = {0, 0, 0, 1};
+                    tooltipColorText[]  = {1, 1, 1, 1};
+                    tooltipColorBox[]   = {0, 0, 0, 1};
+
+                    // Listbox text and row height matched up to other
+                    // Eden dialog controls without being so small the
+                    // selected items appear shrunk.
+                    font     = "RobotoCondensed";
+                    sizeEx   = "pixelH * pixelGrid * 2.0";
+                    rowHeight = "pixelH * pixelGrid * 2.4";
+                    period   = 1.2;
+
+                    // ListBox engine expects these even when unused -
+                    // empty defaults silence RPT warnings.
+                    soundSelect[] = {"", 0, 0};
+                    maxHistoryDelay = 1.0;
+
                     class ListScrollBar {
                         color[]         = {1, 1, 1, 0.6};
                         colorActive[]   = {1, 1, 1, 1};
@@ -199,6 +297,38 @@ class Cfg3DEN
         class ALiVE_FactionChoiceMulti_Civilian: ALiVE_FactionChoiceMulti_Base {
             attributeLoad = "[_this, [3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
+        // Hidden attribute - renders zero UI (h = 0, empty controls).
+        // Used by legacy attributes that need to round-trip SQM data
+        // through their `expression` without surfacing in the panel.
+        // Same ctrlControlsGroupNoScrollbars substrate + same explicit
+        // engine-property defaults as ALiVE_FactionChoiceMulti_Base
+        // above (forward decl doesn't pull them through).
+        class ALiVE_HiddenAttribute: ctrlControlsGroupNoScrollbars {
+            type  = 15;
+            style = 0;
+            idc   = -1;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorBackground[] = {0, 0, 0, 0};
+            colorText[]       = {1, 1, 1, 1};
+            text   = "";
+            font   = "RobotoCondensed";
+            sizeEx = "pixelH * pixelGrid * 1.6";
+            // Eden expects attributeLoad / attributeSave on every
+            // attribute control; hidden attributes do nothing for
+            // either (the SQM-saved value is applied via the per-
+            // attribute `expression` at module init, no UI to
+            // populate or read back). Empty handlers silence the
+            // RPT warnings.
+            attributeLoad = "";
+            attributeSave = "";
+            class VScrollbar {};
+            class HScrollbar {};
+            class controls {};
         };
     };
     // Configuration of all objects
@@ -277,6 +407,11 @@ class CfgVehicles {
             class ALiVE_ModuleSubTitle : Default
             {
                 control = "ALiVE_ModuleSubTitle";
+                defaultValue = "''";
+            };
+            class ALiVE_HiddenAttribute : Default
+            {
+                control = "ALiVE_HiddenAttribute";
                 defaultValue = "''";
             };
             class ALiVE_EditMulti3 : Default
