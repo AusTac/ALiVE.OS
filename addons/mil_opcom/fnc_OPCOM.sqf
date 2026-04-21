@@ -178,6 +178,14 @@ switch(_operation) do {
                     _persistent = ((_logic getvariable ["persistent","false"]) == "true");
                     _reinforcements = call compile (_logic getvariable ["reinforcements","0.9"]);
                     _roadblocks = (parseNumber str (_logic getvariable ["roadblocks",1])) > 0;
+                    // #697 Phase 2.1: AI-driven friendly destroy of enemy asymmetric
+                    // installations. Read the mode string here; the behavioural
+                    // implementation lands in follow-up commits (proximity first,
+                    // then objective-capture). Valid values: "off", "proximity",
+                    // "capture", "both". Default "proximity" preserves the nicer
+                    // UX the issue asked for without forcing "both" on mission-
+                    // makers upgrading.
+                    _friendlyDisableMode = _logic getvariable ["asym_friendlyDisableInstallations","proximity"];
 
                     //Get position
                     _position = getposATL _logic;
@@ -306,6 +314,7 @@ switch(_operation) do {
                     [_handler, "controltype",_type] call ALiVE_fnc_HashSet;
                     [_handler, "intelchance",_intelChance] call ALiVE_fnc_HashSet;
                     [_handler, "roadblocks",_roadblocks] call ALiVE_fnc_HashSet;
+                    [_handler, "friendlyDisableMode",_friendlyDisableMode] call ALiVE_fnc_HashSet;
 
                     [_handler,"pendingorders", []] call ALiVE_fnc_HashSet;
 

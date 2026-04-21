@@ -220,6 +220,21 @@ class CfgVehicles {
                                     class often { name = "Often"; value = 10; };
                                 };
                         };
+                        class asym_friendlyDisableInstallations : Combo
+                        {
+                                property = "ALiVE_mil_opcom_asym_friendlyDisableInstallations";
+                                displayName = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE";
+                                tooltip = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_COMMENT";
+                                typeName = "STRING";
+                                defaultValue = """proximity""";
+                                class Values
+                                {
+                                    class off       { name = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_OFF";       value = "off"; };
+                                    class proximity { name = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_PROXIMITY"; value = "proximity"; default = 1; };
+                                    class capture   { name = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_CAPTURE";   value = "capture"; };
+                                    class both      { name = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_BOTH";      value = "both"; };
+                                };
+                        };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";

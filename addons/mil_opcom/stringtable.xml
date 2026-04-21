@@ -164,6 +164,30 @@
     <Portuguese>Apenas no modo assimétrico. Porcentagem de chance dos soldados insurgentes mortos por jogadores deixarem itens de inteligência que, ao serem lidos, revelam as posições de instalações próximas no mapa. Nenhuma = 0%, Raramente = 5%, Frequentemente = 10%.</Portuguese>
     <Russian>Только в асимметричном режиме. Процент вероятности того, что убитые игроками повстанцы уронят предметы разведданных, которые при прочтении раскрывают на карте позиции ближайших установок. Нет = 0%, Изредка = 5%, Часто = 10%.</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE">
+    <English>Friendly AI disables installations:</English>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_COMMENT">
+    <English>Asymmetric mode only. Controls whether FRIENDLY (non-insurgent) AI forces can disable this insurgent OPCOM's installations (IED factories, Recruitment HQs, Weapons depots) without a player manually holding the interaction action.\n\n• Off — legacy behaviour, only players can disable via hold-action.\n• Proximity — a friendly unit dwelling within ~150m of an enemy installation for ~30s disables it.\n• Capture — installations at an objective are disabled the moment a friendly OPCOM captures that objective.\n• Both — proximity OR capture, whichever fires first.</English>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_OFF">
+    <English>Off</English>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_PROXIMITY">
+    <English>Proximity</English>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_CAPTURE">
+    <English>Objective Capture</English>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_BOTH">
+    <English>Both</English>
+</Key>
 <Key ID="STR_ALIVE_OPCOM_ROADBLOCKS">
     <English>Roadblocks:</English>
     <Chinese>路障：</Chinese>
