@@ -64,7 +64,15 @@ case "init": {
             _logic setVariable ["super", SUPERCLASS];
             _logic setVariable ["class", ALIVE_fnc_weather];
             _logic setVariable ["init", true, true];
-            INITIAL_WEATHER = _logic getvariable ["weather_initial_setting",4];
+            // weather_initial_setting is a Combo attribute without a
+            // typeName = "NUMBER" hint in CfgVehicles, so Eden saves the
+            // selected value to SQM as a STRING ("0".."6"). Downstream
+            // comparisons (INITIAL_WEATHER == 4, switch cases) need a
+            // Number and throw "Generic error in expression" on a
+            // String. Normalise to Number at the read site.
+            private _iw = _logic getvariable ["weather_initial_setting",4];
+            if (_iw isEqualType "") then { _iw = parseNumber _iw };
+            INITIAL_WEATHER = _iw;
         } else {
             // if client clean up client side game logics as they will transfer
             // to servers on client disconnect
@@ -84,7 +92,11 @@ case "init": {
     WEATHER_CYCLE_DELAY = _logic getvariable ["weather_cycle_delay_setting",1800];
     WEATHER_CYCLE_VARIANCE = _logic getvariable ["weather_cycle_variance_setting",0.2];
     WEATHER_CYCLE_REAL_LOCATION = _logic getvariable ["weather_real_location_setting",""];
-    WEATHER_OVERRIDE = _logic getvariable ["weather_override_setting",0];
+    // weather_override_setting: same Combo-stores-as-String issue as
+    // weather_initial_setting above; see rationale there.
+    private _wo = _logic getvariable ["weather_override_setting",0];
+    if (_wo isEqualType "") then { _wo = parseNumber _wo };
+    WEATHER_OVERRIDE = _wo;
 
     Waituntil {!(isnil "WEATHER_DEBUG")};
     [] call ALIVE_fnc_weatherServerInit;
