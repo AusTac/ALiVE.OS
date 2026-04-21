@@ -132,7 +132,7 @@ private _audio = NEO_radioLogic getvariable ["combatsupport_audio",true];
 private _artyfsm = "\x\alive\addons\sup_combatSupport\scripts\NEO_radio\fsms\alivearty.fsm";
 private _fsmHandle = [_units, _grp, _callsign, _pos, _roundsAvailable, _canMove, _type, leader _grp, _code, _audio, _side] execFSM _artyfsm;
 
-private _artyAsset = NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", _side];
+private _artyAsset = NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", _side], []];
 _artyAsset pushback ([leader _grp, _grp, _callsign, _units, _roundsAvailable, _fsmHandle]);
 
 NEO_radioLogic setVariable [format ["NEO_radioArtyArray_%1", _side], _artyAsset, true];

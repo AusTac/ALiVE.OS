@@ -34,6 +34,7 @@ See Also:
 
 Author:
 NEO, adapted by Gunny for ALiVE
+Jman
 ---------------------------------------------------------------------------- */
 
 #define SUPERCLASS nil
@@ -262,6 +263,15 @@ switch(_operation) do {
                                     _slingloading = ((synchronizedObjects _logic) select _i) getvariable ["transport_slingloading",true];
                                     _containers = ((synchronizedObjects _logic) select _i) getvariable ["transport_containers",0];
 
+                                    // Eden Combo attribute round-trips the Yes/No choice as a
+                                    // STRING in SQM ("true"/"false"). getVariable returns that
+                                    // string verbatim, and the `!` below throws
+                                    // "Type String, expected Bool" on load. Normalise to Bool
+                                    // once here so downstream consumers (_tasks switch below
+                                    // and the transport FSM at line ~473) receive a clean Bool.
+                                    if (_slingloading isEqualType "") then {
+                                        _slingloading = (_slingloading == "true");
+                                    };
 
                                     LOG(_slingloading);
 
@@ -472,7 +482,7 @@ switch(_operation) do {
 
                             private _fsmHandle = [_veh, _grp, _callsign, _pos, _dir, _height, _type, CS_RESPAWN,_code, _audio, _slingloading] execFSM _transportfsm;
 
-                            _t = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", _side];
+                            _t = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", _side], []];
                             _t pushback ([_veh, _grp, _callsign, _fsmHandle]);
 
                             NEO_radioLogic setVariable [format ["NEO_radioTrasportArray_%1", _side], _t,true];
@@ -573,7 +583,7 @@ switch(_operation) do {
                             //FSM
                             private _fsmHandle = [_veh, _grp, _callsign, _pos, _airport, _dir, _height, _type, CS_RESPAWN, _code, _audio] execFSM _casfsm;
 
-                            _c = NEO_radioLogic getVariable format ["NEO_radioCasArray_%1", _side];
+                            _c = NEO_radioLogic getVariable [format ["NEO_radioCasArray_%1", _side], []];
                             _c pushback ([_veh, _grp, _callsign, _fsmHandle]);
 
                             NEO_radioLogic setVariable [format ["NEO_radioCasArray_%1", _side], _c,true];
@@ -817,7 +827,7 @@ switch(_operation) do {
                             //FSM
                             private _fsmHandle = [_units, _grp, _callsign, _pos, _roundsAvailable, _canMove, _class, leader _grp, _code, _audio, _side] execFSM "\x\alive\addons\sup_combatSupport\scripts\NEO_radio\fsms\alivearty.fsm";
 
-                            _a = NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", _side];
+                            _a = NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", _side], []];
                             _a pushback ([leader _grp, _grp, _callsign, _units, _roundsAvailable, _fsmHandle]);
 
                             NEO_radioLogic setVariable [format ["NEO_radioArtyArray_%1", _side], _a, true];
@@ -932,7 +942,7 @@ switch(_operation) do {
                                             _vehicle = _x select 0;
                                         };
 
-                                    } forEach (NEO_radioLogic getVariable format [""NEO_radioTrasportArray_%1"", playerSide]);
+                                    } forEach (NEO_radioLogic getVariable [format [""NEO_radioTrasportArray_%1"", playerSide], []]);
 
                                     if (!isNil ""_vehicle"" && {alive (driver _vehicle)}) then {
                                         _vehicle_found = true;

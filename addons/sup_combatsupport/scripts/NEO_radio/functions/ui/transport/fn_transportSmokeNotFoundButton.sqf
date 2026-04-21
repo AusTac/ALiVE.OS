@@ -3,7 +3,7 @@ _display = findDisplay 655555;
 _transportUnitLb = _display displayCtrl 655568;
 
 private ["_transportArray", "_chopper"];
-_transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+_transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
 
 if (!isNil {NEO_radioLogic getVariable "NEO_radioTalkWithPilot"}) then {
     _chopper = NEO_radioLogic getVariable "NEO_radioTalkWithPilot";

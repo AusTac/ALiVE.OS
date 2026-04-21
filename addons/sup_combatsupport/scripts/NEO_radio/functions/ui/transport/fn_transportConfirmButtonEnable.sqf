@@ -2,7 +2,7 @@ private ["_transportConfirmButton", "_transportTaskLb", "_transportArray", "_cho
 _transportConfirmButton = _display displayCtrl 655574;
 _transportUnitLb = _display displayCtrl 655568;
 _transportTaskLb = _display displayCtrl 655569;
-_transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+_transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
 
 if (!isNil {NEO_radioLogic getVariable "NEO_radioTalkWithPilot"}) then {
     _chopper = NEO_radioLogic getVariable "NEO_radioTalkWithPilot";

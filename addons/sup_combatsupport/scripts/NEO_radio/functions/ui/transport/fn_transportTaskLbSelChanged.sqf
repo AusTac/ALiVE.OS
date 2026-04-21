@@ -7,7 +7,7 @@ _slider = _display displayCtrl 655578;
 _sliderText = _display displayCtrl 655579;
 _objectLb = _display displayCtrl 655580;
 
-_transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+_transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
 _transportUnitLb = _display displayCtrl 655568;
 
 if (!isNil {NEO_radioLogic getVariable "NEO_radioTalkWithPilot"}) then {

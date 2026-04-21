@@ -112,7 +112,7 @@ switch (_support) do
 
         private _fsmHandle = [_veh, _grp, _callsign, _pos, _dir, _height, _type, CS_RESPAWN,_code, _audio, _slingloading] execFSM _transportfsm;
 
-        private _transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", _side];
+        private _transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", _side], []];
         _transportArray pushback ([_veh, _grp, _callsign, _fsmHandle]);
         NEO_radioLogic setVariable [format ["NEO_radioTrasportArray_%1", _side], _transportArray, true];
     };
@@ -192,7 +192,7 @@ switch (_support) do
         //FSM
         private _fsmHandle = [_veh, _grp, _callsign, _pos, _airport, _dir, _height, _type, CS_RESPAWN, _code, _audio] execFSM _casfsm;
 
-        private _casArray = NEO_radioLogic getVariable format ["NEO_radioCasArray_%1", _side];
+        private _casArray = NEO_radioLogic getVariable [format ["NEO_radioCasArray_%1", _side], []];
         _casArray pushback ([_veh, _grp, _callsign, _fsmHandle]);
         NEO_radioLogic setVariable [format ["NEO_radioCasArray_%1", _side], _casArray, true];
     };
@@ -328,7 +328,7 @@ switch (_support) do
         ["fn_supportAdd.sqf - _units: %1, _grp: %2, _callsign: %3, _pos: %4, _roundsAvailable: %5, _canMove: %6, _class: %7, leader _grp: %8, _code: %9, _audio: %10, _side: %11", _units, _grp, _callsign, _pos, _roundsAvailable, _canMove, _class, leader _grp, _code, _audio, _side] call ALiVE_fnc_dump;
         private _fsmHandle = [_units, _grp, _callsign, _pos, _roundsAvailable, _canMove, _class, leader _grp, _code, _audio, _side] execFSM "\x\alive\addons\sup_combatSupport\scripts\NEO_radio\fsms\alivearty.fsm";
 
-        private _artyArray = NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", _side];
+        private _artyArray = NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", _side], []];
         _artyArray pushback ([leader _grp, _grp, _callsign, _units, _roundsAvailable, _fsmHandle]);
 
         NEO_radioLogic setVariable [format ["NEO_radioArtyArray_%1", _side], _artyArray, true];

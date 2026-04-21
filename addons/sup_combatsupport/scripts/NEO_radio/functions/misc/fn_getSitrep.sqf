@@ -13,7 +13,7 @@ switch (toUpper _task) do
         private ["_transportUnitLb","_transportArray"];
 
         _transportUnitLb = _display displayCtrl 655568;
-        _transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+        _transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
 
         if ((lbCurSel _transportUnitLb) < 0) exitwith {};
 
@@ -32,7 +32,7 @@ switch (toUpper _task) do
         private ["_casUnitLb","_casArray"];
 
         _casUnitLb = _display displayCtrl 655582;
-        _casArray = NEO_radioLogic getVariable format ["NEO_radioCasArray_%1", playerSide];
+        _casArray = NEO_radioLogic getVariable [format ["NEO_radioCasArray_%1", playerSide], []];
 
         if ((lbCurSel _casUnitLb) < 0) exitwith {};
 
@@ -53,11 +53,11 @@ switch (toUpper _task) do
   	    } forEach SUP_ARTYARRAYS;
   
         _artyArray = []; 
-        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", playerSide]);
+        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", playerSide], []]);
  
 	      if (_has_SPE_leFH18) then { 
 	      	if (playerSide != WEST) then {
-	        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", WEST]);
+	        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", WEST], []]);
 	        };
 	      };
 

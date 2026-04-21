@@ -13,11 +13,11 @@ _artyUnitLb = _display displayCtrl 655594;
   	    } forEach SUP_ARTYARRAYS;
   
         _artyArray = []; 
-        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", playerSide]);
+        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", playerSide], []]);
  
 	      if (_has_SPE_leFH18) then { 
 	      	if (playerSide != WEST) then {
-	        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", WEST]);
+	        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", WEST], []]);
 	        };
 	      };
 

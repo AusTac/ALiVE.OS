@@ -43,8 +43,8 @@ if (isnil "playerSide") then {
 };
 */
 _available = [];
-_transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
-_casArray = NEO_radioLogic getVariable format ["NEO_radioCasArray_%1", playerSide];
+_transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
+_casArray = NEO_radioLogic getVariable [format ["NEO_radioCasArray_%1", playerSide], []];
 
   	    _has_SPE_leFH18 = false;
   	    {
@@ -54,11 +54,11 @@ _casArray = NEO_radioLogic getVariable format ["NEO_radioCasArray_%1", playerSid
   	    } forEach SUP_ARTYARRAYS;
   
         _artyArray = []; 
-        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", playerSide]);
+        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", playerSide], []]);
  
 	      if (_has_SPE_leFH18) then { 
 	      	if (playerSide != WEST) then {
-	        _artyArray append (NEO_radioLogic getVariable format ["NEO_radioArtyArray_%1", WEST]);
+	        _artyArray append (NEO_radioLogic getVariable [format ["NEO_radioArtyArray_%1", WEST], []]);
 	        };
 	      };
 

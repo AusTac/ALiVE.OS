@@ -47,7 +47,7 @@ switch (toUpper (_lb lbText (lbCurSel _lb))) do
 if (ctrlEnabled _objectLb) then {
 
     private ["_transportArray","_transportUnitLb","_chopper","_nearestObjects"];
-    _transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+    _transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
     _transportUnitLb = _display displayCtrl 655568;
 
     if (!isNil {NEO_radioLogic getVariable "NEO_radioTalkWithPilot"}) then {

@@ -9,7 +9,7 @@ _transportFlyHeightSlider = _display displayCtrl 655580;
 _audio = NEO_radioLogic getVariable format ["combatsupport_audio", true];
 
 private ["_transportArray", "_chopper", "_grp", "_callsign", "_callSignPlayer", "_task", "_marker", "_pos","_amnt"];
-_transportArray = NEO_radioLogic getVariable format ["NEO_radioTrasportArray_%1", playerSide];
+_transportArray = NEO_radioLogic getVariable [format ["NEO_radioTrasportArray_%1", playerSide], []];
 
 if (!isNil {NEO_radioLogic getVariable "NEO_radioTalkWithPilot"}) then {
     _chopper = NEO_radioLogic getVariable "NEO_radioTalkWithPilot";
