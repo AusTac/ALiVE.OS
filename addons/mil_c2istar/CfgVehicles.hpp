@@ -734,7 +734,12 @@ class CfgVehicles {
                             "",
                             "$STR_ALIVE_C2ISTAR_USAGE"
                     };
-                    sync[] = {}; // Array of synced entities (can contain base classes)
+                    // OPCOM is read by this module's OPCOM-side code path (fnc_OPCOM.sqf ~328-341
+                    // iterates synchronizedObjects looking for ALiVE_mil_C2ISTAR to set up the
+                    // G2 intel pipeline per-OPCOM). Declare the peer here so Eden's module-info
+                    // panel lists it and downstream sync validation treats the edge as legitimate.
+                    sync[] = {"ALiVE_mil_OPCOM"};
+                    class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                 };
         };
 
