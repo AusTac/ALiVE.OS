@@ -42,13 +42,23 @@ Trigger parameter:
     confirmation is ONLY emitted for the "sync" trigger to avoid
     drowning the user in repeated green toasts every attribute edit.
 
+Scope parameter:
+    _this select 1 (optional, default []):
+        Array of OPCOM entity objects to restrict validation to. When
+        non-empty, only those OPCOMs are checked (used by sync/attr
+        triggers so the user sees feedback about the OPCOM they just
+        touched, not a global re-audit that surfaces pre-existing
+        misconfigs on unrelated OPCOMs). When empty, walks every OPCOM
+        in the scene (used by the preview trigger as the last-chance
+        safety net).
+
 Author:
 Jman
 ---------------------------------------------------------------------------- */
 
 if !(is3DEN) exitWith {};
 
-params [["_trigger", "attr", [""]]];
+params [["_trigger", "attr", [""]], ["_scope", [], [[]]]];
 
 // Debounce: cancel any pending run and schedule a fresh one. Bulk sync
 // / paste ops (and Eden's per-attribute OnEntityAttributeChanged bursts
@@ -58,10 +68,10 @@ params [["_trigger", "attr", [""]]];
 if (!isNil "ALIVE_edenFactionValidatorPending") then {
     terminate ALIVE_edenFactionValidatorPending;
 };
-ALIVE_edenFactionValidatorPending = [_trigger] spawn {
-    params ["_trigger"];
+ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
+    params ["_trigger", "_scope"];
     sleep 0.5;
-    diag_log format ["ALiVE 3DEN faction-sync check: running (trigger=%1)", _trigger];
+    diag_log format ["ALiVE 3DEN faction-sync check: running (trigger=%1 scope=%2)", _trigger, count _scope];
 
     private _OPCOM_CLASSES = ["ALiVE_mil_OPCOM"];
     private _PLACEMENT_CLASSES = [
@@ -105,22 +115,30 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
         _cfgDefault
     };
 
-    // Collect all 3DEN Object entities. all3DENEntities returns
-    // mixed-type buckets per current A3 docs:
-    //   [_objects, _groups, _triggers, _systems, _markers, _layers,
-    //    _comments, _connections]
-    // Only some buckets hold Objects (objects/triggers/systems/comments);
-    // others hold Strings (markers), Numbers (layers), Arrays
-    // (connections). Filter per-element to pick only Object-typed
-    // entries - modules (systems) are what we actually care about.
-    private _allLogics = [];
-    {
+    // Per-trigger scoping: when the caller passes a non-empty _scope
+    // list (OPCOM entities), only those OPCOMs are validated. Keeps
+    // sync/attr feedback focused on the OPCOM the user just touched,
+    // instead of surfacing pre-existing misconfigs on unrelated OPCOMs
+    // in the scene every time anything changes.
+    //
+    // Empty _scope (preview trigger, or legacy callers) falls back to
+    // the global walk: flatten all3DENEntities' mixed-type buckets
+    // (objects/triggers/systems hold objNull; markers/layers/
+    // connections hold strings/numbers/arrays - filter per-element),
+    // then filter to OPCOM-class logics.
+    private _opcomsToValidate = if (count _scope > 0) then {
+        _scope
+    } else {
+        private _all = [];
         {
-            if (_x isEqualType objNull && {!isNull _x}) then {
-                _allLogics pushBack _x;
-            };
-        } forEach _x;
-    } forEach all3DENEntities;
+            {
+                if (_x isEqualType objNull && {!isNull _x} && {(typeOf _x) in _OPCOM_CLASSES}) then {
+                    _all pushBack _x;
+                };
+            } forEach _x;
+        } forEach all3DENEntities;
+        _all
+    };
 
     private _warnings = 0;
     // Count OPCOMs that actually got past the pre-sync gate (i.e. had
@@ -256,17 +274,18 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
                     _name,
                     _parts joinString "; and "
                 ];
-                // Dual notification:
-                //  1. BIS_fnc_3DENNotification - 3DEN-native toast top-middle
-                //     (type 1 = warning). Short-lived; eye-catch.
-                //  2. hintSilent - persistent top-right panel that stays
-                //     until the user dismisses it or the next hint replaces
-                //     it. This is the "stays visible long enough to read"
-                //     channel the mission-maker actually needs.
+                // BIS_fnc_3DENNotification - 3DEN-native toast top-middle.
                 // systemChat is NOT used - it's silently discarded in the
                 // 3DEN editor (chat overlay inactive).
-                // type 1 = Red warning, duration 20 seconds.
-                [_msg, 1, 20] call BIS_fnc_3DENNotification;
+                //
+                // 60-second duration: mismatch messages can be long (faction
+                // lists, combined unmatched+orphaned clauses) and the
+                // mission-maker needs time to read the full text and the
+                // suggested fix before the toast fades. Previous 20s was
+                // long enough to notice but often not long enough to fully
+                // read and act.
+                // type 1 = Red warning, duration 60 seconds.
+                [_msg, 1, 60] call BIS_fnc_3DENNotification;
                 diag_log format [
                     "ALiVE 3DEN faction-sync check: AI Commander '%1' unmatched=[%2] orphaned=[%3] available=[%4]",
                     _name,
@@ -277,7 +296,7 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
                 _warnings = _warnings + 1;
             };
         };
-    } forEach _allLogics;
+    } forEach _opcomsToValidate;
 
     // One-line "all clear" log so mission-makers + debug builds see the
     // validator actually ran.
