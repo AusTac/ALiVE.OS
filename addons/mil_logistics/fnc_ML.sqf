@@ -2534,13 +2534,23 @@ switch(_operation) do {
                 missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
             };
 
+            // Multi-ML routing: every ML module receives every LOGCOM_RESUPPLY event.
+            // Only the module matching this event's side should handle it. Silent exit for others
+            // (matches upstream LOGCOM_REQUEST routing; no activeCount touch - the owning module
+            // will handle the accounting).
+            private _moduleSide = [_logic, "side"] call MAINCLASS;
+            if (_moduleSide != _eventSide) exitWith {};
+
             // Determine source position.
             private _sourcePos = getPos _logic;  // Default: Static = LOGCOM module position.
 
             if (_sourceMode == 1) then {
-                // Dynamic: find nearest friendly-held objective.
-                private _bestDist = 1e10;
-                private _bestPos = _sourcePos;
+                // Dynamic: collect every friendly-held defend/reserve objective, sort by distance
+                // to the target, roll for a set size of 2 or 3, then pick at random from that set.
+                // Two layers of variance (depth of the supply route + pick within it) so the source
+                // isn't trivially predictable and it simulates drawing from a route rather than
+                // always the single nearest stash.
+                private _candidates = [];  // [[dist, pos], ...]
                 {
                     private _handler = _x getVariable ["handler", objNull];
                     if (!isNull _handler) then {
@@ -2551,18 +2561,62 @@ switch(_operation) do {
                                 private _objState = [_x, "opcom_state", "none"] call ALiVE_fnc_HashGet;
                                 if (_objState in ["defend", "reserve"]) then {
                                     private _objPos = [_x, "center"] call ALiVE_fnc_HashGet;
-                                    private _dist = _objPos distance2D _targetPos;
-                                    if (_dist < _bestDist) then {
-                                        _bestDist = _dist;
-                                        _bestPos = _objPos;
-                                    };
+                                    _candidates pushBack [_objPos distance2D _targetPos, _objPos];
                                 };
                             } forEach _objectives;
                         };
                     };
                 } forEach (missionNamespace getVariable ["OPCOM_instances", []]);
-                _sourcePos = _bestPos;
+
+                if (count _candidates > 0) then {
+                    _candidates sort true;  // ascending by distance (first element)
+                    private _setSize = 2 + floor random 2;  // 2 or 3
+                    _setSize = _setSize min (count _candidates);
+                    private _topN = _candidates select [0, _setSize];
+                    _sourcePos = (selectRandom _topN) select 1;
+                };
+                // Otherwise _sourcePos stays at the LOGCOM base - no friendly objectives to draw from.
             };
+
+            // --- Force pool check & deduct ---
+            // Resupply dispatch consumes from the same ALIVE_globalForcePool used by OPCOM
+            // reinforcements. Cost scales with pool size (2%) with a floor of 1 and a cap
+            // of 10 so low pools don't get hollowed out by a single resupply and huge pools
+            // still feel a meaningful drain. Deducted ONCE here before branching into any
+            // dispatch path (truck / heli / timer) so the cost is for the supplies
+            // themselves, not tied to the delivery vehicle type.
+            private _factions = [_logic, "factions"] call MAINCLASS;
+            private _eventFaction = "";
+            {
+                if ((_x select 0) == _eventSide) exitWith { _eventFaction = (_x select 1) select 0; };
+            } forEach _factions;
+            if (_eventFaction == "" && {count _factions > 0}) then {
+                _eventFaction = (_factions select 0 select 1) select 0;
+            };
+
+            private _registryID = [_logic, "registryID"] call MAINCLASS;
+            private _forcePool = [ALIVE_globalForcePool, _eventFaction] call ALIVE_fnc_hashGet;
+            if (typeName _forcePool == "STRING") then { _forcePool = parseNumber _forcePool; };
+            if (typeName _forcePool != "SCALAR") then { _forcePool = 0; };
+
+            private _resupplyCost = 1 max (10 min (floor (_forcePool * 0.02)));
+
+            if (_forcePool < _resupplyCost) exitWith {
+                ["LOGCOM_RESUPPLY: Force pool exhausted for %1 (faction=%2 pool=%3 need=%4), deferring",
+                    _callsign, _eventFaction, _forcePool, _resupplyCost] call ALiVE_fnc_dump;
+                _targetVeh setVariable ["ALIVE_resupply_state", "failed", true];
+                _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+            };
+
+            // Deduct now. If the convoy is destroyed en route the units aren't credited back -
+            // supplies are lost, defend your supply lines.
+            _forcePool = _forcePool - _resupplyCost;
+            [ALIVE_MLGlobalRegistry, "updateGlobalForcePool", [_registryID, _forcePool]] call ALIVE_fnc_MLGlobalRegistry;
+            ["LOGCOM_RESUPPLY: Deducted %1 from %2 force pool for %3 (pool now %4)",
+                _resupplyCost, _eventFaction, _callsign, _forcePool] call ALiVE_fnc_dump;
 
             private _distance = _sourcePos distance2D _targetPos;
             private _resupplySpeedMPS = 45 / 3.6;  // 45 km/h in m/s.

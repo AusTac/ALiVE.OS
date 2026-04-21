@@ -122,7 +122,7 @@
     <English>Use Military Logistics Simulation</English>
 </Key>
 <Key ID="STR_ALIVE_ARTILLERY_LOGISTICS_DESC">
-    <English>When enabled, this asset will request resupply from LOGCOM when ammo, fuel, or damage thresholds are reached. Requires a Military Logistics module.</English>
+    <English>When enabled, this asset will request resupply from LOGCOM when ammo, fuel, or damage thresholds are reached. Each resupply draws from the Military Logistics force pool - the same pool used for OPCOM reinforcements. Requires a Military Logistics module.</English>
 </Key>
 <Key ID="STR_ALIVE_ARTILLERY_LOGISTICSSOURCE">
     <English>Logistics Source</English>
