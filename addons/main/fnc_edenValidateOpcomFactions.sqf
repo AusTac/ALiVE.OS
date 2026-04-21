@@ -203,7 +203,20 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
 
             _opcomsChecked = _opcomsChecked + 1;
 
+            // Bidirectional check: both sets must be empty for an OPCOM
+            // to count as correctly wired.
+            //
+            //   _unmatched = OPCOM declares factions that NO synced
+            //                placement provides -> runtime "no groups"
+            //                error.
+            //   _orphaned  = synced placement provides factions the
+            //                OPCOM doesn't declare -> wasted sync; the
+            //                mission-maker probably meant to sync that
+            //                placement to a different OPCOM.
+            //
+            // Either condition alone is worth warning about.
             private _unmatched = _opcomFactions select { !(_x in _availableFactions) };
+            private _orphaned  = _availableFactions select { !(_x in _opcomFactions) };
 
             // Track which OPCOM factions DID resolve (intersection with
             // available) for the green OK toast listing.
@@ -213,20 +226,35 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
                 };
             } forEach _opcomFactions;
 
-            if (count _unmatched > 0) then {
-                // Truncate to first 5 unmatched in the toast so a
+            if (count _unmatched > 0 || {count _orphaned > 0}) then {
+                // Truncate each list to first 5 entries in the toast so a
                 // wildly-misconfigured module doesn't spam a wall of
-                // text. Full list still goes to diag_log.
-                private _unmatchedDisplay = if (count _unmatched > 5) then {
-                    (_unmatched select [0, 5]) + [format ["... (+%1 more)", (count _unmatched) - 5]]
-                } else {
-                    _unmatched
+                // text. Full lists still go to diag_log.
+                private _truncate = {
+                    params ["_list"];
+                    if (count _list > 5) then {
+                        (_list select [0, 5]) + [format ["... (+%1 more)", (count _list) - 5]]
+                    } else {
+                        _list
+                    }
+                };
+                private _parts = [];
+                if (count _unmatched > 0) then {
+                    _parts pushBack format [
+                        "wants [%1] but no synced placement provides these",
+                        ([_unmatched] call _truncate) joinString ", "
+                    ];
+                };
+                if (count _orphaned > 0) then {
+                    _parts pushBack format [
+                        "has synced placement(s) providing [%1] that this OPCOM doesn't declare in its Factions",
+                        ([_orphaned] call _truncate) joinString ", "
+                    ];
                 };
                 private _msg = format [
-                    "ALiVE: AI Commander '%1' wants %2 - synced placement modules don't provide these. Available: [%3]. Add / sync a placement for the missing faction(s), or edit the Factions multi-select.",
+                    "ALiVE: AI Commander '%1' %2. Fix by adjusting the Factions multi-select or the synced placement faction fields to align.",
                     _name,
-                    _unmatchedDisplay joinString ", ",
-                    _availableFactions joinString ", "
+                    _parts joinString "; and "
                 ];
                 // Dual notification:
                 //  1. BIS_fnc_3DENNotification - 3DEN-native toast top-middle
@@ -240,9 +268,10 @@ ALIVE_edenFactionValidatorPending = [_trigger] spawn {
                 // type 1 = Red warning, duration 20 seconds.
                 [_msg, 1, 20] call BIS_fnc_3DENNotification;
                 diag_log format [
-                    "ALiVE 3DEN faction-sync check: AI Commander '%1' unmatched=[%2] available=[%3]",
+                    "ALiVE 3DEN faction-sync check: AI Commander '%1' unmatched=[%2] orphaned=[%3] available=[%4]",
                     _name,
                     _unmatched joinString ", ",
+                    _orphaned joinString ", ",
                     _availableFactions joinString ", "
                 ];
                 _warnings = _warnings + 1;

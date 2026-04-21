@@ -53,8 +53,32 @@ if (is3DEN) then {
     // Each EH passes a trigger tag to the validator; the validator uses
     // it to decide whether to emit a positive "sync OK" green toast
     // (only on "sync" trigger) vs just a silent OK log.
-    add3DENEventHandler ["OnEntityAttributeChanged", { ["attr"]    call ALiVE_edenFactionValidator }];
-    add3DENEventHandler ["OnConnectingEnd",          { ["sync"]    call ALiVE_edenFactionValidator }];
-    add3DENEventHandler ["OnMissionPreview",         { ["preview"] call ALiVE_edenFactionValidator }];
+    //
+    // OnEntityAttributeChanged fires on EVERY attribute change including
+    // position (module moves), rotation, layer reassignment, etc. Without
+    // a filter the validator would re-run every time a mission-maker
+    // nudges a module. Gate on property-name containing "faction" so
+    // only the relevant attributes trigger:
+    //   ALiVE_mil_opcom_factions / factionsManual / faction1..faction4
+    //   ALiVE_<placement>_faction
+    // Sync/preview triggers always fire - sync change is inherently
+    // faction-relevant and preview is the last-chance safety net.
+    add3DENEventHandler ["OnEntityAttributeChanged", {
+        params ["_entity", "_property"];
+        if ((toLower _property) find "faction" >= 0) then {
+            // Only fire the validator if the changed entity is part of a
+            // sync graph. Otherwise the mission-maker is configuring a
+            // standalone module that's not wired to anything yet; the
+            // validator's pre-sync gate would skip it anyway, but running
+            // on every attribute edit of an unsynced module wastes cycles
+            // and pollutes the RPT with "OK (checked=0)" noise.
+            private _syncs = (get3DENConnections _entity) select {(_x select 0) == "Sync"};
+            if (count _syncs > 0) then {
+                ["attr"] call ALiVE_edenFactionValidator;
+            };
+        };
+    }];
+    add3DENEventHandler ["OnConnectingEnd",  { ["sync"]    call ALiVE_edenFactionValidator }];
+    add3DENEventHandler ["OnMissionPreview", { ["preview"] call ALiVE_edenFactionValidator }];
     diag_log "ALiVE 3DEN: faction-sync validator registered (OnEntityAttributeChanged + OnConnectingEnd + OnMissionPreview)";
 };
