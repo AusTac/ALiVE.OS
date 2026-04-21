@@ -228,7 +228,11 @@ class Cfg3DEN
                     colorText[]       = {1, 1, 1, 0.9};
                     text     = "Override Factions:";
                     font     = "RobotoCondensed";
-                    sizeEx   = "pixelH * pixelGrid * 2.0";
+                    // Match the 2.2 sizeEx used by sibling attribute
+                    // row labels (Combo / Edit titles) so the Factions
+                    // label isn't visibly smaller than the rows above
+                    // and below it in the module dialog.
+                    sizeEx   = "pixelH * pixelGrid * 2.2";
                     tooltip  = "Pick one or more factions for this AI Commander to control. Left-click = replace selection. Ctrl+click = toggle individual item (multi-select). Shift+click = select range.";
                     tooltipColorShade[] = {0, 0, 0, 1};
                     tooltipColorText[]  = {1, 1, 1, 1};
@@ -250,32 +254,43 @@ class Cfg3DEN
 
                     // color[] is the listbox frame / line rendering
                     // colour (paired with ST_FRAME style bit). Matches
-                    // the selection BG so any frame-like stroke blends.
+                    // the selection BG so any frame-like stroke blends
+                    // on the currently-selected row.
                     color[]                  = {1, 0.62, 0, 1};
-                    // Cursor / focus-ring properties drawn around a
-                    // user-clicked row (engine draws these only on
-                    // click - programmatic selection via lbSetCurSel
-                    // doesn't trigger them). Match BG orange to hide.
-                    colorActive[]            = {1, 0.62, 0, 1};
-                    colorFocused[]           = {1, 0.62, 0, 1};
-                    colorHover[]             = {1, 0.62, 0, 1};
+                    // Cursor / focus-ring properties drawn around the
+                    // row the user most recently clicked. These
+                    // PERSIST after the row is deselected (Ctrl+click
+                    // toggle), so matching the selection BG would
+                    // leave an orange outline ghosting around the
+                    // now-deselected row. Match the unselected BG
+                    // instead so the ring is invisible on deselected
+                    // rows and appears as a subtle dark border around
+                    // the selection when a row is actively selected.
+                    colorActive[]            = {0, 0, 0, 0.5};
+                    colorFocused[]           = {0, 0, 0, 0.5};
+                    colorHover[]             = {0, 0, 0, 0.5};
                     colorText[]              = {1, 1, 1, 1};
                     colorBackground[]        = {0, 0, 0, 0.5};
                     // Selection highlight: hardcoded Eden-title orange-
-                    // yellow with white text so every mission-maker sees
-                    // the same visual, matching the module dialog's own
-                    // title bar. The profilenamespace GUI_BCG_RGB_*
-                    // macros would track the user's GUI Background
-                    // colour (Options > Game > Layout) which is often
-                    // very different from the Eden title chrome and
-                    // produces a mismatched darker highlight on
-                    // customised profiles.
-                    colorSelect[]            = {1, 1, 1, 1};
-                    colorSelect2[]           = {1, 1, 1, 1};
+                    // yellow BG with black text so the selected row is
+                    // high-contrast and readable. Matches the module
+                    // dialog's own title-bar chrome. The profilenamespace
+                    // GUI_BCG_RGB_* macros would track the user's GUI
+                    // Background colour (Options > Game > Layout) which
+                    // is often a different shade from the Eden title
+                    // chrome and produces a mismatched darker highlight
+                    // on customised profiles.
+                    colorSelect[]            = {0, 0, 0, 1};
+                    colorSelect2[]           = {0, 0, 0, 1};
                     colorSelectBackground[]  = {1, 0.62, 0, 1};
                     colorSelectBackground2[] = {1, 0.62, 0, 1};
                     colorDisabled[]          = {1, 1, 1, 0.25};
-                    colorShadow[]            = {0, 0, 0, 0.5};
+                    // Disable the text drop-shadow. Fine when selected
+                    // text was white, but with black-on-orange selection
+                    // the semi-transparent black shadow smears into the
+                    // letters and hurts legibility.
+                    shadow                   = 0;
+                    colorShadow[]            = {0, 0, 0, 0};
 
                     // Solid black tooltip background + matching black
                     // border for legibility (Eden's default attribute
