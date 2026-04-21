@@ -182,10 +182,34 @@ switch(_operation) do {
                     //Get position
                     _position = getposATL _logic;
 
-                    //Union all faction sources into _factions, dedup, drop
-                    //the "NONE" sentinel and empty strings (hidden legacy
-                    //slots default to "" so absent ones are skipped).
-                    private _allFactionSources = _factions + _factionsManual + [_faction1, _faction2, _faction3, _faction4];
+                    //Priority rule: if the Phase-4 sources (`factions`
+                    //multi-select and/or `factionsManual` free-text
+                    //override) have any non-empty entries, they are the
+                    //sole source of truth - the hidden legacy faction1-4
+                    //slots are IGNORED. Only when BOTH Phase-4 sources
+                    //are empty do we fall back to legacy slots (so
+                    //pre-Phase-4 missions that haven't been re-opened /
+                    //re-saved in the new Eden still run with their old
+                    //single-select picks).
+                    //
+                    //Previously this union'd all four sources, which let
+                    //pre-Phase-4 legacy defaults (typically "BLU_F" in
+                    //faction1) pollute the runtime faction list any time
+                    //a migrated mission's mission-maker picked a
+                    //different faction in the new multi-select. Priority
+                    //model means the mission-maker's explicit multi-
+                    //select choice is authoritative and the hidden
+                    //legacy data is inert until needed.
+                    //
+                    //All entries still deduped and filtered for empty /
+                    //"NONE" sentinel regardless of source.
+                    private _primary = _factions + _factionsManual;
+                    private _primaryNonEmpty = ({typeName _x == "STRING" && {_x != ""} && {_x != "NONE"}} count _primary) > 0;
+                    private _allFactionSources = if (_primaryNonEmpty) then {
+                        _primary
+                    } else {
+                        [_faction1, _faction2, _faction3, _faction4]
+                    };
                     _factions = [];
                     {
                         if (typeName _x == "STRING" && {_x != ""} && {_x != "NONE"} && {!(_x in _factions)}) then {
