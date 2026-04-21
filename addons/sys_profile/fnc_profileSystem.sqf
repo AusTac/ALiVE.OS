@@ -67,6 +67,11 @@ switch(_operation) do {
             [_logic,"spawnTypeJetRadius",1000] call ALIVE_fnc_hashSet;
             [_logic,"spawnTypeHeliRadius",1000] call ALIVE_fnc_hashSet;
             [_logic,"spawnRadiusUAV", 1000] call ALiVE_fnc_hashSet;
+            // Despawn linger defaults. See "start" case for the global publishing.
+            [_logic,"playerOccupantGrace", 300] call ALIVE_fnc_hashSet;
+            [_logic,"postDeathGrace", 120] call ALIVE_fnc_hashSet;
+            [_logic,"postDeathRadius", 500] call ALIVE_fnc_hashSet;
+            [_logic,"midCombatExtension", 60] call ALIVE_fnc_hashSet;
             [_logic,"activeLimiter",30] call ALIVE_fnc_hashSet;
             [_logic,"zeusSpawn",true] call ALIVE_fnc_hashSet;
             [_logic,"spawnCycleTime",1] call ALIVE_fnc_hashSet;
@@ -123,6 +128,14 @@ switch(_operation) do {
 
             // set smoothSpawn value
             ALiVE_smoothSpawn = _smoothSpawn;
+
+            // Publish linger-config as globals so the despawn hot path and the
+            // server-side player-killed EH can read them without going through
+            // the module hash every tick.
+            ALIVE_playerOccupantGrace = [_logic,"playerOccupantGrace", 300] call ALIVE_fnc_hashGet;
+            ALIVE_postDeathGrace      = [_logic,"postDeathGrace", 120]     call ALIVE_fnc_hashGet;
+            ALIVE_postDeathRadius     = [_logic,"postDeathRadius", 500]    call ALIVE_fnc_hashGet;
+            ALIVE_midCombatExtension  = [_logic,"midCombatExtension", 60]  call ALIVE_fnc_hashGet;
 
             // set global profiles persistent var
             ALIVE_loadProfilesPersistent = _persistent;
@@ -417,6 +430,34 @@ switch(_operation) do {
                     ALIVE_spawnRadiusUAV = _args;
             };
             _result = [_logic,"spawnRadiusUAV"] call ALIVE_fnc_hashGet;
+    };
+    case "playerOccupantGrace": {
+            if(typeName _args == "SCALAR") then {
+                    [_logic,"playerOccupantGrace",_args] call ALIVE_fnc_hashSet;
+                    ALIVE_playerOccupantGrace = _args;
+            };
+            _result = [_logic,"playerOccupantGrace"] call ALIVE_fnc_hashGet;
+    };
+    case "postDeathGrace": {
+            if(typeName _args == "SCALAR") then {
+                    [_logic,"postDeathGrace",_args] call ALIVE_fnc_hashSet;
+                    ALIVE_postDeathGrace = _args;
+            };
+            _result = [_logic,"postDeathGrace"] call ALIVE_fnc_hashGet;
+    };
+    case "postDeathRadius": {
+            if(typeName _args == "SCALAR") then {
+                    [_logic,"postDeathRadius",_args] call ALIVE_fnc_hashSet;
+                    ALIVE_postDeathRadius = _args;
+            };
+            _result = [_logic,"postDeathRadius"] call ALIVE_fnc_hashGet;
+    };
+    case "midCombatExtension": {
+            if(typeName _args == "SCALAR") then {
+                    [_logic,"midCombatExtension",_args] call ALIVE_fnc_hashSet;
+                    ALIVE_midCombatExtension = _args;
+            };
+            _result = [_logic,"midCombatExtension"] call ALIVE_fnc_hashGet;
     };
     case "activeLimiter": {
             if(typeName _args == "SCALAR") then {

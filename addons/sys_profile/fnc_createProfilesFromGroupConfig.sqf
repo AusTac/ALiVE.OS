@@ -25,6 +25,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 private [
@@ -47,10 +48,27 @@ params [
 
 private _groupProfiles = [];
 
+// Phase 3c.2: capture the originally-selected faction BEFORE the redirect
+// overwrites _prefix below. If the mapping is "Inferred" (Phase 3c.1
+// runtime inference, not hand-curated CustomFactions.hpp), we'll
+// substitute the redirect target's vanilla units with role-equivalent
+// units from the original mod faction at the unit-extraction loop below.
+// Curated mappings deliberately use the redirect target's specific
+// groups/units and don't get substitution applied.
+private _originalFaction = _prefix;
+private _isInferredRedirect = false;
+
 // Check to see if faction has a mapping
 if(!isNil "ALIVE_factionCustomMappings") then {
     if(_prefix in (ALIVE_factionCustomMappings select 1)) then {
         private _customMappings = [ALIVE_factionCustomMappings, _prefix] call ALIVE_fnc_hashGet;
+        // ALiVE hashes are array-backed (CBA_fnc_hash*), NOT native SQF
+        // HashMaps - getOrDefault doesn't apply. Use the 3-arg form of
+        // ALiVE_fnc_hashGet which returns the default when the key is
+        // absent (curated mappings never set "Inferred").
+        if ([_customMappings, "Inferred", false] call ALIVE_fnc_hashGet) then {
+            _isInferredRedirect = true;
+        };
         _prefix = [_customMappings, "GroupFactionName"] call ALIVE_fnc_hashGet;
     };
 };
@@ -120,8 +138,27 @@ if(count _config > 0) then {
             // seperate vehicles and units in the group
             //if((_vehicleType == "Car")||(_vehicleType == "Truck")||(_vehicleType == "Tank")||(_vehicleType == "Armored")||(_vehicleType == "Ship")||(_vehicleType == "Air")||(_vehicleType == "LIB_Medium_Tanks")||(_vehicleType == "LIB_Heavy_Tanks")) then {
             if!(_vehicle isKindOf "Man") then {
+                // Phase 3c.2b: substitute vanilla vehicles/statics with
+                // same-kindOf entries from the mod faction (inferred-
+                // redirect spawns only). Covers vehicles AND static
+                // weapons inside CfgGroups groups (e.g. a Mortar Team's
+                // mortar). Vehicle's native crew is re-derived later
+                // from its own config, so the 3c.2a separate crew sub
+                // becomes redundant for substituted vehicles - left in
+                // as belt-and-braces for the case where substitution
+                // didn't happen (no same-kindOf in target faction).
+                if (_isInferredRedirect) then {
+                    _vehicle = [_vehicle, _originalFaction] call ALiVE_fnc_substituteFactionVehicle;
+                };
                 _groupVehicles pushback [_vehicle,_rank];
             } else {
+                // Phase 3c.2a: if this spawn came through an inferred
+                // (not curated) faction redirect, substitute the vanilla
+                // A3 unit with a role-equivalent unit from the mod
+                // faction the mission-maker originally selected.
+                if (_isInferredRedirect) then {
+                    _vehicle = [_vehicle, _originalFaction] call ALiVE_fnc_substituteFactionUnit;
+                };
                 _groupUnits pushback [_vehicle,_rank];
             };
         };
@@ -207,6 +244,17 @@ if(count _config > 0) then {
         // create crew members for the vehicle
 
         _crew = _vehicleClass call ALIVE_fnc_configGetVehicleCrew;
+
+        // Phase 3c.2a: even when the vehicle itself stays vanilla A3
+        // (3c.2b will handle vehicle substitution), the crew MEN inside
+        // it are units and should be substituted so the mod faction's
+        // crewmen appear. inferUnitRole will bucket the vanilla crew
+        // unit as "Crewman" (Pilot_F kindOf / "crew" pattern) and pull
+        // a Crewman from the mod faction's pool.
+        if (_isInferredRedirect) then {
+            _crew = [_crew, _originalFaction] call ALiVE_fnc_substituteFactionUnit;
+        };
+
         _vehiclePositions = [_vehicleClass] call ALIVE_fnc_configGetVehicleEmptyPositions;
         _countCrewPositions = 0;
 

@@ -66,11 +66,15 @@ class CfgVehicles
                             class Yes { name = "Yes"; value = true; };
                         };
                 };
-                class faction : Edit
+                // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
+                class faction
                 {
-                        property = "ALiVE_mil_ato_faction";
-                        displayName = "$STR_ALIVE_ATO_FACTION";
-                        tooltip = "$STR_ALIVE_ATO_FACTION_COMMENT";
+                        property     = "ALiVE_mil_ato_faction";
+                        displayName  = "$STR_ALIVE_ATO_FACTION";
+                        tooltip      = "$STR_ALIVE_ATO_FACTION_COMMENT";
+                        control      = "ALiVE_FactionChoice_Military";
+                        typeName     = "STRING";
+                        expression   = "_this setVariable ['faction', _value];";
                         defaultValue = """OPF_F""";
                 };
                 // ---- Air Operations ------------------------------------------------

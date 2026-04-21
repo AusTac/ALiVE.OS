@@ -67,7 +67,17 @@ class CfgVehicles {
                         property = "ALiVE_sys_quickstart_priorityFilter"; displayName = "$STR_ALIVE_AMBCP_PRIORITY_FILTER"; tooltip = "$STR_ALIVE_AMBCP_PRIORITY_FILTER_COMMENT"; defaultValue = """0""";
                         class Values { class NONE{name="$STR_ALIVE_AMBCP_PRIORITY_FILTER_NONE";value="0";}; class LOW{name="$STR_ALIVE_AMBCP_PRIORITY_FILTER_LOW";value="10";}; class MEDIUM{name="$STR_ALIVE_AMBCP_PRIORITY_FILTER_MEDIUM";value="30";}; class HIGH{name="$STR_ALIVE_AMBCP_PRIORITY_FILTER_HIGH";value="40";}; };
                 };
-                class faction : Edit { property = "ALiVE_sys_quickstart_faction"; displayName = "$STR_ALIVE_AMBCP_FACTION"; tooltip = "$STR_ALIVE_AMBCP_FACTION_COMMENT"; defaultValue = """CIV_F"""; };
+                // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
+                class faction
+                {
+                        property     = "ALiVE_sys_quickstart_faction";
+                        displayName  = "$STR_ALIVE_AMBCP_FACTION";
+                        tooltip      = "$STR_ALIVE_AMBCP_FACTION_COMMENT";
+                        control      = "ALiVE_FactionChoice_Civilian";
+                        typeName     = "STRING";
+                        expression   = "_this setVariable ['faction', _value];";
+                        defaultValue = """CIV_F""";
+                };
                 class placementMultiplier : Combo
                 {
                         property = "ALiVE_sys_quickstart_placementMultiplier"; displayName = "$STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER"; tooltip = "$STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_COMMENT"; defaultValue = """0.5""";

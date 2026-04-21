@@ -31,6 +31,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -517,15 +518,58 @@ switch (_operation) do {
 					"_taskApplyType"
 				];
 
+            // _taskPlayers is [_uids, _displayNames]; (_taskPlayers select 0)
+            // is the array of UID strings. When the auto-task scheduler is
+            // set to "Constant" but no playable units of _taskSide exist
+            // at runtime (all spectators / side empty / players left), the
+            // UID list is empty - selectRandom returns nil and previously
+            // cascaded through getPlayerByUID as "Undefined variable in
+            // expression: _player" / "_playeruid".
+            //
+            // Defensive flow: try the requesting player first, then fall
+            // back to a random side player. If NEITHER resolves and the
+            // task type is player-anchored (Short / Medium / Long), set
+            // _abortNoPlayer to skip the rest of generation - we do NOT
+            // want to register a task with an empty / [0,0,0] location
+            // (which is what the previous "let it continue" behaviour
+            // would have done, producing tasks at the world origin).
+            //
+            // SQF gotcha: exitWith inside the `if (_taskLocationType...)
+            // then {}` block would only exit the then-block, not the case
+            // body. So we compute the abort decision as a flag inside the
+            // inner block, then exitWith at outer level where it actually
+            // exits the case body work.
+            private _abortNoPlayer = false;
+
             if (_taskLocationType in ["Short", "Medium", "Long"]) then {
                 private _player = [_requestPlayerID] call ALIVE_fnc_getPlayerByUID;
 
                 if (isNull _player) then {
-                    _player = selectRandom (_taskPlayers select 0);
-                    _player = [_player] call ALIVE_fnc_getPlayerByUID;
+                    private _candidateUIDs = _taskPlayers param [0, []];
+                    if (count _candidateUIDs > 0) then {
+                        _player = [selectRandom _candidateUIDs] call ALIVE_fnc_getPlayerByUID;
+                    };
                 };
 
-                _taskData set [6, position _player];
+                if (!isNull _player) then {
+                    _taskData set [6, position _player];
+                } else {
+                    _abortNoPlayer = true;
+                };
+            };
+
+            if (_abortNoPlayer) exitWith {
+                // Unconditional diag_log (NOT gated by _debug). Mission-makers
+                // need to see WHY their auto-generated tasks aren't appearing
+                // even when debug mode is off - this is the most common
+                // "tasks silently not generating" cause, and demanding debug
+                // mode just to discover it would make the failure invisible
+                // to most users. Includes side / taskID / taskType / locType
+                // so the cause can be correlated against module config.
+                diag_log format [
+                    "ALiVE C2ISTAR generateTask: ABORTED task generation for side '%1' (taskID=%2, type=%3, locType=%4) - no playable units available to anchor the task position. Likely cause: 'Constant' auto-task mode firing while no players on this side are present (all spectators / side empty / players left mid-mission). Task will retry on next auto-generation cycle when players become available.",
+                    _taskSide, _taskID, _taskType, _taskLocationType
+                ];
             };
 
             private _strategicObjectivePosition = [];

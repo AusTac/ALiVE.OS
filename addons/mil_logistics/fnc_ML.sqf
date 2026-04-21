@@ -1132,6 +1132,93 @@ switch(_operation) do {
 
 
     // ============================================================
+    // getSupplyNetworkDeparturePos
+    // Returns the best supply network departure position for a
+    // logistics event. Searches ALIVE_ML_supplyNetwork for the
+    // nearest valid node for the given faction relative to the
+    // delivery destination. A node is valid if it is flagged as
+    // HQ OR at least one of its registered profile IDs is still
+    // alive in the profile handler.
+    // Falls back to _fallbackPos if no valid node is found.
+    //
+    // Args: [_faction, _destinationPos, _fallbackPos, _eventID, _debug]
+    // Returns: position array
+    // ============================================================
+    case "getSupplyNetworkDeparturePos": {
+
+        private _faction        = _args select 0;
+        private _destinationPos = _args select 1;
+        private _fallbackPos    = _args select 2;
+        private _eventID        = _args select 3;
+        private _dbg            = _args select 4;
+
+        private _nodeResult = _fallbackPos;
+
+        if (isNil "ALIVE_ML_supplyNetwork") then {
+            ["ML - getSupplyNetworkDeparturePos: ALIVE_ML_supplyNetwork is nil for event %1 faction %2 - check Military Logistics module is placed. Using fallback %3",
+                _eventID, _faction, _fallbackPos] call ALiVE_fnc_dump;
+        } else {
+            private _nodes = [ALIVE_ML_supplyNetwork, _faction, []] call ALIVE_fnc_hashGet;
+            private _bestNodePos  = [];
+            private _bestNodeDist = 1e10;
+
+            {
+                private _node     = _x;
+                private _nodePos  = _node select 0;
+                private _nodeIDs  = _node select 1;
+                private _nodeIsHQ = if (count _node > 2) then { _node select 2 } else { false };
+
+                private _nodeValid = _nodeIsHQ || {
+                    private _alive = false;
+                    {
+                        if (!isNil { [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler })
+                        exitWith { _alive = true; };
+                    } forEach _nodeIDs;
+                    _alive
+                };
+
+                if (_nodeValid) then {
+                    private _d = _nodePos distance _destinationPos;
+                    if (_d < _bestNodeDist) then {
+                        _bestNodeDist = _d;
+                        _bestNodePos  = _nodePos;
+                    };
+                };
+            } forEach _nodes;
+
+            if (count _bestNodePos > 0) then {
+                _nodeResult = _bestNodePos;
+                if (_dbg) then {
+                    private _nodePos3 = _nodeResult;
+                    if (count _nodePos3 < 3) then { _nodePos3 = _nodePos3 + [0]; };
+                    private _nodeName = [_nodePos3] call ALIVE_fnc_taskGetNearestLocationName;
+                    ["ML - Departure anchored to supply network node near %1 at %2 for event %3",
+                        _nodeName, _nodeResult, _eventID] call ALiVE_fnc_dump;
+                };
+            } else {
+                if (_dbg) then {
+                    ["ML - getSupplyNetworkDeparturePos: no valid node found for faction %1, using fallback %2",
+                        _faction, _fallbackPos] call ALiVE_fnc_dump;
+                };
+            };
+        }; // end if/else ALIVE_ML_supplyNetwork
+
+        // Safety guard: always return a valid position array.
+        // If _fallbackPos itself is invalid, use origin to prevent
+        // downstream 'count Bool' errors in the caller.
+        if (isNil "_nodeResult" || {!(_nodeResult isEqualType [])} || {count _nodeResult < 2}) then {
+            ["ML - getSupplyNetworkDeparturePos: result invalid for event %1 faction %2, using [0,0,0]",
+                _eventID, _faction] call ALiVE_fnc_dump;
+            _nodeResult = [0,0,0];
+        };
+
+        // Assign to file-level _result so the MAINCLASS caller receives it.
+        _result = _nodeResult;
+    };
+
+
+
+    // ============================================================
     // spawnHeliDeliveryWatchdog
     // Monitors a transport heli through its delivery cycle.
     // Only acts when the heli is ACTIVE (spawned near players).
@@ -4595,37 +4682,15 @@ switch(_operation) do {
                         if (count _testFromPos == 0) then {
                         _reinforcementPosition = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
 
-                        if (!isNil "ALIVE_ML_supplyNetwork") then {
-                            private _nodes = [ALIVE_ML_supplyNetwork, _eventFaction, []] call ALIVE_fnc_hashGet;
-                            private _bestNodePos = [];
-                            private _bestNodeDist = 1e10;
-                            {
-                                private _node     = _x;
-                                private _nodePos  = _node select 0;
-                                private _nodeIDs  = _node select 1;
-                                private _nodeIsHQ = if (count _node > 2) then { _node select 2 } else { false };
-                                private _nodeValid = _nodeIsHQ || {
-                                    private _alive = false;
-                                    { if (!isNil { [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler }) exitWith { _alive = true; }; } forEach _nodeIDs;
-                                    _alive
-                                };
-                                if (_nodeValid) then {
-                                    private _d = _nodePos distance _eventPosition;
-                                    if (_d < _bestNodeDist) then {
-                                        _bestNodeDist = _d;
-                                        _bestNodePos  = _nodePos;
-                                    };
-                                };
-                            } forEach _nodes;
-                            if (count _bestNodePos > 0) then {
-                                _reinforcementPosition = _bestNodePos;
-                                if (_debug) then {
-                                    private _nodeName = [_reinforcementPosition] call ALIVE_fnc_taskGetNearestLocationName;
-                                    ["ML - Departure anchored to supply network node near %1 at %2 for event %3",
-                                        _nodeName, _reinforcementPosition, _eventID] call ALiVE_fnc_dump;
-                                };
-                            };
-                        };
+                        // Anchor departure to the nearest valid supply network node.
+                        _reinforcementPosition = [_logic, "getSupplyNetworkDeparturePos", [
+                            _eventFaction,
+                            _eventPosition,
+                            _reinforcementPosition,
+                            _eventID,
+                            _debug
+                        ]] call MAINCLASS;
+
                         }; // end if (count _testFromPos == 0) -- supply network anchor
 
                         ["AI LOGCOM Side: %1 Type: %2 From: %3 To: %4 Dist: %5m Water: %6 Heavy: %7",
@@ -6912,6 +6977,290 @@ switch(_operation) do {
 
             };
 
+            // PR_AIRDROP proper state machine -------------------------------------------------------
+            // Full transport aircraft delivery pipeline that mirrors heliParadropStart -> Fly ->
+            // Return -> ReturnWait. Replaces the airdropWait timeout stub for player-requested
+            // airdrops. Legacy AI AIRDROP continues to use airdropWait above.
+
+            case "airdropStart": {
+
+                private _count = [_logic, "checkEvent", _event] call MAINCLASS;
+                if (_count == 0) exitWith {
+                    [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                };
+
+                // Launch the paradrop watchdog for the infantry transport only.
+                // Slingload helis don't need it -- they just fly the waypoint and release
+                // automatically via ALiVE's profile system (attach state on slung profile).
+                // Bug 4 fix: use stored airdropInfTransportProfID, not forEach loop.
+                private _infProfID = [_event, "airdropInfTransportProfID"] call ALIVE_fnc_hashGet;
+                if (!isNil "_infProfID" && { _infProfID isEqualType "" } && { _infProfID != "" }) then {
+                    private _infProfile = [ALIVE_profileHandler, "getProfile", _infProfID] call ALIVE_fnc_profileHandler;
+                    if (!isNil "_infProfile") then {
+                        // Flatten infantry group IDs into a single list for the watchdog
+                        private _infantryProfilesHash = [_eventCargoProfiles, 'infantry'] call ALIVE_fnc_hashGet;
+                        private _infantryIDs = [];
+                        { _infantryIDs append _x; } forEach _infantryProfilesHash;
+
+                        // Find the vehicle profile ID paired with this pilot entity
+                        private _vProfID = "";
+                        private _idx = _eventTransportProfiles find _infProfID;
+                        if (_idx >= 0 && _idx < count _eventTransportVehiclesProfiles) then {
+                            _vProfID = _eventTransportVehiclesProfiles select _idx;
+                        };
+
+                        private _departurePos = [_event, "departurePosition"] call ALIVE_fnc_hashGet;
+                        private _finalDest    = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
+
+                        [_logic, "spawnHeliParadropWatchdog", [
+                            _infProfID, _vProfID, _finalDest, _departurePos, _infantryIDs, PARADROP_HEIGHT, _debug
+                        ]] call MAINCLASS;
+
+                        if (_debug) then {
+                            ["ML - airdropStart: Watchdog launched for infantry transport %1 vehicle %2 dropping %3 units at %4",
+                                _infProfID, _vProfID, count _infantryIDs, _finalDest] call ALiVE_fnc_dump;
+                        };
+                    };
+                } else {
+                    if (_debug) then {
+                        ["ML - airdropStart: No infantry transport -- slingload-only delivery. Event: %1", _eventID] call ALiVE_fnc_dump;
+                    };
+                };
+
+                [_event, "state", "airdropFly"] call ALIVE_fnc_hashSet;
+                [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+
+                if (_debug) then {
+                    ["ML - airdropStart: %1 transports dispatched. Event: %2",
+                        count _eventTransportProfiles, _eventID] call ALiVE_fnc_dump;
+                };
+            };
+
+            case "airdropFly": {
+
+                private _count = [_logic, "checkEvent", _event] call MAINCLASS;
+                if (_count == 0) exitWith {
+                    [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                };
+
+                private _waitTotalIterations = 300;
+                private _waitIterations = _eventStateData param [0, 0];
+                if (isNil "_waitIterations" || typeName _waitIterations != "SCALAR") then { _waitIterations = 0; };
+
+                // Bug 5 fix: only poll the infantry transport for paradropComplete.
+                // Slingload helis never appear in that list -- they release their sling
+                // load on arrival via ALiVE's profile system. For slingload-only events
+                // advance immediately.
+                private _infProfID = [_event, "airdropInfTransportProfID"] call ALIVE_fnc_hashGet;
+                private _dropped = false;
+                private _anyAlive = false;
+
+                if (!isNil "_infProfID" && { _infProfID isEqualType "" } && { _infProfID != "" }) then {
+                    private _tProfile = [ALIVE_profileHandler, "getProfile", _infProfID] call ALIVE_fnc_profileHandler;
+                    if (!isNil "_tProfile") then {
+                        _anyAlive = true;
+                        _dropped = if (isNil "ALIVE_ML_paradropComplete") then { false } else {
+                            _infProfID in ALIVE_ML_paradropComplete
+                        };
+                    };
+                    if (_debug) then {
+                        ["ML - airdropFly: infantry transport %1 profile=%2 dropped=%3", _infProfID, (!isNil "_tProfile"), _dropped] call ALiVE_fnc_dump;
+                    };
+                } else {
+                    // No infantry transport -- slingload-only. Check if any slingload transports still active.
+                    {
+                        private _tp = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                        if (!isNil "_tp") then { _anyAlive = true; };
+                    } forEach _eventTransportProfiles;
+                    // Slingload-only: advance as soon as any were dispatched (release happens automatically on arrival)
+                    _dropped = true;
+                };
+
+                if (_dropped || _waitIterations > _waitTotalIterations || (!_anyAlive && _waitIterations > 5)) then {
+                    if (_debug) then {
+                        ["ML - airdropFly: Drops complete. Moving to airdropReturn. Event: %1", _eventID] call ALiVE_fnc_dump;
+                    };
+                    _eventStateData set [0, 0];
+                    [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
+                    [_event, "state", "airdropReturn"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                } else {
+                    _waitIterations = _waitIterations + 1;
+                    _eventStateData set [0, _waitIterations];
+                    [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
+                    if (_debug) then {
+                        ["ML - airdropFly: Waiting for drops. iter=%1/%2 Event: %3",
+                            _waitIterations, _waitTotalIterations, _eventID] call ALiVE_fnc_dump;
+                    };
+                };
+            };
+
+            case "airdropReturn": {
+
+                private _count = [_logic, "checkEvent", _event] call MAINCLASS;
+                if (_count == 0 && count _eventTransportProfiles == 0) exitWith {
+                    [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                };
+
+                // 3-waypoint egress mirrors heliParadropReturn -- straight out, turn, RTB.
+                // Profile waypoints use 2D positions -- explicit Z causes descent.
+                private _departurePos = [_event, "departurePosition"] call ALIVE_fnc_hashGet;
+                private _eventDestination = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
+                private _returnDest = if (count _eventDestination > 1 && count _departurePos > 1) then {
+                    private _egressDir = _eventDestination getDir _departurePos;
+                    _departurePos getPos [1500, _egressDir]
+                } else {
+                    _departurePos getPos [1500, random 360]
+                };
+
+                {
+                    private _tProfile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                    if (!isNil "_tProfile") then {
+                        private _liveVehicle2 = _tProfile select 2 select 10;
+                        private _tPos = if (!isNull _liveVehicle2 && alive _liveVehicle2) then {
+                            getPos _liveVehicle2
+                        } else {
+                            _tProfile select 2 select 2
+                        };
+
+                        private _leaveDir = _tPos getDir _departurePos;
+                        private _turnDirOffset = if (random 1 > 0.5) then { 50 } else { -50 };
+                        private _leaveDist = 300 + (random 200);
+
+                        private _leavePosStraight = _tPos getPos [_leaveDist, _leaveDir];
+                        private _leavePosTurn     = _tPos getPos [_leaveDist * 1.5, [_leaveDir + _turnDirOffset] call ALiVE_fnc_modDegrees];
+
+                        private _wpStraight = [_leavePosStraight, 100, "MOVE", "FULL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                        private _wpTurn     = [_leavePosTurn,     100, "MOVE", "FULL",  300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                        private _wpFinal    = [_returnDest,       100, "MOVE", "FULL",  300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+
+                        [_tProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
+                        [_tProfile, "addWaypoint", _wpStraight] call ALIVE_fnc_profileEntity;
+                        [_tProfile, "addWaypoint", _wpTurn]     call ALIVE_fnc_profileEntity;
+                        [_tProfile, "addWaypoint", _wpFinal]    call ALIVE_fnc_profileEntity;
+
+                        if (_debug) then {
+                            ["ML - airdropReturn: RTB issued to %1. exit->%2 turn->%3 base->%4", _x, _leavePosStraight, _leavePosTurn, _returnDest] call ALiVE_fnc_dump;
+                        };
+                    };
+                } forEach _eventTransportProfiles;
+
+                _eventStateData set [0, 0];
+                [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
+                [_event, "state", "airdropReturnWait"] call ALIVE_fnc_hashSet;
+                [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+            };
+
+            case "airdropReturnWait": {
+
+                private _count = [_logic, "checkEvent", _event] call MAINCLASS;
+                if (_count == 0 && count _eventTransportProfiles == 0) exitWith {
+                    [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                };
+
+                if (count _eventTransportVehiclesProfiles > 0) then {
+                    private _waitTotalIterations = 60;
+                    private _waitIterations = _eventStateData param [0, 0];
+                    if (isNil "_waitIterations" || typeName _waitIterations != "SCALAR") then { _waitIterations = 0; };
+
+                    private _anyActive = 0;
+                    private _anyAlive  = 0;
+                    private _departurePos = [_event, "departurePosition"] call ALIVE_fnc_hashGet;
+
+                    {
+                        private _tProfile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                        if (!isNil "_tProfile") then {
+                            private _active  = _tProfile select 2 select 1;
+                            private _vehicle = _tProfile select 2 select 10;
+
+                            private _farEnough = false;
+                            if (count _departurePos > 1) then {
+                                private _checkPos = if (!isNull _vehicle && alive _vehicle) then {
+                                    getPos _vehicle
+                                } else {
+                                    _tProfile select 2 select 2
+                                };
+                                _farEnough = _checkPos distance2D _departurePos < 500;
+                            };
+
+                            if (_waitIterations > _waitTotalIterations || _farEnough) then {
+                                if (!isNull _vehicle && alive _vehicle && _active) then {
+                                    private _landPad = createVehicle ["Land_HelipadEmpty_F", getPosATL _vehicle, [], 0, "CAN_COLLIDE"];
+                                    _vehicle landAt _landPad;
+                                    [_vehicle, _landPad] spawn {
+                                        private _h = _this select 0; private _p = _this select 1; private _t = 0;
+                                        waitUntil { sleep 2; _t = _t + 2; isTouchingGround _h || !alive _h || _t > 30 };
+                                        deleteVehicle _p;
+                                        if (alive _h) then { _h setDamage 1; };
+                                    };
+                                };
+                                _active = false;
+                            };
+
+                            if (_active) then {
+                                if (!isNull _vehicle && alive _vehicle && canMove _vehicle) then {
+                                    _anyAlive = _anyAlive + 1;
+                                } else {
+                                    private _inCommand = _tProfile select 2 select 8;
+                                    if (count _inCommand > 0) then {
+                                        private _cmdProf = [ALIVE_profileHandler, "getProfile", _inCommand select 0] call ALIVE_fnc_profileHandler;
+                                        if (!isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
+                                    };
+                                    [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
+                                    [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
+                                };
+                                _anyActive = _anyActive + 1;
+                            } else {
+                                private _inCommand = _tProfile select 2 select 8;
+                                if (count _inCommand > 0) then {
+                                    private _cmdProf = [ALIVE_profileHandler, "getProfile", _inCommand select 0] call ALIVE_fnc_profileHandler;
+                                    if (!isNil "_cmdProf") then { [_cmdProf, "destroy"] call ALIVE_fnc_profileEntity; };
+                                };
+                                [_tProfile, "vehicleAssignments", [] call ALIVE_fnc_hashCreate] call ALIVE_fnc_profileVehicle;
+                                [_tProfile, "destroy"] call ALIVE_fnc_profileVehicle;
+                            };
+                        };
+                    } forEach _eventTransportVehiclesProfiles;
+
+                    _waitIterations = _waitIterations + 1;
+                    _eventStateData set [0, _waitIterations];
+                    [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
+
+                    if (_anyActive == 0 || _anyAlive == 0 || _waitIterations > _waitTotalIterations) then {
+                        ["ML - airdropReturnWait: RTB complete. Event: %1", _eventID] call ALiVE_fnc_dump;
+
+                        // Send REQUEST_DELIVERED to the requesting player
+                        if (_playerRequested) then {
+                            private _logEvent2 = ['LOGCOM_RESPONSE', [_requestID,_playerID],"Logistics","REQUEST_DELIVERED"] call ALIVE_fnc_event;
+                            [ALIVE_eventLog, "addEvent", _logEvent2] call ALIVE_fnc_eventLog;
+                            if (_debug) then {
+                                ["ML - airdropReturnWait: REQUEST_DELIVERED sent to player %1 for request %2",
+                                    _playerID, _requestID] call ALiVE_fnc_dump;
+                            };
+                        };
+
+                        _eventStateData set [0, 0];
+                        [_event, "stateData", _eventStateData] call ALIVE_fnc_hashSet;
+                        [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                        [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                    } else {
+                        if (_debug) then {
+                            ["ML - airdropReturnWait: Waiting RTB. anyActive=%1 anyAlive=%2 iter=%3/%4. Event: %5",
+                                _anyActive, _anyAlive, _waitIterations, _waitTotalIterations, _eventID] call ALiVE_fnc_dump;
+                        };
+                    };
+                } else {
+                    [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
+                    [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
+                };
+            };
+
+            // END PR_AIRDROP state machine ----------------------------------------------------------
+
             // CONVOY ---------------------------------------------------------------------------------------------------------------------------------
 
             case "transportLoad": {
@@ -6926,7 +7275,21 @@ switch(_operation) do {
 
                 if(count _eventTransportVehiclesProfiles > 0) then {
 
+                    if (_debug) then {
+                        ["ML - transportLoad: Assigning %1 infantry groups to %2 transport vehicles. Event: %3",
+                            count _infantryProfiles, count _eventTransportVehiclesProfiles, _eventID] call ALiVE_fnc_dump;
+                    };
+
                     {
+                        // Guard: more infantry groups than transport vehicles —
+                        // the remaining groups travel on foot (no vehicle assignment).
+                        if (_processedProfiles >= count _eventTransportVehiclesProfiles) exitWith {
+                            if (_debug) then {
+                                ["ML - transportLoad: No more transport vehicles available (%1 assigned, %2 groups remaining). Event: %3",
+                                    _processedProfiles, count _infantryProfiles - _processedProfiles, _eventID] call ALiVE_fnc_dump;
+                            };
+                        };
+
                         _infantryProfile = [ALIVE_profileHandler, "getProfile", _x select 0] call ALIVE_fnc_profileHandler;
                         if!(isNil "_infantryProfile") then {
 
@@ -6936,12 +7299,35 @@ switch(_operation) do {
 
                                 [_infantryProfile,_transportProfile] call ALIVE_fnc_createProfileVehicleAssignment;
 
+                                if (_debug) then {
+                                    ["ML - transportLoad: Assigned infantry %1 to transport %2 (%3/%4)",
+                                        _x select 0, _transportProfileID, _processedProfiles + 1, count _eventTransportVehiclesProfiles] call ALiVE_fnc_dump;
+                                };
+
                                 _processedProfiles = _processedProfiles + 1;
+                            } else {
+                                if (_debug) then {
+                                    ["ML - transportLoad: WARNING transport profile %1 is nil, skipping.", _transportProfileID] call ALiVE_fnc_dump;
+                                };
+                            };
+                        } else {
+                            if (_debug) then {
+                                ["ML - transportLoad: WARNING infantry profile %1 is nil, skipping.", _x select 0] call ALiVE_fnc_dump;
                             };
                         };
 
                     } forEach _infantryProfiles;
 
+                    if (_debug) then {
+                        ["ML - transportLoad: Complete. %1 assignments made. Event: %2",
+                            _processedProfiles, _eventID] call ALiVE_fnc_dump;
+                    };
+
+                } else {
+                    if (_debug) then {
+                        ["ML - transportLoad: No transport vehicles available, infantry will travel on foot. Event: %1",
+                            _eventID] call ALiVE_fnc_dump;
+                    };
                 };
 
                 [_event, "state", "transportLoadWait"] call ALIVE_fnc_hashSet;
@@ -7809,10 +8195,26 @@ switch(_operation) do {
 
                 if(count _eventTransportProfiles > 0) then {
 
-                    // send transport vehicles back to insertion point
+                    // Anchor RTB destination to the supply network so convoys
+                    // don't drive back through enemy territory. Mirrors the
+                    // heli-path supply-network anchoring for departures.
+                    private _rawReinforcePos = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
+                    private _rtbPosition = [_logic, "getSupplyNetworkDeparturePos", [
+                        _eventFaction,
+                        _eventPosition,
+                        _rawReinforcePos,
+                        _eventID,
+                        _debug
+                    ]] call MAINCLASS;
+
+                    if (_debug) then {
+                        ["ML - transportReturn: RTB via supply network node at %1 (raw objective was %2). Event: %3",
+                            _rtbPosition, _rawReinforcePos, _eventID] call ALiVE_fnc_dump;
+                    };
+
+                    // send transport vehicles back to supply network node
                     {
-                        _reinforcementPosition = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
-                        _position = _reinforcementPosition getPos [random(300), random(360)];
+                        _position = _rtbPosition getPos [random(300), random(360)];
                         _position = [_position] call ALIVE_fnc_getClosestRoad;
                         _profileWaypoint = [_position, 100, "MOVE", "LIMITED", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
 
@@ -8401,7 +8803,33 @@ switch(_operation) do {
                             _reinforcementPosition = [_reinforcementPrimaryObjective,"center"] call ALIVE_fnc_hashGet;
 
                         }else{
+                            // PR_AIRDROP: fall back to event position (player destination)
                             _reinforcementPosition = _eventPosition;
+                        };
+
+                        // Anchor all three PR_ delivery types to the nearest valid supply
+                        // network node so departures never originate in enemy territory.
+                        _reinforcementPosition = [_logic, "getSupplyNetworkDeparturePos", [
+                            _eventFaction,
+                            _eventPosition,
+                            _reinforcementPosition,
+                            _eventID,
+                            _debug
+                        ]] call MAINCLASS;
+
+                        if (_debug) then {
+                            private _depPos  = _reinforcementPosition;
+                            private _destPos = _eventPosition;
+                            // Ensure positions are valid 3-element arrays before passing to
+                            // taskGetNearestLocationName (nearestLocations requires ASL position)
+                            if (isNil "_depPos"  || {!(_depPos  isEqualType [])} || {count _depPos  < 3}) then { _depPos  = [0,0,0]; };
+                            if (isNil "_destPos" || {!(_destPos isEqualType [])} || {count _destPos < 3}) then { _destPos = [0,0,0]; };
+                            private _depName  = [_depPos]  call ALIVE_fnc_taskGetNearestLocationName;
+                            private _destName = [_destPos] call ALIVE_fnc_taskGetNearestLocationName;
+                            ["ML - PR_%1 Resupply departure: %2 at %3 -> destination: %4 at %5 dist: %6m",
+                                _eventType, _depName, _reinforcementPosition,
+                                _destName, _eventPosition,
+                                round (_reinforcementPosition distance _eventPosition)] call ALiVE_fnc_dump;
                         };
 
                         // players near check
@@ -8419,6 +8847,11 @@ switch(_operation) do {
                             _remotePosition = [_reinforcementPosition, 1600] call ALIVE_fnc_getPositionDistancePlayers;
                         }else{
                             _remotePosition = _reinforcementPosition;
+                        };
+
+                        if (_debug) then {
+                            ["ML - PR_%1 Resupply spawn origin: paraDrop=%2 playersInRange=%3 remotePosition=%4",
+                                _eventType, _paraDrop, _playersInRange, _remotePosition] call ALiVE_fnc_dump;
                         };
 
                         // wait time complete create profiles
@@ -8583,8 +9016,26 @@ switch(_operation) do {
                                         };
                                     } foreach _transportGroups;
 
-                                    // Cannot find vehicle big enough to slingload...
-                                    if (_vehicleClass == "") exitWith {_totalCount = _totalCount - 1;};
+                                    // Cannot find heli big enough to slingload this vehicle.
+                                    // Fall back to PR_AIRDROP "Option A" teleport: the cargo
+                                    // profile was already registered earlier in the dispatch
+                                    // loop, so we simply reposition it at the destination
+                                    // rather than decrementing _totalCount and bailing.
+                                    // The old exitWith here also broke the _emptyVehicleProfiles
+                                    // forEach entirely, silently abandoning any further cargo items.
+                                    if (_vehicleClass == "") then {
+                                        private _heavyID = _x select 0;
+                                        private _heavyProfile = [ALiVE_ProfileHandler, "getProfile", _heavyID] call ALIVE_fnc_profileHandler;
+                                        if (!isNil "_heavyProfile") then {
+                                            [_heavyProfile, "position", _eventPosition] call ALIVE_fnc_profileVehicle;
+                                            _payloadGroupProfiles pushback [_heavyID];
+                                            ["ML - PR_HELI_INSERT empty-vehicle too heavy to sling (weight %1). Teleporting %2 to destination %3 (Option A fallback).",
+                                                _payloadWeight, _heavyID, _eventPosition] call ALiVE_fnc_dump;
+                                        } else {
+                                            ["ML - PR_HELI_INSERT weight-fail fallback: profile %1 already un-registered, skipping.", _heavyID] call ALiVE_fnc_dump;
+                                            _totalCount = _totalCount - 1;
+                                        };
+                                    } else {
 
                                     if (_paraDrop) then {
                                         _position set [2,PARADROP_HEIGHT];
@@ -8592,7 +9043,7 @@ switch(_operation) do {
 
                                     if (_debug) then {
                                         ["ML - PR_HELI_INSERT infantry [%1] transport LZ: %2",
-                                            _i + 1, _position] call ALiVE_fnc_dump;
+                                            _forEachIndex + 1, _position] call ALiVE_fnc_dump;
                                     };
 
                                     // Create slingloading heli (slingloading another profile!)
@@ -8620,7 +9071,7 @@ switch(_operation) do {
                                         [_profile, "addWaypoint", _profileWaypoint] call ALIVE_fnc_profileEntity;
 
                                         if (_debug) then {
-                                            ["ML - PR_HELI_INSERT [%1] dest waypoint: %2", _i + 1, _prDestPos] call ALiVE_fnc_dump;
+                                            ["ML - PR_HELI_INSERT [%1] dest waypoint: %2", _forEachIndex + 1, _prDestPos] call ALiVE_fnc_dump;
                                         };
 
                                         // Fuel watchdog for PR infantry transport heli
@@ -8631,6 +9082,7 @@ switch(_operation) do {
                                         ]] call MAINCLASS;
 
                                     _totalCount = _totalCount + 1;
+                                    }; // end else (_vehicleClass == "")
 
                                 } foreach _emptyVehicleProfiles;
 
@@ -9095,8 +9547,21 @@ switch(_operation) do {
                                                 };
                                             } foreach _transportGroups;
 
-                                            // Cannot find vehicle big enough to slingload...
-                                            if (_vehicleClass == "") exitWith {_totalCount = _totalCount - 1;};
+                                            // Cannot find heli big enough to slingload this vehicle.
+                                            // Fall back to PR_AIRDROP "Option A" teleport — same
+                                            // rationale as the empty-vehicle loop above; keeps
+                                            // _totalCount honest and continues the forEach.
+                                            if (_vehicleClass == "") then {
+                                                if (!isNil "_slingLoadProfile") then {
+                                                    [_slingLoadProfile, "position", _eventPosition] call ALIVE_fnc_profileVehicle;
+                                                    _payloadGroupProfiles pushback [_x];
+                                                    ["ML - PR_HELI_INSERT grouped-vehicle too heavy to sling (weight %1). Teleporting %2 to destination %3 (Option A fallback).",
+                                                        _payloadWeight, _x, _eventPosition] call ALiVE_fnc_dump;
+                                                } else {
+                                                    ["ML - PR_HELI_INSERT weight-fail fallback: profile %1 already un-registered, skipping.", _x] call ALiVE_fnc_dump;
+                                                    _totalCount = _totalCount - 1;
+                                                };
+                                            } else {
 
                                             _position set [2,PARADROP_HEIGHT];
 
@@ -9123,6 +9588,7 @@ switch(_operation) do {
                                             [_profile, "addWaypoint", _profileWaypoint] call ALIVE_fnc_profileEntity;
 
                                             _totalCount = _totalCount + 1;
+                                            }; // end else (_vehicleClass == "")
                                         };
 
                                     } foreach _groupProfile;
@@ -9452,6 +9918,11 @@ switch(_operation) do {
                             switch(_eventType) do {
                                 case "PR_STANDARD": {
 
+                                    // Store departure position on event hash for consistency
+                                    // with HELI_INSERT / AIRDROP paths. Used by debug dumps and
+                                    // could be referenced by future garrison position logic.
+                                    [_event, "departurePosition", _reinforcementPosition] call ALIVE_fnc_hashSet;
+
                                     // update the state of the event
                                     // next state is transport load
                                     [_event, "state", "transportLoad"] call ALIVE_fnc_hashSet;
@@ -9474,9 +9945,199 @@ switch(_operation) do {
                                 };
                                 case "PR_AIRDROP": {
 
+                                    // ============================================================
+                                    // PR_AIRDROP transport aircraft creation
+                                    // ------------------------------------------------------------
+                                    // Mirrors HELI_INSERT slingload + HELI_PARADROP infantry patterns.
+                                    // - Slingload helis for any motorised/mechanised vehicles
+                                    // - One infantry heli for all infantry profiles combined
+                                    // - Too-heavy cargo teleported to _eventPosition (Option A fallback)
+                                    // Root-cause fixes applied from 2026-04-16 log analysis:
+                                    //   * Spawn Z=0 (ground) not PARADROP_HEIGHT -- slung cargo at altitude
+                                    //     causes immediate in-air collision and destroys the heli
+                                    //   * preventDespawn on entity/vehicle/slung profiles -- without it
+                                    //     ALiVE virtualises the heli mid-flight when players move away
+                                    //   * Infantry assigned to transport via createProfileVehicleAssignment
+                                    //     -- without it the infantry never physically board the heli
+                                    // ============================================================
+
+                                    private _airdropTransportProfiles = [];
+                                    private _airdropTransportVehicleProfiles = [];
+                                    private _airdropInfTransportProfID = "";
+
+                                    private _airdropTransportGroups = [ALIVE_factionDefaultAirTransport,_eventFaction,[]] call ALIVE_fnc_hashGet;
+                                    if (count _airdropTransportGroups == 0 || !_limitTransportToFaction) then {
+                                        _airdropTransportGroups append ([ALIVE_sideDefaultAirTransport,_side] call ALIVE_fnc_hashGet);
+                                    };
+
+                                    if (count _airdropTransportGroups > 0) then {
+
+                                        // ---- Part A: slingload helis for vehicle cargo ----
+                                        private _vehicleGroupProfilesForSling = _motorisedProfiles + _mechanisedProfiles;
+                                        private _slingHeliSpawnIdx = 0;
+
+                                        {
+                                            private _groupProfile = _x;
+                                            {
+                                                if ([_x,"vehicle"] call CBA_fnc_find != -1) then {
+                                                    private _slingLoadProfile = [ALiVE_ProfileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                                                    if (!isNil "_slingLoadProfile") then {
+                                                        private _payloadWeight = [(_slingLoadProfile select 2 select 11)] call ALIVE_fnc_getObjectWeight;
+
+                                                        // Find heli that can slingload this weight
+                                                        private _vehicleClass = "";
+                                                        private _currentDiff = 15000;
+                                                        {
+                                                            private _slingloadmax = [(configFile >> "CfgVehicles" >> _x >> "slingLoadMaxCargoMass")] call ALiVE_fnc_getConfigValue;
+                                                            if (!isNil "_slingloadmax") then {
+                                                                private _slingDiff = _slingloadmax - _payloadWeight;
+                                                                if ((_slingDiff < _currentDiff) && (_slingDiff > 0)) then {
+                                                                    _currentDiff = _slingDiff;
+                                                                    _vehicleClass = _x;
+                                                                };
+                                                            };
+                                                        } forEach _airdropTransportGroups;
+
+                                                        if (_vehicleClass == "") then {
+                                                            // Too heavy to sling -- teleport profile to destination (Option A fallback)
+                                                            ["ML - PR_AIRDROP: cargo %1 weight %2 too heavy to sling (no heli match). Teleporting to destination %3.",
+                                                                _x, _payloadWeight, _eventPosition] call ALiVE_fnc_dump;
+                                                            [_slingLoadProfile, "position", _eventPosition] call ALIVE_fnc_profileVehicle;
+                                                        } else {
+                                                            // Find ground spawn pos near supply node, Z=0
+                                                            private _spawnMin = 400 + (_slingHeliSpawnIdx * 400);
+                                                            private _spawnMax = _spawnMin + 300;
+                                                            private _slingSpawnPos = [_logic, "findHelicopterLandingPos", [
+                                                                _remotePosition, _spawnMin, _spawnMax
+                                                            ]] call MAINCLASS;
+                                                            _slingSpawnPos set [2, 0]; // ground spawn -- see fix 1
+                                                            _slingHeliSpawnIdx = _slingHeliSpawnIdx + 1;
+
+                                                            if (_debug) then {
+                                                                ["ML - PR_AIRDROP slingload heli spawn pos (ground): %1 class: %2 (idx=%3)",
+                                                                    _slingSpawnPos, _vehicleClass, _slingHeliSpawnIdx - 1] call ALiVE_fnc_dump;
+                                                            };
+
+                                                            // Create slingloading heli crew/vehicle pair
+                                                            private _slingProfiles = [_vehicleClass,_side,_eventFaction,"CAPTAIN",_slingSpawnPos,random(360),false,_eventFaction,true,true,[], [[_x], []]] call ALIVE_fnc_createProfilesCrewedVehicle;
+
+                                                            // Attach sling state
+                                                            [_slingLoadProfile,"slung",[[_slingProfiles select 1 select 2 select 4]]] call ALIVE_fnc_profileVehicle;
+
+                                                            _airdropTransportProfiles pushback (_slingProfiles select 0 select 2 select 4);
+                                                            _airdropTransportVehicleProfiles pushback (_slingProfiles select 1 select 2 select 4);
+
+                                                            // preventDespawn on all three profiles -- fix 2
+                                                            private _heliEntityProf  = _slingProfiles select 0;
+                                                            private _heliVehicleProf = _slingProfiles select 1;
+                                                            [_heliEntityProf, "spawnType", ["preventDespawn"]] call ALIVE_fnc_hashSet;
+                                                            [_heliVehicleProf, "spawnType", ["preventDespawn"]] call ALIVE_fnc_profileVehicle;
+                                                            [_slingLoadProfile, "spawnType", ["preventDespawn"]] call ALIVE_fnc_profileVehicle;
+                                                            [_heliVehicleProf, "alive_ml_pilot_entity_id",
+                                                                _heliEntityProf select 2 select 4] call ALIVE_fnc_hashSet;
+
+                                                            if (_debug) then {
+                                                                ["ML - PR_AIRDROP slingload: preventDespawn set on pilot %1 heli %2 truck %3",
+                                                                    _slingProfiles select 0 select 2 select 4,
+                                                                    _slingProfiles select 1 select 2 select 4, _x] call ALiVE_fnc_dump;
+                                                            };
+
+                                                            // Fuel watchdog
+                                                            [_logic, "spawnHelicopterFuelWatchdog", [
+                                                                _slingProfiles select 0 select 2 select 4,
+                                                                _remotePosition,
+                                                                _eventFaction
+                                                            ]] call MAINCLASS;
+                                                        };
+                                                    };
+                                                };
+                                            } forEach _groupProfile;
+                                        } forEach _vehicleGroupProfilesForSling;
+
+                                        // ---- Part B: infantry heli for all infantry profiles ----
+                                        if (count _infantryProfiles > 0) then {
+                                            private _infSpawnPos = [_logic, "findHelicopterLandingPos", [
+                                                _remotePosition, 200, 500
+                                            ]] call MAINCLASS;
+                                            _infSpawnPos set [2, 0]; // ground spawn -- fix 1
+
+                                            private _infHeliClass = selectRandom _airdropTransportGroups;
+                                            private _infProfiles = [_infHeliClass,_side,_eventFaction,"CAPTAIN",_infSpawnPos,random(360),false,_eventFaction,true,true] call ALIVE_fnc_createProfilesCrewedVehicle;
+
+                                            _airdropInfTransportProfID = _infProfiles select 0 select 2 select 4;
+                                            _airdropTransportProfiles pushback _airdropInfTransportProfID;
+                                            _airdropTransportVehicleProfiles pushback (_infProfiles select 1 select 2 select 4);
+
+                                            // preventDespawn on pilot + heli -- fix 2
+                                            private _infHeliEntityProf  = _infProfiles select 0;
+                                            private _infHeliVehicleProf = _infProfiles select 1;
+                                            [_infHeliEntityProf, "spawnType", ["preventDespawn"]] call ALIVE_fnc_hashSet;
+                                            [_infHeliVehicleProf, "spawnType", ["preventDespawn"]] call ALIVE_fnc_profileVehicle;
+                                            [_infHeliVehicleProf, "alive_ml_pilot_entity_id",
+                                                _infHeliEntityProf select 2 select 4] call ALIVE_fnc_hashSet;
+
+                                            // Assign all infantry to the heli -- fix 3
+                                            {
+                                                private _grpIDs = _x;
+                                                {
+                                                    if (!isNil "_x") then {
+                                                        private _infantryProfile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                                                        if (!isNil "_infantryProfile") then {
+                                                            [_infantryProfile, _infProfiles select 1] call ALIVE_fnc_createProfileVehicleAssignment;
+                                                            [_infantryProfile, "position", _infSpawnPos] call ALIVE_fnc_profileEntity;
+                                                        };
+                                                    };
+                                                } forEach _grpIDs;
+                                            } forEach _infantryProfiles;
+
+                                            if (_debug) then {
+                                                ["ML - PR_AIRDROP infantry heli: class=%1 spawn=%2 profID=%3 infantry groups=%4",
+                                                    _infHeliClass, _infSpawnPos, _airdropInfTransportProfID, count _infantryProfiles] call ALiVE_fnc_dump;
+                                            };
+
+                                            // Fuel watchdog
+                                            [_logic, "spawnHelicopterFuelWatchdog", [
+                                                _airdropInfTransportProfID,
+                                                _remotePosition,
+                                                _eventFaction
+                                            ]] call MAINCLASS;
+                                        };
+
+                                        // ---- Part C: assign destination waypoint to all transports ----
+                                        // Unified single-WP-per-heli loop (bug 6 fix: no double waypoint)
+                                        {
+                                            private _tProfile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                                            if (!isNil "_tProfile") then {
+                                                private _destWP = [_eventPosition, 200, "MOVE", "LIMITED", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
+                                                [_tProfile, "addWaypoint", _destWP] call ALIVE_fnc_profileEntity;
+                                            };
+                                        } forEach _airdropTransportProfiles;
+
+                                        _eventTransportProfiles = _eventTransportProfiles + _airdropTransportProfiles;
+                                        _eventTransportVehiclesProfiles = _eventTransportVehiclesProfiles + _airdropTransportVehicleProfiles;
+
+                                    } else {
+                                        ["ML - PR_AIRDROP: No air transport assets found for faction=%1 side=%2. Falling back to teleport -- profiles placed at destination.",
+                                            _eventFaction, _side] call ALiVE_fnc_dump;
+                                        // Fallback: teleport all cargo profiles to destination
+                                        {
+                                            {
+                                                private _p = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
+                                                if (!isNil "_p") then {
+                                                    [_p, "position", _eventPosition] call ALIVE_fnc_profileEntity;
+                                                };
+                                            } forEach _x;
+                                        } forEach (_infantryProfiles + _motorisedProfiles + _mechanisedProfiles);
+                                    };
+
+                                    // Store positions and infantry transport ID on event hash for state handlers
+                                    [_event, "departurePosition", _remotePosition] call ALIVE_fnc_hashSet;
+                                    [_event, "finalDestination", _eventPosition] call ALIVE_fnc_hashSet;
+                                    [_event, "airdropInfTransportProfID", _airdropInfTransportProfID] call ALIVE_fnc_hashSet;
+
                                     // update the state of the event
-                                    // next state is aridrop wait
-                                    [_event, "state", "airdropWait"] call ALIVE_fnc_hashSet;
+                                    // next state is airdropStart (full implementation, not stub)
+                                    [_event, "state", "airdropStart"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
                                     _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
@@ -11071,11 +11732,46 @@ switch(_operation) do {
             // reinforce profiles get released
             // to OPCOM control
 
+            // Resolve garrison position for player-requested reinforceIndividuals --
+            // use the event's final delivery position so they hold ground at the LZ
+            // rather than standing idle until OPCOM picks them up. Mirrors the AI-path
+            // treatment for _infantryProfiles above.
+            private _reinforceGarrisonPos = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
+            if (isNil "_reinforceGarrisonPos" || count _reinforceGarrisonPos == 0) then {
+                _reinforceGarrisonPos = _eventPosition;
+            };
+
             {
                 {
                     _profile = [ALIVE_profileHandler, "getProfile", _x] call ALIVE_fnc_profileHandler;
                     if!(isNil "_profile") then {
                         [_profile,"busy",false] call ALIVE_fnc_hashSet;
+
+                        // Clear any vehicle assignment left over from heli transport.
+                        // Player-requested reinforcements inserted via PR_HELI_INSERT
+                        // carry stale vehicleAssignments pointing at the (now destroyed)
+                        // transport heli. Without this cleanup, OPCOM sees corrupt
+                        // speedPerSecond and may fail to re-task them.
+                        private _vAssign = [_profile, "vehicleAssignments"] call ALIVE_fnc_hashGet;
+                        if (!isNil "_vAssign" && { typeName _vAssign == "ARRAY" } && { count _vAssign >= 2 } && { count (_vAssign select 1) > 0 }) then {
+                            private _emptyHash = [] call ALIVE_fnc_hashCreate;
+                            [_profile, "vehicleAssignments", _emptyHash] call ALIVE_fnc_hashSet;
+                            [_profile, "vehiclesInCargoOf", []] call ALIVE_fnc_hashSet;
+                            [_profile, "vehiclesInCommandOf", []] call ALIVE_fnc_hashSet;
+                            [_profile, "speedPerSecond", "Man" call ALIVE_fnc_vehicleGetSpeedPerSecond] call ALIVE_fnc_hashSet;
+                        };
+
+                        // Assign garrison duty at the delivery position so reinforcements
+                        // hold the area immediately on arrival. OPCOM can override this
+                        // with its own orders once it picks them up.
+                        [_profile, "setActiveCommand", [
+                            "ALIVE_fnc_managedGarrison", "managed", [200, "false", _reinforceGarrisonPos]
+                        ]] call ALIVE_fnc_profileEntity;
+
+                        if (_debug) then {
+                            ["ML - setEventProfilesAvailable: Garrison assigned to reinforceIndividual %1 at %2",
+                                _x, _reinforceGarrisonPos] call ALiVE_fnc_dump;
+                        };
                     };
                 } forEach _x;
 
@@ -11391,9 +12087,18 @@ switch(_operation) do {
 
                                 _payloadProfile = [ALIVE_profileHandler, "getProfile", _payloadProfileID] call ALIVE_fnc_profileHandler;
 
+                                // Guard: getProfile returns nil when a payload profile has
+                                // been un-registered before cleanup runs (e.g. transport heli
+                                // destroyed during RTB). Calling hashGet on nil throws
+                                // "[any,'type']" and leaves _isEntity undeclared, cascading a
+                                // second "Undefined variable _isEntity" error on the if() below.
+                                if (isNil "_payloadProfile") exitWith {
+                                    ["ML - setEventProfilesAvailable: skipping un-registered payload profile %1", _payloadProfileID] call ALiVE_fnc_dump;
+                                };
+
                                 _isEntity = [_payloadProfile,"type"] call ALiVE_fnc_hashGet != "vehicle";
 
-                                if(!(isNil "_payloadProfile") && _isEntity) then {
+                                if (_isEntity) then {
                                     [_payloadProfile, "addWaypoint", _profileWaypoint] call ALIVE_fnc_profileEntity;
                                     _profileCount = _profileCount + 1;
                                 };

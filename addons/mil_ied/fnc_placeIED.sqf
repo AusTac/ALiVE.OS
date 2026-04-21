@@ -33,46 +33,80 @@ private ["_chokepoints","_chokepointPositions"];
 _chokepoints = [];
 _chokepointPositions = [];
 
+// Shared offset helper: returns [X,Y,Z] offset from _base by _dist metres
+// along compass bearing _bearing (degrees). Z is preserved from _base.
+private _fnOffset = {
+    params ["_base", "_bearing", "_dist"];
+    private _rad = _bearing * (pi / 180);
+    [
+        (_base select 0) + (_dist * sin _rad),
+        (_base select 1) + (_dist * cos _rad),
+        _base select 2
+    ]
+};
+
+// Shared width helper: derives road half-width from getRoadInfo, falling back
+// by road type when the width index is missing or implausible. getRoadInfo
+// returns [type, width, isPaved, isLimited, texture] but width is unreliable
+// on modded maps - defaulting purely to 6m is too tight for MAIN ROAD.
+private _fnHalfWidth = {
+    params ["_road"];
+    private _info  = getRoadInfo _road;
+    private _type  = if (count _info > 0) then { toUpper (_info select 0) } else { "" };
+    private _width = if (count _info > 1 && { (_info select 1) > 1 }) then {
+        _info select 1
+    } else {
+        switch (_type) do {
+            case "MAIN ROAD": { 10 };
+            case "ROAD":      { 7 };
+            case "TRACK":     { 4 };
+            default           { 6 };
+        };
+    };
+    (_width / 2) max 3
+};
+
 if (_addroads) then {
     // Find tactical chokepoints (bridges, narrow roads, etc.)
     _chokepoints = ["findChokepoints", [_location, _size]] call ALIVE_fnc_IEDPlacementHelpers;
-    
+
     // Extract top chokepoint positions and add with VERY high weight
     private ["_maxChokepoints","_count"];
     _maxChokepoints = 10; // Limit to top 10 chokepoints
     _count = (count _chokepoints) min _maxChokepoints;
-    
+
     for "_i" from 0 to (_count - 1) do {
-        private ["_chokepointData","_chokepointPos","_score"];
+        private ["_chokepointData","_chokepointPos","_score","_chokepointRoad"];
         _chokepointData = _chokepoints select _i;
-        _chokepointPos = _chokepointData select 0;  // raw road centre
-        _score = _chokepointData select 1;
-        
+        _chokepointPos  = _chokepointData select 0;  // raw road centre
+        _score          = _chokepointData select 1;
+        _chokepointRoad = if (count _chokepointData > 2) then { _chokepointData select 2 } else { objNull };
+
         // Store road centre for chokepoint overlap-checks
         _chokepointPositions pushBack _chokepointPos;
-        
-        // Generate roadside offsets for the chokepoint.
-        // Use four perpendicular directions at a distance that clears the
-        // carriageway. We don't have the road object here (only its position
-        // from the helpers), so use the conservative 6m half-width fallback
-        // (halfWidth=3 + 1m clear + up to 3m scatter = 4-7m from centre).
-        // This reliably clears any road type including main roads (~5m half-width).
-        private _fnChokePt = {
-            params ["_base", "_bearing", "_dist"];
-            private _rad = _bearing * (pi / 180);
-            [
-                (_base select 0) + (_dist * sin _rad),
-                (_base select 1) + (_dist * cos _rad),
-                _base select 2
-            ]
+
+        // Resolve the road object so we can offset truly perpendicular to the
+        // carriageway. Absolute-bearing offsets (N/E/S/W) can land ON the road
+        // when it runs diagonally - we need the road's own direction vector.
+        if (isNull _chokepointRoad) then {
+            private _nearby = _chokepointPos nearRoads 5;
+            if (count _nearby > 0) then { _chokepointRoad = _nearby select 0; };
         };
 
-        private _cpDist = 5.0 + random 3.0; // 5-8m from centre, clears all road types
+        private _heading = if (!isNull _chokepointRoad) then { direction _chokepointRoad } else { 0 };
+        private _halfWidth = if (!isNull _chokepointRoad) then {
+            [_chokepointRoad] call _fnHalfWidth
+        } else {
+            3  // conservative fallback when no road object resolvable
+        };
+
+        // Verge band identical to regular roads - halfWidth + 1m clear, +0..3m scatter
+        private _vergeMin = _halfWidth + 1.0;
+        private _vergeMax = _halfWidth + 4.0;
+
         private _offsetsCP = [
-            [_chokepointPos,   0, _cpDist] call _fnChokePt,
-            [_chokepointPos,  90, _cpDist] call _fnChokePt,
-            [_chokepointPos, 180, _cpDist] call _fnChokePt,
-            [_chokepointPos, 270, _cpDist] call _fnChokePt
+            [_chokepointPos, _heading + 90, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset,
+            [_chokepointPos, _heading - 90, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset
         ];
 
         // Add offsets with weight based on score (same weighting as before)
@@ -80,12 +114,12 @@ if (_addroads) then {
         if (_score >= 80) then { _weight = 6; } else {
             if (_score >= 50) then { _weight = 4; };
         };
-        
+
         for "_w" from 1 to _weight do {
             { _candidateSpots pushBack _x; } forEach _offsetsCP;
         };
     };
-    
+
     if (ADDON getVariable ["debug", false]) then {
         diag_log format ["ALIVE-IED placeIED: Found %1 chokepoints, using top %2", count _chokepoints, _count];
     };
@@ -129,19 +163,13 @@ If (_addroads) then {
 
         if (!_isChokepoint) then {
             // Compute perpendicular offsets that clear the carriageway.
-            // Road segment centres are mid-carriageway; offsets must exceed
-            // the road half-width to land on the verge, not the tarmac.
-            //
-            // getRoadInfo returns [type, width, isPaved, isLimited, texture]
-            // We use the actual road width to set a minimum safe clearance.
-            // If getRoadInfo is unavailable/empty we fall back to 6m (safe for
-            // most Arma 3 road types).
-            private _roadInfo  = getRoadInfo _road;
-            private _roadWidth = if (count _roadInfo > 1) then { _roadInfo select 1 } else { 6 };
-            private _halfWidth = (_roadWidth / 2) max 3; // at least 3m half-width
+            // Road centres are mid-carriageway; offsets must exceed the road
+            // half-width to land on the verge. Half-width is derived with
+            // type-aware fallbacks so a missing getRoadInfo width doesn't
+            // leave MAIN ROAD offsets in the tarmac.
+            private _halfWidth = [_road] call _fnHalfWidth;
 
-            // Verge band: halfWidth + 1m minimum clear, +0–3m random scatter
-            // This ensures the near edge of the IED is always off the road surface.
+            // Verge band: halfWidth + 1m minimum clear, +0-3m random scatter
             private _vergeMin  = _halfWidth + 1.0;
             private _vergeMax  = _halfWidth + 4.0;
 
@@ -149,17 +177,7 @@ If (_addroads) then {
             private _perpL   = _heading + 90;
             private _perpR   = _heading - 90;
 
-            private _fnOffset = {
-                params ["_base", "_bearing", "_dist"];
-                private _rad = _bearing * (pi / 180);
-                [
-                    (_base select 0) + (_dist * sin _rad),
-                    (_base select 1) + (_dist * cos _rad),
-                    _base select 2
-                ]
-            };
-
-            // Primary verge — fully clear of road, both sides (3x weight each)
+            // Primary verge - fully clear of road, both sides (3x weight each)
             private _offsetL1 = [_roadPos, _perpL, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset;
             private _offsetR1 = [_roadPos, _perpR, _vergeMin + random (_vergeMax - _vergeMin)] call _fnOffset;
             for "_w" from 1 to 3 do {
@@ -167,7 +185,7 @@ If (_addroads) then {
                 _candidateSpots pushBack _offsetR1;
             };
 
-            // Outer verge — slightly further out for better concealment (2x weight each)
+            // Outer verge - slightly further out for better concealment (2x weight each)
             private _outerDist = _vergeMax + random 2.0;
             private _offsetL2 = [_roadPos, _perpL, _outerDist] call _fnOffset;
             private _offsetR2 = [_roadPos, _perpR, _outerDist] call _fnOffset;
@@ -176,8 +194,10 @@ If (_addroads) then {
             _candidateSpots pushBack _offsetR2;
             _candidateSpots pushBack _offsetR2;
 
-            // Road centre — absolute last resort, 1x weight only
-            _candidateSpots pushBack _roadPos;
+            // NOTE: road centre is deliberately NOT added as a fallback candidate.
+            // A bare IED on the tarmac is trivially spotted; better to place no
+            // IED here than an obvious one. If every verge offset fails validation
+            // this road segment is simply skipped.
         };
 
     } forEach _allRoads;
@@ -233,7 +253,18 @@ if (ADDON getVariable ["debug", false]) then {
             diag_log format ["ALIVE-IED: Position rejected (water) at %1", _pos];
         };
     };
-    
+
+    // Check 1b: Not on road surface (safety net)
+    // Even with correct perpendicular offsets, intersections/overpasses/roundabouts
+    // can place the offset on a neighbouring road. Reject those outright so the
+    // IED never ends up on visible tarmac.
+    if (_isValid && isOnRoad _pos) then {
+        _isValid = false;
+        if (ADDON getVariable ["debug", false]) then {
+            diag_log format ["ALIVE-IED: Position rejected (still on road after offset) at %1", _pos];
+        };
+    };
+
     // Check 2: Terrain slope validation (flat terrain only)
     if (_isValid) then {
         _terrainNormal = surfaceNormal _pos;

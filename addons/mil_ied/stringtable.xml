@@ -4,186 +4,641 @@
 <Container name="STR_DN">
 <Key ID="STR_ALIVE_IED">
     <English>Military IED Threat</English>
-	<Chinesesimp>军事简易爆炸装置威胁</Chinesesimp>
+    <Chinese>軍事 IED 威脅</Chinese>
+    <Chinesesimp>军事简易爆炸装置威胁</Chinesesimp>
+    <Spanish>Amenaza militar de IED</Spanish>
+    <French>Menace IED militaire</French>
+    <Portuguese>Ameaça militar de IED</Portuguese>
+    <Russian>Военная угроза СВУ</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_COMMENT">
     <English>Ambient IEDs, VB-IEDs and Suicide Bombers</English>
-	<Chinesesimp>环境简易爆炸装置、车载简易爆炸装置和自杀式炸弹袭击者</Chinesesimp>
+    <Chinese>環境 IED、車載 IED 和自殺炸彈客</Chinese>
+    <Chinesesimp>环境简易爆炸装置、车载简易爆炸装置和自杀式炸弹袭击者</Chinesesimp>
+    <Spanish>IED ambientales, VB-IED y terroristas suicidas</Spanish>
+    <French>IED d'ambiance, VB-IED et kamikazes</French>
+    <Portuguese>IEDs ambientais, VB-IEDs e homens-bomba</Portuguese>
+    <Russian>Фоновые СВУ, СВУ на ТС и смертники</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_DEBUG">
     <English>Enable debug:</English>
-	<Chinesesimp>启用调试：</Chinesesimp>
+    <Chinese>啟用調試：</Chinese>
+    <Chinesesimp>启用调试：</Chinesesimp>
+    <Spanish>Activar depuración:</Spanish>
+    <French>Activer le débogage:</French>
+    <Portuguese>Ativar depuração:</Portuguese>
+    <Russian>Включить отладку:</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_DEBUG_COMMENT">
-    <English>Enables debug</English>
-	<Chinesesimp>启用调试</Chinesesimp>
+    <English>Enables IED module debug — diag_log dumps of placement attempts, trigger events and detonation outcomes.</English>
+    <Chinese>啟用 IED 模組調試 — 將佈放嘗試、觸發事件和引爆結果記錄到 diag_log。</Chinese>
+    <Chinesesimp>启用 IED 模块调试 — 将布放尝试、触发事件和引爆结果记录到 diag_log。</Chinesesimp>
+    <Spanish>Activa la depuración del módulo de IED — vuelca al diag_log los intentos de colocación, eventos de activación y resultados de detonación.</Spanish>
+    <French>Active le débogage du module IED — journalise dans diag_log les tentatives de placement, les événements de déclenchement et les résultats de détonation.</French>
+    <Portuguese>Ativa a depuração do módulo de IED — registra no diag_log tentativas de colocação, eventos de acionamento e resultados de detonação.</Portuguese>
+    <Russian>Включает отладку модуля СВУ — запись в diag_log попыток размещения, событий срабатывания и результатов детонации.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_PERSISTENCE">
     <English>Persist IEDs:</English>
-	<Chinesesimp>持久型简易爆炸装置:</Chinesesimp>
+    <Chinese>IED 持久化：</Chinese>
+    <Chinesesimp>IED 持久化：</Chinesesimp>
+    <Spanish>IED persistentes:</Spanish>
+    <French>IED persistants:</French>
+    <Portuguese>IEDs persistentes:</Portuguese>
+    <Russian>Сохранять СВУ:</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_PERSISTENCE_COMMENT">
-    <English>Persist IED locations over mission loads</English>
-	<Chinesesimp>在任务负载上保持简易爆炸装置位置</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_ied_IED_Detection">
-    <English>IED Detection Alert:</English>
-	<Chinesesimp>简易爆炸装置检测警报：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_ied_IED_Detection_COMMENT">
-    <English>Choose the type of notification a player will recieve when detecting an IED</English>
-	<Chinesesimp>选择玩家在检测到简易爆炸装置时将收到的通知类型</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Detection_Device">
-    <English>IED Detector Class:</English>
-	<Chinesesimp>简易爆炸装置探测器类别：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Detection_Device_COMMENT">
-    <English>Enter the class name of the device used to detect IEDs</English>
-	<Chinesesimp>输入用于检测简易爆炸装置的设备的类名</Chinesesimp>
+    <English>Persist IED locations and disarmed state across mission saves and reloads. Requires the ALiVE persistence backend.</English>
+    <Chinese>跨任務存檔和重新載入保存 IED 位置和解除狀態。需要 ALiVE 持久化後端。</Chinese>
+    <Chinesesimp>跨任务存档和重新载入保存 IED 位置和解除状态。需要 ALiVE 持久化后端。</Chinesesimp>
+    <Spanish>Persiste las ubicaciones de los IED y su estado de desactivación entre guardados y recargas de la misión. Requiere el backend de persistencia de ALiVE.</Spanish>
+    <French>Conserve les emplacements des IED et leur état de désamorçage entre les sauvegardes et les rechargements de mission. Nécessite le backend de persistance ALiVE.</French>
+    <Portuguese>Mantém as localizações dos IEDs e o estado de desarme entre saves e recargas de missão. Requer o backend de persistência do ALiVE.</Portuguese>
+    <Russian>Сохраняет расположение СВУ и их состояние обезвреживания между сохранениями и перезагрузками миссии. Требуется серверная часть ALiVE persistence.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_TAOR">
     <English>TAOR Marker:</English>
-	<Chinesesimp>TAOR 标记：</Chinesesimp>
+    <Chinese>TAOR 標記：</Chinese>
+    <Chinesesimp>TAOR 标记：</Chinesesimp>
+    <Spanish>Marcador TAOR:</Spanish>
+    <French>Marqueur TAOR:</French>
+    <Portuguese>Marcador TAOR:</Portuguese>
+    <Russian>Маркер TAOR:</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_TAOR_COMMENT">
     <English>Restricts IED and bomber placement to objectives inside this marker (or markers). Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2. Leave blank to use the entire map.</English>
-	<Chinesesimp>战术区作战责任标记</Chinesesimp>
+    <Chinese>將 IED 和炸彈客的佈放限制在此標記（或多個標記）內的目標。輸入編輯器中放置的標記的確切名稱。多個標記：用逗號分隔，無空格，無引號 — 例如 marker1,marker2。留空表示使用整張地圖。</Chinese>
+    <Chinesesimp>将 IED 和炸弹客的布放限制在此标记（或多个标记）内的目标。输入编辑器中放置的标记的确切名称。多个标记：用逗号分隔，无空格，无引号 — 例如 marker1,marker2。留空表示使用整张地图。</Chinesesimp>
+    <Spanish>Restringe la colocación de IED y terroristas suicidas a los objetivos dentro de este marcador (o marcadores). Introduce el nombre del marcador tal como está colocado en el editor. Varios marcadores: sepáralos con coma, sin espacios ni comillas — p. ej. marker1,marker2. Déjalo en blanco para usar todo el mapa.</Spanish>
+    <French>Restreint le placement des IED et des kamikazes aux objectifs situés à l'intérieur de ce marqueur (ou de ces marqueurs). Saisissez le nom du marqueur exactement tel que placé dans l'éditeur. Plusieurs marqueurs: séparez-les par une virgule, sans espace ni guillemets — p. ex. marker1,marker2. Laissez vide pour utiliser toute la carte.</French>
+    <Portuguese>Restringe a colocação de IEDs e homens-bomba aos objetivos dentro deste marcador (ou marcadores). Digite o nome do marcador exatamente como colocado no editor. Vários marcadores: separe com vírgula, sem espaços nem aspas — ex. marker1,marker2. Deixe em branco para usar o mapa inteiro.</Portuguese>
+    <Russian>Ограничивает размещение СВУ и смертников объектами внутри этого маркера (или маркеров). Введите имя маркера точно так, как оно задано в редакторе. Несколько маркеров: разделяйте запятой, без пробелов и кавычек — например, marker1,marker2. Оставьте пустым, чтобы использовать всю карту.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_BLACKLIST">
     <English>Blacklist Marker:</English>
-	<Chinesesimp>黑名单标记：</Chinesesimp>
+    <Chinese>黑名單標記：</Chinese>
+    <Chinesesimp>黑名单标记：</Chinesesimp>
+    <Spanish>Marcador de lista negra:</Spanish>
+    <French>Marqueur de liste noire:</French>
+    <Portuguese>Marcador de lista negra:</Portuguese>
+    <Russian>Маркер чёрного списка:</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_BLACKLIST_COMMENT">
     <English>Excludes areas inside this marker (or markers) from IED and bomber placement. Enter the marker name exactly as placed in the editor. Multiple markers: separate with a comma, no spaces, no quotes — e.g. marker1,marker2.</English>
-	<Chinesesimp>排除标记</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Roadblocks">
-    <English>Roadblocks:</English>
-	<Chinesesimp>路障：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Roadblocks_COMMENT">
-    <English>Define the probability of roadblocks within the AO</English>
-	<Chinesesimp>定义行动区域内出现路障的概率</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Threat">
-    <English>IED Threat:</English>
-	<Chinesesimp>简易爆炸装置威胁：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Threat_Level">
-    <English>IED Threat Level</English>
-	<Chinesesimp>简易爆炸装置威胁等级</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Threat_COMMENT">
-    <English>Define the level of IED Threat within the AO</English>
-	<Chinesesimp>定义行动区域内的简易爆炸装置威胁级别</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Starting_Threat">
-    <English>Starting IED Threat:</English>
-	<Chinesesimp>初始简易爆炸装置威胁级别</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_IED_Starting_Threat_COMMENT">
-    <English>Define the initial starting threat of IED's on first Mission load when IED module is synced to the Military Commander</English>
-	<Chinesesimp>当简易爆炸装置模块同步到军事指挥官时,定义简易爆炸装置在第一次任务加载时的初始启动威胁</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_VB_IED_Threat">
-    <English>Vehicle Borne IED Threat:</English>
-	<Chinesesimp>车载简易爆炸装置威胁：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_VB_IED_Threat_Level">
-    <English>Vehicle Borne IED Threat Level</English>
-	<Chinesesimp>车载简易爆炸装置威胁等级</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_VB_IED_Threat_COMMENT">
-    <English>Define the probability of VB-IED threat within the AO</English>
-	<Chinesesimp>定义行动区域内车载简易爆炸装置威胁的概率</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_VB_IED_Side">
-    <English>Bomber/Vehicle IED Side:</English>
-	<Chinesesimp>自杀式炸弹袭击者/车载简易爆炸装置阵营</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_VB_IED_Side_COMMENT">
-    <English>Define which sides bombers/vehicles will carry IEDs</English>
-	<Chinesesimp>定义哪些阵营的自杀式炸弹袭击者/车辆会携带简易爆炸装置阵营</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Bomber_Threat">
-    <English>Suicide Bomber Threat:</English>
-	<Chinesesimp>自杀式炸弹袭击者威胁：</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Bomber_Threat_Level">
-    <English>Suicide Bomber Threat Level</English>
-	<Chinesesimp>自杀式炸弹袭击者威胁等级</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Bomber_Threat_COMMENT">
-    <English>Define the probability of suicide bomber threat within the AO</English>
-	<Chinesesimp>定义行动区域内自杀式炸弹袭击者威胁的概率</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Bomber_Type">
-    <English>(Optional) Bomber Classes:</English>
-	<Chinesesimp>（可选）自杀式炸弹袭击者种类</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_BOMBER_TYPE_COMMENT">
-    <English>Optionally specify a list of bomber classes here i.e. ["C_Nikos","C_Nikos_aged"]</English>
-	<Chinesesimp>在此选择性地指定一个自杀式炸弹袭击者种类列表</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_IED_Bomber_Vest">
-    <English>(Optional) Bomber Vest Class:</English>
-</Key>
-<Key ID="STR_ALIVE_IED_BOMBER_VEST_COMMENT">
-    <English>Vest class placed on suicide bombers. Accepts a single classname or a comma-separated list — one is chosen at random per bomber. Leave blank for the default ALiVE suicide vest. Example: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</English>
+    <Chinese>將此標記（或多個標記）內的區域排除在 IED 和炸彈客佈放之外。輸入編輯器中放置的標記的確切名稱。多個標記：用逗號分隔，無空格，無引號 — 例如 marker1,marker2。</Chinese>
+    <Chinesesimp>将此标记（或多个标记）内的区域排除在 IED 和炸弹客布放之外。输入编辑器中放置的标记的确切名称。多个标记：用逗号分隔，无空格，无引号 — 例如 marker1,marker2。</Chinesesimp>
+    <Spanish>Excluye las áreas dentro de este marcador (o marcadores) de la colocación de IED y terroristas suicidas. Introduce el nombre del marcador tal como está colocado en el editor. Varios marcadores: sepáralos con coma, sin espacios ni comillas — p. ej. marker1,marker2.</Spanish>
+    <French>Exclut les zones à l'intérieur de ce marqueur (ou de ces marqueurs) du placement des IED et des kamikazes. Saisissez le nom du marqueur exactement tel que placé dans l'éditeur. Plusieurs marqueurs: séparez-les par une virgule, sans espace ni guillemets — p. ex. marker1,marker2.</French>
+    <Portuguese>Exclui as áreas dentro deste marcador (ou marcadores) da colocação de IEDs e homens-bomba. Digite o nome do marcador exatamente como colocado no editor. Vários marcadores: separe com vírgula, sem espaços nem aspas — ex. marker1,marker2.</Portuguese>
+    <Russian>Исключает области внутри этого маркера (или маркеров) из размещения СВУ и смертников. Введите имя маркера точно так, как оно задано в редакторе. Несколько маркеров: разделяйте запятой, без пробелов и кавычек — например, marker1,marker2.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_AI_TRIGGER">
     <English>AI Units Trigger IEDs:</English>
+    <Chinese>AI 單位觸發 IED：</Chinese>
+    <Chinesesimp>AI 单位触发 IED：</Chinesesimp>
+    <Spanish>Unidades IA activan IED:</Spanish>
+    <French>Unités IA déclenchent les IED:</French>
+    <Portuguese>Unidades IA acionam IEDs:</Portuguese>
+    <Russian>Юниты ИИ подрывают СВУ:</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_AI_TRIGGER_COMMENT">
-    <English>When enabled, IEDs and suicide bombers will also be triggered by AI units (not just players). Enables immersive threat to virtual units and AI-controlled forces. Default: No (player-only, original behaviour)</English>
+    <English>When enabled, IEDs and suicide bombers also detonate on AI units, not just players. Adds an immersive threat to virtual units and AI-controlled forces. Default: No (player-only, original behaviour).</English>
+    <Chinese>啟用時，IED 和自殺炸彈客也會在 AI 單位上引爆，不僅限於玩家。為虛擬單位和 AI 控制部隊增添沉浸式威脅。預設：否（僅玩家，原始行為）。</Chinese>
+    <Chinesesimp>启用时，IED 和自杀炸弹客也会在 AI 单位上引爆，不仅限于玩家。为虚拟单位和 AI 控制部队增添沉浸式威胁。默认：否（仅玩家，原始行为）。</Chinesesimp>
+    <Spanish>Cuando está activado, los IED y terroristas suicidas también detonan sobre unidades IA, no solo sobre jugadores. Añade una amenaza inmersiva a las unidades virtuales y a las fuerzas controladas por IA. Predeterminado: No (solo jugadores, comportamiento original).</Spanish>
+    <French>Lorsqu'activé, les IED et les kamikazes se déclenchent également sur les unités IA, pas seulement sur les joueurs. Ajoute une menace immersive pour les unités virtuelles et les forces contrôlées par l'IA. Par défaut: Non (joueurs uniquement, comportement d'origine).</French>
+    <Portuguese>Quando ativado, IEDs e homens-bomba também detonam em unidades IA, não apenas em jogadores. Adiciona uma ameaça imersiva às unidades virtuais e forças controladas por IA. Padrão: Não (apenas jogadores, comportamento original).</Portuguese>
+    <Russian>При включении СВУ и смертники также срабатывают на юнитах ИИ, а не только на игроках. Добавляет погружающую угрозу виртуальным юнитам и силам под управлением ИИ. По умолчанию: Нет (только игроки, исходное поведение).</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_Locs_IED">
+<Key ID="STR_ALIVE_IED_INTEGRATION">
+    <English>Integration:</English>
+    <Chinese>整合：</Chinese>
+    <Chinesesimp>整合：</Chinesesimp>
+    <Spanish>Integración:</Spanish>
+    <French>Intégration:</French>
+    <Portuguese>Integração:</Portuguese>
+    <Russian>Интеграция:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_INTEGRATION_COMMENT">
+    <English>Who handles IED arming and detonation. The dropdown is populated from Cfg3rdPartyIEDs at Eden-open time — only mods that are actually loaded right now appear. Auto uses the first detected mine-mode integration; Force ALiVE keeps ALiVE's pipeline regardless; Defer to &lt;mod&gt; uses that specific mod's mode. See RPT for detection details at mission start.</English>
+    <Chinese>誰處理 IED 的佈放和引爆。下拉選單在打開 Eden 時從 Cfg3rdPartyIEDs 填充 — 僅顯示目前實際載入的模組。自動 使用第一個偵測到的地雷模式整合；強制 ALiVE 無論如何都保留 ALiVE 的管線；委派給 &lt;模組&gt; 使用該特定模組的模式。任務開始時的偵測詳情請參閱 RPT。</Chinese>
+    <Chinesesimp>谁处理 IED 的布放和引爆。下拉菜单在打开 Eden 时从 Cfg3rdPartyIEDs 填充 — 仅显示当前实际载入的模组。自动 使用第一个检测到的地雷模式集成；强制 ALiVE 无论如何都保留 ALiVE 的管线；委派给 &lt;模组&gt; 使用该特定模组的模式。任务开始时的检测详情请参阅 RPT。</Chinesesimp>
+    <Spanish>Quién gestiona el armado y la detonación de los IED. El desplegable se rellena desde Cfg3rdPartyIEDs al abrir Eden — solo aparecen los mods cargados en ese momento. Automático usa la primera integración de modo mina detectada; Forzar ALiVE mantiene la canalización de ALiVE en cualquier caso; Delegar en &lt;mod&gt; usa el modo de ese mod específico. Consulta el RPT para detalles de detección al inicio de la misión.</Spanish>
+    <French>Qui gère l'armement et la détonation des IED. La liste déroulante est remplie à partir de Cfg3rdPartyIEDs à l'ouverture d'Eden — seuls les mods réellement chargés apparaissent. Auto utilise la première intégration de mode mine détectée; Forcer ALiVE conserve le pipeline ALiVE quoi qu'il arrive; Déléguer à &lt;mod&gt; utilise le mode de ce mod spécifique. Voir le RPT pour les détails de détection au démarrage de la mission.</French>
+    <Portuguese>Quem cuida do armamento e detonação dos IEDs. O menu suspenso é preenchido a partir de Cfg3rdPartyIEDs ao abrir o Eden — apenas os mods carregados no momento aparecem. Automático usa a primeira integração de modo mina detectada; Forçar ALiVE mantém o pipeline do ALiVE de qualquer forma; Delegar a &lt;mod&gt; usa o modo daquele mod específico. Veja o RPT para detalhes de detecção no início da missão.</Portuguese>
+    <Russian>Кто обрабатывает активацию и подрыв СВУ. Выпадающий список заполняется из Cfg3rdPartyIEDs при открытии Eden — появляются только фактически загруженные моды. Авто использует первую обнаруженную интеграцию минного режима; Принудительно ALiVE оставляет конвейер ALiVE в любом случае; Передать &lt;моду&gt; использует режим указанного мода. Подробности обнаружения при старте миссии см. в RPT.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_THREAT">
+    <English>IED Threat:</English>
+    <Chinese>IED 威脅：</Chinese>
+    <Chinesesimp>IED 威胁：</Chinesesimp>
+    <Spanish>Amenaza de IED:</Spanish>
+    <French>Menace IED:</French>
+    <Portuguese>Ameaça de IED:</Portuguese>
+    <Russian>Угроза СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_THREAT_COMMENT">
+    <English>Maximum number of roadside / urban IEDs the module can sustain across the AO. None = 0, Low = 50, Medium = 100, High = 200, Extreme = 350. The actual count grows toward the cap as players engage with objectives.</English>
+    <Chinese>模組可在 AO 中維持的路邊／城市 IED 最大數量。無 = 0，低 = 50，中 = 100，高 = 200，極高 = 350。玩家與目標互動時，實際數量會向上限增長。</Chinese>
+    <Chinesesimp>模块可在 AO 中维持的路边／城市 IED 最大数量。无 = 0，低 = 50，中 = 100，高 = 200，极高 = 350。玩家与目标互动时，实际数量会向上限增长。</Chinesesimp>
+    <Spanish>Número máximo de IED de carretera / urbanos que el módulo puede mantener en la ZO. Ninguno = 0, Bajo = 50, Medio = 100, Alto = 200, Extremo = 350. El recuento real crece hacia el límite a medida que los jugadores interactúan con los objetivos.</Spanish>
+    <French>Nombre maximum d'IED routiers / urbains que le module peut maintenir dans la ZO. Aucun = 0, Faible = 50, Moyen = 100, Élevé = 200, Extrême = 350. Le nombre réel croît vers le plafond à mesure que les joueurs interagissent avec les objectifs.</French>
+    <Portuguese>Número máximo de IEDs de estrada / urbanos que o módulo pode manter na AO. Nenhum = 0, Baixo = 50, Médio = 100, Alto = 200, Extremo = 350. A contagem real cresce em direção ao limite à medida que os jogadores interagem com os objetivos.</Portuguese>
+    <Russian>Максимальное число придорожных / городских СВУ, которое модуль поддерживает в зоне операций. Нет = 0, Низко = 50, Средне = 100, Высоко = 200, Экстрим = 350. Фактическое число растёт к пределу по мере взаимодействия игроков с объектами.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_STARTING_THREAT">
+    <English>Starting IED Threat:</English>
+    <Chinese>初始 IED 威脅：</Chinese>
+    <Chinesesimp>初始 IED 威胁：</Chinesesimp>
+    <Spanish>Amenaza inicial de IED:</Spanish>
+    <French>Menace IED initiale:</French>
+    <Portuguese>Ameaça inicial de IED:</Portuguese>
+    <Russian>Начальная угроза СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_STARTING_THREAT_COMMENT">
+    <English>Initial number of IEDs already placed at mission start (before any player engagement). None = 0, Low = 50, Medium = 100, High = 200, Extreme = 350. Useful for missions starting in established insurgent territory.</English>
+    <Chinese>任務開始時已佈放的 IED 初始數量（在任何玩家交戰之前）。無 = 0，低 = 50，中 = 100，高 = 200，極高 = 350。適用於在已建立的叛亂分子領土中開始的任務。</Chinese>
+    <Chinesesimp>任务开始时已布放的 IED 初始数量（在任何玩家交战之前）。无 = 0，低 = 50，中 = 100，高 = 200，极高 = 350。适用于在已建立的叛乱分子领土中开始的任务。</Chinesesimp>
+    <Spanish>Número inicial de IED ya colocados al inicio de la misión (antes de cualquier enfrentamiento con jugadores). Ninguno = 0, Bajo = 50, Medio = 100, Alto = 200, Extremo = 350. Útil para misiones que comienzan en territorio insurgente consolidado.</Spanish>
+    <French>Nombre initial d'IED déjà placés au début de la mission (avant tout engagement de joueur). Aucun = 0, Faible = 50, Moyen = 100, Élevé = 200, Extrême = 350. Utile pour les missions commençant en territoire insurgé établi.</French>
+    <Portuguese>Número inicial de IEDs já colocados no início da missão (antes de qualquer engajamento de jogador). Nenhum = 0, Baixo = 50, Médio = 100, Alto = 200, Extremo = 350. Útil para missões que começam em território insurgente consolidado.</Portuguese>
+    <Russian>Начальное число СВУ, уже размещённых на старте миссии (до любых действий игроков). Нет = 0, Низко = 50, Средне = 100, Высоко = 200, Экстрим = 350. Полезно для миссий, начинающихся на устоявшейся территории повстанцев.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_DETECTION">
+    <English>IED Detection Alert:</English>
+    <Chinese>IED 偵測警報：</Chinese>
+    <Chinesesimp>IED 检测警报：</Chinesesimp>
+    <Spanish>Alerta de detección de IED:</Spanish>
+    <French>Alerte de détection IED:</French>
+    <Portuguese>Alerta de detecção de IED:</Portuguese>
+    <Russian>Оповещение обнаружения СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_DETECTION_COMMENT">
+    <English>Choose the type of notification a player will receive when detecting an IED. None = silent. Text = on-screen hint. Audio = audio cue + hint.</English>
+    <Chinese>選擇玩家偵測到 IED 時收到的通知類型。無 = 無聲。文字 = 螢幕提示。音訊 = 音效 + 提示。</Chinese>
+    <Chinesesimp>选择玩家检测到 IED 时收到的通知类型。无 = 无声。文字 = 屏幕提示。音频 = 音效 + 提示。</Chinesesimp>
+    <Spanish>Elige el tipo de notificación que recibirá un jugador al detectar un IED. Ninguna = silencio. Texto = aviso en pantalla. Audio = señal sonora + aviso.</Spanish>
+    <French>Choisissez le type de notification qu'un joueur recevra à la détection d'un IED. Aucune = silencieux. Texte = indice à l'écran. Audio = signal sonore + indice.</French>
+    <Portuguese>Escolha o tipo de notificação que um jogador receberá ao detectar um IED. Nenhuma = silencioso. Texto = dica na tela. Áudio = sinal sonoro + dica.</Portuguese>
+    <Russian>Выберите тип уведомления, получаемого игроком при обнаружении СВУ. Нет = без звука. Текст = подсказка на экране. Аудио = звуковой сигнал + подсказка.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_DETECTION_DEVICE">
+    <English>IED Detector Class:</English>
+    <Chinese>IED 偵測器類別：</Chinese>
+    <Chinesesimp>IED 检测器类别：</Chinesesimp>
+    <Spanish>Clase del detector de IED:</Spanish>
+    <French>Classe du détecteur IED:</French>
+    <Portuguese>Classe do detector de IED:</Portuguese>
+    <Russian>Класс детектора СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_DETECTION_DEVICE_COMMENT">
+    <English>Classname of the inventory item that grants IED detection. Default: MineDetector. Set a different classname if your modset uses a custom mine detector.</English>
+    <Chinese>授予 IED 偵測能力的物品類別名稱。預設：MineDetector。如果您的模組集使用自訂地雷偵測器，請設定不同的類別名稱。</Chinese>
+    <Chinesesimp>授予 IED 检测能力的物品类别名称。默认：MineDetector。如果您的模组集使用自定义地雷检测器，请设置不同的类别名称。</Chinesesimp>
+    <Spanish>Nombre de clase del objeto de inventario que otorga detección de IED. Predeterminado: MineDetector. Establece un nombre de clase diferente si tu conjunto de mods usa un detector de minas personalizado.</Spanish>
+    <French>Nom de classe de l'objet d'inventaire qui accorde la détection d'IED. Par défaut: MineDetector. Définissez un nom de classe différent si votre lot de mods utilise un détecteur de mines personnalisé.</French>
+    <Portuguese>Nome de classe do item de inventário que concede detecção de IED. Padrão: MineDetector. Defina um nome de classe diferente se o seu conjunto de mods usar um detector de minas personalizado.</Portuguese>
+    <Russian>Classname предмета инвентаря, дающего обнаружение СВУ. По умолчанию: MineDetector. Укажите другой classname, если ваш набор модов использует собственный детектор мин.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_THREAT">
+    <English>Suicide Bomber Threat:</English>
+    <Chinese>自殺炸彈客威脅：</Chinese>
+    <Chinesesimp>自杀炸弹客威胁：</Chinesesimp>
+    <Spanish>Amenaza de terroristas suicidas:</Spanish>
+    <French>Menace de kamikazes:</French>
+    <Portuguese>Ameaça de homens-bomba:</Portuguese>
+    <Russian>Угроза смертников:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_THREAT_COMMENT">
+    <English>Maximum number of suicide bombers the module can sustain across the AO. None = 0, Low = 10, Medium = 20, High = 30, Extreme = 50.</English>
+    <Chinese>模組可在 AO 中維持的自殺炸彈客最大數量。無 = 0，低 = 10，中 = 20，高 = 30，極高 = 50。</Chinese>
+    <Chinesesimp>模块可在 AO 中维持的自杀炸弹客最大数量。无 = 0，低 = 10，中 = 20，高 = 30，极高 = 50。</Chinesesimp>
+    <Spanish>Número máximo de terroristas suicidas que el módulo puede mantener en la ZO. Ninguno = 0, Bajo = 10, Medio = 20, Alto = 30, Extremo = 50.</Spanish>
+    <French>Nombre maximum de kamikazes que le module peut maintenir dans la ZO. Aucun = 0, Faible = 10, Moyen = 20, Élevé = 30, Extrême = 50.</French>
+    <Portuguese>Número máximo de homens-bomba que o módulo pode manter na AO. Nenhum = 0, Baixo = 10, Médio = 20, Alto = 30, Extremo = 50.</Portuguese>
+    <Russian>Максимальное число смертников, которое модуль поддерживает в зоне операций. Нет = 0, Низко = 10, Средне = 20, Высоко = 30, Экстрим = 50.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_TYPE">
+    <English>(Optional) Bomber Classes:</English>
+    <Chinese>（可選）炸彈客類別：</Chinese>
+    <Chinesesimp>（可选）炸弹客类别：</Chinesesimp>
+    <Spanish>(Opcional) Clases de terroristas:</Spanish>
+    <French>(Optionnel) Classes de kamikazes:</French>
+    <Portuguese>(Opcional) Classes de homens-bomba:</Portuguese>
+    <Russian>(Необязательно) Классы смертников:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_TYPE_COMMENT">
+    <English>Optionally specify a list of bomber classes here, e.g. ["C_Nikos","C_Nikos_aged"]. Leave blank to use the synced civilian-faction defaults.</English>
+    <Chinese>可在此處選擇性指定炸彈客類別清單，例如 ["C_Nikos","C_Nikos_aged"]。留空表示使用同步民用陣營的預設值。</Chinese>
+    <Chinesesimp>可在此处选择性指定炸弹客类别列表，例如 ["C_Nikos","C_Nikos_aged"]。留空表示使用同步民用阵营的默认值。</Chinesesimp>
+    <Spanish>Especifica opcionalmente una lista de clases de terroristas aquí, p. ej. ["C_Nikos","C_Nikos_aged"]. Déjalo en blanco para usar los valores por defecto de la facción civil sincronizada.</Spanish>
+    <French>Spécifiez éventuellement une liste de classes de kamikazes ici, p. ex. ["C_Nikos","C_Nikos_aged"]. Laissez vide pour utiliser les valeurs par défaut de la faction civile synchronisée.</French>
+    <Portuguese>Opcionalmente especifique uma lista de classes de homens-bomba aqui, ex. ["C_Nikos","C_Nikos_aged"]. Deixe em branco para usar os padrões da facção civil sincronizada.</Portuguese>
+    <Russian>По желанию укажите список классов смертников, например ["C_Nikos","C_Nikos_aged"]. Оставьте пустым, чтобы использовать значения по умолчанию синхронизированной гражданской фракции.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_VEST">
+    <English>(Optional) Bomber Vest Class:</English>
+    <Chinese>（可選）炸彈客背心類別：</Chinese>
+    <Chinesesimp>（可选）炸弹客背心类别：</Chinesesimp>
+    <Spanish>(Opcional) Clase de chaleco suicida:</Spanish>
+    <French>(Optionnel) Classe de gilet de kamikaze:</French>
+    <Portuguese>(Opcional) Classe de colete de homem-bomba:</Portuguese>
+    <Russian>(Необязательно) Класс пояса смертника:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_VEST_COMMENT">
+    <English>Vest class placed on suicide bombers. Accepts a single classname or a comma-separated list — one is chosen at random per bomber. Leave blank for the default ALiVE suicide vest. Example: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</English>
+    <Chinese>放置在自殺炸彈客身上的背心類別。接受單一類別名稱或以逗號分隔的清單 — 每個炸彈客隨機選擇一個。留空使用預設 ALiVE 自殺背心。例如：V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</Chinese>
+    <Chinesesimp>放置在自杀炸弹客身上的背心类别。接受单一类别名称或以逗号分隔的列表 — 每个炸弹客随机选择一个。留空使用默认 ALiVE 自杀背心。例如：V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</Chinesesimp>
+    <Spanish>Clase de chaleco colocada en los terroristas suicidas. Acepta un único nombre de clase o una lista separada por comas — se elige uno al azar por terrorista. Déjalo en blanco para el chaleco suicida ALiVE por defecto. Ejemplo: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</Spanish>
+    <French>Classe de gilet placée sur les kamikazes. Accepte un seul nom de classe ou une liste séparée par des virgules — un est choisi au hasard par kamikaze. Laissez vide pour le gilet kamikaze ALiVE par défaut. Exemple: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</French>
+    <Portuguese>Classe de colete colocada nos homens-bomba. Aceita um único nome de classe ou uma lista separada por vírgulas — um é escolhido aleatoriamente por homem-bomba. Deixe em branco para o colete suicida padrão do ALiVE. Exemplo: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</Portuguese>
+    <Russian>Класс жилета, надеваемый на смертников. Принимает одно classname или список через запятую — один выбирается случайно на каждого смертника. Оставьте пустым для пояса смертника ALiVE по умолчанию. Пример: V_ALiVE_Suicide_Vest,V_Chestrig_khk,V_BandollierBag_cbr</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_VB_IED_THREAT">
+    <English>Vehicle Borne IED Threat:</English>
+    <Chinese>車載 IED 威脅：</Chinese>
+    <Chinesesimp>车载 IED 威胁：</Chinesesimp>
+    <Spanish>Amenaza de IED vehicular (VB-IED):</Spanish>
+    <French>Menace IED véhiculée (VB-IED):</French>
+    <Portuguese>Ameaça de IED veicular (VB-IED):</Portuguese>
+    <Russian>Угроза СВУ на ТС (VB-IED):</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_VB_IED_THREAT_COMMENT">
+    <English>Maximum number of vehicle-borne IEDs (VBIEDs) the module can sustain across the AO. None = 0, Low = 10, Medium = 20, High = 50, Extreme = 70.</English>
+    <Chinese>模組可在 AO 中維持的車載 IED（VBIED）最大數量。無 = 0，低 = 10，中 = 20，高 = 50，極高 = 70。</Chinese>
+    <Chinesesimp>模块可在 AO 中维持的车载 IED（VBIED）最大数量。无 = 0，低 = 10，中 = 20，高 = 50，极高 = 70。</Chinesesimp>
+    <Spanish>Número máximo de IED vehiculares (VBIED) que el módulo puede mantener en la ZO. Ninguno = 0, Bajo = 10, Medio = 20, Alto = 50, Extremo = 70.</Spanish>
+    <French>Nombre maximum d'IED véhiculés (VBIED) que le module peut maintenir dans la ZO. Aucun = 0, Faible = 10, Moyen = 20, Élevé = 50, Extrême = 70.</French>
+    <Portuguese>Número máximo de IEDs veiculares (VBIEDs) que o módulo pode manter na AO. Nenhum = 0, Baixo = 10, Médio = 20, Alto = 50, Extremo = 70.</Portuguese>
+    <Russian>Максимальное число СВУ на ТС (VBIED), которое модуль поддерживает в зоне операций. Нет = 0, Низко = 10, Средне = 20, Высоко = 50, Экстрим = 70.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_VB_IED_SIDE">
+    <English>VB-IED Side:</English>
+    <Chinese>VB-IED 陣營：</Chinese>
+    <Chinesesimp>VB-IED 阵营：</Chinesesimp>
+    <Spanish>Bando del VB-IED:</Spanish>
+    <French>Camp du VB-IED:</French>
+    <Portuguese>Lado do VB-IED:</Portuguese>
+    <Russian>Сторона VB-IED:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_VB_IED_SIDE_COMMENT">
+    <English>Which side's vehicles will carry VB-IEDs. CIV (default) draws from civilian-faction vehicles; EAST / WEST / IND draw from the corresponding side's military vehicles.</English>
+    <Chinese>哪一方的車輛將攜帶 VB-IED。CIV（預設）從民用陣營車輛中抽取；EAST／WEST／IND 從對應方的軍用車輛中抽取。</Chinese>
+    <Chinesesimp>哪一方的车辆将携带 VB-IED。CIV（默认）从民用阵营车辆中抽取；EAST／WEST／IND 从对应方的军用车辆中抽取。</Chinesesimp>
+    <Spanish>Los vehículos de qué bando portarán VB-IED. CIV (predeterminado) toma vehículos de facción civil; EAST / WEST / IND toman vehículos militares del bando correspondiente.</Spanish>
+    <French>Les véhicules de quel camp porteront des VB-IED. CIV (par défaut) utilise les véhicules de faction civile; EAST / WEST / IND utilisent les véhicules militaires du camp correspondant.</French>
+    <Portuguese>Os veículos de qual lado carregarão VB-IEDs. CIV (padrão) retira dos veículos de facção civil; EAST / WEST / IND retiram dos veículos militares do lado correspondente.</Portuguese>
+    <Russian>Транспорт какой стороны будет нести VB-IED. CIV (по умолчанию) берёт из транспорта гражданской фракции; EAST / WEST / IND — из военного транспорта соответствующей стороны.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_LOCS_IED">
     <English>IED/Bomber Locations:</English>
-	<Chinesesimp>简易爆炸装置/自杀式炸弹袭击者位置</Chinesesimp>
+    <Chinese>IED／炸彈客位置：</Chinese>
+    <Chinesesimp>IED／炸弹客位置：</Chinesesimp>
+    <Spanish>Ubicaciones de IED/terroristas:</Spanish>
+    <French>Emplacements IED/kamikazes:</French>
+    <Portuguese>Locais de IED/homens-bomba:</Portuguese>
+    <Russian>Места СВУ/смертников:</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_Locs_IED_COMMENT">
-    <English>Choose where IED, VB-IED or Suicide bombers may exist</English>
-	<Chinesesimp>选择在何处简易爆炸装置/车载简易爆炸装置或自杀式炸弹袭击者可以存在</Chinesesimp>
+<Key ID="STR_ALIVE_IED_LOCS_IED_COMMENT">
+    <English>Where IEDs, VB-IEDs and suicide bombers may spawn. Random = any objective in the AO. Enemy-Occupied Areas = only enemy-held objectives. Unoccupied = only objectives without an active commander.</English>
+    <Chinese>IED、VB-IED 和自殺炸彈客可以生成的位置。隨機 = AO 中的任何目標。敵佔區域 = 僅敵方控制的目標。無人佔領 = 僅沒有活動指揮官的目標。</Chinese>
+    <Chinesesimp>IED、VB-IED 和自杀炸弹客可以生成的位置。随机 = AO 中的任何目标。敌占区域 = 仅敌方控制的目标。无人占领 = 仅没有活动指挥官的目标。</Chinesesimp>
+    <Spanish>Dónde pueden aparecer los IED, VB-IED y terroristas suicidas. Aleatorio = cualquier objetivo en la ZO. Áreas ocupadas por el enemigo = solo objetivos bajo control enemigo. Desocupados = solo objetivos sin un comandante activo.</Spanish>
+    <French>Où les IED, VB-IED et kamikazes peuvent apparaître. Aléatoire = n'importe quel objectif dans la ZO. Zones occupées par l'ennemi = seuls les objectifs tenus par l'ennemi. Inoccupés = seuls les objectifs sans commandant actif.</French>
+    <Portuguese>Onde IEDs, VB-IEDs e homens-bomba podem surgir. Aleatório = qualquer objetivo na AO. Áreas ocupadas pelo inimigo = apenas objetivos sob controle inimigo. Desocupados = apenas objetivos sem um comandante ativo.</Portuguese>
+    <Russian>Где могут появляться СВУ, VB-IED и смертники. Случайно = любой объект в зоне операций. Территории, занятые противником = только объекты под контролем врага. Не занятые = только объекты без активного командира.</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_3RDPARTY">
-    <English>3rd Party IED System:</English>
-	<Chinesesimp>第三方简易爆炸装置系统</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_CHALLENGE">
+    <English>Engineer Challenge:</English>
+    <Chinese>工兵挑戰：</Chinese>
+    <Chinesesimp>工兵挑战：</Chinesesimp>
+    <Spanish>Desafío de ingeniero:</Spanish>
+    <French>Défi d'ingénieur:</French>
+    <Portuguese>Desafio de engenheiro:</Portuguese>
+    <Russian>Вызов сапёра:</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_3RDPARTY_COMMENT">
-    <English>Select this if you are using 3rd party IED mods such as ACE, EOD etc.</English>
-	<Chinesesimp>如果你在使用第三方简易爆炸装置模组如ACE,EOD等,选择此选项</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_CHALLENGE_COMMENT">
+    <English>If No, engineers (mine detector / Explosive Specialist / CBA EOD trait) are fully immune to IED proximity detonation (legacy behaviour). If Yes, engineers accumulate trip pressure based on distance, stance, movement speed and skill — careless approach can detonate the IED before they defuse.</English>
+    <Chinese>如果為 否，工兵（地雷偵測器／爆破專家／CBA EOD 特性）完全免疫 IED 近距引爆（傳統行為）。如果為 是，工兵會根據距離、姿勢、移動速度和技能累積觸發壓力 — 粗心接近可能在解除之前引爆 IED。</Chinese>
+    <Chinesesimp>如果为 否，工兵（地雷检测器／爆破专家／CBA EOD 特性）完全免疫 IED 近距引爆（传统行为）。如果为 是，工兵会根据距离、姿势、移动速度和技能累积触发压力 — 粗心接近可能在解除之前引爆 IED。</Chinesesimp>
+    <Spanish>Si es No, los ingenieros (detector de minas / Especialista en explosivos / rasgo CBA EOD) son totalmente inmunes a la detonación por proximidad de IED (comportamiento antiguo). Si es Sí, los ingenieros acumulan presión de activación según distancia, postura, velocidad de movimiento y habilidad — una aproximación descuidada puede detonar el IED antes de desactivarlo.</Spanish>
+    <French>Si Non, les ingénieurs (détecteur de mines / Spécialiste des explosifs / trait CBA EOD) sont totalement immunisés contre la détonation par proximité d'IED (ancien comportement). Si Oui, les ingénieurs accumulent une pression de déclenchement selon la distance, la posture, la vitesse de déplacement et la compétence — une approche imprudente peut déclencher l'IED avant le désamorçage.</French>
+    <Portuguese>Se Não, engenheiros (detector de minas / Especialista em explosivos / traço CBA EOD) são totalmente imunes à detonação por proximidade de IED (comportamento legado). Se Sim, engenheiros acumulam pressão de acionamento com base em distância, postura, velocidade de movimento e habilidade — uma aproximação descuidada pode detonar o IED antes do desarme.</Portuguese>
+    <Russian>Если Нет, сапёры (детектор мин / Explosive Specialist / трейт CBA EOD) полностью защищены от подрыва СВУ по близости (устаревшее поведение). Если Да, сапёры накапливают давление срабатывания на основе расстояния, позы, скорости движения и навыка — неосторожное приближение может подорвать СВУ до обезвреживания.</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_ERROR1">
-    <English>Only one IED module can be used</English>
-	<Chinesesimp>只有一个简易爆炸装置模组可以被使用</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_BASE">
+    <English>Trip Rate:</English>
+    <Chinese>觸發率：</Chinese>
+    <Chinesesimp>触发率：</Chinesesimp>
+    <Spanish>Tasa de activación:</Spanish>
+    <French>Taux de déclenchement:</French>
+    <Portuguese>Taxa de acionamento:</Portuguese>
+    <Russian>Скорость срабатывания:</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_DEBUG_ENABLE">
-    <English>Activate IED Debug</English>
-	<Chinesesimp>启用简易爆炸装置调试</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_BASE_COMMENT">
+    <English>Base per-tick (0.5s) trip-pressure increment for engineers. Scaled by distance, stance, speed and skill. Higher = IEDs detonate sooner under careless approach.</English>
+    <Chinese>工兵每個計時（0.5 秒）的基礎觸發壓力增量。按距離、姿勢、速度和技能縮放。較高 = 粗心接近下 IED 更快引爆。</Chinese>
+    <Chinesesimp>工兵每个计时（0.5 秒）的基础触发压力增量。按距离、姿势、速度和技能缩放。较高 = 粗心接近下 IED 更快引爆。</Chinesesimp>
+    <Spanish>Incremento base por tick (0,5 s) de presión de activación para ingenieros. Escalado por distancia, postura, velocidad y habilidad. Mayor = los IED detonan antes ante una aproximación descuidada.</Spanish>
+    <French>Incrément de base par tick (0,5 s) de pression de déclenchement pour les ingénieurs. Mis à l'échelle selon la distance, la posture, la vitesse et la compétence. Plus élevé = les IED se déclenchent plus vite en cas d'approche imprudente.</French>
+    <Portuguese>Incremento base por tick (0,5 s) de pressão de acionamento para engenheiros. Escalonado por distância, postura, velocidade e habilidade. Maior = IEDs detonam mais cedo em aproximações descuidadas.</Portuguese>
+    <Russian>Базовое приращение давления срабатывания за такт (0,5 с) для сапёров. Масштабируется по расстоянию, позе, скорости и навыку. Больше = СВУ подрываются быстрее при неосторожном подходе.</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_DEBUG_DISABLE">
-    <English>Deactivate IED Debug</English>
-	<Chinesesimp>停用简易爆炸装置调试</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMIN">
+    <English>Trip Threshold Min:</English>
+    <Chinese>觸發閾值下限：</Chinese>
+    <Chinesesimp>触发阈值下限：</Chinesesimp>
+    <Spanish>Umbral de activación mín.:</Spanish>
+    <French>Seuil de déclenchement min.:</French>
+    <Portuguese>Limiar de acionamento mín.:</Portuguese>
+    <Russian>Мин. порог срабатывания:</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_USAGE">
-    <English>IEDs are often triggered by proximity. Players who are Explosive Specialists or carry a Mine Detector can often get close enough to disarm, anyone else is taking an extreme risk.</English>
-	<Chinesesimp>简易爆炸装置调试通常因接近触发。是爆裂物专家或携带探雷器的玩家通常能足够接近去解除武装,任何其他人将承担极端风险</Chinesesimp>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMIN_COMMENT">
+    <English>Lower bound of the per-IED randomised trip threshold. Each IED rolls its own threshold in [Min, Max] on creation. Lower = quicker to trip.</English>
+    <Chinese>每個 IED 隨機觸發閾值的下限。每個 IED 在建立時會在 [Min, Max] 中取自己的閾值。較低 = 更快觸發。</Chinese>
+    <Chinesesimp>每个 IED 随机触发阈值的下限。每个 IED 在创建时会在 [Min, Max] 中取自己的阈值。较低 = 更快触发。</Chinesesimp>
+    <Spanish>Límite inferior del umbral de activación aleatorio por IED. Cada IED genera su propio umbral en [Mín, Máx] al crearse. Menor = se activa antes.</Spanish>
+    <French>Borne inférieure du seuil de déclenchement aléatoire par IED. Chaque IED tire son propre seuil dans [Min, Max] à la création. Plus bas = déclenche plus vite.</French>
+    <Portuguese>Limite inferior do limiar de acionamento aleatório por IED. Cada IED gera seu próprio limiar em [Mín, Máx] na criação. Menor = aciona mais rápido.</Portuguese>
+    <Russian>Нижняя граница случайного порога срабатывания для каждого СВУ. Каждое СВУ получает свой порог в [Min, Max] при создании. Ниже = срабатывает быстрее.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMAX">
+    <English>Trip Threshold Max:</English>
+    <Chinese>觸發閾值上限：</Chinese>
+    <Chinesesimp>触发阈值上限：</Chinesesimp>
+    <Spanish>Umbral de activación máx.:</Spanish>
+    <French>Seuil de déclenchement max.:</French>
+    <Portuguese>Limiar de acionamento máx.:</Portuguese>
+    <Russian>Макс. порог срабатывания:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_TRIP_THRESHOLDMAX_COMMENT">
+    <English>Upper bound of the per-IED randomised trip threshold. Must be &gt;= Min; if Max &lt; Min the threshold is constant at Min.</English>
+    <Chinese>每個 IED 隨機觸發閾值的上限。必須 &gt;= Min；如果 Max &lt; Min，閾值固定為 Min。</Chinese>
+    <Chinesesimp>每个 IED 随机触发阈值的上限。必须 &gt;= Min；如果 Max &lt; Min，阈值固定为 Min。</Chinesesimp>
+    <Spanish>Límite superior del umbral de activación aleatorio por IED. Debe ser &gt;= Mín; si Máx &lt; Mín el umbral es constante en Mín.</Spanish>
+    <French>Borne supérieure du seuil de déclenchement aléatoire par IED. Doit être &gt;= Min; si Max &lt; Min le seuil est constant à Min.</French>
+    <Portuguese>Limite superior do limiar de acionamento aleatório por IED. Deve ser &gt;= Mín; se Máx &lt; Mín o limiar é constante em Mín.</Portuguese>
+    <Russian>Верхняя граница случайного порога срабатывания для каждого СВУ. Должно быть &gt;= Min; если Max &lt; Min, порог постоянен и равен Min.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DECAY_RATE">
+    <English>Trip Decay Rate:</English>
+    <Chinese>觸發衰減率：</Chinese>
+    <Chinesesimp>触发衰减率：</Chinesesimp>
+    <Spanish>Tasa de decaimiento de activación:</Spanish>
+    <French>Taux de décroissance du déclenchement:</French>
+    <Portuguese>Taxa de decaimento do acionamento:</Portuguese>
+    <Russian>Скорость затухания срабатывания:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DECAY_RATE_COMMENT">
+    <English>Per-tick (0.5s) decay of accumulated trip pressure once an engineer leaves the IED's proximity radius. Higher = retreating resets pressure faster.</English>
+    <Chinese>工兵離開 IED 的近距半徑後，累積觸發壓力每個計時（0.5 秒）的衰減。較高 = 後撤更快重置壓力。</Chinese>
+    <Chinesesimp>工兵离开 IED 的近距半径后，累积触发压力每个计时（0.5 秒）的衰减。较高 = 后撤更快重置压力。</Chinesesimp>
+    <Spanish>Decaimiento por tick (0,5 s) de la presión de activación acumulada una vez que un ingeniero sale del radio de proximidad del IED. Mayor = retirarse reinicia la presión más rápido.</Spanish>
+    <French>Décroissance par tick (0,5 s) de la pression de déclenchement accumulée une fois qu'un ingénieur quitte le rayon de proximité de l'IED. Plus élevé = se retirer réinitialise la pression plus vite.</French>
+    <Portuguese>Decaimento por tick (0,5 s) da pressão de acionamento acumulada depois que um engenheiro deixa o raio de proximidade do IED. Maior = recuar zera a pressão mais rápido.</Portuguese>
+    <Russian>Затухание накопленного давления срабатывания за такт (0,5 с) после того, как сапёр покидает радиус близости к СВУ. Больше = отступление быстрее сбрасывает давление.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DISARM_BASETIME">
+    <English>Disarm Base Time:</English>
+    <Chinese>解除基礎時間：</Chinese>
+    <Chinesesimp>解除基础时间：</Chinesesimp>
+    <Spanish>Tiempo base de desactivación:</Spanish>
+    <French>Temps de désamorçage de base:</French>
+    <Portuguese>Tempo base de desarme:</Portuguese>
+    <Russian>Базовое время обезвреживания:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DISARM_BASETIME_COMMENT">
+    <English>Seconds required to disarm an IED at skill 1.0 (scales up to 1.5x at skill 0, floored at 50%% of base). The IED remains vulnerable to detonation throughout this window.</English>
+    <Chinese>技能 1.0 時解除 IED 所需的秒數（技能 0 時最高縮放 1.5 倍，最低為基礎值的 50%%）。在此窗口內 IED 仍會受到引爆威脅。</Chinese>
+    <Chinesesimp>技能 1.0 时解除 IED 所需的秒数（技能 0 时最高缩放 1.5 倍，最低为基础值的 50%%）。在此窗口内 IED 仍会受到引爆威胁。</Chinesesimp>
+    <Spanish>Segundos necesarios para desactivar un IED con habilidad 1.0 (se escala hasta 1,5x con habilidad 0, con mínimo del 50%% del valor base). El IED sigue siendo vulnerable a la detonación durante toda esta ventana.</Spanish>
+    <French>Secondes nécessaires pour désamorcer un IED avec une compétence de 1,0 (mise à l'échelle jusqu'à 1,5x à compétence 0, plancher à 50%% de la base). L'IED reste vulnérable à la détonation pendant toute cette fenêtre.</French>
+    <Portuguese>Segundos necessários para desarmar um IED com habilidade 1.0 (escala até 1,5x em habilidade 0, piso em 50%% da base). O IED permanece vulnerável à detonação durante toda essa janela.</Portuguese>
+    <Russian>Секунд, требуемых для обезвреживания СВУ при навыке 1.0 (масштабируется до 1,5× при навыке 0, не ниже 50%% от базы). В этом окне СВУ остаётся уязвимым к подрыву.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DISARM_NEWDEVICE">
+    <English>Wire-Guess Threshold:</English>
+    <Chinese>線路猜測閾值：</Chinese>
+    <Chinesesimp>线路猜测阈值：</Chinesesimp>
+    <Spanish>Umbral de adivinar cable:</Spanish>
+    <French>Seuil de devinette de fil:</French>
+    <Portuguese>Limiar de adivinhar fio:</Portuguese>
+    <Russian>Порог угадывания провода:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ENGINEER_DISARM_NEWDEVICE_COMMENT">
+    <English>Baseline threshold for the 'new device' wire-guess minigame. Effective trigger rate: ~10%% at skill 1.0, ~25%% at skill 0, clamped [0.70, 0.90]. Lower value = wire-guess fires more often.</English>
+    <Chinese>「新裝置」線路猜測小遊戲的基準閾值。有效觸發率：技能 1.0 時約 10%%，技能 0 時約 25%%，限制在 [0.70, 0.90]。較低值 = 線路猜測更頻繁觸發。</Chinese>
+    <Chinesesimp>「新装置」线路猜测小游戏的基准阈值。有效触发率：技能 1.0 时约 10%%，技能 0 时约 25%%，限制在 [0.70, 0.90]。较低值 = 线路猜测更频繁触发。</Chinesesimp>
+    <Spanish>Umbral de base para el minijuego de adivinar cable de 'nuevo dispositivo'. Tasa efectiva de activación: ~10%% con habilidad 1.0, ~25%% con habilidad 0, limitado a [0,70; 0,90]. Valor menor = el minijuego se dispara más a menudo.</Spanish>
+    <French>Seuil de base pour le mini-jeu de devinette de fil « nouvel appareil ». Taux de déclenchement effectif: ~10%% à compétence 1,0, ~25%% à compétence 0, borné à [0,70; 0,90]. Valeur plus basse = la devinette se déclenche plus souvent.</French>
+    <Portuguese>Limiar base para o minijogo 'novo dispositivo' de adivinhar fio. Taxa de acionamento efetiva: ~10%% em habilidade 1.0, ~25%% em habilidade 0, limitado a [0,70; 0,90]. Valor menor = o minijogo dispara com mais frequência.</Portuguese>
+    <Russian>Базовый порог мини-игры «новое устройство» с угадыванием провода. Эффективная частота срабатывания: ~10%% при навыке 1.0, ~25%% при навыке 0, ограничено [0,70; 0,90]. Меньшее значение = угадывание срабатывает чаще.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_ROAD_IED_CLASSES">
     <English>Roadside IED Classes:</English>
-	<Chinesesimp>路边简易爆炸装置种类</Chinesesimp>
+    <Chinese>路邊 IED 類別：</Chinese>
+    <Chinesesimp>路边 IED 类别：</Chinesesimp>
+    <Spanish>Clases de IED de carretera:</Spanish>
+    <French>Classes d'IED routiers:</French>
+    <Portuguese>Classes de IED de estrada:</Portuguese>
+    <Russian>Классы придорожных СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ROADIED_ADDITIONAL">
+    <English>Road IED - Additional Classes:</English>
+    <Chinese>路邊 IED - 額外類別：</Chinese>
+    <Chinesesimp>路边 IED - 额外类别：</Chinesesimp>
+    <Spanish>IED de carretera - Clases adicionales:</Spanish>
+    <French>IED routier - Classes supplémentaires:</French>
+    <Portuguese>IED de estrada - Classes adicionais:</Portuguese>
+    <Russian>Придорожный СВУ - доп. классы:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ROADIED_ADDITIONAL_COMMENT">
+    <English>Comma-separated extra classes to merge into the road IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).</English>
+    <Chinese>要合併到路邊 IED 池中的額外類別，以逗號分隔。始終附加在當前整合的類別之上（若未選擇整合，則附加到 ALiVE 預設值之上）。</Chinese>
+    <Chinesesimp>要合并到路边 IED 池中的额外类别，以逗号分隔。始终附加在当前集成的类别之上（若未选择集成，则附加到 ALiVE 默认值之上）。</Chinesesimp>
+    <Spanish>Clases adicionales separadas por comas para fusionar con el pool de IED de carretera. Siempre se añaden encima de las clases de la integración activa (o los valores predeterminados de ALiVE si no se selecciona integración).</Spanish>
+    <French>Classes supplémentaires séparées par des virgules à fusionner dans le pool d'IED routiers. Toujours ajoutées au-dessus des classes de l'intégration active (ou des valeurs par défaut ALiVE si aucune intégration n'est sélectionnée).</French>
+    <Portuguese>Classes extras separadas por vírgula para mesclar no pool de IED de estrada. Sempre adicionadas por cima das classes da integração ativa (ou dos padrões do ALiVE se nenhuma integração for selecionada).</Portuguese>
+    <Russian>Дополнительные классы через запятую для слияния с пулом придорожных СВУ. Всегда добавляются поверх классов активной интеграции (или значений ALiVE по умолчанию, если интеграция не выбрана).</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ROADIED_AUTODETECT">
+    <English>Road IED - Auto-detect Source:</English>
+    <Chinese>路邊 IED - 自動偵測來源：</Chinese>
+    <Chinesesimp>路边 IED - 自动检测来源：</Chinesesimp>
+    <Spanish>IED de carretera - Fuente autodetect.:</Spanish>
+    <French>IED routier - Source auto-détectée:</French>
+    <Portuguese>IED de estrada - Fonte autodetect.:</Portuguese>
+    <Russian>Придорожный СВУ - источник авто:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ROADIED_AUTODETECT_COMMENT">
+    <English>Whether the road IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category — always use the base list.</English>
+    <Chinese>路邊 IED 池是否應從當前第三方整合中提取類別。自動：遵循整合選擇（當整合啟用且您未編輯基礎清單時替換預設值；否則尊重您的編輯）。是：始終合併整合類別（聯合，不論整合選擇或編輯）。否：此類別永不使用整合類別 — 始終使用基礎清單。</Chinese>
+    <Chinesesimp>路边 IED 池是否应从当前第三方集成中提取类别。自动：遵循集成选择（当集成启用且您未编辑基础列表时替换默认值；否则尊重您的编辑）。是：始终合并集成类别（联合，不论集成选择或编辑）。否：此类别永不使用集成类别 — 始终使用基础列表。</Chinesesimp>
+    <Spanish>Si el pool de IED de carretera debe tomar clases de la integración de terceros activa. Auto: sigue la elección de integración (reemplaza los predeterminados cuando la integración está activa y no has editado la lista base; respeta tus ediciones en caso contrario). Sí: siempre fusiona las clases de la integración (unión, independientemente de la elección o ediciones). No: nunca usa clases de integración para esta categoría — siempre la lista base.</Spanish>
+    <French>Si le pool d'IED routiers doit tirer ses classes de l'intégration tierce active. Auto: suit le choix d'intégration (remplace les valeurs par défaut quand l'intégration est active et que vous n'avez pas édité la liste de base; respecte vos modifications sinon). Oui: fusionne toujours les classes d'intégration (union, quel que soit le choix ou les modifications). Non: n'utilise jamais les classes d'intégration pour cette catégorie — toujours la liste de base.</French>
+    <Portuguese>Se o pool de IED de estrada deve retirar classes da integração de terceiros ativa. Auto: segue a escolha de integração (substitui os padrões quando a integração está ativa e você não editou a lista base; respeita suas edições caso contrário). Sim: sempre mescla as classes da integração (união, independente da escolha ou edições). Não: nunca usa classes de integração para esta categoria — sempre a lista base.</Portuguese>
+    <Russian>Должен ли пул придорожных СВУ брать классы из активной сторонней интеграции. Авто: следует выбору интеграции (заменяет значения по умолчанию, когда интеграция активна и вы не редактировали базовый список; иначе уважает ваши правки). Да: всегда объединяет классы интеграции (объединение, независимо от выбора или правок). Нет: никогда не использует классы интеграции для этой категории — всегда базовый список.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_URBAN_IED_CLASSES">
     <English>Urban IED Classes:</English>
-	<Chinesesimp>城市简易爆炸装置种类</Chinesesimp>
+    <Chinese>城市 IED 類別：</Chinese>
+    <Chinesesimp>城市 IED 类别：</Chinesesimp>
+    <Spanish>Clases de IED urbano:</Spanish>
+    <French>Classes d'IED urbains:</French>
+    <Portuguese>Classes de IED urbano:</Portuguese>
+    <Russian>Классы городских СВУ:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_URBANIED_ADDITIONAL">
+    <English>Urban IED - Additional Classes:</English>
+    <Chinese>城市 IED - 額外類別：</Chinese>
+    <Chinesesimp>城市 IED - 额外类别：</Chinesesimp>
+    <Spanish>IED urbano - Clases adicionales:</Spanish>
+    <French>IED urbain - Classes supplémentaires:</French>
+    <Portuguese>IED urbano - Classes adicionais:</Portuguese>
+    <Russian>Городской СВУ - доп. классы:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_URBANIED_ADDITIONAL_COMMENT">
+    <English>Comma-separated extra classes to merge into the urban IED pool. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).</English>
+    <Chinese>要合併到城市 IED 池中的額外類別，以逗號分隔。始終附加在當前整合的類別之上（若未選擇整合，則附加到 ALiVE 預設值之上）。</Chinese>
+    <Chinesesimp>要合并到城市 IED 池中的额外类别，以逗号分隔。始终附加在当前集成的类别之上（若未选择集成，则附加到 ALiVE 默认值之上）。</Chinesesimp>
+    <Spanish>Clases adicionales separadas por comas para fusionar con el pool de IED urbano. Siempre se añaden encima de las clases de la integración activa (o los valores predeterminados de ALiVE si no se selecciona integración).</Spanish>
+    <French>Classes supplémentaires séparées par des virgules à fusionner dans le pool d'IED urbains. Toujours ajoutées au-dessus des classes de l'intégration active (ou des valeurs par défaut ALiVE si aucune intégration n'est sélectionnée).</French>
+    <Portuguese>Classes extras separadas por vírgula para mesclar no pool de IED urbano. Sempre adicionadas por cima das classes da integração ativa (ou dos padrões do ALiVE se nenhuma integração for selecionada).</Portuguese>
+    <Russian>Дополнительные классы через запятую для слияния с пулом городских СВУ. Всегда добавляются поверх классов активной интеграции (или значений ALiVE по умолчанию, если интеграция не выбрана).</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_URBANIED_AUTODETECT">
+    <English>Urban IED - Auto-detect Source:</English>
+    <Chinese>城市 IED - 自動偵測來源：</Chinese>
+    <Chinesesimp>城市 IED - 自动检测来源：</Chinesesimp>
+    <Spanish>IED urbano - Fuente autodetect.:</Spanish>
+    <French>IED urbain - Source auto-détectée:</French>
+    <Portuguese>IED urbano - Fonte autodetect.:</Portuguese>
+    <Russian>Городской СВУ - источник авто:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_URBANIED_AUTODETECT_COMMENT">
+    <English>Whether the urban IED pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category — always use the base list.</English>
+    <Chinese>城市 IED 池是否應從當前第三方整合中提取類別。自動：遵循整合選擇（當整合啟用且您未編輯基礎清單時替換預設值；否則尊重您的編輯）。是：始終合併整合類別（聯合，不論整合選擇或編輯）。否：此類別永不使用整合類別 — 始終使用基礎清單。</Chinese>
+    <Chinesesimp>城市 IED 池是否应从当前第三方集成中提取类别。自动：遵循集成选择（当集成启用且您未编辑基础列表时替换默认值；否则尊重您的编辑）。是：始终合并集成类别（联合，不论集成选择或编辑）。否：此类别永不使用集成类别 — 始终使用基础列表。</Chinesesimp>
+    <Spanish>Si el pool de IED urbano debe tomar clases de la integración de terceros activa. Auto: sigue la elección de integración (reemplaza los predeterminados cuando la integración está activa y no has editado la lista base; respeta tus ediciones en caso contrario). Sí: siempre fusiona las clases de la integración (unión, independientemente de la elección o ediciones). No: nunca usa clases de integración para esta categoría — siempre la lista base.</Spanish>
+    <French>Si le pool d'IED urbains doit tirer ses classes de l'intégration tierce active. Auto: suit le choix d'intégration (remplace les valeurs par défaut quand l'intégration est active et que vous n'avez pas édité la liste de base; respecte vos modifications sinon). Oui: fusionne toujours les classes d'intégration (union, quel que soit le choix ou les modifications). Non: n'utilise jamais les classes d'intégration pour cette catégorie — toujours la liste de base.</French>
+    <Portuguese>Se o pool de IED urbano deve retirar classes da integração de terceiros ativa. Auto: segue a escolha de integração (substitui os padrões quando a integração está ativa e você não editou a lista base; respeita suas edições caso contrário). Sim: sempre mescla as classes da integração (união, independente da escolha ou edições). Não: nunca usa classes de integração para esta categoria — sempre a lista base.</Portuguese>
+    <Russian>Должен ли пул городских СВУ брать классы из активной сторонней интеграции. Авто: следует выбору интеграции (заменяет значения по умолчанию, когда интеграция активна и вы не редактировали базовый список; иначе уважает ваши правки). Да: всегда объединяет классы интеграции (объединение, независимо от выбора или правок). Нет: никогда не использует классы интеграции для этой категории — всегда базовый список.</Russian>
 </Key>
 <Key ID="STR_ALIVE_IED_CLUTTER_CLASSES">
     <English>Clutter Object Classes:</English>
-	<Chinesesimp>杂物对象种类</Chinesesimp>
+    <Chinese>雜物物件類別：</Chinese>
+    <Chinesesimp>杂物对象类别：</Chinesesimp>
+    <Spanish>Clases de objetos de relleno:</Spanish>
+    <French>Classes d'objets de décor:</French>
+    <Portuguese>Classes de objetos de entulho:</Portuguese>
+    <Russian>Классы объектов-хлама:</Russian>
 </Key>
-<Key ID="STR_ALIVE_IED_Classes_COMMENT">
-    <English>Classnames of objects used for IEDs and clutter. Separate multiple classnames with commas, no spaces, no quotes — e.g. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. IED classnames must be valid ammo box or object classnames that function as proximity mines.</English>
-	<Chinesesimp>定义用于简易爆炸装置和杂物对象的种类</Chinesesimp>
+<Key ID="STR_ALIVE_IED_CLUTTER_ADDITIONAL">
+    <English>Clutter - Additional Classes:</English>
+    <Chinese>雜物 - 額外類別：</Chinese>
+    <Chinesesimp>杂物 - 额外类别：</Chinesesimp>
+    <Spanish>Relleno - Clases adicionales:</Spanish>
+    <French>Décor - Classes supplémentaires:</French>
+    <Portuguese>Entulho - Classes adicionais:</Portuguese>
+    <Russian>Хлам - доп. классы:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_CLUTTER_ADDITIONAL_COMMENT">
+    <English>Comma-separated extra classes to merge into the camouflage clutter pool placed near IEDs. Always appended on top of the active integration's classes (or ALiVE defaults if no integration is selected).</English>
+    <Chinese>要合併到 IED 附近放置的偽裝雜物池中的額外類別，以逗號分隔。始終附加在當前整合的類別之上（若未選擇整合，則附加到 ALiVE 預設值之上）。</Chinese>
+    <Chinesesimp>要合并到 IED 附近放置的伪装杂物池中的额外类别，以逗号分隔。始终附加在当前集成的类别之上（若未选择集成，则附加到 ALiVE 默认值之上）。</Chinesesimp>
+    <Spanish>Clases adicionales separadas por comas para fusionar con el pool de relleno de camuflaje colocado cerca de los IED. Siempre se añaden encima de las clases de la integración activa (o los valores predeterminados de ALiVE si no se selecciona integración).</Spanish>
+    <French>Classes supplémentaires séparées par des virgules à fusionner dans le pool de décor de camouflage placé près des IED. Toujours ajoutées au-dessus des classes de l'intégration active (ou des valeurs par défaut ALiVE si aucune intégration n'est sélectionnée).</French>
+    <Portuguese>Classes extras separadas por vírgula para mesclar no pool de entulho de camuflagem colocado perto dos IEDs. Sempre adicionadas por cima das classes da integração ativa (ou dos padrões do ALiVE se nenhuma integração for selecionada).</Portuguese>
+    <Russian>Дополнительные классы через запятую для слияния с пулом маскирующего хлама, размещаемого рядом с СВУ. Всегда добавляются поверх классов активной интеграции (или значений ALiVE по умолчанию, если интеграция не выбрана).</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_CLUTTER_AUTODETECT">
+    <English>Clutter - Auto-detect Source:</English>
+    <Chinese>雜物 - 自動偵測來源：</Chinese>
+    <Chinesesimp>杂物 - 自动检测来源：</Chinesesimp>
+    <Spanish>Relleno - Fuente autodetect.:</Spanish>
+    <French>Décor - Source auto-détectée:</French>
+    <Portuguese>Entulho - Fonte autodetect.:</Portuguese>
+    <Russian>Хлам - источник авто:</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_CLUTTER_AUTODETECT_COMMENT">
+    <English>Whether the clutter pool should pull classes from the active 3rd-party integration. Auto: follow integration choice (replace defaults when integration is active and you haven't edited the base list; respect your edits otherwise). Yes: always merge integration classes (union, regardless of integration choice or edits). No: never use integration classes for this category — always use the base list.</English>
+    <Chinese>雜物池是否應從當前第三方整合中提取類別。自動：遵循整合選擇（當整合啟用且您未編輯基礎清單時替換預設值；否則尊重您的編輯）。是：始終合併整合類別（聯合，不論整合選擇或編輯）。否：此類別永不使用整合類別 — 始終使用基礎清單。</Chinese>
+    <Chinesesimp>杂物池是否应从当前第三方集成中提取类别。自动：遵循集成选择（当集成启用且您未编辑基础列表时替换默认值；否则尊重您的编辑）。是：始终合并集成类别（联合，不论集成选择或编辑）。否：此类别永不使用集成类别 — 始终使用基础列表。</Chinesesimp>
+    <Spanish>Si el pool de relleno debe tomar clases de la integración de terceros activa. Auto: sigue la elección de integración (reemplaza los predeterminados cuando la integración está activa y no has editado la lista base; respeta tus ediciones en caso contrario). Sí: siempre fusiona las clases de la integración (unión, independientemente de la elección o ediciones). No: nunca usa clases de integración para esta categoría — siempre la lista base.</Spanish>
+    <French>Si le pool de décor doit tirer ses classes de l'intégration tierce active. Auto: suit le choix d'intégration (remplace les valeurs par défaut quand l'intégration est active et que vous n'avez pas édité la liste de base; respecte vos modifications sinon). Oui: fusionne toujours les classes d'intégration (union, quel que soit le choix ou les modifications). Non: n'utilise jamais les classes d'intégration pour cette catégorie — toujours la liste de base.</French>
+    <Portuguese>Se o pool de entulho deve retirar classes da integração de terceiros ativa. Auto: segue a escolha de integração (substitui os padrões quando a integração está ativa e você não editou a lista base; respeita suas edições caso contrário). Sim: sempre mescla as classes da integração (união, independente da escolha ou edições). Não: nunca usa classes de integração para esta categoria — sempre a lista base.</Portuguese>
+    <Russian>Должен ли пул хлама брать классы из активной сторонней интеграции. Авто: следует выбору интеграции (заменяет значения по умолчанию, когда интеграция активна и вы не редактировали базовый список; иначе уважает ваши правки). Да: всегда объединяет классы интеграции (объединение, независимо от выбора или правок). Нет: никогда не использует классы интеграции для этой категории — всегда базовый список.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_CLASSES_COMMENT">
+    <English>Classnames of objects used for IEDs and clutter. Separate multiple classnames with commas, no spaces, no quotes — e.g. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. IED classnames must be valid ammo box or object classnames that function as proximity mines.&#10;&#10;OVERRIDE BEHAVIOUR: depending on the matching 'Auto-detect Source' setting below, this base list may be REPLACED or AUGMENTED by the picked 3rd-party integration's classes.&#10;  Auto + unedited list → REPLACED by integration's classes (if any).&#10;  Auto + edited list   → Your edits stand; integration is ignored.&#10;  Yes  + unedited list → REPLACED by integration's classes.&#10;  Yes  + edited list   → Your edits UNION integration's classes.&#10;  No                   → Always uses this exact list; integration ignored.&#10;Set Auto-detect Source = No to lock this list as the sole source.</English>
+    <Chinese>用於 IED 和雜物的物件類別名稱。多個類別名稱用逗號分隔，無空格，無引號 — 例如 ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F。IED 類別名稱必須是有效的彈藥箱或作為近距地雷的物件類別名稱。&#10;&#10;覆寫行為：取決於下方對應的「自動偵測來源」設定，此基礎清單可能會被所選第三方整合的類別「取代」或「擴充」。&#10;  自動 + 未編輯清單 → 被整合的類別「取代」（如有）。&#10;  自動 + 已編輯清單 → 您的編輯保留；忽略整合。&#10;  是   + 未編輯清單 → 被整合的類別「取代」。&#10;  是   + 已編輯清單 → 您的編輯與整合的類別「聯合」。&#10;  否                   → 始終使用此精確清單；忽略整合。&#10;設 自動偵測來源 = 否 可將此清單鎖為唯一來源。</Chinese>
+    <Chinesesimp>用于 IED 和杂物的对象类别名称。多个类别名称用逗号分隔，无空格，无引号 — 例如 ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F。IED 类别名称必须是有效的弹药箱或作为近距地雷的对象类别名称。&#10;&#10;覆写行为：取决于下方对应的「自动检测来源」设置，此基础列表可能会被所选第三方集成的类别「替换」或「扩充」。&#10;  自动 + 未编辑列表 → 被集成的类别「替换」（如有）。&#10;  自动 + 已编辑列表 → 您的编辑保留；忽略集成。&#10;  是   + 未编辑列表 → 被集成的类别「替换」。&#10;  是   + 已编辑列表 → 您的编辑与集成的类别「联合」。&#10;  否                   → 始终使用此精确列表；忽略集成。&#10;设 自动检测来源 = 否 可将此列表锁为唯一来源。</Chinesesimp>
+    <Spanish>Nombres de clase de los objetos usados para IED y relleno. Separa varios nombres de clase con comas, sin espacios ni comillas — p. ej. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. Los nombres de clase de IED deben ser cajas de munición u objetos válidos que funcionen como minas de proximidad.&#10;&#10;COMPORTAMIENTO DE SUSTITUCIÓN: según la opción de «Fuente autodetect.» correspondiente debajo, esta lista base puede ser REEMPLAZADA o AMPLIADA por las clases de la integración de terceros elegida.&#10;  Auto + lista sin editar → REEMPLAZADA por las clases de la integración (si las hay).&#10;  Auto + lista editada    → Se mantienen tus ediciones; la integración se ignora.&#10;  Sí   + lista sin editar → REEMPLAZADA por las clases de la integración.&#10;  Sí   + lista editada    → Tus ediciones UNIÓN con las clases de la integración.&#10;  No                        → Siempre usa esta lista exacta; la integración se ignora.&#10;Pon «Fuente autodetect.» = No para bloquear esta lista como fuente única.</Spanish>
+    <French>Noms de classe des objets utilisés pour les IED et le décor. Séparez plusieurs noms de classe par des virgules, sans espace ni guillemets — p. ex. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. Les noms de classe d'IED doivent être des caisses de munitions ou objets valides fonctionnant comme mines de proximité.&#10;&#10;COMPORTEMENT DE REMPLACEMENT: selon le paramètre « Source auto-détectée » correspondant ci-dessous, cette liste de base peut être REMPLACÉE ou AUGMENTÉE par les classes de l'intégration tierce choisie.&#10;  Auto + liste non modifiée → REMPLACÉE par les classes de l'intégration (le cas échéant).&#10;  Auto + liste modifiée     → Vos modifications sont conservées; l'intégration est ignorée.&#10;  Oui  + liste non modifiée → REMPLACÉE par les classes de l'intégration.&#10;  Oui  + liste modifiée     → Vos modifications EN UNION avec les classes de l'intégration.&#10;  Non                          → Utilise toujours cette liste exacte; l'intégration est ignorée.&#10;Définissez « Source auto-détectée » = Non pour verrouiller cette liste comme source unique.</French>
+    <Portuguese>Nomes de classe dos objetos usados para IEDs e entulho. Separe vários nomes de classe com vírgulas, sem espaços nem aspas — ex. ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. Os nomes de classe de IED devem ser caixas de munição ou objetos válidos que funcionem como minas de proximidade.&#10;&#10;COMPORTAMENTO DE SUBSTITUIÇÃO: dependendo da configuração «Fonte autodetect.» correspondente abaixo, esta lista base pode ser SUBSTITUÍDA ou AMPLIADA pelas classes da integração de terceiros escolhida.&#10;  Auto + lista não editada → SUBSTITUÍDA pelas classes da integração (se houver).&#10;  Auto + lista editada     → Suas edições permanecem; a integração é ignorada.&#10;  Sim  + lista não editada → SUBSTITUÍDA pelas classes da integração.&#10;  Sim  + lista editada     → Suas edições UNIÃO com as classes da integração.&#10;  Não                         → Sempre usa esta lista exata; a integração é ignorada.&#10;Defina «Fonte autodetect.» = Não para travar esta lista como fonte única.</Portuguese>
+    <Russian>Classname объектов, используемых для СВУ и хлама. Разделяйте несколько classname запятыми, без пробелов и кавычек — например, ALIVE_IEDUrbanSmall_Remote_Ammo,Land_JunkPile_F. Classname для СВУ должны быть действительными ящиками с боеприпасами или объектами, работающими как мины по близости.&#10;&#10;ПОВЕДЕНИЕ ПЕРЕОПРЕДЕЛЕНИЯ: в зависимости от параметра «Источник авто» ниже этот базовый список может быть ЗАМЕНЁН или РАСШИРЕН классами выбранной сторонней интеграции.&#10;  Авто + список не редактирован → ЗАМЕНЁН классами интеграции (если есть).&#10;  Авто + список редактирован    → Ваши правки сохраняются; интеграция игнорируется.&#10;  Да   + список не редактирован → ЗАМЕНЁН классами интеграции.&#10;  Да   + список редактирован    → Ваши правки ОБЪЕДИНЯЮТСЯ с классами интеграции.&#10;  Нет                             → Всегда использует именно этот список; интеграция игнорируется.&#10;Установите «Источник авто» = Нет, чтобы заблокировать список как единственный источник.</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_ERROR1">
+    <English>Only one IED module can be used</English>
+    <Chinese>只能使用一個 IED 模組</Chinese>
+    <Chinesesimp>只能使用一个 IED 模块</Chinesesimp>
+    <Spanish>Solo se puede usar un módulo IED</Spanish>
+    <French>Un seul module IED peut être utilisé</French>
+    <Portuguese>Apenas um módulo de IED pode ser usado</Portuguese>
+    <Russian>Можно использовать только один модуль СВУ</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_DEBUG_ENABLE">
+    <English>Activate IED Debug</English>
+    <Chinese>啟用 IED 調試</Chinese>
+    <Chinesesimp>启用 IED 调试</Chinesesimp>
+    <Spanish>Activar depuración de IED</Spanish>
+    <French>Activer le débogage IED</French>
+    <Portuguese>Ativar depuração de IED</Portuguese>
+    <Russian>Включить отладку СВУ</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_DEBUG_DISABLE">
+    <English>Deactivate IED Debug</English>
+    <Chinese>停用 IED 調試</Chinese>
+    <Chinesesimp>停用 IED 调试</Chinesesimp>
+    <Spanish>Desactivar depuración de IED</Spanish>
+    <French>Désactiver le débogage IED</French>
+    <Portuguese>Desativar depuração de IED</Portuguese>
+    <Russian>Отключить отладку СВУ</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_IED_THREAT_LEVEL">
+    <English>IED Threat Level</English>
+    <Chinese>IED 威脅等級</Chinese>
+    <Chinesesimp>IED 威胁等级</Chinesesimp>
+    <Spanish>Nivel de amenaza de IED</Spanish>
+    <French>Niveau de menace IED</French>
+    <Portuguese>Nível de ameaça de IED</Portuguese>
+    <Russian>Уровень угрозы СВУ</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_BOMBER_THREAT_LEVEL">
+    <English>Suicide Bomber Threat Level</English>
+    <Chinese>自殺炸彈客威脅等級</Chinese>
+    <Chinesesimp>自杀炸弹客威胁等级</Chinesesimp>
+    <Spanish>Nivel de amenaza de terrorista suicida</Spanish>
+    <French>Niveau de menace kamikaze</French>
+    <Portuguese>Nível de ameaça de homem-bomba</Portuguese>
+    <Russian>Уровень угрозы смертников</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_VB_IED_THREAT_LEVEL">
+    <English>Vehicle Borne IED Threat Level</English>
+    <Chinese>車載 IED 威脅等級</Chinese>
+    <Chinesesimp>车载 IED 威胁等级</Chinesesimp>
+    <Spanish>Nivel de amenaza de IED vehicular</Spanish>
+    <French>Niveau de menace VB-IED</French>
+    <Portuguese>Nível de ameaça de IED veicular</Portuguese>
+    <Russian>Уровень угрозы СВУ на ТС</Russian>
+</Key>
+<Key ID="STR_ALIVE_IED_USAGE">
+    <English>Place a Military IED Threat module in the editor and configure the threat levels (IED, VB-IED, suicide bomber) to seed asymmetric danger across the AO. Optional: enable AI Units Trigger IEDs to make virtual / AI forces also vulnerable; enable the Engineer Challenge for risk-based defusing. The Integration dropdown auto-detects compatible 3rd-party IED mods (ACE, EOD, etc) and routes detonation through the picked mod's pipeline. Object Classes can be left at defaults or extended with mod-specific IED / clutter classnames; the Auto-detect Source setting controls how the base list interacts with the picked integration.</English>
+    <Chinese>在編輯器中放置軍事 IED 威脅模組，並配置威脅等級（IED、VB-IED、自殺炸彈客）以在 AO 中植入非對稱危險。可選：啟用「AI 單位觸發 IED」使虛擬／AI 部隊也變得脆弱；啟用「工兵挑戰」進行基於風險的解除。「整合」下拉選單會自動偵測相容的第三方 IED 模組（ACE、EOD 等），並透過所選模組的管線引爆。物件類別可保留預設值或以模組專屬的 IED／雜物類別名稱擴充；「自動偵測來源」設定控制基礎清單如何與所選整合互動。</Chinese>
+    <Chinesesimp>在编辑器中放置军事 IED 威胁模块，并配置威胁等级（IED、VB-IED、自杀炸弹客）以在 AO 中植入非对称危险。可选：启用「AI 单位触发 IED」使虚拟／AI 部队也变得脆弱；启用「工兵挑战」进行基于风险的解除。「集成」下拉菜单会自动检测兼容的第三方 IED 模组（ACE、EOD 等），并通过所选模组的管线引爆。对象类别可保留默认值或以模组专属的 IED／杂物类别名称扩充；「自动检测来源」设置控制基础列表如何与所选集成交互。</Chinesesimp>
+    <Spanish>Coloca un módulo Amenaza militar de IED en el editor y configura los niveles de amenaza (IED, VB-IED, terrorista suicida) para sembrar peligro asimétrico por la ZO. Opcional: activa «Unidades IA activan IED» para hacer vulnerables también a las fuerzas virtuales / IA; activa el «Desafío de ingeniero» para desactivado basado en riesgo. El desplegable «Integración» detecta automáticamente mods de IED compatibles de terceros (ACE, EOD, etc.) y enruta la detonación por la canalización del mod elegido. Las Clases de objetos pueden dejarse por defecto o ampliarse con nombres de clase de IED / relleno específicos del mod; la opción «Fuente autodetect.» controla cómo interactúa la lista base con la integración elegida.</Spanish>
+    <French>Placez un module Menace IED militaire dans l'éditeur et configurez les niveaux de menace (IED, VB-IED, kamikaze) pour semer un danger asymétrique sur la ZO. Optionnel: activez « Unités IA déclenchent les IED » pour rendre les forces virtuelles / IA également vulnérables; activez le « Défi d'ingénieur » pour un désamorçage basé sur le risque. La liste déroulante « Intégration » détecte automatiquement les mods IED tiers compatibles (ACE, EOD, etc.) et achemine la détonation via le pipeline du mod choisi. Les classes d'objets peuvent être laissées par défaut ou étendues avec des noms de classe IED / décor spécifiques au mod; le paramètre « Source auto-détectée » contrôle comment la liste de base interagit avec l'intégration choisie.</French>
+    <Portuguese>Coloque um módulo Ameaça militar de IED no editor e configure os níveis de ameaça (IED, VB-IED, homem-bomba) para semear perigo assimétrico pela AO. Opcional: ative «Unidades IA acionam IEDs» para tornar as forças virtuais / IA também vulneráveis; ative o «Desafio de engenheiro» para desarme baseado em risco. O menu suspenso «Integração» detecta automaticamente mods de IED de terceiros compatíveis (ACE, EOD, etc.) e roteia a detonação pelo pipeline do mod escolhido. As Classes de Objeto podem ser deixadas nos padrões ou estendidas com nomes de classe de IED / entulho específicos do mod; a configuração «Fonte autodetect.» controla como a lista base interage com a integração escolhida.</Portuguese>
+    <Russian>Разместите модуль «Военная угроза СВУ» в редакторе и настройте уровни угрозы (СВУ, VB-IED, смертник), чтобы распределить асимметричную опасность по зоне операций. Дополнительно: включите «Юниты ИИ подрывают СВУ», чтобы виртуальные / ИИ-силы также становились уязвимыми; включите «Вызов сапёра» для обезвреживания на основе риска. Список «Интеграция» автоматически обнаруживает совместимые сторонние моды СВУ (ACE, EOD и т. п.) и направляет подрыв через конвейер выбранного мода. Классы объектов можно оставить по умолчанию или расширить classname, специфичными для мода (СВУ / хлам); параметр «Источник авто» управляет тем, как базовый список взаимодействует с выбранной интеграцией.</Russian>
 </Key>
 </Container></Package></Project>

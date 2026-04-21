@@ -63,9 +63,27 @@ DEFAULT_CLUTTER ["Land_Misc_Rubble_EP1","Land_Misc_Garb_Heap_EP1","Garbage_conta
 
 #define SUPERCLASS ALIVE_fnc_baseClass
 #define MAINCLASS ALIVE_fnc_ied
-#define DEFAULT_BOMBER_THREAT 15
+// Threat DEFAULT_ fallbacks are used when the Eden module attribute is not
+// explicitly set on the logic (legacy SQMs, upgraded missions, edge cases
+// where the attribute-to-logic sync didn't land). These MUST match the
+// CfgVehicles `defaultValue` for each attribute or users see surprise
+// spawns despite picking "None" in the module UI - see issue #824:
+// "empty ambient vehicles whenever I place down an IED Threat module,
+//  even with VBIED threat = None".
+//
+// UI default is "None" (value 0) for all three; VB_IED_Threat and
+// Bomber_Threat previously defaulted to 5 and 15 here, producing ~5% of
+// towns with surprise VBIED cars and ~15% with suicide bombers on legacy
+// missions that never had the attribute synced.
+//
+// IED_Threat kept at 60 intentionally - if an unconfigured mil_ied module
+// produces NO IEDs at all, the module is functionally off and the user
+// likely doesn't know why. Non-zero fallback here is "do something useful
+// even if unconfigured"; non-zero on Bomber/VBIED is "silently add scary
+// things the user didn't ask for". Different trade-off.
+#define DEFAULT_BOMBER_THREAT 0
 #define DEFAULT_IED_THREAT 60
-#define DEFAULT_VB_IED_THREAT 5
+#define DEFAULT_VB_IED_THREAT 0
 #define DEFAULT_VB_IED_SIDE "CIV"
 #define DEFAULT_LOCS_IED 0
 #define DEFAULT_STARTING_IED_THREAT 0
@@ -164,10 +182,239 @@ switch(_operation) do {
                     [ADDON, "roadIEDClasses", _logic getVariable ["roadIEDClasses", DEFAULT_ROADIEDS]] call MAINCLASS;
                     [ADDON, "urbanIEDClasses", _logic getVariable ["urbanIEDClasses", DEFAULT_URBANIEDS]] call MAINCLASS;
                     [ADDON, "clutterClasses", _logic getVariable ["clutterClasses", DEFAULT_CLUTTER]] call MAINCLASS;
-                    [ADDON, "thirdParty", _logic getVariable ["thirdParty", false]] call MAINCLASS;
+                    // Legacy migration: earlier versions used a binary `thirdParty` Yes/No,
+                    // then a numeric `integrationMode` (0/1/2). The new `integrationChoice`
+                    // is a STRING ("_auto", "_force_alive", or a registry className).
+                    // Missions saved with either legacy shape get mapped in-place so the
+                    // mission-maker doesn't need to re-visit the Eden attribute.
+                    private _legacyTp      = _logic getVariable ["thirdParty", nil];
+                    private _legacyIMode   = _logic getVariable ["integrationMode", nil];
+                    private _iChoiceCurrent = _logic getVariable ["integrationChoice", nil];
+                    if (isNil "_iChoiceCurrent") then {
+                        private _migrated = nil;
+                        if (!isNil "_legacyIMode") then {
+                            // 0 = Auto, 1 = ForceDefer (Yes), 2 = ForceALiVE (No)
+                            _migrated = switch (_legacyIMode) do {
+                                case 2: { "_force_alive" };
+                                case 1: { "_auto" };   // old ForceDefer -> Auto (any detected mine wins)
+                                default { "_auto" };
+                            };
+                        } else {
+                            if (!isNil "_legacyTp") then {
+                                private _on = (_legacyTp isEqualTo true) ||
+                                              (_legacyTp isEqualTo 1) ||
+                                              (_legacyTp isEqualTo "1") ||
+                                              (_legacyTp isEqualTo "true");
+                                _migrated = if (_on) then { "_auto" } else { "_force_alive" };
+                            };
+                        };
+                        if (!isNil "_migrated") then {
+                            _logic setVariable ["integrationChoice", _migrated];
+                            diag_log format ["ALIVE-%1 MIL_IED: legacy integration setting migrated to integrationChoice='%2' (from thirdParty=%3, integrationMode=%4)",
+                                time, _migrated, _legacyTp, _legacyIMode];
+                        };
+                    };
+                    [ADDON, "integrationChoice", _logic getVariable ["integrationChoice", "_auto"]] call MAINCLASS;
                     [ADDON, "aiTriggerable", _logic getVariable ["AI_Triggerable", false]] call MAINCLASS;
 
+                    // Normalize numeric/bool Combo attributes through their case handlers.
+                    // Eden can store the raw defaultValue string ("0"/"1"/"0.02") when the
+                    // user never touched an attribute; each case handler coerces to the
+                    // declared type so downstream reads get a clean SCALAR/BOOL.
+                    [ADDON, "Persistence",                       _logic getVariable ["Persistence", false]] call MAINCLASS;
+                    [ADDON, "IED_Threat",                        _logic getVariable ["IED_Threat", 0]] call MAINCLASS;
+                    [ADDON, "IED_Starting_Threat",               _logic getVariable ["IED_Starting_Threat", 0]] call MAINCLASS;
+                    [ADDON, "IED_Detection",                     _logic getVariable ["IED_Detection", 1]] call MAINCLASS;
+                    [ADDON, "Bomber_Threat",                     _logic getVariable ["Bomber_Threat", 0]] call MAINCLASS;
+                    [ADDON, "VB_IED_Threat",                     _logic getVariable ["VB_IED_Threat", 0]] call MAINCLASS;
+                    [ADDON, "Locs_IED",                          _logic getVariable ["Locs_IED", 0]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Challenge",            _logic getVariable ["IED_Engineer_Challenge", 1]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_Base",            _logic getVariable ["IED_Engineer_Trip_Base", 0.02]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_ThresholdMin",    _logic getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Trip_ThresholdMax",    _logic getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Decay_Rate",           _logic getVariable ["IED_Engineer_Decay_Rate", 0.01]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Disarm_BaseTime",      _logic getVariable ["IED_Engineer_Disarm_BaseTime", 60]] call MAINCLASS;
+                    [ADDON, "IED_Engineer_Disarm_NewDeviceBase", _logic getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75]] call MAINCLASS;
+                    [ADDON, "roadIEDClasses_autoDetect",         _logic getVariable ["roadIEDClasses_autoDetect", 0]] call MAINCLASS;
+                    [ADDON, "urbanIEDClasses_autoDetect",        _logic getVariable ["urbanIEDClasses_autoDetect", 0]] call MAINCLASS;
+                    [ADDON, "clutterClasses_autoDetect",         _logic getVariable ["clutterClasses_autoDetect", 0]] call MAINCLASS;
+
                     publicVariable QUOTE(ADDON);
+
+                    // Auto-detect 3rd-party IED integrations from Cfg3rdPartyIEDs.
+                    private _integrations = call ALIVE_fnc_detectIEDIntegrations;
+                    ADDON setVariable ["detectedIEDIntegrations", _integrations, true];
+
+                    // Resolve the effective integration mode. integrationChoice is a STRING:
+                    //   "_auto"         - pick based on detection (default)
+                    //   "_force_alive"  - full ALiVE pipeline, ignore detection
+                    //   <className>     - the registry className of a specific integration
+                    //                     (e.g. "ACE_Explosives"). If the named integration
+                    //                     is currently detected, use its declared mode;
+                    //                     otherwise fall back to Auto + warn.
+                    //
+                    // Auto rule: if any NON-vanilla detected integration declares mode="mine",
+                    // use "mine" globally; otherwise use "alive". The vanilla baseline entry
+                    // is informational and does not by itself force a mode choice.
+                    private _fnAutoResolve = {
+                        private _anyMine = (_integrations findIf {
+                            (_x get "className") != "ALiVE_Vanilla_A3" &&
+                            (_x get "mode") == "mine"
+                        }) >= 0;
+                        if (_anyMine) then { "mine" } else { "alive" }
+                    };
+                    private _iChoice = ADDON getVariable ["integrationChoice", "_auto"];
+                    private _resolved = switch (true) do {
+                        case (_iChoice == "_force_alive"): { "alive" };
+                        case (_iChoice == "_auto"):        { call _fnAutoResolve };
+                        default {
+                            private _match = _integrations findIf { (_x get "className") == _iChoice };
+                            if (_match >= 0) then {
+                                (_integrations select _match) get "mode"
+                            } else {
+                                diag_log format ["ALIVE-%1 MIL_IED WARNING: integrationChoice='%2' is not a currently loaded integration; falling back to Auto", time, _iChoice];
+                                call _fnAutoResolve
+                            };
+                        };
+                    };
+                    ADDON setVariable ["resolvedIntegrationMode", _resolved, true];
+
+                    // ----- Phase 3c: resolved IED class pools with autoDetect + edit detect -
+                    // Per-category resolution matrix:
+                    //
+                    //   autoDetect | edited | source pool
+                    //   -----------+--------+--------------------------------------------
+                    //   No         | any    | base (current attribute value)
+                    //   Yes        | no     | candidate integration's classes (or base if empty)
+                    //   Yes        | yes    | base UNION candidate integration's classes
+                    //   Auto       | no     | Phase 3b: integration if iChoice/resolved picks it,
+                    //              |        | else base
+                    //   Auto       | yes    | base (respect user override)
+                    //
+                    // "edited" = current attribute value differs from compile-time DEFAULT_*.
+                    // "candidate integration" = the integration we'd source classes from
+                    // regardless of iChoice (for autoDetect=Yes): if iChoice picks a specific
+                    // integration use that; otherwise pick first non-vanilla mine integration
+                    // detected.
+                    // User's _additional field is ALWAYS appended, de-duplicated.
+                    private _candidateIntegration = nil;
+                    private _matchIdx = if (_iChoice == "_auto" || _iChoice == "_force_alive") then {
+                        _integrations findIf {
+                            (_x get "className") != "ALiVE_Vanilla_A3" &&
+                            (_x get "mode") == "mine"
+                        }
+                    } else {
+                        _integrations findIf { (_x get "className") == _iChoice };
+                    };
+                    if (_matchIdx >= 0) then {
+                        _candidateIntegration = _integrations select _matchIdx;
+                    };
+
+                    // _autoModeFollowsIntegration: under autoDetect=Auto, does iChoice imply
+                    // we should swap in the integration? Mirrors the Phase 3b rule.
+                    private _autoModeFollowsIntegration = !(_iChoice == "_force_alive") &&
+                                                          !(_iChoice == "_auto" && _resolved == "alive");
+
+                    private _fnResolveClasses = {
+                        params ["_category", "_defaultArr"];
+                        private _base       = [ADDON, _category] call MAINCLASS;
+                        private _autoDetect = ADDON getVariable [_category + "_autoDetect", 0];
+                        private _edited     = !(_base isEqualTo _defaultArr);
+                        private _iClasses   = if (!isNil "_candidateIntegration") then {
+                            _candidateIntegration get _category
+                        } else { [] };
+                        private _hasIClasses = (count _iClasses > 0);
+
+                        private _pool = switch (_autoDetect) do {
+                            case 2: { +_base };                      // No - never integration
+                            case 1: {                                // Yes - always merge if any
+                                if (_hasIClasses) then {
+                                    if (_edited) then {
+                                        // user override - union with integration
+                                        private _p = +_base;
+                                        { if (!(_x in _p)) then { _p pushBack _x; }; } forEach _iClasses;
+                                        _p
+                                    } else {
+                                        // base is default - replace with integration (Option A)
+                                        +_iClasses
+                                    };
+                                } else { +_base };
+                            };
+                            default {                                // Auto (0)
+                                if (_edited) then {
+                                    +_base                            // respect user edits
+                                } else {
+                                    if (_autoModeFollowsIntegration && _hasIClasses) then {
+                                        +_iClasses                    // Phase 3b behaviour
+                                    } else {
+                                        +_base
+                                    };
+                                };
+                            };
+                        };
+
+                        // Stack user's _additional, deduped.
+                        private _addStr = _logic getVariable [_category + "_additional", ""];
+                        if (typeName _addStr == "STRING" && {_addStr != ""}) then {
+                            private _addArr = [_addStr, " ", ""] call CBA_fnc_replace;
+                            _addArr = [_addArr, ","] call CBA_fnc_split;
+                            {
+                                if (_x != "" && {!(_x in _pool)}) then { _pool pushBack _x; };
+                            } forEach _addArr;
+                        };
+                        _pool
+                    };
+
+                    ADDON setVariable ["resolvedRoadIEDClasses",  ["roadIEDClasses",  DEFAULT_ROADIEDS]  call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedUrbanIEDClasses", ["urbanIEDClasses", DEFAULT_URBANIEDS] call _fnResolveClasses, true];
+                    ADDON setVariable ["resolvedClutterClasses",  ["clutterClasses",  DEFAULT_CLUTTER]  call _fnResolveClasses, true];
+
+                    // Vertical placement offset (Z). When an integration is the active
+                    // authority (specific choice, or Auto picked it), use its declared
+                    // placementZ. Otherwise fall back to ALiVE's classic burial (-0.1).
+                    // chargeOffsetZ travels alongside placementZ - it controls where the
+                    // attached ALIVE_DemoCharge_Remote_Ammo sits relative to the IED.
+                    private _activeForZ = !isNil "_candidateIntegration" &&
+                                          {_autoModeFollowsIntegration || _iChoice == "_force_alive"} &&
+                                          {_iChoice != "_force_alive"};
+                    private _resolvedPlacementZ = if (_activeForZ) then {
+                        _candidateIntegration get "placementZ"
+                    } else {
+                        -0.1
+                    };
+                    private _resolvedChargeOffsetZ = if (_activeForZ) then {
+                        _candidateIntegration get "chargeOffsetZ"
+                    } else {
+                        0
+                    };
+                    private _resolvedStompRadius = if (_activeForZ) then {
+                        _candidateIntegration get "stompRadius"
+                    } else {
+                        0
+                    };
+                    ADDON setVariable ["resolvedPlacementZ", _resolvedPlacementZ, true];
+                    ADDON setVariable ["resolvedChargeOffsetZ", _resolvedChargeOffsetZ, true];
+                    ADDON setVariable ["resolvedStompRadius", _resolvedStompRadius, true];
+
+                    if (ADDON getVariable ["debug", false]) then {
+                        diag_log format ["ALIVE-%1 MIL_IED Phase 3c: candidate=%2, road=%3 (autoDetect=%4) urban=%5 (autoDetect=%6) clutter=%7 (autoDetect=%8)",
+                            time,
+                            if (isNil "_candidateIntegration") then { "(none)" } else { _candidateIntegration get "displayName" },
+                            count (ADDON getVariable "resolvedRoadIEDClasses"),  ADDON getVariable ["roadIEDClasses_autoDetect", 0],
+                            count (ADDON getVariable "resolvedUrbanIEDClasses"), ADDON getVariable ["urbanIEDClasses_autoDetect", 0],
+                            count (ADDON getVariable "resolvedClutterClasses"),  ADDON getVariable ["clutterClasses_autoDetect", 0]];
+                    };
+
+                    if (count _integrations == 0) then {
+                        diag_log format ["ALIVE-%1 MIL_IED: no 3rd-party IED integrations detected; resolved mode=%2 (choice='%3')",
+                            time, _resolved, _iChoice];
+                    } else {
+                        private _summary = _integrations apply {
+                            format ["%1 (mode=%2)", _x get "displayName", _x get "mode"]
+                        };
+                        diag_log format ["ALIVE-%1 MIL_IED: %2 integration(s) detected: %3 - resolved mode=%4 (choice='%5')",
+                            time, count _integrations, _summary joinString ", ", _resolved, _iChoice];
+                    };
 
                     _debug = [_logic, "debug"] call MAINCLASS;
                     {_x setMarkerAlpha 0} foreach (_logic getVariable ["taor", DEFAULT_TAOR]);
@@ -586,8 +833,18 @@ switch(_operation) do {
             } else {
                 _args = _logic getVariable ["debug", false];
             };
+            // Eden Combo attributes can land on the logic as STRING "1"/"0" or
+            // SCALAR 1/0 (not always BOOL). The pre-existing STRING branch only
+            // recognised "true"/"false", so a user-selected "Yes" arrived here
+            // as STRING "1" and was silently coerced to BOOL false -
+            // createMarkers never ran at init and debug markers didn't appear
+            // until the admin menu passed BOOL true explicitly.
             if (typeName _args == "STRING") then {
-                    if(_args == "true") then {_args = true;} else {_args = false;};
+                    _args = (_args in ["1","true"]);
+                    _logic setVariable ["debug", _args, true];
+            };
+            if (typeName _args == "SCALAR") then {
+                    _args = _args > 0;
                     _logic setVariable ["debug", _args, true];
             };
             ASSERT_TRUE(typeName _args == "BOOL",str _args);
@@ -603,11 +860,250 @@ switch(_operation) do {
         case "locations": {
             _result = [_logic,_operation,_args,[]] call ALIVE_fnc_OOsimpleOperation;
         };
-        case "thirdParty": {
-            _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
+        case "integrationChoice": {
+            // Custom Eden attribute backed by a STRING token - "_auto",
+            // "_force_alive", or a registry className. Coerce non-string
+            // inputs (e.g. defaultValue can round-trip as something else)
+            // back to a safe default.
+            if (typeName _args == "STRING") then {
+                _logic setVariable ["integrationChoice", _args];
+            } else {
+                _args = _logic getVariable ["integrationChoice", "_auto"];
+                if (typeName _args != "STRING" || _args == "") then {
+                    _args = "_auto";
+                    _logic setVariable ["integrationChoice", _args];
+                };
+            };
+            ASSERT_TRUE(typeName _args == "STRING", str _args);
+            _result = _args;
         };
         case "aiTriggerable": {
             _result = [_logic,_operation,_args,false] call ALIVE_fnc_OOsimpleOperation;
+        };
+        case "Persistence": {
+            if (typeName _args == "BOOL") then {
+                _logic setVariable ["Persistence", _args];
+            } else {
+                _args = _logic getVariable ["Persistence", false];
+            };
+            if (typeName _args == "STRING") then {
+                _args = (_args in ["1","true"]);
+                _logic setVariable ["Persistence", _args];
+            };
+            if (typeName _args == "SCALAR") then {
+                _args = _args > 0;
+                _logic setVariable ["Persistence", _args];
+            };
+            ASSERT_TRUE(typeName _args == "BOOL",str _args);
+            _result = _args;
+        };
+        case "IED_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Threat", _args];
+            } else {
+                _args = _logic getVariable ["IED_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Starting_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Starting_Threat", _args];
+            } else {
+                _args = _logic getVariable ["IED_Starting_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Starting_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Detection": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Detection", _args];
+            } else {
+                _args = _logic getVariable ["IED_Detection", 1];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Detection", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "Bomber_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["Bomber_Threat", _args];
+            } else {
+                _args = _logic getVariable ["Bomber_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["Bomber_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "VB_IED_Threat": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["VB_IED_Threat", _args];
+            } else {
+                _args = _logic getVariable ["VB_IED_Threat", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["VB_IED_Threat", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "Locs_IED": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["Locs_IED", _args];
+            } else {
+                _args = _logic getVariable ["Locs_IED", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["Locs_IED", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Challenge": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Challenge", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Challenge", 1];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Challenge", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_Base": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_Base", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_Base", 0.02];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_Base", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_ThresholdMin": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMin", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_ThresholdMin", 0.7];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMin", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Trip_ThresholdMax": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMax", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Trip_ThresholdMax", 1.3];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Trip_ThresholdMax", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Decay_Rate": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Decay_Rate", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Decay_Rate", 0.01];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Decay_Rate", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Disarm_BaseTime": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Disarm_BaseTime", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Disarm_BaseTime", 60];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Disarm_BaseTime", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "IED_Engineer_Disarm_NewDeviceBase": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["IED_Engineer_Disarm_NewDeviceBase", _args];
+            } else {
+                _args = _logic getVariable ["IED_Engineer_Disarm_NewDeviceBase", 0.75];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["IED_Engineer_Disarm_NewDeviceBase", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "roadIEDClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["roadIEDClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["roadIEDClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["roadIEDClasses_autoDetect", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "urbanIEDClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["urbanIEDClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["urbanIEDClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["urbanIEDClasses_autoDetect", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
+        };
+        case "clutterClasses_autoDetect": {
+            if (typeName _args == "SCALAR") then {
+                _logic setVariable ["clutterClasses_autoDetect", _args];
+            } else {
+                _args = _logic getVariable ["clutterClasses_autoDetect", 0];
+            };
+            if (typeName _args == "STRING") then {
+                _args = parseNumber _args;
+                _logic setVariable ["clutterClasses_autoDetect", _args];
+            };
+            ASSERT_TRUE(typeName _args == "SCALAR",str _args);
+            _result = _args;
         };
         case "createMarkers": {
 

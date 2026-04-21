@@ -596,11 +596,42 @@ switch(_operation) do {
 
                     }else{
 
+                        // Persistent load: "placement" is skipped (profiles were
+                        // restored elsewhere) so GVAR(ROADBLOCK_LOCATIONS) - which
+                        // the spawn loop below iterates unconditionally - is left
+                        // undefined and the loop crashes. Mirror the pattern in
+                        // civ_placement_custom (fnc_CPC.sqf ~250-281): seed the
+                        // queue from the persisted ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS
+                        // cache by intersecting it with this module's objectives.
+                        // Fixes #494.
+                        if (isNil QGVAR(ROADBLOCK_LOCATIONS)) then {
+                            GVAR(ROADBLOCK_LOCATIONS) = [];
+                        };
+
+                        private _roadBlocks = parseNumber([_logic, "roadBlocks"] call MAINCLASS);
+                        if (_roadBlocks > 0) then {
+                            private _restoredRoadblocks = 0;
+                            private _savedRoadblockLocations = if (isNil "ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS") then {[]} else {+ALIVE_CIV_PLACEMENT_ROADBLOCK_LOCATIONS};
+
+                            {
+                                private _center = [_x, "center"] call ALIVE_fnc_hashGet;
+                                private _clusterSize = [_x, "size"] call ALIVE_fnc_hashGet;
+                                private _roadblockLocation = [_center, _clusterSize];
+
+                                if ((_savedRoadblockLocations findIf {_x isEqualTo _roadblockLocation}) >= 0 && {(GVAR(ROADBLOCK_LOCATIONS) findIf {_x isEqualTo _roadblockLocation}) < 0}) then {
+                                    GVAR(ROADBLOCK_LOCATIONS) pushBack _roadblockLocation;
+                                    _restoredRoadblocks = _restoredRoadblocks + 1;
+                                };
+                            } forEach ([_logic, "objectives"] call MAINCLASS);
+
+                            if (_debug) then {
+                                ["CP - Restored %1 deferred roadblock locations for persistent load", _restoredRoadblocks] call ALiVE_fnc_dump;
+                            };
+                        };
+
                         // DEBUG -------------------------------------------------------------------------------------
                         if(_debug) then { ["CP - Profiles are persistent, no creation of profiles"] call ALiVE_fnc_dump; };
                         // DEBUG -------------------------------------------------------------------------------------
-
-                        // need to start roadblock spawn loop though...
 
                         // set module as started
                         _logic setVariable ["startupComplete", true];

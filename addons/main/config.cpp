@@ -6,6 +6,7 @@
 #include "CfgFunctions.hpp"
 #include "Eventhandlers.hpp"
 #include "CfgHints.hpp"
+#include "Cfg3rdPartyFactions.hpp"
 #include "\x\alive\addons\main\data\ui\main.hpp"
 
 

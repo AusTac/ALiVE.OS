@@ -19,7 +19,10 @@ _IEDs = [[GVAR(STORE), "IEDs"] call ALiVE_fnc_hashGet, _town] call ALiVE_fnc_has
 _removeIED = {
     private ["_IED","_IEDObj","_IEDCharge","_IEDskin","_IEDpos","_trgr"];
 
-    private _thirdParty = ADDON getVariable ["thirdParty",false];
+    // Resolved integration mode - "mine" means we defer to Arma's mineActive
+    // detection (legacy thirdParty=Yes), "alive" means full ALiVE pipeline.
+    private _integrationMode = ADDON getVariable ["resolvedIntegrationMode", "alive"];
+    private _thirdParty = (_integrationMode == "mine");
 
     _IEDpos = [_value, "IEDpos", [0,0,0]] call ALiVE_fnc_hashGet;
     _IEDskin = [_value, "IEDskin", "ALIVE_IEDUrbanSmall_Remote_Ammo"] call ALiVE_fnc_hashGet;

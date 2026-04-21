@@ -85,7 +85,7 @@ if(isServer) then {
     private _advciv_hideTimeMin      = parseNumber (_logic getVariable ["advciv_hideTimeMin",      "60"]);
     private _advciv_hideTimeMax      = parseNumber (_logic getVariable ["advciv_hideTimeMax",      "180"]);
     private _advciv_preferBuildings  = (_logic getVariable ["advciv_preferBuildings",  "true"])  isEqualTo "true";
-    private _advciv_voiceEnabled     = (_logic getVariable ["advciv_voiceEnabled",     "true"])  isEqualTo "true";
+    private _advciv_voiceEnabled     = (_logic getVariable ["advciv_voiceEnabled",     "false"]) isEqualTo "true";
     private _advciv_voiceChance      = parseNumber (_logic getVariable ["advciv_voiceChance",      "0.6"]);
     private _advciv_orderMenuEnabled = (_logic getVariable ["advciv_orderMenuEnabled", "true"])  isEqualTo "true";
     private _advciv_orderMenuRange   = parseNumber (_logic getVariable ["advciv_orderMenuRange",   "4"]);

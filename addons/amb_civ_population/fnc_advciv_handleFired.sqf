@@ -32,7 +32,22 @@ params [
 ];
 
 if (!isServer) exitWith {};
-if (!ALiVE_advciv_enabled) exitWith {};
+
+// Defensive: the AdvCiv system publishes its globals from
+// fnc_civilianPopulationSystemInit. A shot can fire BEFORE that init runs
+// (early mission preview, intro firefight, scenarios where the AdvCiv
+// module loads after the first shot lands here) - at which point the
+// globals are nil and any read crashes. `if (!ALiVE_advciv_enabled)` was
+// itself unsafe: `!nil` errors on its own, never mind reaching the
+// nearEntities call below where _range = nil produced
+// "Type Any, expected Number" at line 40. Treat any missing config
+// global as "system not ready, silently no-op".
+if (isNil "ALiVE_advciv_enabled" || {!ALiVE_advciv_enabled}) exitWith {};
+if (
+    isNil "ALiVE_advciv_suppressedRange" ||
+    {isNil "ALiVE_advciv_unsuppressedRange"}
+) exitWith {};
+
 if (!isNull _firer && {side _firer == civilian}) exitWith {};   // Ignore civilian-fired shots
 
 // Suppressed weapons have a significantly reduced awareness radius

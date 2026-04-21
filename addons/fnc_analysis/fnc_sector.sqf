@@ -61,6 +61,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -120,7 +121,10 @@ _createMarkers = {
 
                 _markers pushback _m;
 
-                _m = createMarker [format[MTEMPLATE, format["l%1_%2",_gridID,_id]], _position];
+                // Offset south so the sector-ID label doesn't overlap the
+                // strategic cluster / opcom debug labels at the same centre
+                // (see ALiVE_fnc_debugMarkerOffset registry).
+                _m = createMarker [format[MTEMPLATE, format["l%1_%2",_gridID,_id]], ["analysis.sector", _position] call ALiVE_fnc_debugMarkerOffset];
                 _m setMarkerShape "ICON";
                 _m setMarkerSize [0.5, 0.5];
                 _m setMarkerType "mil_dot";

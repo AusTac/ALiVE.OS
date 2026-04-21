@@ -16,10 +16,21 @@ TRACE_1("IED",_this);
 
 _debug = ADDON getVariable ["debug", false];
 _threat = ADDON getVariable ["IED_Threat", DEFAULT_IED_THREAT];
-private _thirdParty = ADDON getVariable ["thirdParty", false];
+// Resolved at module init by ALIVE_fnc_detectIEDIntegrations. Possible values:
+//   "alive"      - full ALiVE pipeline (arm + proximity + disarm + charge).
+//   "mine"       - createVehicle but skip ALiVE arming (legacy thirdParty=Yes).
+//   "passive"    - createVehicle, no arming, no charge, no addAction.
+//                  Engine handles via collision damage. For SOG punji sticks etc.
+//   "engineMine" - createMINE (not createVehicle) so the engine arms the object
+//                  as a proper mine. No ALiVE pipeline. For tripwire mines.
+private _integrationMode = ADDON getVariable ["resolvedIntegrationMode", "alive"];
+private _thirdParty       = (_integrationMode != "alive");   // legacy alias
+private _isAlive          = (_integrationMode == "alive");
+private _isPassive        = (_integrationMode == "passive");
+private _isEngineMine     = (_integrationMode == "engineMine");
 
 if (_thirdParty && _debug) then {
-    ["MIL IED: Using third party IEDs"] call ALiVE_fnc_dump;
+    ["MIL IED: Using non-alive integration mode: %1", _integrationMode] call ALiVE_fnc_dump;
 };
 
 _position = _this select 0;
@@ -115,16 +126,19 @@ for "_j" from 1 to _numIEDs do {
 
         // If error occurred, skip IED creation for this iteration
         if (!_error) then {
+        private _isRoadContext = false;
+
         if (isOnRoad _IEDpos) then {
-            _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+            _IEDskins = ADDON getVariable ["resolvedRoadIEDClasses", [ADDON, "roadIEDClasses"] call MAINCLASS];
+            _isRoadContext = true;
         } else {
             // Check to see proximity to houses (use "House" base class to catch all map building types)
             if (count (_IEDpos nearObjects ["House", 40]) > 0) then {
-                _IEDskins = [ADDON, "urbanIEDClasses"] call MAINCLASS;
+                _IEDskins = ADDON getVariable ["resolvedUrbanIEDClasses", [ADDON, "urbanIEDClasses"] call MAINCLASS];
 
                 // Add clutter nearby so its not so obvious that there is an IED
                 private ["_clutter","_c","_clut","_clutm","_t"];
-                _clutter = [ADDON, "clutterClasses"] call MAINCLASS;
+                _clutter = ADDON getVariable ["resolvedClutterClasses", [ADDON, "clutterClasses"] call MAINCLASS];
                 for "_c" from 1 to (2 + (ceil(random 6))) do {
 
                     //Seems to cause a crash lateley if _clutter is empty (trigger-related?)
@@ -148,15 +162,62 @@ for "_j" from 1 to _numIEDs do {
                     };*/
                 };
             } else {
-                _IEDskins = [ADDON, "roadIEDClasses"] call MAINCLASS;
+                _IEDskins = ADDON getVariable ["resolvedRoadIEDClasses", [ADDON, "roadIEDClasses"] call MAINCLASS];
+                _isRoadContext = true;
             };
         };
 
-        if !(_thirdParty) then {
-            _IEDpos set [2, -0.1];
+        // Road IED clutter - sparse (1-3 pieces) and placed tight to the IED
+        // to break up its silhouette against open verge. Urban IEDs already
+        // get dense clutter above; rural road IEDs previously had none, which
+        // left a bare model visible against cleared shoulder terrain.
+        if (_isRoadContext) then {
+            private ["_clutter","_roadC","_roadClut"];
+            _clutter = ADDON getVariable ["resolvedClutterClasses", [ADDON, "clutterClasses"] call MAINCLASS];
+            for "_roadC" from 1 to (1 + (ceil (random 2))) do {
+                if (count _clutter > 0) then {
+                    _roadClut = createVehicle [(selectRandom _clutter), _IEDpos, [], 8, "NONE"];
+                    _roadClut setvariable [QUOTE(ADDON), true];
+
+                    // Nudge off tarmac if it landed on a road. Bounded retry
+                    // so we don't infinite-loop on wide intersections.
+                    private _retry = 0;
+                    while {isOnRoad _roadClut && _retry < 8} do {
+                        _roadClut setPos [
+                            ((position _roadClut) select 0) - 6 + random 12,
+                            ((position _roadClut) select 1) - 6 + random 12,
+                            ((position _roadClut) select 2)
+                        ];
+                        _retry = _retry + 1;
+                    };
+                };
+            };
         };
+
+        // Guard: the resolved pool could be empty if a selected integration
+        // declares no classes for this category AND the user has wiped the
+        // base attribute and _additional field. Skip this iteration cleanly
+        // rather than feeding nil to createVehicle.
+        if (count _IEDskins == 0) exitWith {
+            _error = true;
+            diag_log format ["ALIVE-%1 MIL_IED: empty class pool, skipping placement (check integrationChoice + <cat>_additional fields)", time];
+        };
+
+        // Apply per-integration vertical offset. Default -0.1 (ALiVE classic
+        // burial); registry entries can override (e.g. RHS sets 0 so visible
+        // mine objects don't sink under terrain).
+        _IEDpos set [2, ADDON getVariable ["resolvedPlacementZ", -0.1]];
         _IEDskin = (selectRandom _IEDskins);
-        _IED = createVehicle [_IEDskin, _IEDpos, [], 0, "NONE"];
+
+        // engineMine mode uses createMine instead of createVehicle so the
+        // engine treats the placed object as a properly armed mine - this is
+        // what makes pressure / tripwire triggers actually fire on it.
+        // Other modes (alive, mine, passive) all use createVehicle.
+        _IED = if (_isEngineMine) then {
+            createMine [_IEDskin, _IEDpos, [], 0]
+        } else {
+            createVehicle [_IEDskin, _IEDpos, [], 0, "NONE"]
+        };
 
         _ID = format ["%1-%2", _town, _j];
         if (random 1 < 0.95) then {_dud = false} else {_dud = true};
@@ -183,6 +244,14 @@ for "_j" from 1 to _numIEDs do {
 
     // Only proceed with IED setup if no error occurred and IED was created
     if (!_error) then {
+        // Guard: skip the rest of the per-IED setup if createVehicle returned objNull.
+        // Without this guard the demo charge below would be created at world origin
+        // (or wherever attachTo objNull places it) and ACE would see a loose
+        // explosive with no parent mine - the "lone charge" symptom.
+        if (isNull _IED) then {
+            diag_log format ["ALIVE-%1 MIL_IED arm/charge SKIPPED for null _IED (skin=%2 pos=%3) - this would have produced an orphaned charge",
+                time, _IEDskin, _IEDpos];
+        } else {
         _IED setvariable ["ID", _ID];
     _IED setvariable ["town", _town];
 
@@ -190,44 +259,70 @@ for "_j" from 1 to _numIEDs do {
     if (!_dud && !_thirdParty) then {
         [_IED, typeOf _IED] call ALIVE_fnc_armIED;
 
-        // Attach something that can take a hit to the IED and add a damage handler
+        // Attach the demo charge. chargeOffsetZ controls Z relative to the IED:
+        //   0 (default)  - sit at IED reference point (correct for trash-pile
+        //                  IEDs where the c4 model is "inside" the visual)
+        //   negative     - bury below the IED (used by RHS so the visible mine
+        //                  isn't covered up by the c4 model on top)
         _IEDCharge = createVehicle ["ALIVE_DemoCharge_Remote_Ammo",getposATL _IED, [], 0, "CAN_COLLIDE"];
-        _IEDCharge attachTo [_IED, [0,0,0]];
+        _IEDCharge attachTo [_IED, [0, 0, ADDON getVariable ["resolvedChargeOffsetZ", 0]]];
 
-        // Add damage handler
+        // Damage-handler logic shared by both EHs (charge AND mine). Either
+        // can fire when a bullet/explosive hits its target; the
+        // `ALiVE_IED_Detonating` flag prevents both running. Mine-side EH is
+        // the path that matters when the charge is buried out of sight (RHS):
+        // shooting the visible mine still detonates the IED.
         _ehID = _IEDCharge addeventhandler ["HandleDamage",{
-
-            private _charge = _this select 0;
-            private _killer = _this select 3;
+            params ["_charge", "", "", "_killer"];
             private _IED = attachedTo _charge;
+            if (isNull _IED) exitWith {};
+            if (_IED getVariable ["ALiVE_IED_Detonating", false]) exitWith {};
+            _IED setVariable ["ALiVE_IED_Detonating", true];
             private _pos = getpos _charge;
 
-            //diag_log str(_this);
-            if (isPlayer _killer) then { // GO BOOOOOOOOOOM AND AWARD PLAYER
-
+            if (isPlayer _killer) then {
                 if (ADDON getVariable "debug") then {
-                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3", time, _IED, _killer];
+                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3 (via charge)", time, _IED, _killer];
                     [_IED getvariable "Marker"] call cba_fnc_deleteEntity;
                 };
-
-				// Update Sector Hostility
-    			[position _IED, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
-
-                //set pos to 0 height and give it an extra shot
+                [position _IED, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
                 _pos set [2,0];
                 "M_Mo_120mm_AT" createVehicle _pos;
             };
 
-            // Remove from store if damaged
             [ADDON, "removeIED", _IED] call ALiVE_fnc_IED;
-
-            // Delete IED, charge, and ALL proximity/detection triggers to prevent double-detonation
-            // (armIED also creates triggers; deleting here stops them firing after EH detonation)
-            detach _ied;
+            detach _charge;
             deleteVehicle _IED;
             deletevehicle _charge;
+            private _trgr = _pos nearObjects ["EmptyDetector", 3];
+            {
+                deleteVehicle _x;
+            } foreach _trgr;
+        }];
 
-            // Including all triggers around
+        // Mirrored damage handler on the IED (mine) itself. Critical for
+        // visible-mine integrations like RHS where the buried charge is out
+        // of line-of-sight and a player's bullet hits the mine model first.
+        private _ehIDmine = _IED addEventHandler ["HandleDamage", {
+            params ["_ied", "", "", "_killer"];
+            if (_ied getVariable ["ALiVE_IED_Detonating", false]) exitWith {};
+            _ied setVariable ["ALiVE_IED_Detonating", true];
+            private _charge = _ied getVariable ["charge", objNull];
+            private _pos = getpos _ied;
+
+            if (isPlayer _killer) then {
+                if (ADDON getVariable "debug") then {
+                    diag_log format ["ALIVE-%1 IED: %2 explodes due to damage by %3 (via mine)", time, _ied, _killer];
+                    [_ied getvariable "Marker"] call cba_fnc_deleteEntity;
+                };
+                [position _ied, [str(side (group _killer))], +10] call ALiVE_fnc_updateSectorHostility;
+                _pos set [2,0];
+                "M_Mo_120mm_AT" createVehicle _pos;
+            };
+
+            [ADDON, "removeIED", _ied] call ALiVE_fnc_IED;
+            if (!isNull _charge) then { detach _charge; deleteVehicle _charge; };
+            deleteVehicle _ied;
             private _trgr = _pos nearObjects ["EmptyDetector", 3];
             {
                 deleteVehicle _x;
@@ -235,6 +330,7 @@ for "_j" from 1 to _numIEDs do {
         }];
 
         _IED setVariable ["ehID",_ehID, true];
+        _IED setVariable ["ehIDmine",_ehIDmine, true];
         _IED setvariable ["charge", _IEDCharge, true];
     };
 
@@ -259,6 +355,7 @@ for "_j" from 1 to _numIEDs do {
         ADDON setVariable ["debugMarkers",_markers];
 
     };
+        }; // End of else (isNull _IED guard)
     }; // End of if (!_error) - only set up IED if it was successfully created
 };
 

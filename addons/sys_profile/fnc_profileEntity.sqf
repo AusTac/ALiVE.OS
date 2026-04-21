@@ -296,7 +296,14 @@ switch(_operation) do {
                 [_logic,"position", _args] call ALIVE_fnc_hashSet;
 
                 if ([_logic,"debug"] call ALIVE_fnc_hashGet) then {
-                    [_logic,"debug", true] call MAINCLASS;
+                    // Throttle marker refreshes to at most once every 2s per profile.
+                    // Position updates can fire per frame for active profiles; without this
+                    // the debug path rebuilds markers per frame and tanks FPS (issue #838).
+                    private _last = [_logic,"debugMarkerLastRefresh",0] call ALIVE_fnc_hashGet;
+                    if (diag_tickTime - _last >= 2) then {
+                        [_logic,"debugMarkerLastRefresh",diag_tickTime] call ALIVE_fnc_hashSet;
+                        [_logic,"debug", true] call MAINCLASS;
+                    };
                 };
 
                 // store position on handler position index
@@ -1280,7 +1287,25 @@ switch(_operation) do {
                         if(_spawnType select 0 == "preventDespawn") then {
                             _despawnPrevented = true;
                         };
-                    }
+                    };
+                    // Linked vehicle / profile may be lingered via the timestamp fields
+                    // set by the GetOut EH (player occupant) or the server-side
+                    // EntityKilled EH (post-death). Honour those here so infantry
+                    // profiles linked to a preserved vehicle don't despawn underneath
+                    // it and break the vehicle assignment.
+                    if (!_despawnPrevented) then {
+                        private _occLast = [_x, "playerOccupantLastSeen", 0] call ALIVE_fnc_hashGet;
+                        if (_occLast > 0 && {_occLast <= diag_tickTime} && {(diag_tickTime - _occLast) < ALIVE_playerOccupantGrace}) then {
+                            _despawnPrevented = true;
+                        };
+                    };
+                    if (!_despawnPrevented) then {
+                        private _linger = [_x, "postDeathLingerUntil", 0] call ALIVE_fnc_hashGet;
+                        private _maxPlausible = ALIVE_postDeathGrace max ALIVE_midCombatExtension;
+                        if (_linger > 0 && {diag_tickTime < _linger} && {(_linger - diag_tickTime) <= _maxPlausible}) then {
+                            _despawnPrevented = true;
+                        };
+                    };
                 } forEach (_linked select 2);
             // check if entity-profile itself has despawn prevented
             } else {
@@ -1288,6 +1313,32 @@ switch(_operation) do {
                 if (count _spawnType > 0) then {
                     if(_spawnType select 0 == "preventDespawn") then {
                         _despawnPrevented = true;
+                    };
+                };
+            };
+
+            // --- Despawn linger checks (see sys_profile module "Despawn Linger" params) ---
+            // Entity profiles don't own a vehicle directly (that's fnc_profileVehicle's
+            // job), so no live-crew scan here. Only timestamp-based linger applies.
+
+            // Post-death linger: set by the EntityKilled EH in XEH_postInit for
+            // profiles near a player-death position. If still in combat within the
+            // linger window, keep linger >= now + ALIVE_midCombatExtension. Clamped
+            // (not additive) so a profile stuck outside spawn range with ongoing
+            // combat can't grow its linger unboundedly across despawn cycles.
+            // _maxPlausible guard rejects stale persisted stamps after a cross-
+            // Arma-session reload (diag_tickTime resets on engine restart).
+            if (!_despawnPrevented) then {
+                private _linger = [_logic, "postDeathLingerUntil", 0] call ALIVE_fnc_hashGet;
+                private _maxPlausible = ALIVE_postDeathGrace max ALIVE_midCombatExtension;
+                if (_linger > 0 && {diag_tickTime < _linger} && {(_linger - diag_tickTime) <= _maxPlausible}) then {
+                    _despawnPrevented = true;
+                    private _inCombat = [_logic, "combat", false] call ALIVE_fnc_hashGet;
+                    if (_inCombat) then {
+                        private _newLinger = diag_tickTime + ALIVE_midCombatExtension;
+                        if (_newLinger > _linger) then {
+                            [_logic, "postDeathLingerUntil", _newLinger] call ALIVE_fnc_hashSet;
+                        };
                     };
                 };
             };
@@ -1406,6 +1457,20 @@ switch(_operation) do {
     };
 
     case "createDebugMarkers": {
+        // Skip marker creation entirely when no map is open on this machine.
+        // With a map open the engine re-renders every marker every frame; combined
+        // with the marker churn from position/spawn/despawn debug triggers this
+        // halves FPS (issue #838). On dedicated server visibleMap is always false,
+        // which is desired — dev testing with debug on happens SP / listen server.
+        //
+        // Must return [] (not the default _result=true) so callers like
+        // fnc_liveAnalysis that concatenate (_markers + _marker) don't crash
+        // with "+: Type Bool, expected Number,Array,...".
+        // Using if-then-else (not exitWith) to avoid any ambiguity in how the
+        // _result assignment propagates out of the exitWith block's scope.
+        _result = [];
+        if (visibleMap) then {
+
         private _markers = [];
 
         private _position = [_logic,"position"] call ALIVE_fnc_hashGet;
@@ -1477,6 +1542,8 @@ switch(_operation) do {
         };
 
         _result = _markers;
+
+        }; // end if (visibleMap)
     };
 
     case "deleteDebugMarkers": {

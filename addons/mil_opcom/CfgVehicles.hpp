@@ -6,7 +6,7 @@ class CfgVehicles {
     };
     class ModuleAliveBase : Module_F
     {
-        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; };
+        class AttributesBase : AttributesBase { class ALiVE_ModuleSubTitle; class ALiVE_HiddenAttribute; };
         class ModuleDescription;
     };
         class ADDON : ModuleAliveBase
@@ -70,6 +70,116 @@ class CfgVehicles {
                                     class asymmetric { name = "Asymmetric"; value = "asymmetric"; };
                                 };
                         };
+                        class reinforcements : Combo
+                        {
+                                property = "ALiVE_mil_opcom_reinforcements";
+                                displayName = "$STR_ALIVE_OPCOM_REINFORCEMENTS";
+                                tooltip = "$STR_ALIVE_OPCOM_REINFORCEMENTS_COMMENT";
+                                defaultValue = """0.75""";
+                                class Values
+                                {
+                                    class Aggressive   { name = "Aggressive (90%)";   value = "0.9";  };
+                                    class Moderate     { name = "Moderate (75%)";     value = "0.75"; default = 1; };
+                                    class Conservative { name = "Conservative (50%)"; value = "0.5";  };
+                                };
+                        };
+
+                        // ---- Factions -------------------------------------------------------
+                        // Phase 4 design:
+                        //   - `factions` (multi-select listbox) is the primary
+                        //     UI. Inherits ALiVE_FactionChoiceMulti_Military
+                        //     directly - control class's Save handler writes
+                        //     to logic.factions, matching the attribute name.
+                        //     Multi-select Load handler accepts SQF array
+                        //     literal AND CSV AND single-faction string for
+                        //     backward compat, so old missions that used
+                        //     this slot as a free-text Edit (CSV / array)
+                        //     load cleanly into the visual ticked state.
+                        //   - `factionsManual` (Edit field, NEW attribute and
+                        //     property) is the manual override: type extra
+                        //     classnames here for mods not currently loaded
+                        //     (authoring for someone else's modset) or as a
+                        //     free-text supplement to the visual selection
+                        //     above. Combined with `factions` at runtime.
+                        //
+                        // Pre-Phase-4 mil_opcom had separate faction1-faction4
+                        // single-faction Combo dropdowns (each with hardcoded
+                        // 9-option lists). Those are removed - the multi-
+                        // select supersedes them. Missions saved with values
+                        // in those four slots will lose those values on first
+                        // re-save in this version (the SQM data still exists
+                        // but no attribute reads it). Mission-makers re-pick
+                        // their factions in the multi-select on first open.
+                        //
+                        // Multi-select UX hint: Ctrl+click toggles an
+                        // individual row in/out of the selection.
+                        // Shift+click range-selects. Plain click replaces
+                        // the selection with just that one item.
+                        class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_FACTIONS"; displayName = "FACTIONS"; };
+                        class factions
+                        {
+                                property     = "ALiVE_mil_opcom_factions";
+                                displayName  = "$STR_ALIVE_OPCOM_FACTIONS";
+                                tooltip      = "Pick one or more factions for this AI Commander to control.\n\nLeft-click = replace selection with just that item.\nCtrl + Left-click = toggle individual item (multi-select).\nShift + Left-click = select range.\n\nList is auto-populated from currently-loaded faction mods. Selections here are combined with the manual override field below at runtime.";
+                                control      = "ALiVE_FactionChoiceMulti_Military";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['factions', _value];";
+                                defaultValue = """[]""";
+                        };
+                        class factionsManual : Edit
+                        {
+                                property     = "ALiVE_mil_opcom_factionsManual";
+                                displayName  = "Factions (manual override):";
+                                tooltip      = "Optional. Type extra faction classnames here for mods not currently loaded but expected at mission time (e.g. when authoring for someone else's modset), or to supplement the visual selection above. Format: SQF array literal like [""rhs_faction_xyz""] or comma-separated like rhs_faction_xyz,uk3cb_faction_abc. Combined (unioned) with the Factions multi-select at runtime.";
+                                defaultValue = """""";
+                        };
+                        // Hidden legacy slots - render no UI but apply
+                        // SQM-saved values via expression at module init
+                        // so missions that picked factions through the
+                        // pre-Phase-4 single-faction dropdowns continue
+                        // to work. Runtime in fnc_OPCOM.sqf reads them
+                        // alongside the multi-select and manual override.
+                        class faction1 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction1";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction1', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction2 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction2";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction2', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction3 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction3";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction3', _value];";
+                                defaultValue = """""";
+                        };
+                        class faction4 : ALiVE_HiddenAttribute
+                        {
+                                property     = "ALiVE_mil_opcom_faction4";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['faction4', _value];";
+                                defaultValue = """""";
+                        };
+
+                        // ---- Objectivest ----------------------------------------
+                        class HDR_OBJ : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_OBJ"; displayName = "OBJECTIVES"; };
+                        class simultanObjectives : Edit
+                        {
+                                property = "ALiVE_mil_opcom_simultanObjectives";
+                                displayName = "$STR_ALIVE_OPCOM_SIMULTAN";
+                                tooltip = "$STR_ALIVE_OPCOM_SIMULTAN_COMMENT";
+                                defaultValue = """10""";
+                                typeName = "NUMBER";
+                        };
+                        // ----  Recruitment ----------------------------------------
+                        class ASYM_SET : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_ASYM_SET"; displayName = "ASYMMETRIC SETTINGS"; };
                         class asym_occupation : Combo
                         {
                                 property = "ALiVE_mil_opcom_asym_occupation";
@@ -97,19 +207,6 @@ class CfgVehicles {
                                     class No { name = "No"; value = 0; };
                                 };
                         };
-                        class reinforcements : Combo
-                        {
-                                property = "ALiVE_mil_opcom_reinforcements";
-                                displayName = "$STR_ALIVE_OPCOM_REINFORCEMENTS";
-                                tooltip = "$STR_ALIVE_OPCOM_REINFORCEMENTS_COMMENT";
-                                defaultValue = """0.75""";
-                                class Values
-                                {
-                                    class Aggressive   { name = "Aggressive (90%)";   value = "0.9";  };
-                                    class Moderate     { name = "Moderate (75%)";     value = "0.75"; default = 1; };
-                                    class Conservative { name = "Conservative (50%)"; value = "0.5";  };
-                                };
-                        };
                         class intelchance : Combo
                         {
                                 property = "ALiVE_mil_opcom_intelchance";
@@ -119,113 +216,10 @@ class CfgVehicles {
                                 class Values
                                 {
                                     class none { name = "None"; value = 0; default = 1; };
-                                    class seldom { name = "seldom"; value = 5; };
-                                    class often { name = "often"; value = 10; };
+                                    class seldom { name = "Seldom"; value = 5; };
+                                    class often { name = "Often"; value = 10; };
                                 };
                         };
-
-                        // ---- Factions -------------------------------------------------------
-                        class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_FACTIONS"; displayName = "FACTIONS"; };
-                        class faction1 : Combo
-                        {
-                                property = "ALiVE_mil_opcom_faction1";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                defaultValue = """BLU_F""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; default = 1; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; };
-                                };
-                        };
-                        class faction2 : Combo
-                        {
-                                property = "ALiVE_mil_opcom_faction2";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
-                        };
-                        class faction3 : Combo
-                        {
-                                property = "ALiVE_mil_opcom_faction3";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
-                        };
-                        class faction4 : Combo
-                        {
-                                property = "ALiVE_mil_opcom_faction4";
-                                displayName = "$STR_ALIVE_OPCOM_FACTION";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTION_COMMENT";
-                                defaultValue = """NONE""";
-                                class Values
-                                {
-                                    class NATO { name = "NATO"; value = "BLU_F"; };
-                                    class NATOPACIFIC { name = "NATO (Pacific)"; value = "BLU_T_F"; };
-                                    class NATO_CTRG { name = "NATO (CTRG)"; value = "BLU_CTRG_F"; };
-                                    class IRAN { name = "CSAT"; value = "OPF_F"; };
-                                    class IRANPACIFIC { name = "CSAT (Pacific)"; value = "OPF_T_F"; };
-                                    class GREEKARMY { name = "AAF"; value = "IND_F"; };
-                                    class SYNDIKAT { name = "Syndikat"; value = "IND_C_F"; };
-                                    class REBELS_BLU { name = "REBELS BLU"; value = "BLU_G_F"; };
-                                    class REBELS_OPF { name = "REBELS RED"; value = "OPF_G_F"; };
-                                    class NONE { name = "NONE"; value = "NONE"; default = 1; };
-                                };
-                        };
-                        class factions : Edit
-                        {
-                                property = "ALiVE_mil_opcom_factions";
-                                displayName = "$STR_ALIVE_OPCOM_FACTIONS";
-                                tooltip = "$STR_ALIVE_OPCOM_FACTIONS_COMMENT";
-                                defaultValue = """""";
-                        };
-
-                        // ---- Objectivest ----------------------------------------
-                        class HDR_OBJ : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_HDR_OBJ"; displayName = "OBJECTIVES"; };
-                        class simultanObjectives : Edit
-                        {
-                                property = "ALiVE_mil_opcom_simultanObjectives";
-                                displayName = "$STR_ALIVE_OPCOM_SIMULTAN";
-                                tooltip = "$STR_ALIVE_OPCOM_SIMULTAN_COMMENT";
-                                defaultValue = """10""";
-                                typeName = "NUMBER";
-                        };
-                        // ----  Recruitment ----------------------------------------
-                        class ASYM_SET : ALiVE_ModuleSubTitle { property = "ALiVE_mil_opcom_ASYM_SET"; displayName = "ASYMMETRIC SETTINGS"; };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";
@@ -323,32 +317,32 @@ class CfgVehicles {
                         class civicRecruitmentMultiplier : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRecruitmentMultiplier";
-                                displayName = "Civic Pressure Recruitment Multiplier";
-                                tooltip = "Scales how strongly the civic-state model slows insurgent recruitment in contested settlements.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RECRUITMENT_MULTIPLIER_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };
                         class civicInstallationMultiplier : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicInstallationMultiplier";
-                                displayName = "Civic Pressure Installation Multiplier";
-                                tooltip = "Scales how strongly civic pressure weakens installation-driven hostility drift toward insurgents.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_INSTALLATION_MULTIPLIER_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };
                         class civicRetaliationChance : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRetaliationChance";
-                                displayName = "Civic Retaliation Chance";
-                                tooltip = "Base percent chance for insurgent retaliation after Hearts and Minds success in improving settlements. Use 0 to disable.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_CHANCE_COMMENT";
                                 defaultValue = """0""";
                                 typeName = "NUMBER";
                         };
                         class civicRetaliationIntensity : Edit
                         {
                                 property = "ALiVE_mil_opcom_civicRetaliationIntensity";
-                                displayName = "Civic Retaliation Intensity";
-                                tooltip = "Scales the severity of insurgent backlash against improving settlements.";
+                                displayName = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY";
+                                tooltip = "$STR_ALIVE_OPCOM_CIVIC_RETALIATION_INTENSITY_COMMENT";
                                 defaultValue = """1""";
                                 typeName = "NUMBER";
                         };

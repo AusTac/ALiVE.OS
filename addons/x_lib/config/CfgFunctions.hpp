@@ -452,6 +452,41 @@ class configGetFactions
 	RECOMPILE;
 };
 
+class inferFactionMapping
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferFactionMapping.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class inferFactionMappingsAll
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferFactionMappingsAll.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class inferUnitRole
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_inferUnitRole.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class substituteFactionUnit
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_substituteFactionUnit.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class substituteFactionVehicle
+{
+	file = "\x\alive\addons\x_lib\functions\config\fnc_substituteFactionVehicle.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
 class configGetFactionUnitsByGroups
 {
 	file = "\x\alive\addons\x_lib\functions\config\fnc_configGetFactionUnitsByGroups.sqf";
@@ -1351,6 +1386,13 @@ class createMarkerGlobal
 class createTraceGrid
 {
 	file = "\x\alive\addons\x_lib\functions\markers\fnc_createTraceGrid.sqf";
+	ext = ".sqf";
+	RECOMPILE;
+};
+
+class debugMarkerOffset
+{
+	file = "\x\alive\addons\x_lib\functions\markers\fnc_debugMarkerOffset.sqf";
 	ext = ".sqf";
 	RECOMPILE;
 };

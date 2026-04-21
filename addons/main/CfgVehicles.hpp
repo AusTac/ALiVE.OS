@@ -3,6 +3,20 @@
 
 // Add a game logic which does nothing except requires the addon in the mission.
 
+// Forward declarations for engine-level UI control classes used as
+// inheritance targets by the ALiVE_FactionChoiceMulti / ALiVE_HiddenAttribute
+// custom attribute bases below. MUST live at top-level scope - declaring
+// them inside `class Cfg3DEN > class Attributes` creates shadow classes at
+// Cfg3DEN/Attributes/ctrl* that rapify then resolves above BI's global
+// ctrl* classes, breaking BI attribute classes (Type, EditCode, ...) whose
+// Controls/Title sub-controls inherit from ctrlStatic. Symptom was:
+//   "No entry bin\config.bin/Cfg3DEN/Attributes/Type/Controls/Title.type"
+//   (and matching .idc / .y / .colorText / .font / .sizeEx / .text)
+// cascading across every BI attribute that chains through ctrlStatic.
+class ctrlControlsGroupNoScrollbars;
+class ctrlListBox;
+class ctrlStatic;
+
 class CfgFactionClasses {
     class Alive {
         displayName = "$STR_ALIVE_MODULE";
@@ -45,6 +59,303 @@ class Cfg3DEN
         // A fully custom taller variant can be revisited once geometry is resolved.
         class ALiVE_EditMultilineSQF: EditMulti3
         {
+        };
+
+        class Combo; // Forward declaration of BI Combo attribute control
+
+        // ctrlControlsGroupNoScrollbars / ctrlListBox / ctrlStatic forward
+        // declarations live at top-of-file (outside class Cfg3DEN), not
+        // here - see the rationale there. Attempting to forward-decl them
+        // inside class Attributes shadows BI's global ctrl* classes and
+        // breaks BI attributes (Type, EditCode, ...) that chain through
+        // them. See fix in 2026-04-20 commit referencing this note.
+
+        // ALiVE_FactionChoice family:
+        //   Dynamic faction-selection Combo shared across placement-style
+        //   modules. Populated at Eden-panel-open time from loaded
+        //   CfgFactionClasses entries grouped by side (OPFOR / BLUFOR /
+        //   INDFOR / CIVILIAN) with the displayName + classname suffix
+        //   shown to the user.
+        //
+        //   Three variants differ only in which sides their dropdown
+        //   includes - the same Load / Save handlers serve all three,
+        //   parameterized via an array passed alongside _this:
+        //
+        //     ALiVE_FactionChoice            sides 0/1/2/3 (all)
+        //     ALiVE_FactionChoice_Military   sides 0/1/2 (no civilians)
+        //     ALiVE_FactionChoice_Civilian   side 3 only
+        //
+        //   Modules pick the variant that matches their semantics:
+        //     mil_*    -> Military    (mission-makers shouldn't pick a
+        //                              civilian faction for an enemy
+        //                              placement objective)
+        //     civ_*    -> Civilian    (mission-makers shouldn't pick an
+        //                              OPFOR faction for civilian
+        //                              ambient population)
+        //     generic  -> base ALiVE_FactionChoice (rare; only when
+        //                              all-sides is genuinely intended)
+        //
+        //   Stored attribute value is the canonical faction classname
+        //   STRING. Legacy SQMs whose stored string doesn't match any
+        //   currently-loaded faction get an "(unrecognised) <value>"
+        //   entry at the TOP of the dropdown so the value isn't lost.
+        //   Case-insensitive matching on restore (closes #651).
+        //
+        //   attributeLoad / attributeSave live in separate .sqf files;
+        //   see the rationale in mil_ied Cfg3DEN.hpp (preprocessor fights
+        //   with multi-line strings on Windows CRLF).
+        class ALiVE_FactionChoice: Combo {
+            attributeLoad = "[_this, [0,1,2,3]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+        class ALiVE_FactionChoice_Military: Combo {
+            attributeLoad = "[_this, [0,1,2]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+        class ALiVE_FactionChoice_Civilian: Combo {
+            attributeLoad = "[_this, [3]] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+
+        // ALiVE_FactionChoiceMulti family:
+        //   Multi-select counterpart to ALiVE_FactionChoice. Same dynamic
+        //   population (CfgFactionClasses + missionConfig, side filtered,
+        //   civilian blacklist, Cfg3rdPartyFactions registry overrides,
+        //   Phase 3c.1 inferability prediction) but with a multi-select
+        //   ListBox at IDC 100 instead of a single-select Combo.
+        //
+        //   Built by inheriting BI's Combo attribute base (which is a
+        //   controlsGroup with title + value child controls) and overriding
+        //   the inner Value control's type (CT_LISTBOX=5 vs CT_COMBO=4)
+        //   and style flag (LB_MULTI = 0x20 added to ST_FRAME = 16).
+        //   This piggybacks on Combo's value-binding plumbing (attributeLoad/
+        //   Save addressing IDC 100 via controlsGroupCtrl) without having
+        //   to redefine the entire Cfg3DEN attribute framework from scratch.
+        //
+        //   Stored value is an SQF array literal STRING like
+        //   `["BLU_F","OPF_F","IND_F"]`. Load handler also accepts CSV form
+        //   `BLU_F,OPF_F` for backward compatibility with the old Edit-field
+        //   pattern. Save always emits canonical array-literal form.
+        //
+        //   The third element of the load handler's invocation is the logic-
+        //   variable name (default "factions"), allowing the same handler
+        //   to serve modules whose attribute is named differently (e.g.
+        //   "CQB_FACTIONS" for mil_cqb).
+        //
+        //   Three side-filter variants matching the single-select trio:
+        //     ALiVE_FactionChoiceMulti           sides 0/1/2/3 (all)
+        //     ALiVE_FactionChoiceMulti_Military  sides 0/1/2   (no civilians)
+        //     ALiVE_FactionChoiceMulti_Civilian  side 3        (civilians only)
+        //
+        //   Modules pick the variant matching their semantics. mil_opcom
+        //   uses _Military (an OPCOM faction list shouldn't include civilians).
+
+        // Multi-select faction listbox - tall Cfg3DEN attribute that
+        // renders as a multi-row listbox with Ctrl+click toggle and
+        // shift+click range-select semantics (LB_MULTI style).
+        //
+        // Pattern: inherit ctrlControlsGroupNoScrollbars (NOT BI's
+        // Combo). Attribute panel slot height is taken from the
+        // outer h here; explicit child positions inside `controls`
+        // (note lowercase, NOT Controls) lay out the listbox. ACE3
+        // Arsenal's Cfg3DEN attribute uses this same pattern - the
+        // only known way to ship a tall multi-row Cfg3DEN attribute,
+        // since Combo / Edit / Title bases enforce a single-row slot
+        // and silently ignore any h override.
+        //
+        // The three variants below differ only in attributeLoad's
+        // side-allowlist parameter; they inherit everything else
+        // from _Base.
+        class ALiVE_FactionChoiceMulti_Base: ctrlControlsGroupNoScrollbars {
+            // Forward decl of ctrlControlsGroupNoScrollbars doesn't
+            // pull through the body's default properties (type, style,
+            // colorBackground, etc), so they need to be set explicitly
+            // here. type = 15 = CT_CONTROLS_GROUP_NO_SCROLLBARS is the
+            // critical one - without it, Eden treats this as a bare
+            // CT_STATIC and never descends into `class controls`,
+            // causing the inner listbox to not exist (Load handler
+            // reports "listbox control (IDC 100) not found").
+            //
+            // Layout: Eden does NOT auto-render the per-attribute
+            // displayName as a row label for custom controlsGroup
+            // attributes (only for simple Combo / Edit / Checkbox
+            // bases), so we render the field label ourselves via a
+            // Title sub-control positioned in the row's left column.
+            // The listbox sits in the right (value) column to align
+            // with where standard Eden value controls would.
+            type  = 15;
+            style = 0;
+            idc   = -1;
+            x = 0;
+            y = 0;
+            // Outer width spans the full standard Eden attribute row
+            // so children can align with where other attributes' labels
+            // and value controls sit.
+            // Outer height includes 5 grid units of bottom padding so
+            // the next attribute below has breathing room without an
+            // excessive gap.
+            w = "130 * (pixelW * pixelGrid * 0.5)";
+            h = "55 * (pixelH * pixelGrid * 0.5)";
+            colorBackground[] = {0, 0, 0, 0};
+            colorText[]       = {1, 1, 1, 1};
+            text   = "";
+            font   = "RobotoCondensed";
+            sizeEx = "pixelH * pixelGrid * 2.2";
+
+            // controlsGroup engine expects VScrollbar / HScrollbar
+            // sub-classes even on the "NoScrollbars" variant - empty
+            // blocks silence the RPT warnings.
+            class VScrollbar {};
+            class HScrollbar {};
+
+            class controls {
+                // Title (field label) - sits in the left column of
+                // the row, vertically centred against the listbox to
+                // its right. Right-aligned text matches Eden's
+                // convention for attribute labels (style = 1 = ST_RIGHT).
+                // Tooltip on hover with explicit colors so it's
+                // legible (Eden's default attribute tooltip is too
+                // transparent).
+                class Title: ctrlStatic {
+                    idc      = 101;
+                    type     = 0;
+                    style    = 1;
+                    x        = 0;
+                    y        = 0;
+                    w        = "48 * (pixelW * pixelGrid * 0.5)";
+                    h        = "5 * (pixelH * pixelGrid * 0.5)";
+                    colorBackground[] = {0, 0, 0, 0};
+                    colorText[]       = {1, 1, 1, 0.9};
+                    text     = "Override Factions:";
+                    font     = "RobotoCondensed";
+                    sizeEx   = "pixelH * pixelGrid * 2.0";
+                    tooltip  = "Pick one or more factions for this AI Commander to control. Left-click = replace selection. Ctrl+click = toggle individual item (multi-select). Shift+click = select range.";
+                    tooltipColorShade[] = {0, 0, 0, 1};
+                    tooltipColorText[]  = {1, 1, 1, 1};
+                    tooltipColorBox[]   = {0, 0, 0, 1};
+                };
+
+                class List: ctrlListBox {
+                    idc = 100;
+                    type = 5;            // CT_LISTBOX
+                    style = 16 + 0x20;   // ST_FRAME + LB_MULTI
+                    // Right column: aligns flush with the standard
+                    // Eden value column (where Combo / Edit inputs on
+                    // adjacent rows begin), fills to the
+                    // controlsGroup's right edge.
+                    x = "48 * (pixelW * pixelGrid * 0.5)";
+                    y = 0;
+                    w = "82 * (pixelW * pixelGrid * 0.5)";
+                    h = "50 * (pixelH * pixelGrid * 0.5)";
+
+                    // color[] is the listbox frame / line rendering
+                    // colour (paired with ST_FRAME style bit). Matches
+                    // the selection BG so any frame-like stroke blends.
+                    color[]                  = {1, 0.62, 0, 1};
+                    // Cursor / focus-ring properties drawn around a
+                    // user-clicked row (engine draws these only on
+                    // click - programmatic selection via lbSetCurSel
+                    // doesn't trigger them). Match BG orange to hide.
+                    colorActive[]            = {1, 0.62, 0, 1};
+                    colorFocused[]           = {1, 0.62, 0, 1};
+                    colorHover[]             = {1, 0.62, 0, 1};
+                    colorText[]              = {1, 1, 1, 1};
+                    colorBackground[]        = {0, 0, 0, 0.5};
+                    // Selection highlight: hardcoded Eden-title orange-
+                    // yellow with white text so every mission-maker sees
+                    // the same visual, matching the module dialog's own
+                    // title bar. The profilenamespace GUI_BCG_RGB_*
+                    // macros would track the user's GUI Background
+                    // colour (Options > Game > Layout) which is often
+                    // very different from the Eden title chrome and
+                    // produces a mismatched darker highlight on
+                    // customised profiles.
+                    colorSelect[]            = {1, 1, 1, 1};
+                    colorSelect2[]           = {1, 1, 1, 1};
+                    colorSelectBackground[]  = {1, 0.62, 0, 1};
+                    colorSelectBackground2[] = {1, 0.62, 0, 1};
+                    colorDisabled[]          = {1, 1, 1, 0.25};
+                    colorShadow[]            = {0, 0, 0, 0.5};
+
+                    // Solid black tooltip background + matching black
+                    // border for legibility (Eden's default attribute
+                    // tooltip is too transparent; yellow border was
+                    // visually distracting).
+                    tooltipColorShade[] = {0, 0, 0, 1};
+                    tooltipColorText[]  = {1, 1, 1, 1};
+                    tooltipColorBox[]   = {0, 0, 0, 1};
+
+                    // Listbox text and row height matched up to other
+                    // Eden dialog controls without being so small the
+                    // selected items appear shrunk.
+                    font     = "RobotoCondensed";
+                    sizeEx   = "pixelH * pixelGrid * 2.0";
+                    rowHeight = "pixelH * pixelGrid * 2.4";
+                    period   = 1.2;
+
+                    // ListBox engine expects these even when unused -
+                    // empty defaults silence RPT warnings.
+                    soundSelect[] = {"", 0, 0};
+                    maxHistoryDelay = 1.0;
+
+                    class ListScrollBar {
+                        color[]         = {1, 1, 1, 0.6};
+                        colorActive[]   = {1, 1, 1, 1};
+                        colorDisabled[] = {1, 1, 1, 0.3};
+                        arrowEmpty = "\A3\ui_f\data\gui\cfg\scrollbar\arrowEmpty_ca.paa";
+                        arrowFull  = "\A3\ui_f\data\gui\cfg\scrollbar\arrowFull_ca.paa";
+                        border     = "\A3\ui_f\data\gui\cfg\scrollbar\border_ca.paa";
+                        thumb      = "\A3\ui_f\data\gui\cfg\scrollbar\thumb_ca.paa";
+                    };
+                };
+            };
+        };
+
+        class ALiVE_FactionChoiceMulti: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, [0,1,2,3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
+        class ALiVE_FactionChoiceMulti_Military: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, [0,1,2], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
+        class ALiVE_FactionChoiceMulti_Civilian: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, [3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
+        // Hidden attribute - renders zero UI (h = 0, empty controls).
+        // Used by legacy attributes that need to round-trip SQM data
+        // through their `expression` without surfacing in the panel.
+        // Same ctrlControlsGroupNoScrollbars substrate + same explicit
+        // engine-property defaults as ALiVE_FactionChoiceMulti_Base
+        // above (forward decl doesn't pull them through).
+        class ALiVE_HiddenAttribute: ctrlControlsGroupNoScrollbars {
+            type  = 15;
+            style = 0;
+            idc   = -1;
+            x = 0;
+            y = 0;
+            w = 0;
+            h = 0;
+            colorBackground[] = {0, 0, 0, 0};
+            colorText[]       = {1, 1, 1, 1};
+            text   = "";
+            font   = "RobotoCondensed";
+            sizeEx = "pixelH * pixelGrid * 1.6";
+            // Eden expects attributeLoad / attributeSave on every
+            // attribute control; hidden attributes do nothing for
+            // either (the SQM-saved value is applied via the per-
+            // attribute `expression` at module init, no UI to
+            // populate or read back). Empty handlers silence the
+            // RPT warnings.
+            attributeLoad = "";
+            attributeSave = "";
+            class VScrollbar {};
+            class HScrollbar {};
+            class controls {};
         };
     };
     // Configuration of all objects
@@ -123,6 +434,11 @@ class CfgVehicles {
             class ALiVE_ModuleSubTitle : Default
             {
                 control = "ALiVE_ModuleSubTitle";
+                defaultValue = "''";
+            };
+            class ALiVE_HiddenAttribute : Default
+            {
+                control = "ALiVE_HiddenAttribute";
                 defaultValue = "''";
             };
             class ALiVE_EditMulti3 : Default

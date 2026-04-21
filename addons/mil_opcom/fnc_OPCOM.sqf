@@ -40,6 +40,7 @@ See Also:
 
 Author:
 Highhead
+Jman
 
 Peer reviewed:
 nil
@@ -132,11 +133,25 @@ switch(_operation) do {
                     _type = _logic getvariable ["controltype","invasion"];
                     _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
                     _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
-                    _faction1 = _logic getvariable ["faction1","OPF_F"];
-                    _faction2 = _logic getvariable ["faction2","NONE"];
-                    _faction3 = _logic getvariable ["faction3","NONE"];
-                    _faction4 = _logic getvariable ["faction4","NONE"];
-                    _factions = [_logic, "convert", _logic getvariable ["factions",[]]] call ALiVE_fnc_OPCOM;
+                    // Phase 4: faction sources, all unioned below.
+                    //   factions       : multi-select listbox (primary UX,
+                    //                    ORIGINAL property so old `factions`
+                    //                    Edit data loads via multi-select
+                    //                    Load handler's CSV/array parser)
+                    //   factionsManual : Edit field (manual override for
+                    //                    unloaded mod factions)
+                    //   faction1-4     : hidden legacy slots, applied via
+                    //                    ALiVE_HiddenAttribute expression
+                    //                    so old missions that picked
+                    //                    factions through the pre-Phase-4
+                    //                    single-faction dropdowns still
+                    //                    work
+                    _factions               = [_logic, "convert", _logic getvariable ["factions",[]]]       call ALiVE_fnc_OPCOM;
+                    private _factionsManual = [_logic, "convert", _logic getvariable ["factionsManual",[]]] call ALiVE_fnc_OPCOM;
+                    _faction1 = _logic getvariable ["faction1",""];
+                    _faction2 = _logic getvariable ["faction2",""];
+                    _faction3 = _logic getvariable ["faction3",""];
+                    _faction4 = _logic getvariable ["faction4",""];
                     _simultanObjectives = parseNumber str (_logic getvariable ["simultanObjectives",10]);
                     _minAgents = parseNumber str (_logic getvariable ["minAgents",2]);
                     _asymForceLimit = floor (parseNumber str (_logic getvariable ["asymForceLimit",-1]));
@@ -167,10 +182,30 @@ switch(_operation) do {
                     //Get position
                     _position = getposATL _logic;
 
-                    //Collect factions and determine sides
-                    //If missionmaker did not overwrite default factions then use the ones from the module dropdowns
-                    if ((count _factions) == 0) then {
-                        {if (!(_x == "NONE") && {!(_x in _factions)}) then {_factions pushBack _x}} foreach [_faction1,_faction2,_faction3,_faction4];
+                    //Union all faction sources into _factions, dedup, drop
+                    //the "NONE" sentinel and empty strings (hidden legacy
+                    //slots default to "" so absent ones are skipped).
+                    private _allFactionSources = _factions + _factionsManual + [_faction1, _faction2, _faction3, _faction4];
+                    _factions = [];
+                    {
+                        if (typeName _x == "STRING" && {_x != ""} && {_x != "NONE"} && {!(_x in _factions)}) then {
+                            _factions pushBack _x;
+                        };
+                    } forEach _allFactionSources;
+
+                    //Pre-Phase-4 the implicit default came from faction1's
+                    //"BLU_F" defaultValue (the four single-faction slots
+                    //guaranteed _factions had at least one entry). Phase 4
+                    //preserves the same fallback so a misconfigured module
+                    //doesn't crash on the _factions select 0 below - just
+                    //logs a warning so the mission-maker can see they need
+                    //to populate Factions.
+                    if (count _factions == 0) then {
+                        diag_log format [
+                            "ALiVE OPCOM init WARNING: AI Commander '%1' has no factions configured (Factions multi-select empty AND Factions manual override empty). Defaulting to ['BLU_F']. Pick at least one faction in the Factions multi-select to silence this.",
+                            _customName
+                        ];
+                        _factions pushBack "BLU_F";
                     };
 
                     _side = "EAST";
@@ -371,6 +406,24 @@ switch(_operation) do {
 
                                 _obj = [_mod,"objectives",objNull,[]] call ALIVE_fnc_OOsimpleOperation;
 
+                                // Stamp objectiveType per source-module class so downstream
+                                // marker / C2ISTAR / tour consumers can differentiate which
+                                // placement module each objective came from. Previously all
+                                // five classes defaulted to "MIL" (via the HashGet default at
+                                // the assignment sites), giving mission-makers no way to tell
+                                // OPCOM-held objectives apart on the map. Issue #809.
+                                private _modLabel = switch (typeof _mod) do {
+                                    case "ALiVE_mil_placement":        {"MIL"};
+                                    case "ALiVE_mil_placement_custom": {"CUS"};
+                                    case "ALiVE_mil_placement_spe":    {"GAR"};
+                                    case "ALiVE_civ_placement":        {"CIV"};
+                                    case "ALiVE_civ_placement_custom": {"CCU"};
+                                    default {"MIL"};
+                                };
+                                {
+                                    [_x, "objectiveType", _modLabel] call ALiVE_fnc_HashSet;
+                                } forEach _obj;
+
                                 if (_type == "asymmetric" && {(typeof _mod) in ["ALiVE_civ_placement","ALiVE_civ_placement_custom"]}) then {
                                     private _asymmetricInstallationCountOverrides = [_handler, "parseAsymmetricInstallationCountOverrides", _mod getVariable ["asymmetricInstallationCountOverrides", ""]] call ALiVE_fnc_OPCOM;
 
@@ -444,8 +497,38 @@ switch(_operation) do {
                         [_errorMessage,_error1,_error2,_factions] call ALIVE_fnc_dump;
                     };
 
-                    //Check if there are any profiles available
-                    _errorMessage = "There are are no groups for OPCOM faction(s) %1! %2";
+                    //Check if there are any profiles available.
+                    //
+                    //Enumerate factions offered by synced placement modules
+                    //so an OPCOM Factions vs placement-module faction mismatch
+                    //surfaces clearly in the RPT. Fires unconditionally (not
+                    //debug-gated) because this is the commonest OPCOM-init
+                    //misconfiguration: mission-maker picks faction X in OPCOM
+                    //but the synced Mil Placement was left on its OPF_F
+                    //default, so there are zero profiles for X and OPCOM
+                    //silently refuses to run.
+                    private _availableFactions = [];
+                    {
+                        if ((typeOf _x) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom","ALiVE_mil_placement_spe"]) then {
+                            private _fac = _x getVariable ["faction", ""];
+                            if (_fac != "" && {!(_fac in _availableFactions)}) then {
+                                _availableFactions pushBack _fac;
+                            };
+                        };
+                    } forEach (synchronizedObjects _logic);
+
+                    private _unmatchedFactions = _factions select {!(_x in _availableFactions)};
+                    if (count _unmatchedFactions > 0) then {
+                        diag_log format [
+                            "ALiVE OPCOM init MISMATCH: AI Commander '%1' has Factions [%2] but synced placement modules only provide factions [%3]. Unmatched: [%4]. Fix: either change the OPCOM Factions multi-select to match a placement module's faction, or add / sync a Mil Placement (or Mil Placement (Civ Obj)) module with the missing faction to this OPCOM.",
+                            _customName,
+                            _factions joinString ", ",
+                            _availableFactions joinString ", ",
+                            _unmatchedFactions joinString ", "
+                        ];
+                    };
+
+                    _errorMessage = "There are no groups for OPCOM faction(s) %1! %2";
                     _error1 = _factions;
                     _error2 = "Please check you chose the correct faction(s), and that factions have groups defined in the ArmA 3 default categories infantry, motorized, mechanized, armored, air, sea!";
                     private _profiles_count = 0;
@@ -1311,7 +1394,7 @@ switch(_operation) do {
                         _center = [_x,"center"] call ALiVE_fnc_HashGet;
                         _id = [_x,"objectiveID"] call ALiVE_fnc_HashGet;
 
-                        [format[MTEMPLATE, _id], _center,"ICON", [0.5,0.5],_color,format["%1 #%2",_side,_foreachIndex],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
+                        [format[MTEMPLATE, _id], ["opcom", _center] call ALiVE_fnc_debugMarkerOffset, "ICON", [0.5,0.5],_color,format["%1 #%2",_side,_foreachIndex],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
                     } foreach _objectives;
                 };
 
@@ -1461,7 +1544,7 @@ switch(_operation) do {
                             {
                                 // Reset "disable"-action on exisiting roadblocks at the objective once at mission start
                                 if (_center distance _x < (_size + 50) && {count (nearestObjects [_x, ["ALIVE_DemoCharge_Remote_Ammo"],2]) < 2}) then {
-                                    [_x] call ALiVE_fnc_INS_addRoadblockHoldAction;
+                                    [_x] call ALiVE_fnc_INS_addRoadblockHoldActionWhenReady;
                                 };
                             } foreach ALiVE_CIV_PLACEMENT_ROADBLOCKS;
                         };
@@ -2637,7 +2720,7 @@ switch(_operation) do {
                                 default {"COLORYELLOW"};
                             };
 
-                            [format[MTEMPLATE, _id], _pos,"ICON", [0.5,0.5],_color,format["%1 #%2",_side,_id],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
+                            [format[MTEMPLATE, _id], ["opcom", _pos] call ALiVE_fnc_debugMarkerOffset, "ICON", [0.5,0.5],_color,format["%1 #%2",_side,_id],"mil_dot","FDiagonal",0,0.5] call ALIVE_fnc_createMarkerGlobal;
                         };
                     };
 

@@ -163,6 +163,8 @@ class CfgVehicles
                                     class No { name = "No"; value = false; };
                                 };
                         };
+                        // ---- Transport ------------------------------------------------------
+                        class HDR_TRANSPORT : ALiVE_ModuleSubTitle { property = "ALiVE_mil_logistics_HDR_TRANSPORT"; displayName = "TRANSPORT"; };
                         class enableAirTransport : Combo
                         {
                                 property = "ALiVE_mil_logistics_enableAirTransport";

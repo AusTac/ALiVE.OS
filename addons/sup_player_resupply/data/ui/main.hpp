@@ -232,10 +232,10 @@ class PRTablet
         class PRTablet_deliveryTitle : PRTablet_RscText
         {
             idc = 60017;
-            text = "Delivery Type";
+            text = "Delivery Type  -  How your request will be transported";
             x = 0.271203 * safezoneW + safezoneX;
             y = 0.1430 * safezoneH + safezoneY;
-            w = 0.159596 * safezoneW;
+            w = 0.241271 * safezoneW;
             h = 0.0308 * safezoneH;
             colorBackground[] = {0,0,0,0};
             class Attributes
@@ -266,10 +266,10 @@ class PRTablet
         class PRTablet_supplyTitle : PRTablet_RscText
         {
             idc = 60018;
-            text = "Supply List";
+            text = "Supply List  -  Vehicles and equipment to include in the payload";
             x = 0.271203 * safezoneW + safezoneX;
             y = 0.2230 * safezoneH + safezoneY;
-            w = 0.159596 * safezoneW;
+            w = 0.241271 * safezoneW;
             h = 0.0308 * safezoneH;
             colorBackground[] = {0,0,0,0};
             class Attributes
@@ -300,10 +300,10 @@ class PRTablet
         class PRTablet_reinforceTitle : PRTablet_RscText
         {
             idc = 60019;
-            text = "Reinforce List";
+            text = "Reinforce  -  Personnel and groups to include in the payload";
             x = 0.271203 * safezoneW + safezoneX;
             y = 0.3730 * safezoneH + safezoneY;
-            w = 0.159596 * safezoneW;
+            w = 0.241271 * safezoneW;
             h = 0.0308 * safezoneH;
             colorBackground[] = {0,0,0,0};
             class Attributes
@@ -334,10 +334,10 @@ class PRTablet
         class PRTablet_selectedTitle : PRTablet_RscText
         {
             idc = 60020;
-            text = "Payload";
+            text = "Payload  -  Your current request contents";
             x = 0.271203 * safezoneW + safezoneX;
             y = 0.5230 * safezoneH + safezoneY;
-            w = 0.159596 * safezoneW;
+            w = 0.241271 * safezoneW;
             h = 0.0308 * safezoneH;
             colorBackground[] = {0,0,0,0};
             class Attributes
