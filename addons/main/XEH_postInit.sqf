@@ -4,6 +4,9 @@
 PREPMAIN(ZEUSinit);
 [] call ALIVE_fnc_ZEUSinit;
 
+// 3DEN faction-sync validator registration lives in XEH_preInit - postInit
+// doesn't fire in pure Eden-editor mode (no scenario = no post-init).
+
 //Automated tests (define in script_mod.hpp)
 #ifdef AUTOMATED_TESTS
 [AUTOMATED_TESTS] spawn {

@@ -71,6 +71,12 @@ class cfgFunctions {
                 file = "\x\alive\addons\main\fnc_staticDataHandler.sqf";
                 RECOMPILE;
             };
+            class edenValidateOpcomFactions {
+                description = "3DEN editor-time validator: warns when OPCOM factions aren't provided by synced placement modules";
+                file = "\x\alive\addons\main\fnc_edenValidateOpcomFactions.sqf";
+                preInit = 1;
+                RECOMPILE;
+            };
         };
     };
 };

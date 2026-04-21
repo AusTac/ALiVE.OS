@@ -16,6 +16,7 @@ class CfgPatches {
             "Gunny",
             "Hazey",
             "HighHead",
+            "Javen",
             "Jman",
             "Naught",
             "Raptor",
