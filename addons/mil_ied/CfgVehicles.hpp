@@ -264,6 +264,17 @@ class CfgVehicles {
                         };
                         class ModuleDescription : ModuleDescription {};
                 };
+                class ModuleDescription
+                {
+                    description[] = {"$STR_ALIVE_IED_COMMENT","","$STR_ALIVE_IED_USAGE"};
+                    // IED's runtime iterates its own synchronizedObjects looking
+                    // for ALiVE_mil_OPCOM at fnc_IED.sqf:521 to decide whether
+                    // to set up starting-threat triggers. Declaration never
+                    // existed on the IED side; added under the symmetric-sync
+                    // convention and to support editor-time validator checks.
+                    sync[] = {"ALiVE_mil_OPCOM"};
+                    class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                };
         };
         class Thing;
         class ALiVE_IED : Thing { author="ALiVE Mod Team"; _generalMacro="ALiVE_IED"; model="\A3\Weapons_F\empty.p3d"; icon="iconObject"; vehicleClass="Objects"; destrType="DestructTent"; cost=250; ace_minedetector_detectable=1; };
