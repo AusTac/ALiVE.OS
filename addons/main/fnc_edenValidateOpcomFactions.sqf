@@ -4,26 +4,37 @@ SCRIPT(edenValidateOpcomFactions);
 /* ----------------------------------------------------------------------------
 Function: ALiVE_fnc_edenValidateOpcomFactions
 Description:
-Editor-time validator - walks OPCOM entities in the 3DEN scene and checks
-that each OPCOM's declared factions have at least one matching
-profile-spawning placement module SOMEWHERE in the mission. Surfaces
-the real runtime failure condition (OPCOM init exits with "no groups
-for faction %1" when zero profiles exist for any of its factions)
-before mission preview.
+Editor-time validator - walks OPCOM entities in the 3DEN scene and runs
+two independent checks per OPCOM:
 
-Mirrors the runtime profile-count check in fnc_OPCOM.sqf:567-580 which
-queries ALIVE_profileHandler getProfilesByFaction globally and exits
-the OPCOM if the total count is zero.
+  1. FACTION SOURCE: each OPCOM's declared factions must have at least
+     one matching profile-spawning placement module SOMEWHERE in the
+     mission. Surfaces the real runtime failure condition (OPCOM init
+     exits with "no groups for faction %1" when zero profiles exist
+     for any of its factions) before mission preview. Mirrors the
+     runtime profile-count check in fnc_OPCOM.sqf:567-580 which queries
+     ALIVE_profileHandler getProfilesByFaction globally and exits the
+     OPCOM if the total count is zero.
 
-Mission-wide scope is intentional: profile control is faction-based,
-not sync-based. An OPCOM with faction X owns every profile of faction
-X in the mission regardless of which placement spawned them or whether
-those placements are synced to this OPCOM. A sync graph expresses
-objective distribution (which OPCOM plans around which positions),
-not force ownership. Mission patterns like "multiple OPCOMs synced to
-one placement" or "OPFOR placement synced to BLUFOR OPCOM for
-contested-objective setups" are legitimate and working configurations -
-the earlier sync-mismatch heuristic false-flagged both.
+  2. OPCOM-TO-OPCOM SYNC: syncing two OPCOMs together is a functional
+     no-op. Verified by exhaustive walk of fnc_OPCOM.sqf + all OPCOM
+     FSMs + fnc_INS_helpers.sqf - no code path treats another OPCOM
+     as a peer when iterating synchronizedObjects, no shared state via
+     the sync graph. Mission-makers drawing OPCOM-to-OPCOM sync lines
+     typically expect intel sharing, deconfliction, or coordination
+     and get nothing. The hint tells them to remove the link. Edges
+     are deduplicated (A<->B and B<->A report once per validator run).
+
+Mission-wide scope for check 1 is intentional: profile control is
+faction-based, not sync-based. An OPCOM with faction X owns every
+profile of faction X in the mission regardless of which placement
+spawned them or whether those placements are synced to this OPCOM.
+A sync graph expresses objective distribution (which OPCOM plans
+around which positions), not force ownership. Mission patterns like
+"multiple OPCOMs synced to one placement" or "OPFOR placement synced
+to BLUFOR OPCOM for contested-objective setups" are legitimate and
+working configurations - the earlier sync-mismatch heuristic false-
+flagged both.
 
 Called from 3DEN event handlers (OnEntityAttributeChanged,
 OnConnectingEnd, OnMissionPreview) registered in XEH_preInit.sqf. Safe
@@ -40,8 +51,10 @@ Trigger parameter (_this select 0, optional, default "attr"):
                 OK toast when no mismatches.
     "preview" - fired from OnMissionPreview; skips green toast (user
                 is about to launch the mission).
-Red warning fires on any trigger when one or more OPCOMs have a
-faction with no global placement source.
+Red warning fires on any trigger when either check raises an issue:
+no profile source for a declared faction, or OPCOM-to-OPCOM sync
+detected. Both warnings can fire for the same OPCOM in the same run
+(stacked toasts) - they describe independent problems.
 
 Scope parameter (_this select 1, optional, default []):
     Array of OPCOM entity objects to restrict validation to. When
@@ -203,6 +216,12 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
     // Collected for the green OK toast so mission-makers see WHICH
     // factions resolved.
     private _resolvedFactions = [];
+    // OPCOM-to-OPCOM edge dedup: when _scope contains multiple OPCOMs
+    // (preview trigger / multi-entity scope) the same A<->B edge would
+    // be reported twice, once from each endpoint's perspective. Each
+    // edge is canonicalised as a sorted id pair string and only the
+    // first occurrence within this validator run emits a toast.
+    private _emittedOpcomEdges = [];
 
     {
         private _opcom = _x;
@@ -211,6 +230,71 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
         // Parentheses not angle brackets - BIS_fnc_3DENNotification
         // parses message content as XML and breaks on bare < >.
         if (_name == "") then { _name = format ["(unnamed %1)", typeOf _opcom] };
+
+        // CHECK 2: OPCOM-to-OPCOM no-op sync detection. Runs
+        // unconditionally (not gated on _totalPlacements) - two
+        // OPCOMs synced together is worth flagging regardless of
+        // whether placements exist in the scene yet.
+        private _opcomSyncPeers = (get3DENConnections _opcom select {(_x select 0) == "Sync"}) apply {_x select 1};
+        _opcomSyncPeers = _opcomSyncPeers select {
+            !isNil "_x" && {_x isEqualType objNull} && {!isNull _x} && {(typeOf _x) in _OPCOM_CLASSES} && {!(_x isEqualTo _opcom)}
+        };
+        if (count _opcomSyncPeers > 0) then {
+            private _thisID = str _opcom;
+            private _peersToReport = [];
+            {
+                private _peerID = str _x;
+                // Dedup via both orderings of the id pair - SQF has
+                // no string comparison operator so we can't build a
+                // single canonical sorted key. Check both "A|B" and
+                // "B|A" against the emitted set; store whichever was
+                // tried first.
+                //
+                // Condition extracted to a local because SQF's if
+                // keyword is greedy - it consumes the first !(expr)
+                // returning IF_TYPE, then && can't combine with that
+                // type. `if (cond) then {...}` requires cond to be
+                // a single fully-parenthesised boolean; going via
+                // _alreadySeen avoids the trap entirely.
+                private _forwardKey = format ["%1|%2", _thisID, _peerID];
+                private _reverseKey = format ["%1|%2", _peerID, _thisID];
+                private _alreadySeen = (_forwardKey in _emittedOpcomEdges) || (_reverseKey in _emittedOpcomEdges);
+                if (!_alreadySeen) then {
+                    _emittedOpcomEdges pushBack _forwardKey;
+                    _peersToReport pushBack _x;
+                };
+            } forEach _opcomSyncPeers;
+
+            if (count _peersToReport > 0) then {
+                private _peerNames = _peersToReport apply {
+                    private _pn = _x getVariable ["customName", ""];
+                    if (_pn == "") then { format ["(unnamed %1)", typeOf _x] } else { _pn }
+                };
+                // Truncate long lists in the toast; full list still
+                // goes to diag_log.
+                private _truncatedNames = if (count _peerNames > 5) then {
+                    (_peerNames select [0, 5]) + [format ["... (+%1 more)", (count _peerNames) - 5]]
+                } else {
+                    _peerNames
+                };
+                private _peerList = (_truncatedNames apply {format ["'%1'", _x]}) joinString ", ";
+                private _countLabel = if (count _peersToReport == 1) then {"another AI Commander"} else {"other AI Commanders"};
+                private _msg = format [
+                    "ALiVE: AI Commander '%1' is synced to %2 %3. OPCOM-to-OPCOM sync has no effect - no intel sharing, deconfliction, or coordination between Commanders is wired up. Remove the sync link(s).",
+                    _name,
+                    _countLabel,
+                    _peerList
+                ];
+                // type 1 = Red warning, duration 60 seconds.
+                [_msg, 1, 60] call BIS_fnc_3DENNotification;
+                diag_log format [
+                    "ALiVE 3DEN faction-source check: AI Commander '%1' has OPCOM-to-OPCOM sync peer(s)=[%2]",
+                    _name,
+                    _peerNames joinString ", "
+                ];
+                _warnings = _warnings + 1;
+            };
+        };
 
         private _factionsVal       = _opcom getVariable ["factions",       ""];
         private _factionsManualVal = _opcom getVariable ["factionsManual", ""];
@@ -247,10 +331,10 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
 
         _opcomsChecked = _opcomsChecked + 1;
 
-        // Global profile-source check: does each of this OPCOM's
-        // factions have at least one spawning placement somewhere in
-        // the mission? This matches the runtime getProfilesByFaction
-        // query at fnc_OPCOM.sqf:567-580.
+        // CHECK 1: Global profile-source check. Does each of this
+        // OPCOM's factions have at least one spawning placement
+        // somewhere in the mission? This matches the runtime
+        // getProfilesByFaction query at fnc_OPCOM.sqf:567-580.
         //
         // Only the "unmatched" direction is checked - there's no
         // "orphaned" concept under profile-source semantics. A
