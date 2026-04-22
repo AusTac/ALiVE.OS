@@ -235,6 +235,21 @@ class CfgVehicles {
                                     class both      { name = "$STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_BOTH";      value = "both"; };
                                 };
                         };
+                        class asym_escalationIntensity : Combo
+                        {
+                                property = "ALiVE_mil_opcom_asym_escalationIntensity";
+                                displayName = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY";
+                                tooltip = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_COMMENT";
+                                typeName = "STRING";
+                                defaultValue = """off""";
+                                class Values
+                                {
+                                    class off    { name = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_OFF";    value = "off"; default = 1; };
+                                    class low    { name = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_LOW";    value = "low"; };
+                                    class medium { name = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_MEDIUM"; value = "medium"; };
+                                    class high   { name = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_HIGH";   value = "high"; };
+                                };
+                        };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";

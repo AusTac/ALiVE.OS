@@ -187,6 +187,15 @@ switch(_operation) do {
                     // makers upgrading.
                     _friendlyDisableMode = _logic getvariable ["asym_friendlyDisableInstallations","proximity"];
 
+                    // Issue #355 - asymmetric progressive recruitment. Controls
+                    // whether insurgent recruitment unlocks heavier vehicle
+                    // tiers as aggregate hostility rises. "off" preserves the
+                    // legacy infantry-only recruitment behaviour. Runtime
+                    // logic lives in fnc_INS_helpers.sqf's recruitment loop
+                    // + sampleOpcomHostility / classifyGroupTier /
+                    // buildTieredGroupRoster helpers.
+                    _asymEscalationIntensity = _logic getvariable ["asym_escalationIntensity","off"];
+
                     //Get position
                     _position = getposATL _logic;
 
@@ -315,6 +324,7 @@ switch(_operation) do {
                     [_handler, "intelchance",_intelChance] call ALiVE_fnc_HashSet;
                     [_handler, "roadblocks",_roadblocks] call ALiVE_fnc_HashSet;
                     [_handler, "friendlyDisableMode",_friendlyDisableMode] call ALiVE_fnc_HashSet;
+                    [_handler, "asymEscalationIntensity",_asymEscalationIntensity] call ALiVE_fnc_HashSet;
 
                     // Issue #697 Phases 2.2 + 2.3: periodic scan lets
                     // friendly AI automatically disable this OPCOM's
@@ -416,6 +426,25 @@ switch(_operation) do {
 
                                 //initialise INS helpers
                                 call ALiVE_fnc_INS_helpers;
+
+                                // Issue #355: build a tiered group roster
+                                // per faction now that the INS helpers are
+                                // loaded. Each call to
+                                // ALiVE_fnc_INS_buildTieredGroupRoster
+                                // walks the faction's CfgGroups, classifies
+                                // each group via INS_classifyGroupTier
+                                // (excludes tanks/jets/helis/ships), and
+                                // buckets the rest into infantry/light/medium.
+                                // Cached on the handler so the recruitment
+                                // loop picks from the pre-built roster each
+                                // cycle instead of re-walking CfgGroups.
+                                private _tieredGroupRoster = [] call ALiVE_fnc_hashCreate;
+                                {
+                                    private _factionRoster = [_x] call ALiVE_fnc_INS_buildTieredGroupRoster;
+                                    [_tieredGroupRoster, _x, _factionRoster] call ALiVE_fnc_hashSet;
+                                } foreach _factions;
+                                [_handler, "tieredGroupRoster", _tieredGroupRoster] call ALiVE_fnc_HashSet;
+                                [_handler, "escalationLevel", "infantry"] call ALiVE_fnc_HashSet;
 
                                 //reset CQB
                                 [[_handler, "CQB",[]] call ALiVE_fnc_HashGet] call ALiVE_fnc_resetCQB;

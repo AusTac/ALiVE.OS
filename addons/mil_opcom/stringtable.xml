@@ -188,6 +188,24 @@
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_BOTH">
     <English>Both</English>
 </Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY">
+    <English>Escalation intensity:</English>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_COMMENT">
+    <English>Asymmetric mode only. Controls whether this insurgent OPCOM's recruitment progressively unlocks heavier vehicle types over time as players engage. The unlock signal is hostility (driven by installation destruction and sustained player presence in insurgent areas), not wall-clock time - passive missions see no escalation, active ones escalate proportional to pressure.\n\nTiers are always capped below tanks, jets, helicopters and boats regardless of faction. Monotonic: once a tier unlocks, insurgents keep it even if hostility later drops.\n\n• Off — recruitment stays infantry-only (pre-fix behaviour).\n• Low — light vehicles unlock at high hostility, medium wheeled at very high.\n• Medium — moderate thresholds, standard-paced campaign.\n• High — low thresholds, aggressive short-mission escalation.</English>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_OFF">
+    <English>Off</English>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_LOW">
+    <English>Low</English>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_MEDIUM">
+    <English>Medium</English>
+</Key>
+<Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_HIGH">
+    <English>High</English>
+</Key>
 <Key ID="STR_ALIVE_OPCOM_ROADBLOCKS">
     <English>Roadblocks:</English>
     <Chinese>路障：</Chinese>

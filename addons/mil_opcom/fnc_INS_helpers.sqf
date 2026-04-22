@@ -68,6 +68,181 @@ ALiVE_fnc_INS_getHostilitySetting = {
                 [_opcom,_key,_default] call ALiVE_fnc_HashGet
 };
 
+// Classify a CfgGroups group entry into a "tier" for the asymmetric-OPCOM
+// progressive recruitment feature (issue #355). Asymmetric forces
+// historically never get tanks, jets, helis, or boats - regardless of
+// what the faction's CfgGroups category structure happens to include.
+// This classifier is faction-agnostic: it walks the group's units,
+// inspects each unit's vehicle classname via isKindOf, and picks a tier
+// from the heaviest eligible unit.
+//
+// Tiers:
+//   "excluded" - any unit isKindOf Tank / Plane / Helicopter / Ship.
+//                Tank_F in A3 is the shared base for tanks AND tracked
+//                IFVs (BMP/BTR-style), so this also excludes tracked
+//                armour - which is consistent with "asymmetric forces
+//                get technicals and light wheeled, nothing tracked".
+//   "medium"   - any wheeled/vehicle unit that's not isKindOf Car and
+//                not excluded above (wheeled APCs, armed wheeled
+//                transport).
+//   "light"    - at least one isKindOf Car unit, no medium/excluded
+//                found (technicals, pickups, light transport).
+//   "infantry" - no vehicle units (beyond StaticWeapon, which counts
+//                as infantry equipment and does NOT elevate tier).
+//
+// Returns: string tier, or "excluded" if any unit in the group would
+// cross the asymmetric-force capability cap.
+ALiVE_fnc_INS_classifyGroupTier = {
+                params [["_groupConfig", configNull, [configNull]]];
+
+                if (isNull _groupConfig) exitWith {"excluded"};
+
+                private _hasExcluded = false;
+                private _hasMedium = false;
+                private _hasLight = false;
+
+                for "_i" from 0 to (count _groupConfig - 1) do {
+                    private _unitConfig = _groupConfig select _i;
+                    if (isClass _unitConfig) then {
+                        private _vehicle = getText (_unitConfig >> "vehicle");
+                        if (_vehicle != "") then {
+                            // Absolute exclusion list - asymmetric forces
+                            // never recruit these regardless of faction.
+                            if (
+                                _vehicle isKindOf "Tank"
+                                || {_vehicle isKindOf "Plane"}
+                                || {_vehicle isKindOf "Helicopter"}
+                                || {_vehicle isKindOf "Ship"}
+                            ) then {
+                                _hasExcluded = true;
+                            } else {
+                                // StaticWeapon units (MGs, mortars, AT
+                                // launchers) accompany infantry but
+                                // don't elevate tier. They fall out of
+                                // whichever tier the group already has.
+                                if !(_vehicle isKindOf "StaticWeapon") then {
+                                    if (_vehicle isKindOf "Car") then {
+                                        _hasLight = true;
+                                    } else {
+                                        // Any other non-infantry, non-
+                                        // excluded vehicle - treated as
+                                        // medium (wheeled APC, armed
+                                        // truck, non-Car transport).
+                                        _hasMedium = true;
+                                    };
+                                };
+                            };
+                        };
+                    };
+                };
+
+                if (_hasExcluded) exitWith {"excluded"};
+                if (_hasMedium) exitWith {"medium"};
+                if (_hasLight) exitWith {"light"};
+                "infantry"
+};
+
+// Build a tiered group roster for a faction, usable by the asymmetric
+// progressive recruitment feature. Walks the faction's CfgGroups
+// categories, classifies each group via INS_classifyGroupTier, buckets
+// by tier. "excluded" groups are dropped entirely from the roster.
+//
+// Return format (positional index so callers can use select):
+//   [[infantry classnames], [light classnames], [medium classnames]]
+//
+// Called once per faction at asymmetric-OPCOM init; result cached on
+// the handler hashmap under "tieredGroupRoster".
+ALiVE_fnc_INS_buildTieredGroupRoster = {
+                params [["_faction", "", [""]]];
+
+                private _roster = [[], [], []];
+                if (_faction == "") exitWith {_roster};
+
+                private _groupsConfig = _faction call ALiVE_fnc_configGetFactionGroups;
+                if (isNull _groupsConfig) exitWith {_roster};
+
+                for "_i" from 0 to (count _groupsConfig - 1) do {
+                    private _categoryConfig = _groupsConfig select _i;
+                    if (isClass _categoryConfig) then {
+                        for "_j" from 0 to (count _categoryConfig - 1) do {
+                            private _groupConfig = _categoryConfig select _j;
+                            if (isClass _groupConfig) then {
+                                private _tier = [_groupConfig] call ALiVE_fnc_INS_classifyGroupTier;
+                                switch (_tier) do {
+                                    case "infantry": { (_roster select 0) pushBack (configName _groupConfig); };
+                                    case "light":    { (_roster select 1) pushBack (configName _groupConfig); };
+                                    case "medium":   { (_roster select 2) pushBack (configName _groupConfig); };
+                                };
+                            };
+                        };
+                    };
+                };
+
+                _roster
+};
+
+// Sample aggregate hostility for an asymmetric OPCOM. Walks each of
+// the OPCOM's objectives, pulls the settlement cluster(s) in that
+// sector, and accumulates the insurgent-side hostility value across
+// them.
+//
+// Hostility is driven by existing ALiVE mechanisms: installation
+// destruction (buildingKilledEH -> +50 to insurgent side) and
+// sustained player presence in insurgent-held areas
+// (updateHostilityByPresence). So a higher aggregate reflects how
+// much pressure the insurgent OPCOM has been under mission-wide.
+//
+// Used by the progressive-recruitment feature to derive tier unlock
+// status. Monotonic ratcheting is handled at the call site - this
+// helper just reports the current scalar.
+//
+// Returns: scalar (sum of insurgent-side hostility across this
+// OPCOM's settlement clusters). 0 if sector grid / cluster handler
+// aren't initialised (returns 0 = "nothing to escalate on").
+ALiVE_fnc_INS_sampleOpcomHostility = {
+                params [["_handler", [], [[]]]];
+
+                private _totalHostility = 0;
+
+                if (isNil QMOD(SECTORGRID) || {isNil QMOD(CLUSTERHANDLER)}) exitWith {_totalHostility};
+
+                private _side = [_handler, "side", ""] call ALiVE_fnc_HashGet;
+                if (_side == "") exitWith {_totalHostility};
+
+                private _objectives = [_handler, "objectives", []] call ALiVE_fnc_HashGet;
+                private _seenClusterIDs = [];
+
+                {
+                    private _objective = _x;
+                    private _center = [_objective, "center", [0,0,0]] call ALiVE_fnc_HashGet;
+
+                    private _sector = [ALIVE_sectorGrid, "positionToSector", _center] call ALIVE_fnc_sectorGrid;
+                    private _sectorData = [_sector, "data", ["", [], [], nil]] call ALiVE_fnc_hashGet;
+
+                    if ("clustersCiv" in (_sectorData select 1)) then {
+                        private _civClusters = [_sectorData, "clustersCiv"] call ALiVE_fnc_hashGet;
+                        private _settlementClusters = [_civClusters, "settlement"] call ALiVE_fnc_hashGet;
+
+                        {
+                            private _clusterID = _x select 1;
+                            // Objectives can share a sector; dedup so we
+                            // don't double-count a cluster's hostility.
+                            if !(_clusterID in _seenClusterIDs) then {
+                                _seenClusterIDs pushBack _clusterID;
+                                private _cluster = [ALIVE_clusterHandler, "getCluster", _clusterID] call ALIVE_fnc_clusterHandler;
+                                if !(isNil "_cluster") then {
+                                    private _clusterHostility = [_cluster, "hostility"] call ALiVE_fnc_hashGet;
+                                    private _sideHostility = [_clusterHostility, _side, 0] call ALiVE_fnc_hashGet;
+                                    _totalHostility = _totalHostility + _sideHostility;
+                                };
+                            };
+                        } forEach _settlementClusters;
+                    };
+                } forEach _objectives;
+
+                _totalHostility
+};
+
 ALiVE_fnc_INS_getNearestObjectiveByPosition = {
                 params [
                     ["_pos",[],[[]]],
@@ -1142,7 +1317,71 @@ ALiVE_fnc_INS_recruit = {
 
                             // Use the configured chance for a successful recruitment spawn.
                             if (random 1 < _effectiveRecruitChance) then {
-	                            _group = ["Infantry",_faction] call ALIVE_fnc_configGetRandomGroup;
+	                            // Issue #355 - progressive recruitment: pick group
+	                            // from tiered roster based on escalation intensity
+	                            // and current aggregate hostility. Falls back to
+	                            // legacy Infantry-only behaviour when
+	                            // asymEscalationIntensity == "off" or the roster
+	                            // is unavailable for this faction.
+	                            private _escalationIntensity = if (!isNil "_opcom") then {[_opcom, "asymEscalationIntensity", "off"] call ALiVE_fnc_HashGet} else {"off"};
+	                            private _group = "FALSE";
+
+	                            if (_escalationIntensity == "off" || {isNil "_opcom"}) then {
+	                                // Legacy path: infantry only, from config (or
+	                                // custom mapping, both handled by configGetRandomGroup).
+	                                _group = ["Infantry",_faction] call ALIVE_fnc_configGetRandomGroup;
+	                            } else {
+	                                // Thresholds scale per intensity. Tier 1 (light)
+	                                // unlocks at lower hostility, tier 2 (medium) at
+	                                // higher. These are indicative - tune per
+	                                // playtesting.
+	                                private _thresholds = switch (_escalationIntensity) do {
+	                                    case "low":    {[200, 500]};
+	                                    case "medium": {[100, 300]};
+	                                    case "high":   {[50, 150]};
+	                                    default        {[9999, 9999]};
+	                                };
+	                                private _hostility = [_opcom] call ALiVE_fnc_INS_sampleOpcomHostility;
+	                                private _computedTier = "infantry";
+	                                if (_hostility >= (_thresholds select 0)) then {_computedTier = "light"};
+	                                if (_hostility >= (_thresholds select 1)) then {_computedTier = "medium"};
+
+	                                // Monotonic ratchet: insurgents don't lose
+	                                // acquired capabilities. Store max tier seen
+	                                // to date on the handler.
+	                                private _tierOrder = ["infantry", "light", "medium"];
+	                                private _recordedTier = [_opcom, "escalationLevel", "infantry"] call ALiVE_fnc_HashGet;
+	                                private _unlockedTier = if ((_tierOrder find _computedTier) > (_tierOrder find _recordedTier)) then {
+	                                    [_opcom, "escalationLevel", _computedTier] call ALiVE_fnc_HashSet;
+	                                    _computedTier
+	                                } else {
+	                                    _recordedTier
+	                                };
+
+	                                // Build recruitment pool from all unlocked
+	                                // tiers. Higher tiers augment rather than
+	                                // replace - mission stays varied.
+	                                private _rosterByFaction = [_opcom, "tieredGroupRoster", []] call ALiVE_fnc_HashGet;
+	                                private _factionRoster = [_rosterByFaction, _faction, [[],[],[]]] call ALiVE_fnc_hashGet;
+	                                private _pool = switch (_unlockedTier) do {
+	                                    case "medium": { (_factionRoster select 0) + (_factionRoster select 1) + (_factionRoster select 2) };
+	                                    case "light":  { (_factionRoster select 0) + (_factionRoster select 1) };
+	                                    default        { _factionRoster select 0 };
+	                                };
+
+	                                if (count _pool > 0) then {
+	                                    _group = selectRandom _pool;
+	                                } else {
+	                                    // Roster empty (faction has no CfgGroups
+	                                    // entries we could classify, or custom-
+	                                    // mapping path). Fall back to legacy
+	                                    // configGetRandomGroup so 3rd-party
+	                                    // factionCustomMappings users still get
+	                                    // recruitment.
+	                                    _group = ["Infantry",_faction] call ALIVE_fnc_configGetRandomGroup;
+	                                };
+	                            };
+
 	                            _recruits = [_group, [_pos,10,_size,1,0,0,0,[],[_pos]] call BIS_fnc_findSafePos, random(360), true, _faction] call ALIVE_fnc_createProfilesFromGroupConfig;
 	                            {[_x, "setActiveCommand", ["ALIVE_fnc_ambientMovement","spawn",[_size + 200,"SAFE",[0,0,0]]]] call ALIVE_fnc_profileEntity} foreach _recruits;
 
