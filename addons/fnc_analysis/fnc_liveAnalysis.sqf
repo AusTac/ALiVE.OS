@@ -140,18 +140,6 @@ switch(_operation) do {
                 };
             } foreach _args;
         };
-        case "setMarkerAlphaLocally": {
-            if !(hasInterface) exitWith {};
-
-            _args params [
-                ["_markers", [], [[]]],
-                ["_alpha", 1, [0]]
-            ];
-
-            {
-                _x setMarkerAlphaLocal _alpha;
-            } forEach _markers;
-        };
         case "deleteMarkersLocally": {
             if !(hasInterface) exitWith {};
 
@@ -539,6 +527,7 @@ switch(_operation) do {
                     };
                     default {allPlayers select {side (group _x) == _sourceSide}};
                 };
+                private _intelNonRecipients = allPlayers - _intelRecipients;
 
                 // Installations
                 private _factory = [[],"convertObject",[_objective,"factory",[]] call ALiVE_fnc_HashGet] call ALiVE_fnc_OPCOM;
@@ -552,7 +541,7 @@ switch(_operation) do {
 
                 private _installations = [_factory,_HQ,_ambush,_depot,_sabotage,_ied,_suicide,_roadblocks];
 
-                private ["_profiles","_markers","_profileID","_profile","_alpha","_marker","_color","_dir","_position","_icon","_text","_m"];
+                private ["_profiles","_markers","_markerData","_profileID","_profile","_alpha","_marker","_color","_dir","_position","_icon","_text","_m"];
 
                 // on the first run create all the markers
                 if(_runCount == 0) then {
@@ -711,14 +700,18 @@ switch(_operation) do {
                     if (count _intelRecipients > 0 && {count _markerData > 0}) then {
                         [objNull,"createMarkersLocally", _markerData] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelRecipients];
                     };
+                    if (count _intelNonRecipients > 0 && {count _markers > 0}) then {
+                        [objNull,"deleteMarkersLocally", _markers] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelNonRecipients];
+                    };
 
-                    _jobArgs pushback ([_markers, _profiles]);
+                    _jobArgs pushback ([_markers, _profiles, _markerData]);
 
                 // on subsequent runs lower marker alpha
                 } else {
 
                     _markers = _jobArgs select 1 select 0;
                     _profiles = _jobArgs select 1 select 1;
+                    _markerData = (_jobArgs select 1) param [2, []];
 
                     // set alpha based on age of intel item
                     if(_runCount <= 1) then {
@@ -734,8 +727,15 @@ switch(_operation) do {
                         _alpha = 0.2;
                     };
 
-                    if (count _intelRecipients > 0 && {count _markers > 0}) then {
-                        [objNull,"setMarkerAlphaLocally", [_markers,_alpha]] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelRecipients];
+                    {
+                        _x set ["alpha", _alpha];
+                    } forEach _markerData;
+
+                    if (count _intelRecipients > 0 && {count _markerData > 0}) then {
+                        [objNull,"createMarkersLocally", _markerData] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelRecipients];
+                    };
+                    if (count _intelNonRecipients > 0 && {count _markers > 0}) then {
+                        [objNull,"deleteMarkersLocally", _markers] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelNonRecipients];
                     };
 
                 };
