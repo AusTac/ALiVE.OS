@@ -553,6 +553,56 @@ class CfgVehicles {
                                     };
                             };
                     };
+                    class mapIntelVisibility : Combo
+                    {
+                            property = "ALiVE_MIL_C2ISTAR_mapIntelVisibility";
+                            displayName = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY";
+                            tooltip = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_COMMENT";
+                            defaultValue = """SIDE""";
+                            class Values
+                            {
+                                    class SIDE
+                                    {
+                                            name = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_SIDE";
+                                            value = "SIDE";
+                                    };
+                                    class FACTION
+                                    {
+                                            name = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_FACTION";
+                                            value = "FACTION";
+                                    };
+                                    class FRIENDLY
+                                    {
+                                            name = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_FRIENDLY";
+                                            value = "FRIENDLY";
+                                    };
+                                    class ALL
+                                    {
+                                            name = "$STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_ALL";
+                                            value = "ALL";
+                                    };
+                            };
+                    };
+                    class mapIntelRevealInstallations : Combo
+                    {
+                            property = "ALiVE_MIL_C2ISTAR_mapIntelRevealInstallations";
+                            displayName = "$STR_ALIVE_C2ISTAR_MAP_INTEL_REVEAL_INSTALLATIONS";
+                            tooltip = "$STR_ALIVE_C2ISTAR_MAP_INTEL_REVEAL_INSTALLATIONS_COMMENT";
+                            defaultValue = """false""";
+                            class Values
+                            {
+                                    class No
+                                    {
+                                            name = "No";
+                                            value = "false";
+                                    };
+                                    class Yes
+                                    {
+                                            name = "Yes";
+                                            value = "true";
+                                    };
+                            };
+                    };
                     class displayDiarySpotrep : Combo
                     {
                             property = "ALiVE_MIL_C2ISTAR_displayDiarySpotrep";

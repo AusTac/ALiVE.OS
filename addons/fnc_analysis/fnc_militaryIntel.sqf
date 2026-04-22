@@ -40,6 +40,8 @@ nil
 #define MAINCLASS ALIVE_fnc_militaryIntel
 
 #define DEFAULT_DISPLAY_INTEL false
+#define DEFAULT_MAP_INTEL_VISIBILITY "SIDE"
+#define DEFAULT_MAP_INTEL_REVEAL_INSTALLATIONS false
 #define DEFAULT_INTEL_CHANCE "0.1"
 #define DEFAULT_FRIENDLY_INTEL false
 #define DEFAULT_FRIENDLY_INTEL_RADIUS 2000
@@ -82,6 +84,26 @@ switch(_operation) do {
     case "displayIntel": {
         _result = [_logic,_operation,_args,DEFAULT_DISPLAY_INTEL] call ALIVE_fnc_OOsimpleOperation;
     };
+    case "mapIntelVisibility": {
+        if (_args isEqualType "") then {
+            _args = toUpper _args;
+        };
+        _result = [_logic,_operation,_args,DEFAULT_MAP_INTEL_VISIBILITY,["SIDE","FACTION","FRIENDLY","ALL"]] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "mapIntelRevealInstallations": {
+        if (typeName _args == "BOOL") then {
+            [_logic,"mapIntelRevealInstallations",_args] call ALIVE_fnc_hashSet;
+        } else {
+            _args = [_logic,"mapIntelRevealInstallations",DEFAULT_MAP_INTEL_REVEAL_INSTALLATIONS] call ALIVE_fnc_hashGet;
+        };
+        if (typeName _args == "STRING") then {
+            if(_args == "true") then {_args = true;} else {_args = false;};
+            [_logic,"mapIntelRevealInstallations",_args] call ALIVE_fnc_hashSet;
+        };
+        ASSERT_TRUE(typeName _args == "BOOL",str _args);
+
+        _result = _args;
+    };
     case "intelChance": {
         _result = [_logic,_operation,_args,DEFAULT_INTEL_CHANCE] call ALIVE_fnc_OOsimpleOperation;
     };
@@ -117,7 +139,7 @@ switch(_operation) do {
         };
     };
     case "start": {
-        private["_friendlyIntel","_displayMilitarySectors","_displayPlayerSectors","_displayIntel"];
+        private["_friendlyIntel","_displayMilitarySectors","_displayPlayerSectors","_displayIntel","_mapIntelVisibility","_mapIntelRevealInstallations"];
 
         if !(["ALiVE_sys_profile"] call ALiVE_fnc_isModuleAvailable) exitwith {
             ["Profile System module not placed! Exiting..."] call ALiVE_fnc_DumpR;
@@ -144,6 +166,11 @@ switch(_operation) do {
         };
 
         _displayIntel = [_logic, "displayIntel"] call MAINCLASS;
+        _mapIntelVisibility = [_logic, "mapIntelVisibility"] call MAINCLASS;
+        _mapIntelRevealInstallations = [_logic, "mapIntelRevealInstallations"] call MAINCLASS;
+
+        missionNamespace setVariable ["ALIVE_militaryIntelVisibility", _mapIntelVisibility, true];
+        missionNamespace setVariable ["ALIVE_militaryIntelRevealInstallations", _mapIntelRevealInstallations, true];
 
         if(_displayIntel) then {
             [_logic,"listen"] call MAINCLASS;
