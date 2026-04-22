@@ -93,6 +93,60 @@ switch(_operation) do {
 
             _result = _args;
         };
+        case "createMarkersLocally": {
+            if !(hasInterface) exitWith {};
+
+            {
+                private _id = _x get "id";
+                private _position = _x get "position";
+                private _shape = _x get "shape";
+                private _color = _x get "color";
+                private _alpha = _x get "alpha";
+                private _type = _x get "type";
+                private _size = _x get "size";
+                private _dir = _x get "direction";
+                private _text = _x get "text";
+                private _brush = _x get "brush";
+                private _path = _x get "path";
+
+                if (!(isnil "_id") && {!(isnil "_position")} && {!(isnil "_shape")} && {_position isEqualType []} && {count _position >= 2}) then {
+                    deleteMarkerLocal _id;
+                    private _marker = createMarkerLocal [_id, _position];
+                    _marker setMarkerShapeLocal _shape;
+
+                    if !(isnil "_color") then {
+                        _marker setMarkerColorLocal _color;
+                    };
+                    if !(isnil "_alpha") then {
+                        _marker setMarkerAlphaLocal _alpha;
+                    };
+                    if !(isnil "_type") then {
+                        _marker setMarkerTypeLocal _type;
+                    };
+                    if !(isnil "_size") then {
+                        _marker setMarkerSizeLocal _size;
+                    };
+                    if !(isnil "_dir") then {
+                        _marker setMarkerDirLocal _dir;
+                    };
+                    if !(isnil "_text") then {
+                        _marker setMarkerTextLocal _text;
+                    };
+                    if !(isnil "_brush") then {
+                        _marker setMarkerBrushLocal _brush;
+                    };
+                    if !(isnil "_path") then {
+                        _marker setMarkerPolylineLocal _path;
+                        _marker setMarkerShadowLocal false;
+                    };
+                };
+            } foreach _args;
+        };
+        case "deleteMarkersLocally": {
+            if !(hasInterface) exitWith {};
+
+            {deleteMarkerLocal _x} forEach _args;
+        };
         case "pause": {
             if(typeName _args != "BOOL") then {
                     // if no new value was provided return current setting
@@ -443,6 +497,48 @@ switch(_operation) do {
                 _objectiveID = [_objective,"objectiveID"] call ALIVE_fnc_hashGet;
                 _section = [_objective,"section",[]] call ALIVE_fnc_hashGet;
 
+                private _mapIntelVisibility = toUpper (missionNamespace getVariable ["ALIVE_militaryIntelVisibility", "SIDE"]);
+                private _revealInstallations = missionNamespace getVariable ["ALIVE_militaryIntelRevealInstallations", false];
+                if (_revealInstallations isEqualType "") then {
+                    _revealInstallations = (_revealInstallations == "true");
+                };
+
+                private _sourceSide = civilian;
+                private _sourceSideText = "CIV";
+                if (_side isEqualType west) then {
+                    _sourceSide = _side;
+                    _sourceSideText = [[_sourceSide] call ALIVE_fnc_sideObjectToNumber] call ALIVE_fnc_sideNumberToText;
+                } else {
+                    _sourceSideText = if (_side isEqualType "") then {toUpper _side} else {toUpper str _side};
+                    if (_sourceSideText in ["INDEP","INDEPENDENT","RESISTANCE"]) then {
+                        _sourceSideText = "GUER";
+                    };
+                    _sourceSide = [_sourceSideText] call ALIVE_fnc_sideTextToObject;
+                };
+
+                private _sourceFactions = [];
+                private _opcomID = [_objective,"opcomID",""] call ALIVE_fnc_hashGet;
+
+                {
+                    if (_x isEqualType [] && {([_x,"opcomID",""] call ALIVE_fnc_hashGet) == _opcomID}) exitWith {
+                        _sourceFactions = [_x,"factions",[]] call ALIVE_fnc_hashGet;
+                    };
+                } forEach (missionNamespace getVariable ["OPCOM_instances", []]);
+
+                private _intelRecipients = switch (_mapIntelVisibility) do {
+                    case "ALL": {+allPlayers};
+                    case "FRIENDLY": {allPlayers select {(_sourceSide getFriend (side (group _x))) >= 0.6}};
+                    case "FACTION": {
+                        if (_sourceFactions isEqualTo []) then {
+                            allPlayers select {side (group _x) == _sourceSide}
+                        } else {
+                            allPlayers select {(faction _x) in _sourceFactions}
+                        };
+                    };
+                    default {allPlayers select {side (group _x) == _sourceSide}};
+                };
+                private _intelNonRecipients = allPlayers - _intelRecipients;
+
                 // Installations
                 private _factory = [[],"convertObject",[_objective,"factory",[]] call ALiVE_fnc_HashGet] call ALiVE_fnc_OPCOM;
                 private _HQ = [[],"convertObject",[_objective,"HQ",[]] call ALiVE_fnc_HashGet] call ALiVE_fnc_OPCOM;
@@ -455,13 +551,14 @@ switch(_operation) do {
 
                 private _installations = [_factory,_HQ,_ambush,_depot,_sabotage,_ied,_suicide,_roadblocks];
 
-                private ["_profiles","_markers","_profileID","_profile","_alpha","_marker","_color","_dir","_position","_icon","_text","_m"];
+                private ["_profiles","_markers","_markerData","_profileID","_profile","_alpha","_marker","_color","_dir","_position","_icon","_text","_m"];
 
                 // on the first run create all the markers
                 if(_runCount == 0) then {
 
                     private _profiles = [];
                     private _markers = [];
+                    private _markerData = [];
                     private _alpha = 1;
 
                     // create the profile marker
@@ -472,8 +569,6 @@ switch(_operation) do {
                             _position = _profile select 2 select 2;
 
                             if!(surfaceIsWater _position) then {
-                                private _marker = [_profile, "createDebugMarkers", [_alpha]] call ALIVE_fnc_profileEntity;
-                                _markers = _markers + _marker;
                                 _profiles pushback _profileID;
                             };
 
@@ -481,8 +576,13 @@ switch(_operation) do {
                         };
                     } forEach _section;
 
+                    if (isnil "_position") then {
+                        _position = _center;
+                        _dir = 0;
+                    };
+
                     // set the side color
-                    switch(_side) do {
+                    switch(_sourceSideText) do {
                         case "EAST":{
                             _color = "ColorRed";
                         };
@@ -501,14 +601,17 @@ switch(_operation) do {
                     };
 
                     // create the objective area marker
-                    private _m = createMarker [format[MTEMPLATE, _objectiveID], _center];
-                    _m setMarkerShape "Ellipse";
-                    _m setMarkerBrush "FDiagonal";
-                    _m setMarkerSize [_size, _size];
-                    _m setMarkerColor _color;
-                    _m setMarkerAlpha _alpha;
-
+                    private _m = format[MTEMPLATE, _objectiveID];
                     _markers pushback _m;
+                    _markerData pushback (createHashMapFromArray [
+                        ["id", _m],
+                        ["position", _center],
+                        ["shape", "ELLIPSE"],
+                        ["brush", "FDiagonal"],
+                        ["size", [_size, _size]],
+                        ["color", _color],
+                        ["alpha", _alpha]
+                    ]);
 
                     _icon = "mil_unknown";
                     _text = "";
@@ -524,15 +627,20 @@ switch(_operation) do {
                         case "recon":{
 
                             // create direction marker
-                            _m = createMarker [format[MTEMPLATE, format["%1_dir", _objectiveID]], _position getPos [100, _dir]];
-                            _m setMarkerShape "ICON";
-                            _m setMarkerSize [0.5,0.5];
-                            _m setMarkerType "mil_arrow";
-                            _m setMarkerColor _color;
-                            _m setMarkerAlpha _alpha;
-                            _m setMarkerDir _dir;
+                            _m = format[MTEMPLATE, format["%1_dir", _objectiveID]];
 
                             _markers pushback _m;
+
+                            _markerData pushback (createHashMapFromArray [
+                                ["id", _m],
+                                ["position", _position getPos [100, _dir]],
+                                ["shape", "ICON"],
+                                ["size", [0.5,0.5]],
+                                ["type", "mil_arrow"],
+                                ["color", _color],
+                                ["alpha", _alpha],
+                                ["direction", _dir]
+                            ]);
 
                             _icon = "mil_unknown";
                             _text = " sighting";
@@ -540,15 +648,20 @@ switch(_operation) do {
                         case "capture":{
 
                             // create direction marker
-                            _m = createMarker [format[MTEMPLATE, format["%1_dir", _objectiveID]], _position getPos [100, _dir]];
-                            _m setMarkerShape "ICON";
-                            _m setMarkerSize [0.5,0.5];
-                            _m setMarkerType "mil_arrow2";
-                            _m setMarkerColor _color;
-                            _m setMarkerAlpha _alpha;
-                            _m setMarkerDir _dir;
+                            _m = format[MTEMPLATE, format["%1_dir", _objectiveID]];
 
                             _markers pushback _m;
+
+                            _markerData pushback (createHashMapFromArray [
+                                ["id", _m],
+                                ["position", _position getPos [100, _dir]],
+                                ["shape", "ICON"],
+                                ["size", [0.5,0.5]],
+                                ["type", "mil_arrow2"],
+                                ["color", _color],
+                                ["alpha", _alpha],
+                                ["direction", _dir]
+                            ]);
 
                             _icon = "mil_warning";
                             _text = " captured";
@@ -562,31 +675,58 @@ switch(_operation) do {
                     // create type marker - offset east so its text label
                     // doesn't overlap the strategic cluster / opcom labels
                     // that also render at _center (see ALiVE_fnc_debugMarkerOffset).
-                    _m = createMarker [format[MTEMPLATE, format["%1_type", _objectiveID]], ["analysis.live", _center] call ALiVE_fnc_debugMarkerOffset];
-                    _m setMarkerShape "ICON";
-                    _m setMarkerSize [0.5, 0.5];
-                    _m setMarkerType _icon;
-                    _m setMarkerColor _color;
-                    _m setMarkerAlpha _alpha;
-                    _m setMarkerText _text;
-
+                    _m = format[MTEMPLATE, format["%1_type", _objectiveID]];
+                    private _typeMarkerPosition = if (isNil "ALiVE_fnc_debugMarkerOffset") then {
+                        _center getPos [25, 90]
+                    } else {
+                        ["analysis.live", _center] call ALiVE_fnc_debugMarkerOffset
+                    };
                     _markers pushback _m;
+                    _markerData pushback (createHashMapFromArray [
+                        ["id", _m],
+                        ["position", _typeMarkerPosition],
+                        ["shape", "ICON"],
+                        ["size", [0.5, 0.5]],
+                        ["type", _icon],
+                        ["color", _color],
+                        ["alpha", _alpha],
+                        ["text", _text]
+                    ]);
 
-                    // Show installations
-                    {
-                        if (alive _x) then {
-                            _m = [format[MTEMPLATE,format["%1%2_inst", _objectiveID,_foreachIndex]],getposATL _x,"ICON", [1,1],"ColorRed","Installation", "n_installation", "FDiagonal",0,0.5 ] call ALIVE_fnc_createMarkerGlobal;
-                            _markers append [_m];
-                        };
-                    } foreach _installations;
+                    if (_revealInstallations) then {
+                        {
+                            if (alive _x) then {
+                                _m = format[MTEMPLATE,format["%1%2_inst", _objectiveID,_foreachIndex]];
+                                _markers pushback _m;
+                                _markerData pushback (createHashMapFromArray [
+                                    ["id", _m],
+                                    ["position", getposATL _x],
+                                    ["shape", "ICON"],
+                                    ["size", [1,1]],
+                                    ["type", "n_installation"],
+                                    ["color", "ColorRed"],
+                                    ["alpha", 0.5],
+                                    ["text", "Installation"]
+                                ]);
+                            };
+                        } foreach _installations;
+                    };
 
-                    _jobArgs pushback ([_markers, _profiles]);
+                    if (count _intelRecipients > 0 && {count _markerData > 0}) then {
+                        [objNull,"createMarkersLocally", _markerData] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelRecipients];
+                    };
+                    if (count _intelNonRecipients > 0 && {count _markers > 0}) then {
+                        [objNull,"deleteMarkersLocally", _markers] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelNonRecipients];
+                    };
+
+                    _jobArgs pushback ([_markers, _profiles, _markerData]);
 
                 // on subsequent runs lower marker alpha
                 } else {
 
                     _markers = _jobArgs select 1 select 0;
                     _profiles = _jobArgs select 1 select 1;
+                    _markerData = (_jobArgs select 1) param [2, []];
 
                     // set alpha based on age of intel item
                     if(_runCount <= 1) then {
@@ -603,8 +743,15 @@ switch(_operation) do {
                     };
 
                     {
-                        _x setMarkerAlpha _alpha;
-                    } forEach _markers;
+                        _x set ["alpha", _alpha];
+                    } forEach _markerData;
+
+                    if (count _intelRecipients > 0 && {count _markerData > 0}) then {
+                        [objNull,"createMarkersLocally", _markerData] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelRecipients];
+                    };
+                    if (count _intelNonRecipients > 0 && {count _markers > 0}) then {
+                        [objNull,"deleteMarkersLocally", _markers] remoteExecCall ["ALiVE_fnc_liveAnalysis", _intelNonRecipients];
+                    };
 
                 };
             };
@@ -647,9 +794,9 @@ switch(_operation) do {
                     };
                 } forEach _profiles;
 
-                {
-                    deleteMarker _x;
-                } forEach _markers;
+                if (count _markers > 0) then {
+                    [objNull,"deleteMarkersLocally", _markers] remoteExecCall ["ALiVE_fnc_liveAnalysis", allPlayers];
+                };
 
             };
         };

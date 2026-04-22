@@ -152,6 +152,30 @@
 <Key ID="STR_ALIVE_C2ISTAR_DISPLAY_INTEL_COMMENT">
     <English>Displays current events on the battlefield on the map</English>
 </Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY">
+    <English>Map Intel Visibility:</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_COMMENT">
+    <English>Controls who receives C2ISTAR map intel from OPCOM events. Side limits reports to players on the commander side. Faction limits reports to players whose unit faction is commanded by that OPCOM.</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_SIDE">
+    <English>Same Side</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_FACTION">
+    <English>Same Faction</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_FRIENDLY">
+    <English>Friendly Sides</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_VISIBILITY_ALL">
+    <English>All Players</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_REVEAL_INSTALLATIONS">
+    <English>Reveal Asymmetric Installations:</English>
+</Key>
+<Key ID="STR_ALIVE_C2ISTAR_MAP_INTEL_REVEAL_INSTALLATIONS_COMMENT">
+    <English>When enabled, C2ISTAR map intel can show exact asymmetric OPCOM installation markers. Disabled by default to avoid revealing insurgency infrastructure.</English>
+</Key>
 <Key ID="STR_ALIVE_C2ISTAR_SPOTREP_DIARY_ENTRIES">
     <English>Spotrep Diary Entries:</English>
 </Key>

@@ -57,6 +57,8 @@ Peer Reviewed:
 #define DEFAULT_SCOM_LIMIT "SIDE"
 
 #define DEFAULT_DISPLAY_INTEL false
+#define DEFAULT_MAP_INTEL_VISIBILITY "SIDE"
+#define DEFAULT_MAP_INTEL_REVEAL_INSTALLATIONS false
 #define DEFAULT_INTEL_CHANCE "0.1"
 #define DEFAULT_FRIENDLY_INTEL false
 #define DEFAULT_FRIENDLY_INTEL_RADIUS 2000
@@ -378,6 +380,26 @@ switch(_operation) do {
         if (typeName _args == "STRING") then {
                 if(_args == "true") then {_args = true;} else {_args = false;};
                 _logic setVariable ["displayIntel", _args];
+        };
+        ASSERT_TRUE(typeName _args == "BOOL",str _args);
+
+        _result = _args;
+    };
+    case "mapIntelVisibility": {
+        if (_args isEqualType "") then {
+            _args = toUpper _args;
+        };
+        _result = [_logic,_operation,_args,DEFAULT_MAP_INTEL_VISIBILITY,["SIDE","FACTION","FRIENDLY","ALL"]] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "mapIntelRevealInstallations": {
+        if (typeName _args == "BOOL") then {
+            _logic setVariable ["mapIntelRevealInstallations", _args];
+        } else {
+            _args = _logic getVariable ["mapIntelRevealInstallations", DEFAULT_MAP_INTEL_REVEAL_INSTALLATIONS];
+        };
+        if (typeName _args == "STRING") then {
+            if(_args == "true") then {_args = true;} else {_args = false;};
+            _logic setVariable ["mapIntelRevealInstallations", _args];
         };
         ASSERT_TRUE(typeName _args == "BOOL",str _args);
 
@@ -873,9 +895,11 @@ switch(_operation) do {
                 };
             };
 
-            private["_displayIntel","_intelChance","_friendlyIntel","_friendlyIntelRadius","_displayMilitarySectors","_displayPlayerSectors","_displayIntel","_runEvery","_intel"];
+            private["_displayIntel","_mapIntelVisibility","_mapIntelRevealInstallations","_intelChance","_friendlyIntel","_friendlyIntelRadius","_displayMilitarySectors","_displayPlayerSectors","_runEvery","_intel"];
 
             _displayIntel = [_logic, "displayIntel"] call MAINCLASS;
+            _mapIntelVisibility = [_logic, "mapIntelVisibility"] call MAINCLASS;
+            _mapIntelRevealInstallations = [_logic, "mapIntelRevealInstallations"] call MAINCLASS;
             _intelChance = [_logic, "intelChance"] call MAINCLASS;
             _friendlyIntel = [_logic, "friendlyIntel"] call MAINCLASS;
             _friendlyIntelRadius = [_logic, "friendlyIntelRadius"] call MAINCLASS;
@@ -887,10 +911,15 @@ switch(_operation) do {
                 _friendlyIntelRadius = parseNumber _friendlyIntelRadius;
             };
 
+            missionNamespace setVariable ["ALIVE_militaryIntelVisibility", _mapIntelVisibility, true];
+            missionNamespace setVariable ["ALIVE_militaryIntelRevealInstallations", _mapIntelRevealInstallations, true];
+
             if(_displayIntel || _displayPlayerSectors || _displayMilitarySectors || _friendlyIntel) then {
 
                 _intel = [nil, "create"] call ALIVE_fnc_militaryIntel;
                 [_intel, "displayIntel",_displayIntel] call ALIVE_fnc_militaryIntel;
+                [_intel, "mapIntelVisibility",_mapIntelVisibility] call ALIVE_fnc_militaryIntel;
+                [_intel, "mapIntelRevealInstallations",_mapIntelRevealInstallations] call ALIVE_fnc_militaryIntel;
                 [_intel, "intelChance",_intelChance] call ALIVE_fnc_militaryIntel;
                 [_intel, "friendlyIntel",_friendlyIntel] call ALIVE_fnc_militaryIntel;
                 [_intel, "friendlyIntelRadius",_friendlyIntelRadius] call ALIVE_fnc_militaryIntel;
@@ -1064,15 +1093,24 @@ switch(_operation) do {
             [_taskingState,"generateLocationListSelectedValue",DEFAULT_SELECTED_VALUE] call ALIVE_fnc_hashSet;
 
             // Build faction list — filtered to ALiVE mission factions when module param is set
-            if (missionNamespace getVariable ["ALIVE_c2istar_filterEnemyFactions", true]) then {
-                _factionsDataSource = [] call ALiVE_fnc_getAliveMissionFactionsDataSource;
-                // If OPCOM has not yet registered any factions (e.g. pre-init), fall back to full list
-                if ((_factionsDataSource select 0) isEqualTo []) then {
+            _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
+            private _filterEnemyFactions = missionNamespace getVariable ["ALIVE_c2istar_filterEnemyFactions", true];
+            if (_filterEnemyFactions && {!isNil "ALiVE_fnc_getAliveMissionFactionsDataSource"}) then {
+                private _missionFactionsDataSource = [] call ALiVE_fnc_getAliveMissionFactionsDataSource;
+                // If OPCOM has not yet registered any factions, keep the full list fallback.
+                if (
+                    _missionFactionsDataSource isEqualType [] &&
+                    {count _missionFactionsDataSource >= 2} &&
+                    {!((_missionFactionsDataSource select 0) isEqualTo [])}
+                ) then {
+                    _factionsDataSource = _missionFactionsDataSource;
+                } else {
                     ["C2ISTAR - filterEnemyFactions: no OPCOM factions found yet, falling back to full faction list"] call ALiVE_fnc_dump;
-                    _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
                 };
             } else {
-                _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
+                if (_filterEnemyFactions) then {
+                    ["C2ISTAR - filterEnemyFactions: mission faction datasource unavailable, falling back to full faction list"] call ALiVE_fnc_dump;
+                };
             };
             [_taskingState,"generateFactionOptions",_factionsDataSource select 0] call ALIVE_fnc_hashSet;
             [_taskingState,"generateFactionValues",_factionsDataSource select 1] call ALIVE_fnc_hashSet;
