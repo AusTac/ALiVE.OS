@@ -4,53 +4,54 @@ SCRIPT(edenValidateOpcomFactions);
 /* ----------------------------------------------------------------------------
 Function: ALiVE_fnc_edenValidateOpcomFactions
 Description:
-Editor-time validator — walks every OPCOM entity in the mission and checks
-that each OPCOM's declared factions (multi-select `factions` +
-free-text `factionsManual` override) are actually provided by at least
-one of its synced placement modules. Emits a systemChat + diag_log
-warning per mismatched OPCOM so mission-makers catch OPCOM<->placement
-faction misconfigurations before mission preview / runtime.
+Editor-time validator - walks OPCOM entities in the 3DEN scene and checks
+that each OPCOM's declared factions have at least one matching
+profile-spawning placement module SOMEWHERE in the mission. Surfaces
+the real runtime failure condition (OPCOM init exits with "no groups
+for faction %1" when zero profiles exist for any of its factions)
+before mission preview.
 
-Mirrors the runtime MISMATCH log in fnc_OPCOM.sqf (~line 500) but fires
-in the Eden editor instead of at mission load, giving mission-makers
-earlier feedback when they sync modules or edit faction attributes.
+Mirrors the runtime profile-count check in fnc_OPCOM.sqf:567-580 which
+queries ALIVE_profileHandler getProfilesByFaction globally and exits
+the OPCOM if the total count is zero.
 
-Called from 3DEN event handlers (OnConnectionChanged, OnAttributesChanged)
-registered in XEH_postInit.sqf. Safe no-op outside Eden.
+Mission-wide scope is intentional: profile control is faction-based,
+not sync-based. An OPCOM with faction X owns every profile of faction
+X in the mission regardless of which placement spawned them or whether
+those placements are synced to this OPCOM. A sync graph expresses
+objective distribution (which OPCOM plans around which positions),
+not force ownership. Mission patterns like "multiple OPCOMs synced to
+one placement" or "OPFOR placement synced to BLUFOR OPCOM for
+contested-objective setups" are legitimate and working configurations -
+the earlier sync-mismatch heuristic false-flagged both.
+
+Called from 3DEN event handlers (OnEntityAttributeChanged,
+OnConnectingEnd, OnMissionPreview) registered in XEH_preInit.sqf. Safe
+no-op outside Eden.
 
 Debounce: a 0.5s scheduled-script window collapses bursts (bulk paste,
-multi-module sync ops) into one validation run.
+multi-module sync ops, per-attribute OnEntityAttributeChanged fires
+on OPCOM Save) into one validation run.
 
-Parameters:
-    none
+Trigger parameter (_this select 0, optional, default "attr"):
+    "sync"    - fired from OnConnectingEnd; emits a green OK toast
+                when no mismatches.
+    "attr"    - fired from OnEntityAttributeChanged; emits a green
+                OK toast when no mismatches.
+    "preview" - fired from OnMissionPreview; skips green toast (user
+                is about to launch the mission).
+Red warning fires on any trigger when one or more OPCOMs have a
+faction with no global placement source.
 
-Returns:
-    nil
+Scope parameter (_this select 1, optional, default []):
+    Array of OPCOM entity objects to restrict validation to. When
+    non-empty, only those OPCOMs are checked (keeps sync/attr
+    feedback focused on the OPCOM the user just touched, not a
+    global re-audit that surfaces pre-existing misconfigs on
+    unrelated OPCOMs). When empty, walks every OPCOM in the scene
+    (used by the preview trigger as the last-chance safety net).
 
-Warnings only - does NOT auto-fix. Placement modules' `faction` field
-is single-value (not multi); auto-adding could silently destroy the
-mission-maker's existing choice and create two-way sync conflicts. Tier-1
-notify-only by design.
-
-Trigger parameter:
-    _this select 0 (optional, default "attr"):
-        "sync"    - validator fired from OnConnectingEnd; emits a green
-                    "Sync OK" notification when no mismatches.
-        "attr"    - validator fired from OnEntityAttributeChanged.
-        "preview" - validator fired from OnMissionPreview.
-    Mismatch warning fires regardless of trigger. Positive "all OK"
-    confirmation is ONLY emitted for the "sync" trigger to avoid
-    drowning the user in repeated green toasts every attribute edit.
-
-Scope parameter:
-    _this select 1 (optional, default []):
-        Array of OPCOM entity objects to restrict validation to. When
-        non-empty, only those OPCOMs are checked (used by sync/attr
-        triggers so the user sees feedback about the OPCOM they just
-        touched, not a global re-audit that surfaces pre-existing
-        misconfigs on unrelated OPCOMs). When empty, walks every OPCOM
-        in the scene (used by the preview trigger as the last-chance
-        safety net).
+Warnings only - does NOT auto-fix. Tier-1 notify-only by design.
 
 Author:
 Jman
@@ -71,7 +72,7 @@ if (!isNil "ALIVE_edenFactionValidatorPending") then {
 ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
     params ["_trigger", "_scope"];
     sleep 0.5;
-    diag_log format ["ALiVE 3DEN faction-sync check: running (trigger=%1 scope=%2)", _trigger, count _scope];
+    diag_log format ["ALiVE 3DEN faction-source check: running (trigger=%1 scope=%2)", _trigger, count _scope];
 
     private _OPCOM_CLASSES = ["ALiVE_mil_OPCOM"];
     private _PLACEMENT_CLASSES = [
@@ -80,6 +81,17 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
         "ALiVE_civ_placement_custom",
         "ALiVE_mil_placement_custom",
         "ALiVE_mil_placement_spe"
+    ];
+    // Placement classes that expose a withPlacement toggle (Yes/No:
+    // "Place Units" vs "Objectives Only"). When set to "false", the
+    // placement registers objectives only - no profiles spawn, so the
+    // placement is not a profile source for its configured faction.
+    // The other two placement classes (mil_placement_custom,
+    // mil_placement_spe) have no such toggle and always spawn forces.
+    private _GATED_PLACEMENT_CLASSES = [
+        "ALiVE_mil_placement",
+        "ALiVE_civ_placement",
+        "ALiVE_civ_placement_custom"
     ];
 
     // Parse a stored multi-select faction value into a list of classnames.
@@ -102,7 +114,7 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
     // Resolve a placement module's faction - prefer the user-set value,
     // fall back to the attribute's CfgVehicles defaultValue so an
     // untouched placement ("OPF_F" default) still counts as providing
-    // OPF_F to a synced OPCOM.
+    // OPF_F to the mission.
     private _resolvePlacementFaction = {
         params ["_mod"];
         private _f = _mod getVariable ["faction", ""];
@@ -115,6 +127,64 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
         _cfgDefault
     };
 
+    // Determine whether a placement module will actually spawn forces
+    // at runtime. Returns true if the module has no withPlacement gate
+    // (mil_placement_custom / mil_placement_spe always spawn) or if
+    // the gate is true / "true".
+    private _placementSpawns = {
+        params ["_mod"];
+        private _type = typeOf _mod;
+        if !(_type in _GATED_PLACEMENT_CLASSES) exitWith { true };
+        private _wp = _mod getVariable ["withPlacement", "true"];
+        (_wp isEqualTo "true") || {_wp isEqualTo true}
+    };
+
+    // Global scan: walk every entity in the 3DEN scene ONCE and build
+    // two things at the same time:
+    //   _opcomsAll - every OPCOM in the scene (used to fall back to
+    //                global scope when _scope is empty)
+    //   _globalSourceFactions - every faction that has at least one
+    //                spawning placement module anywhere in the scene.
+    //                This is the authoritative "which factions will
+    //                have profiles at runtime" set, matching the
+    //                runtime getProfilesByFaction check that OPCOM
+    //                init uses to decide whether it can run.
+    //   _totalPlacements - count of placement modules (any mode)
+    //                used as a "mission is still being built" gate:
+    //                if nobody has placed any placements yet, don't
+    //                warn about missing profile sources - the mission-
+    //                maker is clearly still setting up.
+    //
+    // all3DENEntities returns mixed-type buckets per current A3 docs:
+    //   [_objects, _groups, _triggers, _systems, _markers, _layers,
+    //    _comments, _connections]
+    // Only some buckets hold Objects (objects/triggers/systems/comments);
+    // others hold Strings (markers), Numbers (layers), Arrays
+    // (connections). Filter per-element to pick only Object-typed
+    // entries - modules (systems) are what we actually care about.
+    private _opcomsAll = [];
+    private _globalSourceFactions = [];
+    private _totalPlacements = 0;
+    {
+        {
+            if (_x isEqualType objNull && {!isNull _x}) then {
+                private _t = typeOf _x;
+                if (_t in _OPCOM_CLASSES) then {
+                    _opcomsAll pushBack _x;
+                };
+                if (_t in _PLACEMENT_CLASSES) then {
+                    _totalPlacements = _totalPlacements + 1;
+                    if ([_x] call _placementSpawns) then {
+                        private _f = [_x] call _resolvePlacementFaction;
+                        if (_f != "" && {!(_f in _globalSourceFactions)}) then {
+                            _globalSourceFactions pushBack _f;
+                        };
+                    };
+                };
+            };
+        } forEach _x;
+    } forEach all3DENEntities;
+
     // Per-trigger scoping: when the caller passes a non-empty _scope
     // list (OPCOM entities), only those OPCOMs are validated. Keeps
     // sync/attr feedback focused on the OPCOM the user just touched,
@@ -122,206 +192,130 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
     // in the scene every time anything changes.
     //
     // Empty _scope (preview trigger, or legacy callers) falls back to
-    // the global walk: flatten all3DENEntities' mixed-type buckets
-    // (objects/triggers/systems hold objNull; markers/layers/
-    // connections hold strings/numbers/arrays - filter per-element),
-    // then filter to OPCOM-class logics.
-    private _opcomsToValidate = if (count _scope > 0) then {
-        _scope
-    } else {
-        private _all = [];
-        {
-            {
-                if (_x isEqualType objNull && {!isNull _x} && {(typeOf _x) in _OPCOM_CLASSES}) then {
-                    _all pushBack _x;
-                };
-            } forEach _x;
-        } forEach all3DENEntities;
-        _all
-    };
+    // every OPCOM collected during the global scan.
+    private _opcomsToValidate = if (count _scope > 0) then { _scope } else { _opcomsAll };
 
     private _warnings = 0;
-    // Count OPCOMs that actually got past the pre-sync gate (i.e. had
-    // at least one synced placement). Needed so we don't emit a green
-    // "all OK" on desync - which fires OnConnectingEnd and results in
-    // zero warnings because zero OPCOMs were actually validated.
+    // Count OPCOMs that actually got past the mission-has-placements
+    // gate. Needed so we don't emit a green "all OK" in a scene that
+    // has no placements yet (mission-maker still setting up).
     private _opcomsChecked = 0;
     // Collected for the green OK toast so mission-makers see WHICH
-    // factions resolved, not just that everything is fine.
+    // factions resolved.
     private _resolvedFactions = [];
 
     {
         private _opcom = _x;
-        if ((typeOf _opcom) in _OPCOM_CLASSES) then {
 
-            private _name = _opcom getVariable ["customName", ""];
-            // Parentheses not angle brackets - BIS_fnc_3DENNotification
-            // parses message content as XML and breaks on bare < >.
-            if (_name == "") then { _name = format ["(unnamed %1)", typeOf _opcom] };
+        private _name = _opcom getVariable ["customName", ""];
+        // Parentheses not angle brackets - BIS_fnc_3DENNotification
+        // parses message content as XML and breaks on bare < >.
+        if (_name == "") then { _name = format ["(unnamed %1)", typeOf _opcom] };
 
-            private _factionsVal       = _opcom getVariable ["factions",       ""];
-            private _factionsManualVal = _opcom getVariable ["factionsManual", ""];
+        private _factionsVal       = _opcom getVariable ["factions",       ""];
+        private _factionsManualVal = _opcom getVariable ["factionsManual", ""];
 
-            private _opcomFactions = [_factionsVal]       call _parseFactions;
-            _opcomFactions = _opcomFactions + ([_factionsManualVal] call _parseFactions);
+        private _opcomFactions = [_factionsVal]       call _parseFactions;
+        _opcomFactions = _opcomFactions + ([_factionsManualVal] call _parseFactions);
 
-            // Dedup + drop empties / sentinel
-            private _dedup = [];
-            {
-                if (_x isEqualType "" && {_x != ""} && {_x != "NONE"} && {!(_x in _dedup)}) then {
-                    _dedup pushBack _x;
-                };
-            } forEach _opcomFactions;
-            _opcomFactions = _dedup;
-
-            // Mirror the runtime fallback in fnc_OPCOM.sqf:203-209:
-            // when both multi-select and manual overrides are empty,
-            // the OPCOM runtime defaults to ["BLU_F"]. Validate against
-            // that fallback so a mission-maker who synced both modules
-            // at their out-of-box defaults (OPCOM empty -> BLU_F,
-            // mil_placement OPF_F) still sees the obvious mismatch
-            // instead of silent "checked=0". The validator is only
-            // useful if it tells users about misconfigurations they
-            // haven't deliberately declared.
-            if (count _opcomFactions == 0) then {
-                _opcomFactions = ["BLU_F"];
+        // Dedup + drop empties / sentinel
+        private _dedup = [];
+        {
+            if (_x isEqualType "" && {_x != ""} && {_x != "NONE"} && {!(_x in _dedup)}) then {
+                _dedup pushBack _x;
             };
+        } forEach _opcomFactions;
+        _opcomFactions = _dedup;
 
-            // Collect factions provided by this OPCOM's synced placement
-            // modules.
-            //
-            // synchronizedObjects is a RUNTIME command - returns [] in
-            // 3DEN editor time. The 3DEN-time equivalent is
-            // get3DENConnections which returns [[type, to], ...]; we
-            // filter for type == "Sync" to match the drag-sync lines
-            // mission-makers draw between modules (other connection
-            // types include Group, WaypointActivation, etc. - not
-            // relevant here).
-            private _connections = get3DENConnections _opcom;
-            private _synced = (_connections select {(_x select 0) == "Sync"}) apply {_x select 1};
-            private _availableFactions = [];
-            {
-                if ((typeOf _x) in _PLACEMENT_CLASSES) then {
-                    private _f = [_x] call _resolvePlacementFaction;
-                    if (_f != "" && {!(_f in _availableFactions)}) then {
-                        _availableFactions pushBack _f;
-                    };
-                };
-            } forEach _synced;
+        // Mirror the runtime fallback in fnc_OPCOM.sqf:203-209: when
+        // both multi-select and manual overrides are empty, OPCOM
+        // runtime defaults to ["BLU_F"]. Validate against that fallback
+        // so a mission-maker with an OPCOM at its out-of-box defaults
+        // (no factions picked) still sees "no BLU_F source" if that's
+        // the case.
+        if (count _opcomFactions == 0) then {
+            _opcomFactions = ["BLU_F"];
+        };
 
-            // Pre-sync gate: if no placement modules are synced yet, the
-            // mission-maker is still building and the OPCOM factions
-            // they've picked have nothing to compare against. Skip this
-            // OPCOM - don't nag about a mismatch that's actually just
-            // "not yet wired up". Also prevents false-positive green
-            // "all OK" on desync (OnConnectingEnd fires on disconnect,
-            // we arrive here with no placements synced, would otherwise
-            // signal OK for something never validated).
-            if (count _availableFactions == 0) exitWith {};
+        // Mission-building gate: if there are zero placement modules
+        // in the entire scene, the mission-maker is still setting up
+        // - no point warning about missing profile sources for a
+        // mission that has no placements at all. This also prevents
+        // false-positive green "all OK" in a scene that hasn't been
+        // populated yet.
+        if (_totalPlacements == 0) exitWith {};
 
-            _opcomsChecked = _opcomsChecked + 1;
+        _opcomsChecked = _opcomsChecked + 1;
 
-            // Bidirectional check: both sets must be empty for an OPCOM
-            // to count as correctly wired.
-            //
-            //   _unmatched = OPCOM declares factions that NO synced
-            //                placement provides -> runtime "no groups"
-            //                error.
-            //   _orphaned  = synced placement provides factions the
-            //                OPCOM doesn't declare -> wasted sync; the
-            //                mission-maker probably meant to sync that
-            //                placement to a different OPCOM.
-            //
-            // Either condition alone is worth warning about.
-            private _unmatched = _opcomFactions select { !(_x in _availableFactions) };
-            private _orphaned  = _availableFactions select { !(_x in _opcomFactions) };
+        // Global profile-source check: does each of this OPCOM's
+        // factions have at least one spawning placement somewhere in
+        // the mission? This matches the runtime getProfilesByFaction
+        // query at fnc_OPCOM.sqf:567-580.
+        //
+        // Only the "unmatched" direction is checked - there's no
+        // "orphaned" concept under profile-source semantics. A
+        // placement providing a faction that no OPCOM declares is a
+        // legitimate mission pattern (editor-placed units for ambient
+        // purposes, sys_profile-virtualized groups, or reserved for a
+        // future OPCOM) and is not a misconfiguration.
+        private _unmatched = _opcomFactions select { !(_x in _globalSourceFactions) };
 
-            // Track which OPCOM factions DID resolve (intersection with
-            // available) for the green OK toast listing.
-            {
-                if ((_x in _availableFactions) && {!(_x in _resolvedFactions)}) then {
-                    _resolvedFactions pushBack _x;
-                };
-            } forEach _opcomFactions;
-
-            if (count _unmatched > 0 || {count _orphaned > 0}) then {
-                // Truncate each list to first 5 entries in the toast so a
-                // wildly-misconfigured module doesn't spam a wall of
-                // text. Full lists still go to diag_log.
-                private _truncate = {
-                    params ["_list"];
-                    if (count _list > 5) then {
-                        (_list select [0, 5]) + [format ["... (+%1 more)", (count _list) - 5]]
-                    } else {
-                        _list
-                    }
-                };
-                private _parts = [];
-                if (count _unmatched > 0) then {
-                    _parts pushBack format [
-                        "wants [%1] but no synced placement provides these",
-                        ([_unmatched] call _truncate) joinString ", "
-                    ];
-                };
-                if (count _orphaned > 0) then {
-                    _parts pushBack format [
-                        "has synced placement(s) providing [%1] that this OPCOM doesn't declare in its Factions",
-                        ([_orphaned] call _truncate) joinString ", "
-                    ];
-                };
-                private _msg = format [
-                    "ALiVE: AI Commander '%1' %2. Fix by adjusting the Factions multi-select or the synced placement faction fields to align.",
-                    _name,
-                    _parts joinString "; and "
-                ];
-                // BIS_fnc_3DENNotification - 3DEN-native toast top-middle.
-                // systemChat is NOT used - it's silently discarded in the
-                // 3DEN editor (chat overlay inactive).
-                //
-                // 60-second duration: mismatch messages can be long (faction
-                // lists, combined unmatched+orphaned clauses) and the
-                // mission-maker needs time to read the full text and the
-                // suggested fix before the toast fades. Previous 20s was
-                // long enough to notice but often not long enough to fully
-                // read and act.
-                // type 1 = Red warning, duration 60 seconds.
-                [_msg, 1, 60] call BIS_fnc_3DENNotification;
-                diag_log format [
-                    "ALiVE 3DEN faction-sync check: AI Commander '%1' unmatched=[%2] orphaned=[%3] available=[%4]",
-                    _name,
-                    _unmatched joinString ", ",
-                    _orphaned joinString ", ",
-                    _availableFactions joinString ", "
-                ];
-                _warnings = _warnings + 1;
+        // Track which OPCOM factions DID have a source (for the
+        // green OK toast listing).
+        {
+            if ((_x in _globalSourceFactions) && {!(_x in _resolvedFactions)}) then {
+                _resolvedFactions pushBack _x;
             };
+        } forEach _opcomFactions;
+
+        if (count _unmatched > 0) then {
+            // Truncate to first 5 entries in the toast so a wildly-
+            // misconfigured module doesn't spam a wall of text. Full
+            // list still goes to diag_log.
+            private _truncated = if (count _unmatched > 5) then {
+                (_unmatched select [0, 5]) + [format ["... (+%1 more)", (count _unmatched) - 5]]
+            } else {
+                _unmatched
+            };
+            private _msg = format [
+                "ALiVE: AI Commander '%1' has faction(s) [%2] with no matching profile-spawning placement in the mission. At runtime this Commander will fail with 'no groups for faction' and refuse to run. Fix by placing a Mil Placement (or similar) module with a matching faction in Place Units mode, or change the Commander's Factions to match an existing placement.",
+                _name,
+                _truncated joinString ", "
+            ];
+            // BIS_fnc_3DENNotification - 3DEN-native toast top-middle.
+            // systemChat is NOT used - silently discarded in 3DEN
+            // (chat overlay inactive).
+            //
+            // 60-second duration: message is long (lists factions plus
+            // two-part fix guidance) and the mission-maker needs time
+            // to read and act before the toast fades.
+            // type 1 = Red warning, duration 60 seconds.
+            [_msg, 1, 60] call BIS_fnc_3DENNotification;
+            diag_log format [
+                "ALiVE 3DEN faction-source check: AI Commander '%1' unmatched=[%2] globalSources=[%3]",
+                _name,
+                _unmatched joinString ", ",
+                _globalSourceFactions joinString ", "
+            ];
+            _warnings = _warnings + 1;
         };
     } forEach _opcomsToValidate;
 
-    // One-line "all clear" log so mission-makers + debug builds see the
-    // validator actually ran.
+    // One-line "all clear" log so mission-makers + debug builds see
+    // the validator actually ran.
     if (_warnings == 0) then {
-        diag_log format ["ALiVE 3DEN faction-sync check: OK (checked=%1)", _opcomsChecked];
+        diag_log format ["ALiVE 3DEN faction-source check: OK (checked=%1 totalPlacements=%2)", _opcomsChecked, _totalPlacements];
 
-        // Positive confirmation toast only on sync trigger AND only if
-        // at least one OPCOM actually got through the pre-sync gate.
-        // Otherwise a desync action (which also fires OnConnectingEnd)
-        // with 0 checked OPCOMs would false-positive as "all OK".
-        // Attribute-edit and mission-preview triggers also skip the
-        // green signal to avoid drowning the editor in green toasts.
+        // Positive confirmation toast only on sync/attr triggers AND
+        // only if at least one OPCOM actually got past the mission-
+        // has-placements gate. preview trigger skips green because
+        // the user is about to see the mission run anyway. 0.5s
+        // debounce collapses per-attribute event bursts into one
+        // toast.
         //
         // MESSAGE TEXT: no `<` or `>` anywhere - BIS_fnc_3DENNotification
         // interprets message content as XML and truncates at the first
-        // `<`. "ALiVE: OPCOM to placement ..." not "ALiVE: OPCOM <->
-        // placement ...".
-        // Positive green toast fires on either "sync" OR "attr" triggers:
-        //   sync - user drew a sync connection and everything resolves
-        //   attr - user closed an attribute dialog (OPCOM or placement
-        //          module OK-clicked) and everything now resolves
-        // Skipped for "preview" trigger because the user is about to see
-        // the mission run anyway. 0.5s debounce collapses the per-
-        // attribute event burst (one OPCOM Save -> ~16 attr events)
-        // into one toast.
+        // `<`. Use "to" not `<->`, parentheses not angle brackets.
         if ((_trigger in ["sync", "attr"]) && {_opcomsChecked > 0}) then {
             private _factionList = if (count _resolvedFactions > 0) then {
                 _resolvedFactions joinString ", "
@@ -329,7 +323,7 @@ ALIVE_edenFactionValidatorPending = [_trigger, _scope] spawn {
                 "(none resolved)"
             };
             private _okMsg = format [
-                "ALiVE: Sync OK. %1 AI Commander(s) resolve to faction(s) [%2] via synced placement modules.",
+                "ALiVE: AI Commander setup OK. %1 Commander(s) have profile sources for their configured faction(s) [%2].",
                 _opcomsChecked,
                 _factionList
             ];
