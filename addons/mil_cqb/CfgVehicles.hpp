@@ -261,10 +261,25 @@ class CfgVehicles {
                 class ModuleDescription
                 {
                     description[] = {"$STR_ALIVE_CQB_COMMENT","","$STR_ALIVE_CQB_USAGE"};
-                    sync[] = {"ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement"};
+                    // Added ALiVE_mil_OPCOM (CQB reads synced OPCOM at
+                    // fnc_CQB.sqf:304 to borrow the OPCOM's faction list when
+                    // its own faction is unset) and ALiVE_mil_placement_custom
+                    // (symmetric with placement_custom.sync[] which already
+                    // declares CQB). ALiVE_mil_placement_spe deliberately
+                    // omitted - fixed-position placement module not intended
+                    // to be commanded by CQB.
+                    sync[] = {
+                        "ALiVE_civ_placement",
+                        "ALiVE_civ_placement_custom",
+                        "ALiVE_mil_placement",
+                        "ALiVE_mil_placement_custom",
+                        "ALiVE_mil_OPCOM"
+                    };
                     class ALiVE_civ_placement { description[] = {"$STR_ALIVE_CP_COMMENT","","$STR_ALIVE_CP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                     class ALiVE_civ_placement_custom { description[] = {"$STR_ALIVE_CPC_COMMENT","","$STR_ALIVE_CPC_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                     class ALiVE_mil_placement { description[] = {"$STR_ALIVE_MP_COMMENT","","$STR_ALIVE_MP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_placement_custom { description[] = {"$STR_ALIVE_CMP_COMMENT","","$STR_ALIVE_CMP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                 };
         };
 };
