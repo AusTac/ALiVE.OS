@@ -53,11 +53,17 @@ class Cfg3DEN
         };
 
         class EditMulti3; // Forward declaration of native A3 multiline edit control
+        class EditMulti5; // Forward declaration of native A3 5-line multiline edit control
 
         // Multiline SQF code input — used for onEachSpawn hook fields across all placement modules.
-        // Inherits the native EditMulti3 control directly.
-        // A fully custom taller variant can be revisited once geometry is resolved.
-        class ALiVE_EditMultilineSQF: EditMulti3
+        // Inherits the native EditMulti5 control (5 visible rows) rather than EditMulti3.
+        // The 3-line variant was causing mission-makers to perceive the field as broken:
+        // typing past line 3 scrolls cursor + content off-screen invisibly (no visible
+        // scrollbar on BI Edit controls), and the lack of visual feedback reads as "input
+        // is being lost". 5 visible rows makes it obvious input is being accepted; for the
+        // rare script that exceeds 5 lines, the edit still accepts input via keyboard
+        // navigation within its own buffer.
+        class ALiVE_EditMultilineSQF: EditMulti5
         {
         };
 
