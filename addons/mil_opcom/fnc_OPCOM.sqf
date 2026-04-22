@@ -352,19 +352,38 @@ switch(_operation) do {
                     } else {
                         [_handler, "name",_customName] call ALiVE_fnc_HashSet;
 					};
-                    if (["ALiVE_mil_C2ISTAR"] call ALIVE_fnc_isModuleAvailable) then {	
-                    	  {
-                    	  	if (typeof _x == "ALiVE_mil_C2ISTAR") then {
-	                          waituntil {_x getVariable ["startupComplete",false]};
-	                        	private _opcomIntelSides = [ALiVE_mil_C2ISTAR,"opcomIntelSides"] call ALiVE_fnc_C2ISTAR;
-		                        if (_side in _opcomIntelSides) then {
-		                            private _G2 = [nil,"create", [_handler]] call ALiVE_fnc_G2;
-		                            [_G2,"start"] call ALiVE_fnc_G2;
-
-		                            [_handler,"G2", _G2] call ALiVE_fnc_hashSet;
-		                        }; 
-												  };
-												} foreach (synchronizedObjects _logic);
+                    if (["ALiVE_mil_C2ISTAR"] call ALIVE_fnc_isModuleAvailable) then {
+                        // G2 intel pipeline setup for each synced C2ISTAR.
+                        // Wrapped in a spawn because the waituntil on the
+                        // C2ISTAR's startupComplete flag otherwise blocks
+                        // this OPCOM's init: C2ISTAR's own init can take
+                        // ~14 s (player-side resolution + static data
+                        // loading), and holding OPCOM init open that long
+                        // locks the module init phase. Latent bug -
+                        // previously masked because the C2ISTAR USAGE text
+                        // told mission-makers never to sync it, so the
+                        // foreach saw an empty list. Now that the USAGE
+                        // text recommends syncing (per the issue that
+                        // surfaced this), the wait is actually reached.
+                        // Asynchronous G2 creation is safe: OPCOM's init
+                        // doesn't consume the G2 reference; it's only used
+                        // later by the "listen" / spotrep paths which no-op
+                        // while G2 is nil (_G2 getVariable checks handle
+                        // absence gracefully).
+                        [_logic, _handler, _side] spawn {
+                            params ["_logic", "_handler", "_side"];
+                            {
+                                if (typeof _x == "ALiVE_mil_C2ISTAR") then {
+                                    waituntil {_x getVariable ["startupComplete",false]};
+                                    private _opcomIntelSides = [ALiVE_mil_C2ISTAR,"opcomIntelSides"] call ALiVE_fnc_C2ISTAR;
+                                    if (_side in _opcomIntelSides) then {
+                                        private _G2 = [nil,"create", [_handler]] call ALiVE_fnc_G2;
+                                        [_G2,"start"] call ALiVE_fnc_G2;
+                                        [_handler,"G2", _G2] call ALiVE_fnc_hashSet;
+                                    };
+                                };
+                            } foreach (synchronizedObjects _logic);
+                        };
                     };
 
                     //Spread Intel Information for this OPCOMs side
