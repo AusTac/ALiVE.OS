@@ -316,6 +316,29 @@ switch(_operation) do {
                     [_handler, "roadblocks",_roadblocks] call ALiVE_fnc_HashSet;
                     [_handler, "friendlyDisableMode",_friendlyDisableMode] call ALiVE_fnc_HashSet;
 
+                    // Phase 2.2 of issue #697: periodic proximity scan lets
+                    // friendly AI automatically disable this OPCOM's
+                    // asymmetric installations (IED factory / Recruitment HQ
+                    // / Weapons depot) when friendly-side units are present
+                    // within ~150 m. Only starts for asymmetric OPCOMs whose
+                    // friendlyDisableMode includes "proximity". Loop self-
+                    // terminates when the OPCOM's module logic is deleted -
+                    // the dispose path at fnc_OPCOM.sqf "dispose" case calls
+                    // deleteVehicle _module, so `isNull _module` becomes
+                    // true on the next wake and the loop breaks.
+                    if (_type == "asymmetric" && {_friendlyDisableMode in ["proximity", "both"]}) then {
+                        [_handler] spawn {
+                            params ["_handler"];
+                            private _PROX_INTERVAL = 30; // seconds between scans
+                            while {true} do {
+                                sleep _PROX_INTERVAL;
+                                private _module = [_handler, "module", objNull] call ALiVE_fnc_HashGet;
+                                if (isNull _module) exitWith {};
+                                [_handler] call ALIVE_fnc_OPCOMproximityDisableInstallations;
+                            };
+                        };
+                    };
+
                     [_handler,"pendingorders", []] call ALiVE_fnc_HashSet;
 
                     if (isNil "_customName" || _customName == "") then {

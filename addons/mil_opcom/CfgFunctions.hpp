@@ -75,7 +75,12 @@ class cfgFunctions {
                                 description = "decrement StartForceStrength of targeted side of OPCOM_INSTANCES";
                                 file = "\x\alive\addons\mil_opcom\fnc_OPCOMdecrementStartForceStrength.sqf";
                                 RECOMPILE;
-                        };     
+                        };
+                        class OPCOMproximityDisableInstallations {
+                                description = "Phase 2.2 #697: friendly AI disables enemy asymmetric installations when inside the proximity radius";
+                                file = "\x\alive\addons\mil_opcom\fnc_OPCOMproximityDisableInstallations.sqf";
+                                RECOMPILE;
+                        };
                                               
                 };
         };
