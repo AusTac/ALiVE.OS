@@ -109,34 +109,36 @@ switch(_operation) do {
                 private _brush = _x get "brush";
                 private _path = _x get "path";
 
-                deleteMarkerLocal _id;
-                private _marker = createMarkerLocal [_id, _position];
-                _marker setMarkerShapeLocal _shape;
+                if (!(isnil "_id") && {!(isnil "_position")} && {!(isnil "_shape")} && {_position isEqualType []} && {count _position >= 2}) then {
+                    deleteMarkerLocal _id;
+                    private _marker = createMarkerLocal [_id, _position];
+                    _marker setMarkerShapeLocal _shape;
 
-                if !(isnil "_color") then {
-                    _marker setMarkerColorLocal _color;
-                };
-                if !(isnil "_alpha") then {
-                    _marker setMarkerAlphaLocal _alpha;
-                };
-                if !(isnil "_type") then {
-                    _marker setMarkerTypeLocal _type;
-                };
-                if !(isnil "_size") then {
-                    _marker setMarkerSizeLocal _size;
-                };
-                if !(isnil "_dir") then {
-                    _marker setMarkerDirLocal _dir;
-                };
-                if !(isnil "_text") then {
-                    _marker setMarkerTextLocal _text;
-                };
-                if !(isnil "_brush") then {
-                    _marker setMarkerBrushLocal _brush;
-                };
-                if !(isnil "_path") then {
-                    _marker setMarkerPolylineLocal _path;
-                    _marker setMarkerShadowLocal false;
+                    if !(isnil "_color") then {
+                        _marker setMarkerColorLocal _color;
+                    };
+                    if !(isnil "_alpha") then {
+                        _marker setMarkerAlphaLocal _alpha;
+                    };
+                    if !(isnil "_type") then {
+                        _marker setMarkerTypeLocal _type;
+                    };
+                    if !(isnil "_size") then {
+                        _marker setMarkerSizeLocal _size;
+                    };
+                    if !(isnil "_dir") then {
+                        _marker setMarkerDirLocal _dir;
+                    };
+                    if !(isnil "_text") then {
+                        _marker setMarkerTextLocal _text;
+                    };
+                    if !(isnil "_brush") then {
+                        _marker setMarkerBrushLocal _brush;
+                    };
+                    if !(isnil "_path") then {
+                        _marker setMarkerPolylineLocal _path;
+                        _marker setMarkerShadowLocal false;
+                    };
                 };
             } foreach _args;
         };
@@ -674,10 +676,15 @@ switch(_operation) do {
                     // doesn't overlap the strategic cluster / opcom labels
                     // that also render at _center (see ALiVE_fnc_debugMarkerOffset).
                     _m = format[MTEMPLATE, format["%1_type", _objectiveID]];
+                    private _typeMarkerPosition = if (isNil "ALiVE_fnc_debugMarkerOffset") then {
+                        _center getPos [25, 90]
+                    } else {
+                        ["analysis.live", _center] call ALiVE_fnc_debugMarkerOffset
+                    };
                     _markers pushback _m;
                     _markerData pushback (createHashMapFromArray [
                         ["id", _m],
-                        ["position", ["analysis.live", _center] call ALiVE_fnc_debugMarkerOffset],
+                        ["position", _typeMarkerPosition],
                         ["shape", "ICON"],
                         ["size", [0.5, 0.5]],
                         ["type", _icon],

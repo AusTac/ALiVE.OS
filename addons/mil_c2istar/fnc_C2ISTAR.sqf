@@ -1094,7 +1094,8 @@ switch(_operation) do {
 
             // Build faction list — filtered to ALiVE mission factions when module param is set
             _factionsDataSource = [] call ALiVE_fnc_getFactionsDataSource;
-            if (missionNamespace getVariable ["ALIVE_c2istar_filterEnemyFactions", true]) then {
+            private _filterEnemyFactions = missionNamespace getVariable ["ALIVE_c2istar_filterEnemyFactions", true];
+            if (_filterEnemyFactions && {!isNil "ALiVE_fnc_getAliveMissionFactionsDataSource"}) then {
                 private _missionFactionsDataSource = [] call ALiVE_fnc_getAliveMissionFactionsDataSource;
                 // If OPCOM has not yet registered any factions, keep the full list fallback.
                 if (
@@ -1105,6 +1106,10 @@ switch(_operation) do {
                     _factionsDataSource = _missionFactionsDataSource;
                 } else {
                     ["C2ISTAR - filterEnemyFactions: no OPCOM factions found yet, falling back to full faction list"] call ALiVE_fnc_dump;
+                };
+            } else {
+                if (_filterEnemyFactions) then {
+                    ["C2ISTAR - filterEnemyFactions: mission faction datasource unavailable, falling back to full faction list"] call ALiVE_fnc_dump;
                 };
             };
             [_taskingState,"generateFactionOptions",_factionsDataSource select 0] call ALIVE_fnc_hashSet;

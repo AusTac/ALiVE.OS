@@ -124,7 +124,12 @@ _createMarkers = {
                 // Offset south so the sector-ID label doesn't overlap the
                 // strategic cluster / opcom debug labels at the same centre
                 // (see ALiVE_fnc_debugMarkerOffset registry).
-                _m = createMarker [format[MTEMPLATE, format["l%1_%2",_gridID,_id]], ["analysis.sector", _position] call ALiVE_fnc_debugMarkerOffset];
+                private _sectorLabelPosition = if (isNil "ALiVE_fnc_debugMarkerOffset") then {
+                    _position getPos [25, 180]
+                } else {
+                    ["analysis.sector", _position] call ALiVE_fnc_debugMarkerOffset
+                };
+                _m = createMarker [format[MTEMPLATE, format["l%1_%2",_gridID,_id]], _sectorLabelPosition];
                 _m setMarkerShape "ICON";
                 _m setMarkerSize [0.5, 0.5];
                 _m setMarkerType "mil_dot";
