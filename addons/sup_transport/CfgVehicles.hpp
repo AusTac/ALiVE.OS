@@ -38,6 +38,30 @@ class CfgVehicles {
                                 };
                         };
                         class transport_containers : Edit { property = "ALiVE_sup_transport_transport_containers"; displayName = "$STR_ALIVE_TRANSPORT_CONTAINERS"; tooltip = "$STR_ALIVE_TRANSPORT_CONTAINERS_DESC"; defaultValue = """0"""; typeName = "NUMBER"; };
+                        class transport_logistics : Combo
+                        {
+                                property = "ALiVE_sup_transport_transport_logistics";
+                                displayName = "$STR_ALIVE_TRANSPORT_LOGISTICS";
+                                tooltip = "$STR_ALIVE_TRANSPORT_LOGISTICS_DESC";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                    class No { name = "No"; value = 0; default = 1; };
+                                    class Yes { name = "Yes"; value = 1; };
+                                };
+                        };
+                        class transport_logisticssource : Combo
+                        {
+                                property = "ALiVE_sup_transport_transport_logisticssource";
+                                displayName = "$STR_ALIVE_TRANSPORT_LOGISTICSSOURCE";
+                                tooltip = "$STR_ALIVE_TRANSPORT_LOGISTICSSOURCE_DESC";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                    class Static { name = "Static (LOGCOM Base)"; value = 0; default = 1; };
+                                    class Dynamic { name = "Dynamic (Nearest Objective)"; value = 1; };
+                                };
+                        };
                         class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription

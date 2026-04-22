@@ -14,6 +14,11 @@ _respawn = _this select 7;
 _code = _this select 8;
 _slingloading = _this select 9;
 
+// Snapshot Military Logistics Simulation settings off the old vehicle before it's replaced
+// so the new Transport asset stays registered with the resupply watchdog.
+private _oldLogisticsEnabled = _veh getVariable ["ALIVE_logistics_enabled", false];
+private _oldLogisticsSource = _veh getVariable ["ALIVE_logistics_source", 0];
+
 //define defaults
 
 _faction = gettext(configfile >> "CfgVehicles" >> _type >> "faction");
@@ -95,6 +100,10 @@ if (count _veh == 0) then {
     waitUntil {(_veh getVariable ["ALIVE_CombatSupport", false])};
     _grp = (group (driver _veh));
 };
+
+// Restore Military Logistics Simulation settings on the respawned Transport asset.
+_veh setVariable ["ALIVE_logistics_enabled", _oldLogisticsEnabled, true];
+_veh setVariable ["ALIVE_logistics_source", _oldLogisticsSource, true];
 
 _ffvTurrets = [_type,true,true,false,true] call ALIVE_fnc_configGetVehicleTurretPositions;
 _gunnerTurrets = [_type,false,true,true,true] call ALIVE_fnc_configGetVehicleTurretPositions;

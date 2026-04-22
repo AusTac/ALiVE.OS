@@ -34,6 +34,30 @@ class CfgVehicles {
                         class artillery_atmine : Edit { property = "ALiVE_sup_artillery_artillery_atmine"; displayName = "$STR_ALIVE_ARTILLERY_ATMINE"; tooltip = "$STR_ALIVE_ARTILLERY_ATMINE_DESC"; defaultValue = """30"""; };
                         class artillery_rockets : Edit { property = "ALiVE_sup_artillery_artillery_rockets"; displayName = "$STR_ALIVE_ARTILLERY_ROCKETS"; tooltip = "$STR_ALIVE_ARTILLERY_ROCKETS_DESC"; defaultValue = """16"""; };
                         class artillery_code : Edit { property = "ALiVE_sup_artillery_artillery_code"; displayName = "$STR_ALIVE_ARTILLERY_CODE"; tooltip = "$STR_ALIVE_ARTILLERY_CODE_DESC"; defaultValue = """"""; };
+                        class artillery_logistics : Combo
+                        {
+                                property = "ALiVE_sup_artillery_artillery_logistics";
+                                displayName = "$STR_ALIVE_ARTILLERY_LOGISTICS";
+                                tooltip = "$STR_ALIVE_ARTILLERY_LOGISTICS_DESC";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                    class No { name = "No"; value = 0; default = 1; };
+                                    class Yes { name = "Yes"; value = 1; };
+                                };
+                        };
+                        class artillery_logisticssource : Combo
+                        {
+                                property = "ALiVE_sup_artillery_artillery_logisticssource";
+                                displayName = "$STR_ALIVE_ARTILLERY_LOGISTICSSOURCE";
+                                tooltip = "$STR_ALIVE_ARTILLERY_LOGISTICSSOURCE_DESC";
+                                defaultValue = """0""";
+                                class Values
+                                {
+                                    class Static { name = "Static (LOGCOM Base)"; value = 0; default = 1; };
+                                    class Dynamic { name = "Dynamic (Nearest Objective)"; value = 1; };
+                                };
+                        };
                         class ModuleDescription : ModuleDescription {};
                 };
                 class ModuleDescription

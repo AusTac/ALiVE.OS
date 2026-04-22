@@ -46,6 +46,16 @@ class cfgFunctions {
                                 file = "\x\alive\addons\sup_combatsupport\scripts\NEO_radio\functions\misc\fn_supportRemove.sqf";
                                 RECOMPILE;
                         };
+                        class resupplyWatchdog {
+                                description = "Monitors support assets and dispatches LOGCOM resupply when thresholds are reached";
+                                file = "\x\alive\addons\sup_combatsupport\fnc_resupplyWatchdog.sqf";
+                                RECOMPILE;
+                        };
+                        class resupplyService {
+                                description = "Performs rearm, refuel, and repair on a support asset";
+                                file = "\x\alive\addons\sup_combatsupport\fnc_resupplyService.sqf";
+                                RECOMPILE;
+                        };
                 };
         };
 };

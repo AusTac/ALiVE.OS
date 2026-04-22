@@ -117,7 +117,48 @@ _approxTime = "unknown";
     if (_speed > 0 && {(_pos select 2) > 5}) then {_approxTime = round((_distance/((_speed)/3.6))/60)};
     if (_speed > 0 && {(_pos select 2) < 5}) then {_approxTime = "taking off"};
 
-_amcas = format ["%1 this is %2! Current location: %3, ETA: %4, AMCAS: %5, Fuel: %6",_callSignPlayer,_callsign,_assetpos,_approxTime,_damageamcas,_fuelamcas];
+// Military Logistics Simulation status.
+// Resupply state lives on the primary vehicle (single source of truth), not the leader / NEO asset,
+// because that's the object LOGCOM updates on dispatch completion. Resolve via ALIVE_resupply_primaryVehicle
+// and fall back to _asset so Transport/CAS (where _asset IS the vehicle) still works unchanged.
+private _stateHolder = _asset getVariable ["ALIVE_resupply_primaryVehicle", _asset];
+private _logisticsStatus = "";
+if (_asset getVariable ["ALIVE_logistics_enabled", false]) then {
+    private _resupplyState = _stateHolder getVariable ["ALIVE_resupply_state", "none"];
+    switch (_resupplyState) do {
+        case "none": {
+            _logisticsStatus = "Logistics: Ready";
+        };
+        case "dispatched";
+        case "enroute": {
+            private _eta = _stateHolder getVariable ["ALIVE_resupply_eta", 0];
+            private _startTime = _stateHolder getVariable ["ALIVE_resupply_startTime", serverTime];
+            private _remaining = (_eta - (serverTime - _startTime)) max 0;
+            private _mins = floor (_remaining / 60);
+            private _secs = floor (_remaining mod 60);
+            private _secsStr = if (_secs < 10) then {format ["0%1", _secs]} else {str _secs};
+            _logisticsStatus = format ["Logistics: Resupply en route (ETA %1:%2)", _mins, _secsStr];
+        };
+        case "servicing": {
+            _logisticsStatus = "Logistics: Servicing...";
+        };
+        case "complete": {
+            _logisticsStatus = "Logistics: Complete";
+        };
+        case "failed": {
+            _logisticsStatus = "Logistics: Failed - retrying...";
+        };
+    };
+};
+
+private _logSuffix = if (_logisticsStatus != "") then {format [", %1", _logisticsStatus]} else {""};
+_amcas = format ["%1 this is %2! Current location: %3, ETA: %4, AMCAS: %5, Fuel: %6%7",_callSignPlayer,_callsign,_assetpos,_approxTime,_damageamcas,_fuelamcas,_logSuffix];
+
+// Show resupply vehicle marker for currently selected asset.
+private _resupplyVeh = _stateHolder getVariable ["ALIVE_resupply_vehicle", objNull];
+if (!isNull _resupplyVeh && {alive _resupplyVeh}) then {
+    [_resupplyVeh, format ["%1 Resupply", _callsign], "TRANSPORT"] call NEO_fnc_radioCreateMarker;
+};
 
 sleep 6;
 

@@ -2392,7 +2392,7 @@ switch(_operation) do {
     case "listen": {
         private["_listenerID"];
 
-        _listenerID = [ALIVE_eventLog, "addListener",[_logic, ["LOGCOM_REQUEST","LOGCOM_STATUS_REQUEST","LOGCOM_CANCEL_REQUEST","OPCOM_CAPTURE"]]] call ALIVE_fnc_eventLog;
+        _listenerID = [ALIVE_eventLog, "addListener",[_logic, ["LOGCOM_REQUEST","LOGCOM_RESUPPLY","LOGCOM_STATUS_REQUEST","LOGCOM_CANCEL_REQUEST","OPCOM_CAPTURE"]]] call ALIVE_fnc_eventLog;
         _logic setVariable ["listenerID", _listenerID];
     };
 
@@ -2498,7 +2498,606 @@ switch(_operation) do {
 		            };
 		        	};
 		        };
-        }; 
+        };
+    };
+
+    // =========================================================================
+    // LOGCOM_RESUPPLY — Support Asset Resupply Dispatch
+    // Dispatches a resupply truck (or heli fallback) to a combat support asset
+    // that has triggered ammo/fuel/damage thresholds via the resupply watchdog.
+    // =========================================================================
+    #define RESUPPLY_MAX_RETRIES 3
+    #define RESUPPLY_SERVICE_DELAY 30
+    #define RESUPPLY_RTB_ARRIVE_RADIUS 75
+    #define RESUPPLY_RTB_SPEED_KPH 45
+    #define RESUPPLY_RTB_TIMEOUT_MULTIPLIER 2
+    case "LOGCOM_RESUPPLY": {
+
+        if (typeName _args == "ARRAY") then {
+
+            private _event = _args;
+            private _eventData = [_event, "data"] call ALIVE_fnc_hashGet;
+
+            // Event data: [position, sideText, type, callsign, source, needs, vehicleRef]
+            private _targetPos = _eventData select 0;
+            private _eventSide = _eventData select 1;
+            private _assetType = _eventData select 2;
+            private _callsign = _eventData select 3;
+            private _sourceMode = _eventData select 4;  // 0 = Static, 1 = Dynamic
+            private _needs = _eventData select 5;       // [needsAmmo, needsFuel, needsRepair]
+            private _targetVeh = _eventData select 6;
+
+            // Validate target is still alive.
+            if (isNull _targetVeh || {!alive _targetVeh}) exitWith {
+                ["LOGCOM_RESUPPLY: Target asset %1 no longer exists, aborting", _callsign] call ALiVE_fnc_dump;
+                private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+            };
+
+            // Multi-ML routing: every ML module receives every LOGCOM_RESUPPLY event.
+            // Only the module matching this event's side should handle it. Silent exit for others
+            // (matches upstream LOGCOM_REQUEST routing; no activeCount touch - the owning module
+            // will handle the accounting).
+            private _moduleSide = [_logic, "side"] call MAINCLASS;
+            if (_moduleSide != _eventSide) exitWith {};
+
+            // Determine source position.
+            private _sourcePos = getPos _logic;  // Default: Static = LOGCOM module position.
+
+            if (_sourceMode == 1) then {
+                // Dynamic: collect every friendly-held defend/reserve objective, sort by distance
+                // to the target, roll for a set size of 2 or 3, then pick at random from that set.
+                // Two layers of variance (depth of the supply route + pick within it) so the source
+                // isn't trivially predictable and it simulates drawing from a route rather than
+                // always the single nearest stash.
+                private _candidates = [];  // [[dist, pos], ...]
+                {
+                    private _handler = _x getVariable ["handler", objNull];
+                    if (!isNull _handler) then {
+                        private _opcomSide = [_handler, "side"] call ALiVE_fnc_HashGet;
+                        if (_opcomSide == _eventSide) then {
+                            private _objectives = [_handler, "objectives", []] call ALiVE_fnc_HashGet;
+                            {
+                                private _objState = [_x, "opcom_state", "none"] call ALiVE_fnc_HashGet;
+                                if (_objState in ["defend", "reserve"]) then {
+                                    private _objPos = [_x, "center"] call ALiVE_fnc_HashGet;
+                                    _candidates pushBack [_objPos distance2D _targetPos, _objPos];
+                                };
+                            } forEach _objectives;
+                        };
+                    };
+                } forEach (missionNamespace getVariable ["OPCOM_instances", []]);
+
+                if (count _candidates > 0) then {
+                    _candidates sort true;  // ascending by distance (first element)
+                    private _setSize = 2 + floor random 2;  // 2 or 3
+                    _setSize = _setSize min (count _candidates);
+                    private _topN = _candidates select [0, _setSize];
+                    _sourcePos = (selectRandom _topN) select 1;
+                };
+                // Otherwise _sourcePos stays at the LOGCOM base - no friendly objectives to draw from.
+            };
+
+            // --- Force pool check & deduct ---
+            // Resupply dispatch consumes from the same ALIVE_globalForcePool used by OPCOM
+            // reinforcements. Cost scales with pool size (2%) with a floor of 1 and a cap
+            // of 10 so low pools don't get hollowed out by a single resupply and huge pools
+            // still feel a meaningful drain. Deducted ONCE here before branching into any
+            // dispatch path (truck / heli / timer) so the cost is for the supplies
+            // themselves, not tied to the delivery vehicle type.
+            private _factions = [_logic, "factions"] call MAINCLASS;
+            private _eventFaction = "";
+            {
+                if ((_x select 0) == _eventSide) exitWith { _eventFaction = (_x select 1) select 0; };
+            } forEach _factions;
+            if (_eventFaction == "" && {count _factions > 0}) then {
+                _eventFaction = (_factions select 0 select 1) select 0;
+            };
+
+            private _registryID = [_logic, "registryID"] call MAINCLASS;
+            private _forcePool = [ALIVE_globalForcePool, _eventFaction] call ALIVE_fnc_hashGet;
+            if (typeName _forcePool == "STRING") then { _forcePool = parseNumber _forcePool; };
+            if (typeName _forcePool != "SCALAR") then { _forcePool = 0; };
+
+            private _resupplyCost = 1 max (10 min (floor (_forcePool * 0.02)));
+
+            if (_forcePool < _resupplyCost) exitWith {
+                ["LOGCOM_RESUPPLY: Force pool exhausted for %1 (faction=%2 pool=%3 need=%4), deferring",
+                    _callsign, _eventFaction, _forcePool, _resupplyCost] call ALiVE_fnc_dump;
+                _targetVeh setVariable ["ALIVE_resupply_state", "failed", true];
+                _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+            };
+
+            // Deduct now. If the convoy is destroyed en route the units aren't credited back -
+            // supplies are lost, defend your supply lines.
+            _forcePool = _forcePool - _resupplyCost;
+            [ALIVE_MLGlobalRegistry, "updateGlobalForcePool", [_registryID, _forcePool]] call ALIVE_fnc_MLGlobalRegistry;
+            ["LOGCOM_RESUPPLY: Deducted %1 from %2 force pool for %3 (pool now %4)",
+                _resupplyCost, _eventFaction, _callsign, _forcePool] call ALiVE_fnc_dump;
+
+            private _distance = _sourcePos distance2D _targetPos;
+            private _resupplySpeedMPS = 45 / 3.6;  // 45 km/h in m/s.
+            private _timeout = (_distance / _resupplySpeedMPS) * 1.5;
+
+            // Check route for water obstacles (existing ML pattern).
+            private _waterBlocked = false;
+            private _routeDir = _sourcePos getDir _targetPos;
+            private _checkPos = +_sourcePos;
+            for "_step" from 0 to _distance step 50 do {
+                _checkPos = _checkPos getPos [50, _routeDir];
+                if (surfaceIsWater _checkPos) exitWith { _waterBlocked = true };
+            };
+
+            // Set ETA variables on target for sitrep display.
+            _targetVeh setVariable ["ALIVE_resupply_state", "enroute", true];
+            _targetVeh setVariable ["ALIVE_resupply_eta", _timeout, true];
+            _targetVeh setVariable ["ALIVE_resupply_startTime", serverTime, true];
+
+            if (!_waterBlocked) then {
+                // --- TRUCK DISPATCH ---
+                private _truckClass = switch (_eventSide) do {
+                    case "EAST": { "O_Truck_03_ammo_F" };
+                    case "WEST": { "B_Truck_01_ammo_F" };
+                    case "GUER": { "I_Truck_02_ammo_F" };
+                    default { "B_Truck_01_ammo_F" };
+                };
+
+                private _truck = createVehicle [_truckClass, _sourcePos, [], 10, "NONE"];
+                _truck setDir (_sourcePos getDir _targetPos);
+                createVehicleCrew _truck;
+                private _truckGrp = group (driver _truck);
+
+                // Assign waypoint to target position.
+                private _wp = _truckGrp addWaypoint [_targetPos, 50];
+                _wp setWaypointType "MOVE";
+                _wp setWaypointSpeed "FULL";
+                _wp setWaypointBehaviour "SAFE";
+
+                // Store reference on target vehicle for marker display.
+                _targetVeh setVariable ["ALIVE_resupply_vehicle", _truck, true];
+
+                ["LOGCOM_RESUPPLY: Truck %1 dispatched from %2 to %3 (%4), ETA %5s",
+                    _truckClass, _sourcePos, _callsign, _assetType, round _timeout] call ALiVE_fnc_dump;
+
+                // Spawn delivery monitor. Pass sourcePos so the truck can RTB after servicing.
+                [_truck, _targetVeh, _timeout, _callsign, _sourcePos] spawn {
+                    params ["_truck", "_targetVeh", "_timeout", "_callsign", "_sourcePos"];
+
+                    private _startTime = serverTime;
+
+                    while {true} do {
+                        // Protection: truck destroyed.
+                        if (!alive _truck) exitWith {
+                            ["LOGCOM_RESUPPLY: Truck destroyed en route to %1", _callsign] call ALiVE_fnc_dump;
+                            _targetVeh setVariable ["ALIVE_resupply_state", "failed", true];
+                            _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                            _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                            _targetVeh setVariable ["ALIVE_resupply_retries",
+                                (_targetVeh getVariable ["ALIVE_resupply_retries", 0]) + 1, true];
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                        };
+
+                        // Protection: target asset destroyed.
+                        if (isNull _targetVeh || {!alive _targetVeh}) exitWith {
+                            ["LOGCOM_RESUPPLY: Target %1 destroyed, aborting truck", _callsign] call ALiVE_fnc_dump;
+                            {deleteVehicle _x} forEach (crew _truck);
+                            deleteVehicle _truck;
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                        };
+
+                        // Protection: timeout expired.
+                        if (serverTime - _startTime > _timeout) exitWith {
+                            private _retries = _targetVeh getVariable ["ALIVE_resupply_retries", 0];
+                            if (_retries < RESUPPLY_MAX_RETRIES) then {
+                                ["LOGCOM_RESUPPLY: Truck timed out for %1 (attempt %2/%3), retrying",
+                                    _callsign, _retries + 1, RESUPPLY_MAX_RETRIES] call ALiVE_fnc_dump;
+                                {deleteVehicle _x} forEach (crew _truck);
+                                deleteVehicle _truck;
+                                _targetVeh setVariable ["ALIVE_resupply_state", "failed", true];
+                                _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                                _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                                _targetVeh setVariable ["ALIVE_resupply_retries", _retries + 1, true];
+                            } else {
+                                ["LOGCOM_RESUPPLY: Max retries reached for %1, force-servicing", _callsign] call ALiVE_fnc_dump;
+                                {deleteVehicle _x} forEach (crew _truck);
+                                deleteVehicle _truck;
+                                [_targetVeh] call ALIVE_fnc_resupplyService;
+                                _targetVeh setVariable ["ALIVE_resupply_state", "complete", true];
+                                _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                                _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                                _targetVeh setVariable ["ALIVE_resupply_retries", 0, true];
+                                _targetVeh setVariable ["ALIVE_resupply_lastDispatch", serverTime, true];
+                            };
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                        };
+
+                        // Success: truck within 100m of target.
+                        if (_truck distance _targetVeh < 100) exitWith {
+                            ["LOGCOM_RESUPPLY: Truck arrived at %1, servicing...", _callsign] call ALiVE_fnc_dump;
+                            _targetVeh setVariable ["ALIVE_resupply_state", "servicing", true];
+
+                            // Simulate service time.
+                            sleep RESUPPLY_SERVICE_DELAY;
+
+                            [_targetVeh] call ALIVE_fnc_resupplyService;
+
+                            _targetVeh setVariable ["ALIVE_resupply_state", "complete", true];
+                            _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                            _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                            _targetVeh setVariable ["ALIVE_resupply_lastDispatch", serverTime, true];
+                            _targetVeh setVariable ["ALIVE_resupply_retries", 0, true];
+
+                            ["LOGCOM_RESUPPLY: Service complete for %1, truck RTB to %2", _callsign, _sourcePos] call ALiVE_fnc_dump;
+
+                            // Decrement concurrent-dispatch counter now - the delivery leg is done.
+                            // RTB is fire-and-forget and shouldn't keep the asset marked busy.
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+
+                            // --- RTB ---
+                            // Clear any existing waypoints and route the truck back to its source.
+                            private _truckGrp = group (driver _truck);
+                            while {count waypoints _truckGrp > 0} do { deleteWaypoint [_truckGrp, 0] };
+                            private _rtbWp = _truckGrp addWaypoint [_sourcePos, 50];
+                            _rtbWp setWaypointType "MOVE";
+                            _rtbWp setWaypointSpeed "FULL";
+                            _rtbWp setWaypointBehaviour "SAFE";
+                            _truckGrp setCurrentWaypoint _rtbWp;
+
+                            // Monitor RTB - delete on arrival, or after a distance-scaled timeout
+                            // so a stuck / destroyed truck still gets cleaned up.
+                            private _rtbDistance = _truck distance _sourcePos;
+                            private _rtbTimeout = ((_rtbDistance / (RESUPPLY_RTB_SPEED_KPH / 3.6)) * RESUPPLY_RTB_TIMEOUT_MULTIPLIER) max 60;
+
+                            [_truck, _sourcePos, _callsign, _rtbTimeout] spawn {
+                                params ["_truck", "_sourcePos", "_callsign", "_rtbTimeout"];
+                                private _rtbStart = serverTime;
+                                while {
+                                    !isNull _truck
+                                    && {alive _truck}
+                                    && {_truck distance _sourcePos > RESUPPLY_RTB_ARRIVE_RADIUS}
+                                    && {serverTime - _rtbStart < _rtbTimeout}
+                                } do {
+                                    sleep 5;
+                                };
+                                if (!isNull _truck) then {
+                                    if (alive _truck && {_truck distance _sourcePos <= RESUPPLY_RTB_ARRIVE_RADIUS}) then {
+                                        ["LOGCOM_RESUPPLY: Truck RTB complete for %1, deleting", _callsign] call ALiVE_fnc_dump;
+                                    } else {
+                                        ["LOGCOM_RESUPPLY: Truck RTB timed out or destroyed for %1, cleaning up", _callsign] call ALiVE_fnc_dump;
+                                    };
+                                    {deleteVehicle _x} forEach (crew _truck);
+                                    deleteVehicle _truck;
+                                };
+                            };
+                        };
+
+                        // Update truck waypoint if target has moved (aircraft on ground).
+                        private _wp = waypoints (group (driver _truck));
+                        if (count _wp > 0) then {
+                            [(group (driver _truck)), 1] setWaypointPosition [getPos _targetVeh, 50];
+                        };
+
+                        sleep 10;
+                    };
+                };
+
+            } else {
+                // --- WATER BLOCKED: HELI SLINGLOAD DISPATCH ---
+                // Spawn a heli with a slingloaded supply crate, fly to the asset,
+                // descend and release crate, service on arrival, cleanup.
+                // Falls back to timer if no suitable heli class exists.
+
+                // Select heli and crate classes by side.
+                private _heliClass = "";
+                private _crateClass = "";
+                switch (_eventSide) do {
+                    case "WEST": {
+                        _heliClass = "B_Heli_Transport_03_F";
+                        _crateClass = "B_Slingload_01_Ammo_F";
+                    };
+                    case "EAST": {
+                        _heliClass = "O_Heli_Transport_04_F";
+                        _crateClass = "O_Slingload_01_Ammo_F";
+                    };
+                    case "GUER": {
+                        _heliClass = "I_Heli_Transport_02_F";
+                        _crateClass = "I_Slingload_01_Ammo_F";
+                    };
+                    default {
+                        _heliClass = "B_Heli_Transport_03_F";
+                        _crateClass = "B_Slingload_01_Ammo_F";
+                    };
+                };
+
+                // Validate heli class exists in config.
+                if (!isClass (configFile >> "CfgVehicles" >> _heliClass)) then {
+                    _heliClass = "";
+                };
+
+                if (_heliClass == "") then {
+                    // --- TIMER FALLBACK: no suitable heli available ---
+                    ["LOGCOM_RESUPPLY: No heli class available for %1, using timer fallback (ETA %2s)",
+                        _callsign, round _timeout] call ALiVE_fnc_dump;
+
+                    _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+
+                    [_targetVeh, _timeout, _callsign] spawn {
+                        params ["_targetVeh", "_timeout", "_callsign"];
+
+                        sleep _timeout;
+
+                        if (!isNull _targetVeh && {alive _targetVeh}) then {
+                            [_targetVeh] call ALIVE_fnc_resupplyService;
+                            _targetVeh setVariable ["ALIVE_resupply_state", "complete", true];
+                            ["LOGCOM_RESUPPLY: Timer fallback service complete for %1", _callsign] call ALiVE_fnc_dump;
+                        };
+
+                        _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                        _targetVeh setVariable ["ALIVE_resupply_lastDispatch", serverTime, true];
+                        _targetVeh setVariable ["ALIVE_resupply_retries", 0, true];
+                        private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                        missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                    };
+                } else {
+                    // --- HELI SLINGLOAD DISPATCH ---
+
+                    // Spawn heli at altitude above source position.
+                    private _spawnPos = +_sourcePos;
+                    _spawnPos set [2, PARADROP_HEIGHT];
+                    private _heli = createVehicle [_heliClass, _spawnPos, [], 0, "FLY"];
+                    _heli setDir (_sourcePos getDir _targetPos);
+                    _heli setPosASL [_spawnPos select 0, _spawnPos select 1, PARADROP_HEIGHT];
+                    _heli setVelocity [0, 0, 0];
+                    _heli flyInHeight PARADROP_HEIGHT;
+                    createVehicleCrew _heli;
+                    private _heliGrp = group (driver _heli);
+
+                    // Spawn supply crate and force-attach as slingload.
+                    private _crate = createVehicle [_crateClass, _sourcePos, [], 0, "CAN_COLLIDE"];
+                    _heli setSlingLoad _crate;
+
+                    // Store reference on target for marker display.
+                    _targetVeh setVariable ["ALIVE_resupply_vehicle", _heli, true];
+
+                    // Recalculate timeout for air travel (faster than truck).
+                    private _airSpeedMPS = 65 / 3.6;  // ~65 km/h slingloaded.
+                    private _heliTimeout = ((_distance / _airSpeedMPS) * 1.5) max SLINGLOAD_DROP_TIMEOUT;
+
+                    _targetVeh setVariable ["ALIVE_resupply_eta", _heliTimeout, true];
+                    _targetVeh setVariable ["ALIVE_resupply_startTime", serverTime, true];
+
+                    ["LOGCOM_RESUPPLY: Heli %1 dispatched with crate %2 to %3 (%4), ETA %5s",
+                        _heliClass, _crateClass, _callsign, _assetType, round _heliTimeout] call ALiVE_fnc_dump;
+
+                    // Spawn the slingload delivery monitor.
+                    [_heli, _crate, _targetVeh, _heliTimeout, _callsign, _targetPos, _sourcePos, _logic] spawn {
+                        params ["_heli", "_crate", "_targetVeh", "_timeout", "_callsign",
+                                "_targetPos", "_sourcePos", "_logic"];
+
+                        private _startTime = serverTime;
+                        private _phase = 0;  // 0=TRANSIT, 1=DESCENT, 2=RELEASE, 3=SERVICE
+                        private _dropPad = objNull;
+                        private _lastLandAtTime = 0;
+                        private _dropped = false;
+
+                        // --- Helper: cleanup and exit ---
+                        private _fnc_cleanup = {
+                            params ["_heli", "_crate", "_dropPad", "_targetVeh", "_failed"];
+
+                            if (!isNull _dropPad) then { deleteVehicle _dropPad };
+                            if (!isNull _crate && {alive _crate}) then { deleteVehicle _crate };
+
+                            if (_failed) then {
+                                _targetVeh setVariable ["ALIVE_resupply_state", "failed", true];
+                                _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                                _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                                _targetVeh setVariable ["ALIVE_resupply_retries",
+                                    (_targetVeh getVariable ["ALIVE_resupply_retries", 0]) + 1, true];
+                            };
+
+                            // Delete heli + crew.
+                            if (!isNull _heli) then {
+                                [{
+                                    params ["_h"];
+                                    if (!isNull _h && {alive _h}) then {
+                                        {deleteVehicle _x} forEach (crew _h);
+                                        deleteVehicle _h;
+                                    };
+                                }, [_heli], 10] call CBA_fnc_waitAndExecute;
+                            };
+
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                        };
+
+                        // --- Main monitor loop ---
+                        while {!_dropped} do {
+
+                            // Global guards (all phases).
+                            if (!alive _heli || {!canFire _heli}) exitWith {
+                                ["LOGCOM_RESUPPLY HELI: Heli destroyed/disabled en route to %1", _callsign] call ALiVE_fnc_dump;
+                                [_heli, _crate, _dropPad, _targetVeh, true] call _fnc_cleanup;
+                            };
+
+                            if (isNull _targetVeh || {!alive _targetVeh}) exitWith {
+                                ["LOGCOM_RESUPPLY HELI: Target %1 destroyed, aborting", _callsign] call ALiVE_fnc_dump;
+                                [_heli, _crate, _dropPad, _targetVeh, false] call _fnc_cleanup;
+                            };
+
+                            if (serverTime - _startTime > _timeout) exitWith {
+                                ["LOGCOM_RESUPPLY HELI: Timeout for %1, force-releasing", _callsign] call ALiVE_fnc_dump;
+
+                                // Force release with parachute if at altitude.
+                                private _slungObj = getSlingLoad _heli;
+                                if (!isNull _slungObj) then {
+                                    private _slungAGL = (getPosATL _slungObj) select 2;
+                                    if (_slungAGL > 5) then {
+                                        private _para = createVehicle ["B_Parachute_02_F", getPosATL _slungObj, [], 0, "FLY"];
+                                        _para setPosASL (getPosASL _slungObj);
+                                        _para setVelocity (velocity _heli);
+                                        _slungObj attachTo [_para, [0,0,0]];
+                                        [_para, _slungObj] spawn {
+                                            private _p = _this select 0; private _v = _this select 1;
+                                            waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                            detach _v; deleteVehicle _p;
+                                        };
+                                    };
+                                    _heli setSlingLoad objNull;
+                                };
+
+                                // Force service regardless.
+                                private _retries = _targetVeh getVariable ["ALIVE_resupply_retries", 0];
+                                if (_retries < 3) then {
+                                    [_heli, _crate, _dropPad, _targetVeh, true] call _fnc_cleanup;
+                                } else {
+                                    [_targetVeh] call ALIVE_fnc_resupplyService;
+                                    _targetVeh setVariable ["ALIVE_resupply_state", "complete", true];
+                                    _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                                    _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                                    _targetVeh setVariable ["ALIVE_resupply_retries", 0, true];
+                                    _targetVeh setVariable ["ALIVE_resupply_lastDispatch", serverTime, true];
+                                    [_heli, _crate, _dropPad, _targetVeh, false] call _fnc_cleanup;
+                                };
+                            };
+
+                            // Crate lost mid-flight.
+                            if (isNull (getSlingLoad _heli) && {_phase < 2}) exitWith {
+                                ["LOGCOM_RESUPPLY HELI: Crate detached mid-flight for %1", _callsign] call ALiVE_fnc_dump;
+                                [_heli, _crate, _dropPad, _targetVeh, true] call _fnc_cleanup;
+                            };
+
+                            // --- Phase 0: TRANSIT ---
+                            if (_phase == 0) then {
+                                // Clear native waypoints every tick to prevent profile simulator override.
+                                while {count waypoints _heliGrp > 1} do {
+                                    deleteWaypoint [_heliGrp, 1];
+                                };
+
+                                _heli flyInHeight PARADROP_HEIGHT;
+                                _heli move _targetPos;
+
+                                // Transition to DESCENT when within 800m.
+                                if (_heli distance2D _targetVeh < 800) then {
+                                    _phase = 1;
+
+                                    // Find LZ near target using battle-tested search.
+                                    private _dropPos = [_logic, "findHelicopterLandingPos", [
+                                        getPos _targetVeh, 50, 300
+                                    ]] call ALIVE_fnc_ML;
+
+                                    _dropPad = createVehicle ["Land_HelipadEmpty_F", _dropPos, [], 0, "CAN_COLLIDE"];
+                                    _heli landAt _dropPad;
+                                    _heli flyInHeight 30;
+                                    _lastLandAtTime = serverTime;
+
+                                    ["LOGCOM_RESUPPLY HELI: Phase DESCENT for %1, LZ at %2", _callsign, _dropPos] call ALiVE_fnc_dump;
+                                };
+                            };
+
+                            // --- Phase 1: DESCENT ---
+                            if (_phase == 1) then {
+                                // Clear waypoints every tick.
+                                while {count waypoints _heliGrp > 1} do {
+                                    deleteWaypoint [_heliGrp, 1];
+                                };
+
+                                // Re-issue landAt every 30s if heli stalls (single authority).
+                                if (serverTime - _lastLandAtTime > 30 && {!isNull _dropPad}) then {
+                                    _heli landAt _dropPad;
+                                    _lastLandAtTime = serverTime;
+                                };
+
+                                // Monitor slung vehicle AGL.
+                                private _slungObj = getSlingLoad _heli;
+                                if (!isNull _slungObj) then {
+                                    private _slungAGL = (getPosATL _slungObj) select 2;
+
+                                    if (_slungAGL <= SLINGLOAD_DROP_HEIGHT) then {
+                                        _phase = 2;
+                                        ["LOGCOM_RESUPPLY HELI: Phase RELEASE for %1, AGL=%2m", _callsign, _slungAGL] call ALiVE_fnc_dump;
+                                    };
+                                };
+                            };
+
+                            // --- Phase 2: RELEASE ---
+                            if (_phase == 2) then {
+                                private _slungObj = getSlingLoad _heli;
+                                if (!isNull _slungObj) then {
+                                    private _relAGL = (getPosATL _slungObj) select 2;
+
+                                    // Parachute if still above safe height.
+                                    if (_relAGL > 5) then {
+                                        private _para = createVehicle ["B_Parachute_02_F", getPosATL _slungObj, [], 0, "FLY"];
+                                        _para setPosASL (getPosASL _slungObj);
+                                        _para setVelocity (velocity _heli);
+                                        _slungObj attachTo [_para, [0,0,0]];
+                                        [_para, _slungObj] spawn {
+                                            private _p = _this select 0; private _v = _this select 1;
+                                            waitUntil { sleep 1; (getPosATL _v select 2) < 3 || !alive _p };
+                                            detach _v; deleteVehicle _p;
+                                        };
+                                        ["LOGCOM_RESUPPLY HELI: Parachute attached at AGL %1m for %2", _relAGL, _callsign] call ALiVE_fnc_dump;
+                                    };
+
+                                    _heli setSlingLoad objNull;
+                                };
+
+                                if (!isNull _dropPad) then { deleteVehicle _dropPad; _dropPad = objNull; };
+
+                                // Wait for crate to settle.
+                                sleep 3;
+
+                                _phase = 3;
+                                _dropped = true;
+                                ["LOGCOM_RESUPPLY HELI: Sling released for %1", _callsign] call ALiVE_fnc_dump;
+                            };
+
+                            sleep 2;
+                        };
+
+                        // --- Phase 3: SERVICE ---
+                        if (_phase == 3 && {alive _targetVeh}) then {
+                            _targetVeh setVariable ["ALIVE_resupply_state", "servicing", true];
+                            sleep 30;  // Simulate strikedown period.
+
+                            [_targetVeh] call ALIVE_fnc_resupplyService;
+
+                            _targetVeh setVariable ["ALIVE_resupply_state", "complete", true];
+                            _targetVeh setVariable ["ALIVE_resupply_inProgress", false, true];
+                            _targetVeh setVariable ["ALIVE_resupply_vehicle", objNull, true];
+                            _targetVeh setVariable ["ALIVE_resupply_lastDispatch", serverTime, true];
+                            _targetVeh setVariable ["ALIVE_resupply_retries", 0, true];
+
+                            // Delete crate.
+                            if (!isNull _crate && {alive _crate}) then { deleteVehicle _crate };
+
+                            ["LOGCOM_RESUPPLY HELI: Service complete for %1, heli RTB", _callsign] call ALiVE_fnc_dump;
+
+                            // Heli RTB and cleanup.
+                            _heli flyInHeight PARADROP_HEIGHT;
+                            _heli move _sourcePos;
+                            [{
+                                params ["_h"];
+                                if (!isNull _h && {alive _h}) then {
+                                    {deleteVehicle _x} forEach (crew _h);
+                                    deleteVehicle _h;
+                                };
+                            }, [_heli], 120] call CBA_fnc_waitAndExecute;
+
+                            private _count = missionNamespace getVariable ["ALIVE_resupply_activeCount", 1];
+                            missionNamespace setVariable ["ALIVE_resupply_activeCount", (_count - 1) max 0, true];
+                        };
+                    };
+                };
+            };
+        };
     };
 
     case "LOGCOM_STATUS_REQUEST": {

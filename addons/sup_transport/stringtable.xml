@@ -62,4 +62,16 @@
     <English>Number of containers to be spawned for slingloading purposes</English>
     <Chinesesimp>生成的用于吊运的集装箱数量</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_TRANSPORT_LOGISTICS">
+    <English>Use Military Logistics Simulation</English>
+</Key>
+<Key ID="STR_ALIVE_TRANSPORT_LOGISTICS_DESC">
+    <English>When enabled, this asset will request resupply from LOGCOM when ammo, fuel, or damage thresholds are reached. Each resupply draws from the Military Logistics force pool - the same pool used for OPCOM reinforcements. Requires a Military Logistics module.</English>
+</Key>
+<Key ID="STR_ALIVE_TRANSPORT_LOGISTICSSOURCE">
+    <English>Logistics Source</English>
+</Key>
+<Key ID="STR_ALIVE_TRANSPORT_LOGISTICSSOURCE_DESC">
+    <English>Static: resupply dispatched from LOGCOM base position. Dynamic: dispatched from nearest friendly-held objective.</English>
+</Key>
 </Container></Package></Project>
