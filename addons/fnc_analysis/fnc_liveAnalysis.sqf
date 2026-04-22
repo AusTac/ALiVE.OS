@@ -501,11 +501,19 @@ switch(_operation) do {
                     _revealInstallations = (_revealInstallations == "true");
                 };
 
-                private _sourceSideText = toUpper _side;
-                if (_sourceSideText in ["INDEP","INDEPENDENT","RESISTANCE"]) then {
-                    _sourceSideText = "GUER";
+                private _sourceSide = civilian;
+                private _sourceSideText = "CIV";
+                if (_side isEqualType west) then {
+                    _sourceSide = _side;
+                    _sourceSideText = [[_sourceSide] call ALIVE_fnc_sideObjectToNumber] call ALIVE_fnc_sideNumberToText;
+                } else {
+                    _sourceSideText = if (_side isEqualType "") then {toUpper _side} else {toUpper str _side};
+                    if (_sourceSideText in ["INDEP","INDEPENDENT","RESISTANCE"]) then {
+                        _sourceSideText = "GUER";
+                    };
+                    _sourceSide = [_sourceSideText] call ALIVE_fnc_sideTextToObject;
                 };
-                private _sourceSide = [_sourceSideText] call ALIVE_fnc_sideTextToObject;
+
                 private _sourceFactions = [];
                 private _opcomID = [_objective,"opcomID",""] call ALIVE_fnc_hashGet;
 
@@ -572,7 +580,7 @@ switch(_operation) do {
                     };
 
                     // set the side color
-                    switch(_side) do {
+                    switch(_sourceSideText) do {
                         case "EAST":{
                             _color = "ColorRed";
                         };
