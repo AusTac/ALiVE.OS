@@ -480,7 +480,14 @@ switch(_operation) do {
 
                             _mod = (synchronizedObjects _logic) select _i;
 
-                            if ((typeof _mod) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom","ALiVE_mil_placement_spe"]) then {
+                            // mil_placement_spe deliberately NOT in the list - the module is
+                            // designed to place profile groups / vehicles at a fixed position
+                            // (with module direction driving placement orientation). Syncing
+                            // it to an OPCOM causes OPCOM to sweep its units into the
+                            // objective pool and redeploy them, which defeats the module's
+                            // purpose. Profile sources for OPCOM's faction still count through
+                            // the spe module's own spawns, just not as OPCOM-managed objectives.
+                            if ((typeof _mod) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom"]) then {
                                 while {_startupComplete = _mod getVariable ["startupComplete", false]; !(_startupComplete)} do {};
 
                                 _obj = [_mod,"objectives",objNull,[]] call ALIVE_fnc_OOsimpleOperation;
@@ -488,13 +495,12 @@ switch(_operation) do {
                                 // Stamp objectiveType per source-module class so downstream
                                 // marker / C2ISTAR / tour consumers can differentiate which
                                 // placement module each objective came from. Previously all
-                                // five classes defaulted to "MIL" (via the HashGet default at
+                                // classes defaulted to "MIL" (via the HashGet default at
                                 // the assignment sites), giving mission-makers no way to tell
                                 // OPCOM-held objectives apart on the map. Issue #809.
                                 private _modLabel = switch (typeof _mod) do {
                                     case "ALiVE_mil_placement":        {"MIL"};
                                     case "ALiVE_mil_placement_custom": {"CUS"};
-                                    case "ALiVE_mil_placement_spe":    {"GAR"};
                                     case "ALiVE_civ_placement":        {"CIV"};
                                     case "ALiVE_civ_placement_custom": {"CCU"};
                                     default {"MIL"};
@@ -588,7 +594,9 @@ switch(_operation) do {
                     //silently refuses to run.
                     private _availableFactions = [];
                     {
-                        if ((typeOf _x) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom","ALiVE_mil_placement_spe"]) then {
+                        // mil_placement_spe omitted - see rationale at the placement-class
+                        // iteration above.
+                        if ((typeOf _x) in ["ALiVE_mil_placement","ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement_custom"]) then {
                             private _fac = _x getVariable ["faction", ""];
                             if (_fac != "" && {!(_fac in _availableFactions)}) then {
                                 _availableFactions pushBack _fac;

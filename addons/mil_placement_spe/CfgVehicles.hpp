@@ -114,9 +114,13 @@ class CfgVehicles {
                 class ModuleDescription
                 {
                     description[] = {"$STR_ALIVE_SPEMP_COMMENT","","$STR_ALIVE_SPEMP_USAGE"};
-                    sync[] = {"ALiVE_mil_OPCOM","ALiVE_mil_CQB"};
-                    class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=1; direction=1; optional=1; duplicate=1; };
-                    class ALiVE_mil_CQB { description[] = {"$STR_ALIVE_CQB_COMMENT","","$STR_ALIVE_CQB_USAGE"}; position=1; direction=1; optional=1; duplicate=1; };
+                    // No valid sync peers. The module places profile groups / vehicles
+                    // at a fixed position (module direction drives orientation). Syncing
+                    // it to an OPCOM or CQB is actively undesirable - OPCOM's objective-
+                    // pulling iteration at fnc_OPCOM.sqf would sweep the units into its
+                    // pool and redeploy them, defeating the fixed-position intent.
+                    // OPCOM's runtime filter now excludes this class explicitly.
+                    sync[] = {};
                 };
         };
 };
