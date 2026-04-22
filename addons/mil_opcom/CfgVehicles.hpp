@@ -367,10 +367,35 @@ class CfgVehicles {
                 class ModuleDescription
                 {
                     description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"};
-                    sync[] = {"ALiVE_civ_placement","ALiVE_civ_placement_custom","ALiVE_mil_placement","ALiVE_mil_intelligence","ALiVE_mil_logistics"};
+                    // Sync peers reflect the code paths that actually treat this
+                    // OPCOM's synchronizedObjects as peers (either this module's
+                    // own synchronizedObjects iteration in fnc_OPCOM.sqf, or a
+                    // peer module's iteration that walks this OPCOM's synced list
+                    // looking for itself). mil_intelligence dropped - no code
+                    // path reads it. mil_placement_spe deliberately omitted - the
+                    // module is designed as a fixed-position placement that
+                    // should NOT be synced to OPCOM (runtime filter at
+                    // fnc_OPCOM.sqf:437 / :545 is a known-bug leftover pending
+                    // separate cleanup).
+                    sync[] = {
+                        "ALiVE_civ_placement",
+                        "ALiVE_civ_placement_custom",
+                        "ALiVE_mil_placement",
+                        "ALiVE_mil_placement_custom",
+                        "ALiVE_mil_cqb",
+                        "ALiVE_mil_C2ISTAR",
+                        "ALiVE_mil_ato",
+                        "ALiVE_mil_ied",
+                        "ALiVE_mil_logistics"
+                    };
                     class ALiVE_civ_placement { description[] = {"$STR_ALIVE_CP_COMMENT","","$STR_ALIVE_CP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                     class ALiVE_civ_placement_custom { description[] = {"$STR_ALIVE_CPC_COMMENT","","$STR_ALIVE_CPC_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                     class ALiVE_mil_placement { description[] = {"$STR_ALIVE_MP_COMMENT","","$STR_ALIVE_MP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_placement_custom { description[] = {"$STR_ALIVE_CMP_COMMENT","","$STR_ALIVE_CMP_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_cqb { description[] = {"$STR_ALIVE_CQB_COMMENT","","$STR_ALIVE_CQB_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_C2ISTAR { description[] = {"$STR_ALIVE_C2ISTAR_COMMENT","","$STR_ALIVE_C2ISTAR_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_ato { description[] = {"$STR_ALIVE_ATO_COMMENT","","$STR_ALIVE_ATO_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+                    class ALiVE_mil_ied { description[] = {"$STR_ALIVE_IED_COMMENT","","$STR_ALIVE_IED_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                     class ALiVE_mil_logistics { description[] = {"$STR_ALIVE_ML_COMMENT","","$STR_ALIVE_ML_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
                 };
         };
