@@ -76,9 +76,9 @@ class cfgFunctions {
                                 file = "\x\alive\addons\mil_opcom\fnc_OPCOMdecrementStartForceStrength.sqf";
                                 RECOMPILE;
                         };
-                        class OPCOMproximityDisableInstallations {
-                                description = "Phase 2.2 #697: friendly AI disables enemy asymmetric installations when inside the proximity radius";
-                                file = "\x\alive\addons\mil_opcom\fnc_OPCOMproximityDisableInstallations.sqf";
+                        class OPCOMfriendlyDisableInstallations {
+                                description = "Issue #697: friendly AI disables enemy asymmetric installations via proximity presence and/or friendly OPCOM capture of the objective";
+                                file = "\x\alive\addons\mil_opcom\fnc_OPCOMfriendlyDisableInstallations.sqf";
                                 RECOMPILE;
                         };
                                               
