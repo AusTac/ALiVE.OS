@@ -32,12 +32,32 @@ private _factionId = _logic getVariable ["factionId", "ALIVE_CUSTOM_FACTION"];
 if !(_factionId isEqualType "") then {
     _factionId = str _factionId;
 };
-_factionId = [_factionId, " ", "_"] call CBA_fnc_replace;
-_factionId = [_factionId, "-", "_"] call CBA_fnc_replace;
-if (_factionId isEqualTo "") then {
+
+private _normalizedFactionId = [];
+private _lastWasUnderscore = false;
+private _hasIdentifierChar = false;
+{
+    private _charCode = _x;
+    private _isAlphaNumeric = (_charCode >= 48 && _charCode <= 57) || {(_charCode >= 65 && _charCode <= 90) || (_charCode >= 97 && _charCode <= 122)};
+
+    if (_isAlphaNumeric) then {
+        _normalizedFactionId pushBack _charCode;
+        _lastWasUnderscore = false;
+        _hasIdentifierChar = true;
+    } else {
+        if !(_lastWasUnderscore) then {
+            _normalizedFactionId pushBack 95;
+            _lastWasUnderscore = true;
+        };
+    };
+} forEach (toArray _factionId);
+
+_factionId = toString _normalizedFactionId;
+if (!_hasIdentifierChar || {_factionId isEqualTo ""}) then {
     _factionId = "ALIVE_CUSTOM_FACTION";
 };
 
+_logic setVariable ["factionId", _factionId, true];
 private _displayName = _logic getVariable ["displayName", _factionId];
 if !(_displayName isEqualType "") then {
     _displayName = str _displayName;

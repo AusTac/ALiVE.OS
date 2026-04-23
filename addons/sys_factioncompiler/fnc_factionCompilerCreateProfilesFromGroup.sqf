@@ -44,7 +44,7 @@ private _entityProfileID = format ["%1-%2", _factionId, _entityID];
 [_profileEntity, "isSPE", _isSPE] call ALIVE_fnc_profileEntity;
 [_profileEntity, "aiBehaviour", _aiBehaviour] call ALIVE_fnc_profileEntity;
 
-private _spawnHook = format ["[_this select 0, '%1', '%2'] call ALiVE_fnc_factionCompilerApplyLoadout;", _factionId, _groupClass];
+private _spawnHook = format ["[_this select 0, %1, %2] call ALiVE_fnc_factionCompilerApplyLoadout;", str _factionId, str _groupClass];
 if !(_onEachSpawn isEqualTo "") then {
     _spawnHook = format ["%1 %2", _spawnHook, _onEachSpawn];
 };
