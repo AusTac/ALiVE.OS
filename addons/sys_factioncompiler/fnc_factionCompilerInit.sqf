@@ -83,6 +83,9 @@ private _templateVehicles = [];
 private _sideText = "";
 private _groupIndex = 0;
 private _standardCategories = ["Infantry", "SpecOps", "Motorized", "Motorized_MTP", "Mechanized", "Mechanized_MTP", "Armored", "Air", "Naval", "Support", "Artillery"];
+{
+    [_groupsByCategory, _x, []] call ALIVE_fnc_hashSet;
+} forEach _standardCategories;
 
 {
     if ((typeOf _x) isEqualTo "ALiVE_sys_factioncompiler_category") then {
