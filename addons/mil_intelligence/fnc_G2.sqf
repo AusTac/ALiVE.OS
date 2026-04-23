@@ -19,6 +19,7 @@ See Also:
 
 Author:
 SpyderBlack723
+Jman
 ---------------------------------------------------------------------------- */
 
 #define SUPERCLASS  ALiVE_fnc_baseClass
@@ -502,6 +503,7 @@ switch(_operation) do {
 
         private _sideObject = _logic getvariable "sideObject";
         private _playersToSendMarkerTo = allPlayers select { side (group _X) == _sideObject };
+        if (_playersToSendMarkerTo isEqualTo []) exitWith {};
 
         private _reportType = _report get "type";
         switch (_reportType) do {
@@ -735,6 +737,7 @@ switch(_operation) do {
 
         private _sideObject = _logic getvariable "sideObject";
         private _playersToSendMarkerTo = allPlayers select { side (group _X) == _sideObject };
+        if (_playersToSendMarkerTo isEqualTo []) exitWith {};
 
         private _reportMarkers = _report get "markers";
         [nil,"deleteMarkersLocally", _reportMarkers] remoteExecCall ["ALiVE_fnc_G2", _playersToSendMarkerTo];
