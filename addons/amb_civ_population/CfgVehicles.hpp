@@ -34,6 +34,18 @@ class CfgVehicles {
             class hostilityWest : Combo { property = "ALiVE_amb_civ_population_hostilityWest"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_WEST"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_WEST_COMMENT"; defaultValue = """0"""; class Values { class LOW{name="$STR_ALIVE_CIV_POP_HOSTILITY_WEST_LOW";value="0";default=1;}; class MEDIUM{name="$STR_ALIVE_CIV_POP_HOSTILITY_WEST_MEDIUM";value="30";}; class HIGH{name="$STR_ALIVE_CIV_POP_HOSTILITY_WEST_HIGH";value="60";}; class EXTREME{name="$STR_ALIVE_CIV_POP_HOSTILITY_WEST_EXTREME";value="130";}; }; };
             class hostilityEast : Combo { property = "ALiVE_amb_civ_population_hostilityEast"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_EAST"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_EAST_COMMENT"; defaultValue = """0"""; class Values { class LOW{name="$STR_ALIVE_CIV_POP_HOSTILITY_EAST_LOW";value="0";default=1;}; class MEDIUM{name="$STR_ALIVE_CIV_POP_HOSTILITY_EAST_MEDIUM";value="30";}; class HIGH{name="$STR_ALIVE_CIV_POP_HOSTILITY_EAST_HIGH";value="60";}; class EXTREME{name="$STR_ALIVE_CIV_POP_HOSTILITY_EAST_EXTREME";value="130";}; }; };
             class hostilityIndep : Combo { property = "ALiVE_amb_civ_population_hostilityIndep"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_INDEP"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_INDEP_COMMENT"; defaultValue = """0"""; class Values { class LOW{name="$STR_ALIVE_CIV_POP_HOSTILITY_INDEP_LOW";value="0";default=1;}; class MEDIUM{name="$STR_ALIVE_CIV_POP_HOSTILITY_INDEP_MEDIUM";value="30";}; class HIGH{name="$STR_ALIVE_CIV_POP_HOSTILITY_INDEP_HIGH";value="60";}; class EXTREME{name="$STR_ALIVE_CIV_POP_HOSTILITY_INDEP_EXTREME";value="130";}; }; };
+            class insurgentFaction
+            {
+                property     = "ALiVE_amb_civ_population_insurgentFaction";
+                displayName  = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION";
+                tooltip      = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION_COMMENT";
+                control      = "ALiVE_FactionChoiceMulti_Military";
+                typeName     = "STRING";
+                expression   = "_this setVariable ['insurgentFaction', _value];";
+                defaultValue = """[]""";
+            };
+            class insurgentFactionManual : Edit { property = "ALiVE_amb_civ_population_insurgentFactionManual"; displayName = "$STR_ALIVE_CIV_POP_FACTIONS_MANUAL"; tooltip = "$STR_ALIVE_CIV_POP_FACTIONS_MANUAL_COMMENT"; defaultValue = """"""; typeName = "STRING"; };
+            class SPACER_INSURGENT_FACTION : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_SPACER_INSURGENT_FACTION"; displayName = " "; };
 
             // ---- Crowd & Interaction --------------------------------------------
             class HDR_CROWD : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_CROWD"; displayName = "CROWD & INTERACTION"; };
@@ -52,15 +64,23 @@ class CfgVehicles {
             };
             class enableInteraction : Combo { property = "ALiVE_amb_civ_population_enableInteraction"; displayName = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
             class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
-            class insurgentFaction : Edit { property = "ALiVE_amb_civ_population_insurgentFaction"; displayName = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION"; tooltip = "$STR_ALIVE_CIV_POP_INSURGENT_FACTION_COMMENT"; defaultValue = """"""; };
             class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
             class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };
             class ambientCrowdLimit : Edit { property = "ALiVE_amb_civ_population_ambientCrowdLimit"; displayName = "$STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER_COMMENT"; defaultValue = """50"""; };
-            class ambientCrowdFaction : Edit { property = "ALiVE_amb_civ_population_ambientCrowdFaction"; displayName = "$STR_ALIVE_CIV_POP_CROWD_FACTION"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_FACTION_COMMENT"; defaultValue = """"""; };
+            class ambientCrowdFaction
+            {
+                property     = "ALiVE_amb_civ_population_ambientCrowdFaction";
+                displayName  = "$STR_ALIVE_CIV_POP_CROWD_FACTION";
+                tooltip      = "$STR_ALIVE_CIV_POP_CROWD_FACTION_COMMENT";
+                control      = "ALiVE_FactionChoice_Civilian";
+                typeName     = "STRING";
+                expression   = "_this setVariable ['ambientCrowdFaction', _value];";
+                defaultValue = """""";
+            };
 
             // ---- Humanitarian ---------------------------------------------------
             class HDR_HUMANITARIAN : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_HUMANITARIAN"; displayName = "HUMANITARIAN"; };
-            class humanitarianHostilityChance : Combo { property = "ALiVE_amb_civ_population_humanitarianHostilityChance"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_COMMENT"; defaultValue = """20"""; class Values { class LOW{name="Low Chance";value="20";default=1;}; class MEDIUM{name="Medium Chance";value="40";}; class HIGH{name="High Chance";value="60";}; class EXTREME{name="Extreme Chance";value="80";}; }; };
+            class humanitarianHostilityChance : Combo { property = "ALiVE_amb_civ_population_humanitarianHostilityChance"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_COMMENT"; defaultValue = """20"""; class Values { class LOW{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_LOW";value="20";default=1;}; class MEDIUM{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_MEDIUM";value="40";}; class HIGH{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_HIGH";value="60";}; class EXTREME{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_EXTREME";value="80";}; }; };
             class maxAllowAid : Edit { property = "ALiVE_amb_civ_population_maxAllowAid"; displayName = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID"; tooltip = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID_COMMENT"; defaultValue = """3"""; };
             class customWaterItems : Edit { property = "ALiVE_amb_civ_population_customWaterItems"; displayName = "$STR_ALIVE_CIV_POP_WATER_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT"; defaultValue = """"""; };
             class customHumRatItems : Edit { property = "ALiVE_amb_civ_population_customHumRatItems"; displayName = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT"; defaultValue = """"""; };

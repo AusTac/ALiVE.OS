@@ -75,7 +75,29 @@ switch (_operation) do {
 			private _humratItems = _logic getVariable ["rationItems", []];
 
 			_debug = _logic getVariable "debug";
-			_factionEnemy = _logic getVariable "insurgentFaction";
+
+			// Merge insurgentFaction multi-select array + insurgentFactionManual
+			// comma-separated string into a deduped array. Backward-compat
+			// with legacy SQMs that stored insurgentFaction as a single string.
+			private _factionEnemyRaw    = _logic getVariable ["insurgentFaction", []];
+			private _factionEnemyManual = _logic getVariable ["insurgentFactionManual", ""];
+			private _factionsArr = if (typeName _factionEnemyRaw == "ARRAY") then {
+				+_factionEnemyRaw
+			} else {
+				if (_factionEnemyRaw == "") then { [] } else {
+					[[_factionEnemyRaw, " ", ""] call CBA_fnc_replace, ","] call CBA_fnc_split
+				}
+			};
+			private _manualArr = if (_factionEnemyManual == "") then { [] } else {
+				[[_factionEnemyManual, " ", ""] call CBA_fnc_replace, ","] call CBA_fnc_split
+			};
+			_factionEnemy = [];
+			{
+				if (typeName _x == "STRING" && {_x != ""} && {_x != "NONE"} && {!(_x in _factionEnemy)}) then {
+					_factionEnemy pushBack _x;
+				};
+			} forEach (_factionsArr + _manualArr);
+
 			_humanitarianDecrease = parseNumber (_logic getVariable["humanitarianHostilityChance", "20"]);
 			_maxAllowAid = parseNumber (_logic getVariable["maxAllowAid", "3"]);
 			_authorized = (_logic getVariable "limitInteraction") call ALiVE_fnc_stringListToArray;
@@ -264,10 +286,13 @@ switch (_operation) do {
 		_objectives = [];
 
 		//-- Get nearest objective properties
+		//  Multi-faction: accept this OPCOM if ANY of its factions overlaps
+		//  the insurgent-faction list from this module.
 		for "_i" from 0 to (count OPCOM_instances - 1) step 1 do {
 			_opcom = OPCOM_instances select _i;
 
-			if (_insurgentFaction in ([_opcom, "factions"] call ALiVE_fnc_hashGet)) exitWith {
+			private _opcomFactions = [_opcom, "factions"] call ALiVE_fnc_hashGet;
+			if ((_insurgentFaction arrayIntersect _opcomFactions) isNotEqualTo []) exitWith {
 				_objectives = ([_opcom, "objectives",[]] call ALiVE_fnc_hashGet);
 				_objectives = [_objectives,[_civPos],{_Input0 distance2D ([_x, "center"] call CBA_fnc_HashGet)},"ASCEND"] call BIS_fnc_sortBy;
 				_nearestObjective = [_opcom, _objectives select 0];

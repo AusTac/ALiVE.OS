@@ -27,6 +27,7 @@ See Also:
 
 Author:
 SpyderBlack723
+Jman
 
 Peer Reviewed:
 nil
@@ -344,12 +345,13 @@ switch (_question) do {
         _pos = getPos _civ;
         _town = [_pos] call ALIVE_fnc_taskGetNearestLocationName;
 
-        //-- Get nearby insurgents
+        //-- Get nearby insurgents (multi-faction: leader's faction must be
+        //   one of the insurgent factions configured on the module)
         _insurgents = [];
         {
             _leader = leader _x;
 
-            if ((faction _leader == _insurgentFaction) and {_leader distance2D _pos < 1100}) then {
+            if ((faction _leader in _insurgentFaction) and {_leader distance2D _pos < 1100}) then {
                 _insurgents pushBack _leader;
             };
         } forEach allGroups;
