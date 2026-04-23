@@ -347,6 +347,39 @@ class Cfg3DEN
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
+        // ALiVE_ItemChoiceMulti family:
+        //   Multi-select listbox of humanitarian items (water or ration)
+        //   populated from the CfgALiVEHumanitarianItems registry. Each
+        //   entry in the registry is gated on a cfgPatchesName, so items
+        //   from unloaded mods are excluded from the dropdown — mission-
+        //   makers only see the classes their current mod set actually
+        //   provides.
+        //
+        //   Two variants differ only in the category filter passed to the
+        //   load handler:
+        //     ALiVE_ItemChoiceMulti_Water   filters to the "water" subclass
+        //     ALiVE_ItemChoiceMulti_Ration  filters to the "ration" subclass
+        //
+        //   Stored attribute value is an SQF array literal of classname
+        //   strings, same serialisation contract as ALiVE_FactionChoiceMulti.
+        //   The variable name on the logic is configurable via the third
+        //   element of _this (defaults to "items").
+        //
+        //   Substrate is inherited from ALiVE_FactionChoiceMulti_Base —
+        //   same ctrlControlsGroupNoScrollbars type=15 listbox. Only the
+        //   attributeLoad / attributeSave point at the item-specific
+        //   handlers; everything else (layout, colours, scrollbar, etc.)
+        //   comes through unchanged.
+        class ALiVE_ItemChoiceMulti_Water: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, 'water', 'customWaterItems'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'customWaterItems'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiSave.sqf'";
+        };
+
+        class ALiVE_ItemChoiceMulti_Ration: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, 'ration', 'customHumRatItems'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'customHumRatItems'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiSave.sqf'";
+        };
+
         // Hidden attribute - renders zero UI (h = 0, empty controls).
         // Used by legacy attributes that need to round-trip SQM data
         // through their `expression` without surfacing in the panel.

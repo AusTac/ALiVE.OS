@@ -45,11 +45,45 @@ if(isServer) then {
     private _ambientCrowdLimit = parseNumber (_logic getVariable ["ambientCrowdLimit","50"]);
     private _ambientCrowdFaction = (_logic getVariable ["ambientCrowdFaction",""]);
 
-    private _customWaterItems = [_logic getvariable "customWaterItems", " ", ""] call CBA_fnc_replace;
-    _customWaterItems = [_customWaterItems, ","] call CBA_fnc_split;
-
-    private _customRationItems = [_logic getvariable "customRationItems", " ", ""] call CBA_fnc_replace;
-    _customRationItems = [_customRationItems, ","] call CBA_fnc_split;
+    // Custom water / ration item classnames. Merge the multi-select
+    // (ALiVE_ItemChoiceMulti_Water/_Ration) array with the manual-
+    // override Edit sibling (comma-separated string) into a deduped
+    // array. Backward-compat with legacy SQMs that stored the value as
+    // a single comma-separated string, an SQF array literal, or a bare
+    // classname. Also fixes a pre-existing variable-name mismatch on
+    // the ration field: CfgVehicles property is customHumRatItems but
+    // this file previously read customRationItems, so the attribute
+    // never reached the runtime.
+    private _mergeItems = {
+        params ["_primaryKey", "_manualKey"];
+        private _raw    = _logic getVariable [_primaryKey, []];
+        private _manual = _logic getVariable [_manualKey, ""];
+        private _arr = if (typeName _raw == "ARRAY") then {
+            +_raw
+        } else {
+            if (_raw == "") then { [] } else {
+                private _trimmed = [_raw, " ", ""] call CBA_fnc_replace;
+                if (count _trimmed > 0 && {(_trimmed select [0, 1]) == "["}) then {
+                    private _parsed = parseSimpleArray _trimmed;
+                    if (typeName _parsed == "ARRAY") then { _parsed } else { [] }
+                } else {
+                    [_trimmed, ","] call CBA_fnc_split
+                }
+            }
+        };
+        private _manualArr = if (_manual == "") then { [] } else {
+            [[_manual, " ", ""] call CBA_fnc_replace, ","] call CBA_fnc_split
+        };
+        private _merged = [];
+        {
+            if (typeName _x == "STRING" && {_x != ""} && {!(_x in _merged)}) then {
+                _merged pushBack _x;
+            };
+        } forEach (_arr + _manualArr);
+        _merged
+    };
+    private _customWaterItems  = ["customWaterItems",  "customWaterItemsManual"]  call _mergeItems;
+    private _customRationItems = ["customHumRatItems", "customHumRatItemsManual"] call _mergeItems;
 
     // ----------------------------------------------------------------
     //  Advanced Civilians - read module args and set globals

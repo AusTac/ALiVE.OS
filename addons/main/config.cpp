@@ -7,6 +7,7 @@
 #include "Eventhandlers.hpp"
 #include "CfgHints.hpp"
 #include "Cfg3rdPartyFactions.hpp"
+#include "CfgALiVEHumanitarianItems.hpp"
 #include "\x\alive\addons\main\data\ui\main.hpp"
 
 

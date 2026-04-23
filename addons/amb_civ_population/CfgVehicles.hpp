@@ -82,8 +82,30 @@ class CfgVehicles {
             class HDR_HUMANITARIAN : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_HUMANITARIAN"; displayName = "HUMANITARIAN"; };
             class humanitarianHostilityChance : Combo { property = "ALiVE_amb_civ_population_humanitarianHostilityChance"; displayName = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE"; tooltip = "$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_COMMENT"; defaultValue = """20"""; class Values { class LOW{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_LOW";value="20";default=1;}; class MEDIUM{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_MEDIUM";value="40";}; class HIGH{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_HIGH";value="60";}; class EXTREME{name="$STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_EXTREME";value="80";}; }; };
             class maxAllowAid : Edit { property = "ALiVE_amb_civ_population_maxAllowAid"; displayName = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID"; tooltip = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID_COMMENT"; defaultValue = """3"""; };
-            class customWaterItems : Edit { property = "ALiVE_amb_civ_population_customWaterItems"; displayName = "$STR_ALIVE_CIV_POP_WATER_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT"; defaultValue = """"""; };
-            class customHumRatItems : Edit { property = "ALiVE_amb_civ_population_customHumRatItems"; displayName = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT"; defaultValue = """"""; };
+            class customWaterItems
+            {
+                property     = "ALiVE_amb_civ_population_customWaterItems";
+                displayName  = "$STR_ALIVE_CIV_POP_WATER_ITEMS";
+                tooltip      = "$STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT";
+                control      = "ALiVE_ItemChoiceMulti_Water";
+                typeName     = "STRING";
+                expression   = "_this setVariable ['customWaterItems', _value];";
+                defaultValue = """[]""";
+            };
+            class customWaterItemsManual : Edit { property = "ALiVE_amb_civ_population_customWaterItemsManual"; displayName = "$STR_ALIVE_CIV_POP_ITEMS_MANUAL"; tooltip = "$STR_ALIVE_CIV_POP_ITEMS_MANUAL_COMMENT"; defaultValue = """"""; typeName = "STRING"; };
+            class SPACER_CUSTOM_WATER : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_SPACER_CUSTOM_WATER"; displayName = " "; };
+            class customHumRatItems
+            {
+                property     = "ALiVE_amb_civ_population_customHumRatItems";
+                displayName  = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS";
+                tooltip      = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT";
+                control      = "ALiVE_ItemChoiceMulti_Ration";
+                typeName     = "STRING";
+                expression   = "_this setVariable ['customHumRatItems', _value];";
+                defaultValue = """[]""";
+            };
+            class customHumRatItemsManual : Edit { property = "ALiVE_amb_civ_population_customHumRatItemsManual"; displayName = "$STR_ALIVE_CIV_POP_ITEMS_MANUAL"; tooltip = "$STR_ALIVE_CIV_POP_ITEMS_MANUAL_COMMENT"; defaultValue = """"""; typeName = "STRING"; };
+            class SPACER_CUSTOM_HUMRAT : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_SPACER_CUSTOM_HUMRAT"; displayName = " "; };
 
             // ---- Advanced Civilians - General -----------------------------------
             class HDR_ADVCIV : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_ADVCIV"; displayName = "ADVANCED CIVILIANS - GENERAL"; };

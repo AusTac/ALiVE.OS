@@ -781,15 +781,8 @@
     <French>Classes d'eau personnalisées:</French>
     <Portuguese>Classes de água personalizadas:</Portuguese>
     <Russian>Свои классы воды:</Russian></Key>
-<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT">
-    <English>Enter a list of classnames (comma separated) for any custom water items you want used for humanitarian purposes</English>
-    <French>Entrer une liste de classnames (séparés par des virgules) pour tout objet d'eau personnalisé à utiliser à des fins humanitaires</French>
-    <Portuguese>Informe uma lista de classnames (separados por vírgula) de itens de água personalizados para uso humanitário</Portuguese>
-    <Russian>Введите список имён классов (через запятую) для пользовательских предметов воды, используемых в гуманитарных целях</Russian>
-    <Spanish>Introduce una lista de classnames (separados por comas) de cualquier objeto de agua personalizado que quieras usar con fines humanitarios</Spanish>
-    <Chinese>輸入類別名稱清單(以逗號分隔),指定任何要作為人道用途的自訂飲水物品</Chinese>
-    <Chinesesimp>输入您希望用于人道主义目的的任何自定义水项目的类名列表(逗号分隔)</Chinesesimp>
+    <English>Select water items civilians may receive as humanitarian aid. The list shows items from loaded mods (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — these are added to ALiVE's built-in defaults. Use the manual field below to include items from mods not currently loaded but expected at mission time.</English>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS">
@@ -801,15 +794,14 @@
     <French>Classes de rations personnalisées:</French>
     <Portuguese>Classes de ração personalizadas:</Portuguese>
     <Russian>Свои классы пайков:</Russian></Key>
-<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT">
-    <English>Enter a list of classnames (comma separated) for any custom ration items you want used for humanitarian purposes</English>
-    <French>Entrer une liste de classnames (séparés par des virgules) pour tout objet de rations personnalisé à utiliser à des fins humanitaires</French>
-    <Portuguese>Informe uma lista de classnames (separados por vírgula) de itens de ração personalizados para uso humanitário</Portuguese>
-    <Russian>Введите список имён классов (через запятую) для пользовательских пайков, используемых в гуманитарных целях</Russian>
-    <Spanish>Introduce una lista de classnames (separados por comas) de cualquier objeto de ración personalizado que quieras usar con fines humanitarios</Spanish>
-    <Chinese>輸入類別名稱清單(以逗號分隔),指定任何要作為人道用途的自訂口糧物品</Chinese>
-    <Chinesesimp>输入您想用于人道主义目的的任何定制配给项目的类名列表(逗号分隔)</Chinesesimp>
+    <English>Select ration items civilians may receive as humanitarian aid. The list shows items from loaded mods (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — these are added to ALiVE's built-in defaults. Use the manual field below to include items from mods not currently loaded but expected at mission time.</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_ITEMS_MANUAL">
+    <English>Classes (manual override):</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_ITEMS_MANUAL_COMMENT">
+    <English>Optional. Type extra item classnames for mods not currently loaded but expected at mission time. Format: comma-separated classnames with no spaces or quotes — e.g. mod_item_01,mod_item_02. Combined with the selection above at runtime.</English>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_TOOMUCHAID">
