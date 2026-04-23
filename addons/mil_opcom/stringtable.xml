@@ -47,14 +47,15 @@
     <Portuguese>Persistente:</Portuguese>
     <Russian>Сохраняемый:</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_PERSISTENT_COMMENT">
-    <English>Enables external Database persistence for AI Commander</English>
-    <Chinese>為 AI 指揮官啟用外部資料庫持久化</Chinese>
-    <Chinesesimp>为AI指挥官启用外部数据库持久性</Chinesesimp>
-    <Spanish>Activa la persistencia mediante base de datos externa para el Comandante IA</Spanish>
-    <French>Active la persistance via base de données externe pour le Commandant IA</French>
-    <Portuguese>Ativa a persistência via banco de dados externo para o Comandante IA</Portuguese>
-    <Russian>Включает сохранение через внешнюю БД для ИИ-командира</Russian>
+    <English>Saves and restores this AI Commander's objective state across sessions. Requires the ALiVE Data module. Set the Data module's Source to 'Local' to save via profileNamespace (no external server required). The 'Cloud' source connected to the War Room service is discontinued.</English>
+    <Chinese>跨場次儲存並還原此 AI 指揮官的目標狀態。需要 ALiVE 資料模組。將資料模組的來源設為「Local」可透過 profileNamespace 儲存（無需外部伺服器）。「Cloud」來源連接至戰爭室服務，現已停止運營。</Chinese>
+    <Chinesesimp>跨会话保存并恢复此 AI 指挥官的目标状态。需要 ALiVE 数据模块。将数据模块的来源设为「Local」可通过 profileNamespace 保存（无需外部服务器）。「Cloud」来源连接至战争室服务，现已停止运营。</Chinesesimp>
+    <Spanish>Guarda y restaura el estado de los objetivos de este Comandante IA entre sesiones. Requiere el módulo de Datos ALiVE. Configura la Fuente del módulo de Datos como 'Local' para guardar mediante profileNamespace (no se necesita servidor externo). La fuente 'Cloud' se conectaba al servicio War Room, que está discontinuado.</Spanish>
+    <French>Sauvegarde et restaure l'état des objectifs de ce Commandant IA entre les sessions. Nécessite le module Données ALiVE. Définissez la Source du module Données sur 'Local' pour sauvegarder via profileNamespace (aucun serveur externe requis). La source 'Cloud' se connectait au service War Room, qui est abandonné.</French>
+    <Portuguese>Salva e restaura o estado dos objetivos deste Comandante IA entre sessões. Requer o módulo de Dados ALiVE. Defina a Fonte do módulo de Dados como 'Local' para salvar via profileNamespace (nenhum servidor externo necessário). A fonte 'Cloud' conectava-se ao serviço War Room, que está descontinuado.</Portuguese>
+    <Russian>Сохраняет и восстанавливает состояние целей этого ИИ-командира между сессиями. Требуется модуль данных ALiVE. Установите параметр «Источник» модуля данных на «Local», чтобы сохранять через profileNamespace (внешний сервер не требуется). Источник «Cloud» подключался к сервису War Room, который прекращён.</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_NAME">
     <English>Custom Name:</English>
@@ -167,44 +168,122 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE">
     <English>Friendly AI disables installations:</English>
+    <Chinese>友方 AI 禁用設施：</Chinese>
+    <Chinesesimp>友方 AI 禁用设施：</Chinesesimp>
+    <Spanish>IA amiga desactiva instalaciones:</Spanish>
+    <French>L'IA amie désactive les installations :</French>
+    <Portuguese>IA amiga desativa instalações:</Portuguese>
+    <Russian>Дружественный ИИ отключает установки:</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_COMMENT">
     <English>Asymmetric mode only. Controls whether FRIENDLY (non-insurgent) AI forces can disable this insurgent OPCOM's installations (IED factories, Recruitment HQs, Weapons depots) without a player manually holding the interaction action.\n\n• Off — legacy behaviour, only players can disable via hold-action.\n• Proximity — a friendly unit dwelling within ~150m of an enemy installation for ~30s disables it.\n• Capture — installations at an objective are disabled the moment a friendly OPCOM captures that objective.\n• Both — proximity OR capture, whichever fires first.</English>
+    <Chinese>僅非對稱模式。控制友方（非叛亂分子）AI 部隊是否可在不需玩家手動長按互動鍵的情況下，禁用此叛亂分子 OPCOM 的設施（IED 工廠、招募總部、武器庫）。\n\n• 關閉 — 舊版行為，僅玩家可透過長按動作禁用。\n• 接近 — 友方單位在敵方設施 ~150m 內駐留 ~30 秒後禁用。\n• 佔領 — 友方 OPCOM 佔領目標時，該目標的設施即被禁用。\n• 兩者 — 接近或佔領，以先觸發者為準。</Chinese>
+    <Chinesesimp>仅非对称模式。控制友方（非叛乱分子）AI 部队是否可在不需玩家手动长按交互键的情况下，禁用此叛乱分子 OPCOM 的设施（IED 工厂、招募总部、武器库）。\n\n• 关闭 — 旧版行为，仅玩家可通过长按动作禁用。\n• 接近 — 友方单位在敌方设施 ~150m 内驻留 ~30 秒后禁用。\n• 占领 — 友方 OPCOM 占领目标时，该目标的设施即被禁用。\n• 两者 — 接近或占领，以先触发者为准。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Controla si las fuerzas IA AMIGAS (no insurgentes) pueden desactivar las instalaciones de este OPCOM insurgente (fábricas de IED, cuarteles generales de reclutamiento, depósitos de armas) sin que un jugador mantenga manualmente la acción de interacción.\n\n• Desactivado — comportamiento heredado, solo los jugadores pueden desactivar mediante la acción de mantener.\n• Proximidad — una unidad amiga que permanezca a ~150m de una instalación enemiga durante ~30s la desactiva.\n• Captura — las instalaciones en un objetivo se desactivan en el momento en que un OPCOM amigo captura dicho objetivo.\n• Ambos — proximidad O captura, lo que se active primero.</Spanish>
+    <French>Mode asymétrique uniquement. Contrôle si les forces IA AMIES (non-insurgées) peuvent désactiver les installations de cet OPCOM insurgé (usines d'IED, QG de recrutement, dépôts d'armes) sans qu'un joueur maintienne manuellement l'action d'interaction.\n\n• Désactivé — comportement hérité, seuls les joueurs peuvent désactiver via l'action de maintien.\n• Proximité — une unité amie restant à ~150m d'une installation ennemie pendant ~30s la désactive.\n• Capture — les installations d'un objectif sont désactivées dès qu'un OPCOM ami capture cet objectif.\n• Les deux — proximité OU capture, selon ce qui se déclenche en premier.</French>
+    <Portuguese>Apenas no modo assimétrico. Controla se forças IA AMIGAS (não insurgentes) podem desativar as instalações deste OPCOM insurgente (fábricas de IED, QGs de recrutamento, depósitos de armas) sem que um jogador mantenha manualmente a ação de interação.\n\n• Desativado — comportamento legado, apenas jogadores podem desativar via ação de manter.\n• Proximidade — uma unidade amiga que permaneça a ~150m de uma instalação inimiga por ~30s a desativa.\n• Captura — as instalações num objetivo são desativadas no momento em que um OPCOM amigo captura esse objetivo.\n• Ambos — proximidade OU captura, o que disparar primeiro.</Portuguese>
+    <Russian>Только в асимметричном режиме. Управляет тем, могут ли ДРУЖЕСТВЕННЫЕ (не повстанческие) силы ИИ отключать установки этого повстанческого OPCOM (мастерские СВУ, штабы вербовки, склады оружия) без того, чтобы игрок вручную удерживал действие взаимодействия.\n\n• Выкл. — прежнее поведение, только игроки могут отключать через удержание действия.\n• Близость — дружественная единица, находящаяся в ~150м от вражеской установки в течение ~30с, отключает её.\n• Захват — установки на объекте отключаются в момент захвата этого объекта дружественным OPCOM.\n• Оба — близость ИЛИ захват, что сработает первым.</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_OFF">
     <English>Off</English>
+    <Chinese>關閉</Chinese>
+    <Chinesesimp>关闭</Chinesesimp>
+    <Spanish>Desactivado</Spanish>
+    <French>Désactivé</French>
+    <Portuguese>Desativado</Portuguese>
+    <Russian>Выкл.</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_PROXIMITY">
     <English>Proximity</English>
+    <Chinese>接近</Chinese>
+    <Chinesesimp>接近</Chinesesimp>
+    <Spanish>Proximidad</Spanish>
+    <French>Proximité</French>
+    <Portuguese>Proximidade</Portuguese>
+    <Russian>Близость</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_CAPTURE">
     <English>Objective Capture</English>
+    <Chinese>佔領目標</Chinese>
+    <Chinesesimp>占领目标</Chinesesimp>
+    <Spanish>Captura de objetivo</Spanish>
+    <French>Capture d'objectif</French>
+    <Portuguese>Captura de objetivo</Portuguese>
+    <Russian>Захват объекта</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_FRIENDLY_DISABLE_BOTH">
     <English>Both</English>
+    <Chinese>兩者</Chinese>
+    <Chinesesimp>两者</Chinesesimp>
+    <Spanish>Ambos</Spanish>
+    <French>Les deux</French>
+    <Portuguese>Ambos</Portuguese>
+    <Russian>Оба</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY">
     <English>Escalation intensity:</English>
+    <Chinese>升級強度：</Chinese>
+    <Chinesesimp>升级强度：</Chinesesimp>
+    <Spanish>Intensidad de escalada:</Spanish>
+    <French>Intensité d'escalade :</French>
+    <Portuguese>Intensidade de escalada:</Portuguese>
+    <Russian>Интенсивность эскалации:</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_COMMENT">
     <English>Asymmetric mode only. Controls whether this insurgent OPCOM's recruitment progressively unlocks heavier vehicle types over time as players engage. The unlock signal is hostility (driven by installation destruction and sustained player presence in insurgent areas), not wall-clock time - passive missions see no escalation, active ones escalate proportional to pressure.\n\nTiers are always capped below tanks, jets, helicopters and boats regardless of faction. Monotonic: once a tier unlocks, insurgents keep it even if hostility later drops.\n\n• Off — recruitment stays infantry-only (pre-fix behaviour).\n• Low — light vehicles unlock at high hostility, medium wheeled at very high.\n• Medium — moderate thresholds, standard-paced campaign.\n• High — low thresholds, aggressive short-mission escalation.</English>
+    <Chinese>僅非對稱模式。控制此叛亂分子 OPCOM 的招募是否隨玩家交戰而逐步解鎖更重型的車輛類型。解鎖訊號是敵意（由設施摧毀和玩家持續在叛亂分子區域存在所驅動），而非現實時鐘時間——被動任務不會升級，主動任務則按壓力比例升級。\n\n無論陣營如何，各階層始終不含坦克、噴射機、直升機和船隻。單調遞增：一旦解鎖某階層，即使敵意後來下降，叛亂分子仍保留它。\n\n• 關閉 — 招募保持純步兵（修復前行為）。\n• 低 — 輕型車輛在高敵意時解鎖，中型輪式車輛在極高敵意時解鎖。\n• 中 — 中等閾值，標準節奏戰役。\n• 高 — 低閾值，積極的短任務升級。</Chinese>
+    <Chinesesimp>仅非对称模式。控制此叛乱分子 OPCOM 的招募是否随玩家交战而逐步解锁更重型的车辆类型。解锁信号是敌意（由设施摧毁和玩家持续在叛乱分子区域存在所驱动），而非现实时钟时间——被动任务不会升级，主动任务则按压力比例升级。\n\n无论阵营如何，各阶层始终不含坦克、喷射机、直升机和船只。单调递增：一旦解锁某阶层，即使敌意后来下降，叛乱分子仍保留它。\n\n• 关闭 — 招募保持纯步兵（修复前行为）。\n• 低 — 轻型车辆在高敌意时解锁，中型轮式车辆在极高敌意时解锁。\n• 中 — 中等阈值，标准节奏战役。\n• 高 — 低阈值，激进的短任务升级。</Chinesesimp>
+    <Spanish>Solo modo asimétrico. Controla si el reclutamiento de este OPCOM insurgente desbloquea progresivamente tipos de vehículos más pesados a medida que los jugadores combaten. La señal de desbloqueo es la hostilidad (impulsada por la destrucción de instalaciones y la presencia sostenida de jugadores en áreas insurgentes), no el tiempo real — las misiones pasivas no ven escalada, las activas escalan proporcionalmente a la presión.\n\nLos niveles siempre están limitados por debajo de tanques, aviones, helicópteros y barcos, independientemente de la facción. Monótono: una vez que se desbloquea un nivel, los insurgentes lo conservan aunque la hostilidad caiga después.\n\n• Desactivado — el reclutamiento permanece solo de infantería (comportamiento previo).\n• Bajo — los vehículos ligeros se desbloquean con alta hostilidad, los de ruedas medianos con muy alta.\n• Medio — umbrales moderados, campaña de ritmo estándar.\n• Alto — umbrales bajos, escalada agresiva en misiones cortas.</Spanish>
+    <French>Mode asymétrique uniquement. Contrôle si le recrutement de cet OPCOM insurgé débloque progressivement des types de véhicules plus lourds à mesure que les joueurs s'engagent. Le signal de déblocage est l'hostilité (alimentée par la destruction d'installations et la présence soutenue des joueurs dans les zones insurgées), et non le temps réel — les missions passives ne voient pas d'escalade, les actives escaladent proportionnellement à la pression.\n\nLes niveaux sont toujours plafonnés en dessous des chars, jets, hélicoptères et bateaux, quelle que soit la faction. Monotone : une fois un niveau débloqué, les insurgés le conservent même si l'hostilité diminue ensuite.\n\n• Désactivé — le recrutement reste infanterie seulement (comportement d'avant correction).\n• Faible — les véhicules légers se débloquent à haute hostilité, les véhicules à roues moyens à très haute.\n• Moyen — seuils modérés, campagne à rythme standard.\n• Élevé — seuils bas, escalade agressive pour missions courtes.</French>
+    <Portuguese>Apenas no modo assimétrico. Controla se o recrutamento deste OPCOM insurgente desbloqueia progressivamente tipos de veículos mais pesados ao longo do tempo conforme os jogadores se envolvem. O sinal de desbloqueio é a hostilidade (impulsionada pela destruição de instalações e presença sustentada de jogadores em áreas insurgentes), não o tempo de relógio — missões passivas não veem escalada, as ativas escalam proporcionalmente à pressão.\n\nOs níveis são sempre limitados abaixo de tanques, jatos, helicópteros e barcos, independentemente da facção. Monótono: uma vez que um nível é desbloqueado, os insurgentes o mantêm mesmo que a hostilidade caia depois.\n\n• Desativado — o recrutamento permanece apenas de infantaria (comportamento pré-correção).\n• Baixo — veículos leves desbloqueiam com alta hostilidade, rodados médios com muito alta.\n• Médio — limites moderados, campanha em ritmo padrão.\n• Alto — limites baixos, escalada agressiva em missões curtas.</Portuguese>
+    <Russian>Только в асимметричном режиме. Управляет тем, разблокирует ли вербовка этого повстанческого OPCOM постепенно более тяжёлые типы транспортных средств по мере того, как игроки вступают в бой. Сигналом разблокировки является враждебность (определяемая уничтожением установок и длительным присутствием игроков в повстанческих районах), а не реальное время — пассивные миссии не видят эскалации, активные эскалируют пропорционально давлению.\n\nУровни всегда ограничены ниже танков, самолётов, вертолётов и кораблей вне зависимости от фракции. Монотонно: как только уровень разблокирован, повстанцы сохраняют его, даже если враждебность впоследствии снижается.\n\n• Выкл. — вербовка остаётся только пехотной (поведение до исправления).\n• Низкая — лёгкая техника разблокируется при высокой враждебности, средние колёсные — при очень высокой.\n• Средняя — умеренные пороги, кампания в стандартном темпе.\n• Высокая — низкие пороги, агрессивная эскалация для коротких миссий.</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_OFF">
     <English>Off</English>
+    <Chinese>關閉</Chinese>
+    <Chinesesimp>关闭</Chinesesimp>
+    <Spanish>Desactivado</Spanish>
+    <French>Désactivé</French>
+    <Portuguese>Desativado</Portuguese>
+    <Russian>Выкл.</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_LOW">
     <English>Low</English>
+    <Chinese>低</Chinese>
+    <Chinesesimp>低</Chinesesimp>
+    <Spanish>Bajo</Spanish>
+    <French>Faible</French>
+    <Portuguese>Baixo</Portuguese>
+    <Russian>Низкая</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_MEDIUM">
     <English>Medium</English>
+    <Chinese>中</Chinese>
+    <Chinesesimp>中</Chinesesimp>
+    <Spanish>Medio</Spanish>
+    <French>Moyen</French>
+    <Portuguese>Médio</Portuguese>
+    <Russian>Средняя</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_HIGH">
     <English>High</English>
+    <Chinese>高</Chinese>
+    <Chinesesimp>高</Chinesesimp>
+    <Spanish>Alto</Spanish>
+    <French>Élevé</French>
+    <Portuguese>Alto</Portuguese>
+    <Russian>Высокая</Russian>
 </Key>
 <Key ID="STR_ALIVE_OPCOM_ROADBLOCKS">
     <English>Roadblocks:</English>
