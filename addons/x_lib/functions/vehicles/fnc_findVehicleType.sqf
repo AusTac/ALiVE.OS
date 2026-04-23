@@ -59,14 +59,22 @@ if (!isNil "ALiVE_fnc_factionCompilerFindVehicleType") then {
 if (!isNil "ALiVE_fnc_factionCompilerIsCompiledFaction") then {
     if (_fac isEqualType "") then {
         if ([_fac] call ALiVE_fnc_factionCompilerIsCompiledFaction) then {
-            _fac = [_fac] call ALiVE_fnc_factionCompilerGetConfigFaction;
+            if (count _compiledVehicles == 0) then {
+                _fac = [_fac] call ALiVE_fnc_factionCompilerGetConfigFaction;
+            } else {
+                _fac = [];
+            };
         };
     } else {
         if (_fac isEqualType []) then {
             private _resolvedFactions = [];
             {
-                if ([_x] call ALiVE_fnc_factionCompilerIsCompiledFaction) then {
-                    _resolvedFactions pushBackUnique ([_x] call ALiVE_fnc_factionCompilerGetConfigFaction);
+                if (_x isEqualType "" && {[_x] call ALiVE_fnc_factionCompilerIsCompiledFaction}) then {
+                    private _compiledFactionVehicles = [_cargoslots, _x, _type, _noWeapons, _minScope] call ALiVE_fnc_factionCompilerFindVehicleType;
+
+                    if (count _compiledFactionVehicles == 0) then {
+                        _resolvedFactions pushBackUnique ([_x] call ALiVE_fnc_factionCompilerGetConfigFaction);
+                    };
                 } else {
                     _resolvedFactions pushBackUnique _x;
                 };
@@ -75,7 +83,6 @@ if (!isNil "ALiVE_fnc_factionCompilerIsCompiledFaction") then {
         };
     };
 };
-
 _nonConfigs = ["StaticWeapon","CruiseMissile1","CruiseMissile2","Chukar_EP1","Chukar","Chukar_AllwaysEnemy_EP1"];
 _nonSims = ["parachute","house"];
 
