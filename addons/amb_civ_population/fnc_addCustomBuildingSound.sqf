@@ -22,9 +22,16 @@ See Also:
 
 Author:
 Tupolov
+Jman
 ---------------------------------------------------------------------------- */
 
 params ["_buildingType","_building"];
+
+// Master disable-ambient-sounds toggle (civ pop module attribute). Returns
+// objNull so the crowd activator FSM's `if !(isNull _soundSource)` gate
+// cleanly skips sound-source tracking. Issue #857.
+if (missionNamespace getVariable ["ALiVE_CivPop_AmbientSoundsDisabled", false]) exitWith { objNull };
+
 private _source = objNull;
 private _customBuildingData = [ALiVE_CivPop_customBuildings,_buildingType, []] call ALiVE_fnc_hashGet;
 if (count _customBuildingData > 0) then {

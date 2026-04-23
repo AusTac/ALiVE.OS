@@ -404,6 +404,12 @@ switch (_type) do {
 
         _unit enableAI "MOVE";
         _unit enableAI "PATH";
+        // Cancel any custom animation left over from a prior order - specifically
+        // the HANDSUP surrender anim set via playMove in react.sqf HANDSUP case.
+        // setUnitPos "AUTO" alone changes stance category but does not clear a
+        // custom playMove loop, so without this switchMove the unit would keep
+        // arms raised after the CALM command (issue #855).
+        _unit switchMove "";
         _unit setUnitPos "AUTO";
         _unit setSpeedMode "LIMITED";
 

@@ -657,6 +657,26 @@
     <Portuguese>Opcional. Selecione uma única facção civil para os spawns de multidões ambientais. Especificar uma facção melhora o desempenho; deixe em branco para que o ativador de multidões escolha uma facção por edifício a partir dos civis próximos. Facções de mods não carregados aparecem como «(unrecognised)» — o valor armazenado é preservado de qualquer forma.</Portuguese>
     <Russian>Необязательно. Выберите одну гражданскую фракцию для спавна окружающих толп. Указание фракции повышает производительность; оставьте пустым, чтобы активатор толп выбирал фракцию по зданию из ближайших гражданских. Фракции из незагруженных модов отображаются как «(unrecognised)» — сохранённое значение сохраняется в любом случае.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS">
+    <English>Disable Ambient Sounds:</English>
+    <Chinese>停用環境音效:</Chinese>
+    <Chinesesimp>禁用环境音效:</Chinesesimp>
+    <Spanish>Desactivar sonidos ambientales:</Spanish>
+    <French>Désactiver sons ambiants:</French>
+    <Portuguese>Desativar sons ambientais:</Portuguese>
+    <Russian>Отключить окружающие звуки:</Russian>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS_COMMENT">
+    <English>Turns off the per-building ambient sounds played from civilian buildings (radio, TV, prayer calls, etc.). Enable this if the built-in sound pool doesn't match your mission locale (e.g. Greek radio on a Middle Eastern map) or when you want full audio control via other mods. Does not affect crowd noise, panic shouts, or AdvCiv voice lines.</English>
+    <Chinese>關閉從平民建築播放的每棟建築環境音效（廣播、電視、禮拜呼喚等）。若內建音效池與任務在地環境不符（例如中東地圖上的希臘廣播），或您想透過其他模組完全掌控音訊時，請啟用此選項。不影響人群聲響、恐慌呼喊或 AdvCiv 語音行。</Chinese>
+    <Chinesesimp>关闭从平民建筑播放的每栋建筑环境音效（广播、电视、礼拜呼唤等）。若内建音效池与任务所在地环境不符（例如中东地图上的希腊广播），或您想通过其他模组完全掌控音频时，请启用此选项。不影响人群声响、恐慌呼喊或 AdvCiv 语音行。</Chinesesimp>
+    <Spanish>Desactiva los sonidos ambientales por edificio reproducidos desde los edificios civiles (radio, TV, llamadas a la oración, etc.). Habilítalo si el grupo de sonidos integrado no coincide con el escenario de tu misión (p. ej. radio griega en un mapa de Oriente Medio) o cuando quieras control de audio completo mediante otros mods. No afecta al ruido de la multitud, gritos de pánico ni líneas de voz de AdvCiv.</Spanish>
+    <French>Désactive les sons ambiants par bâtiment joués depuis les bâtiments civils (radio, TV, appels à la prière, etc.). Activez-le si le pool de sons intégré ne correspond pas au contexte de votre mission (p. ex. radio grecque sur une carte du Moyen-Orient) ou si vous souhaitez un contrôle audio complet via d'autres mods. N'affecte pas le bruit de la foule, les cris de panique ni les lignes vocales AdvCiv.</French>
+    <Portuguese>Desativa os sons ambientais por edifício reproduzidos a partir de edifícios civis (rádio, TV, chamadas para oração, etc.). Ative se o conjunto de sons integrado não combinar com o ambiente da sua missão (p. ex. rádio grega num mapa do Médio Oriente) ou quando quiser controle total de áudio via outros mods. Não afeta o ruído da multidão, gritos de pânico nem linhas de voz do AdvCiv.</Portuguese>
+    <Russian>Отключает окружающие звуки по зданиям, проигрываемые из гражданских зданий (радио, ТВ, призывы к молитве и т. п.). Включите, если встроенный пул звуков не соответствует локации миссии (напр. греческое радио на ближневосточной карте) или если хотите полный контроль звука через другие моды. Не влияет на шум толпы, крики паники и реплики AdvCiv.</Russian>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE">
     <English>Humanitarian Hostility Decrease:</English>
 

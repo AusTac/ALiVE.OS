@@ -22,9 +22,15 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 params ["_building",["_faction","CIV_F"]];
+
+// Master disable-ambient-sounds toggle (civ pop module attribute). Returns
+// objNull so the crowd activator FSM's `if !(isNull _soundSource)` gate
+// cleanly skips sound-source tracking. Issue #857.
+if (missionNamespace getVariable ["ALiVE_CivPop_AmbientSoundsDisabled", false]) exitWith { objNull };
 
 private _musicSource = "RoadCone_L_F" createVehicle position _building;
 _musicSource attachTo [_building,[1,1,1]];

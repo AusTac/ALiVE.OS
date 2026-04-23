@@ -85,6 +85,13 @@ if(isServer) then {
     private _customWaterItems  = ["customWaterItems",  "customWaterItemsManual"]  call _mergeItems;
     private _customRationItems = ["customHumRatItems", "customHumRatItemsManual"] call _mergeItems;
 
+    // Publish the disable-ambient-sounds toggle as a mission-namespace global
+    // so the per-building sound functions (fnc_addAmbientRoomMusic,
+    // fnc_addCustomBuildingSound) can early-exit without the crowd activator
+    // FSM needing to know about the setting. Issue #857.
+    private _disableAmbientSounds = (_logic getVariable ["disableAmbientSounds", "false"]) isEqualTo "true";
+    missionNamespace setVariable ["ALiVE_CivPop_AmbientSoundsDisabled", _disableAmbientSounds, true];
+
     // ----------------------------------------------------------------
     //  Advanced Civilians - read module args and set globals
     //
