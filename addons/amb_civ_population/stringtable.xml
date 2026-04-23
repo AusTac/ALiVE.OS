@@ -45,7 +45,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_RADIUS">
     <English>Spawn Radius (m):</English>
-</Key>
+
+    <Chinese>生成半徑（公尺）:</Chinese>
+    <Chinesesimp>生成半径（米）:</Chinesesimp>
+    <Spanish>Radio de aparición (m):</Spanish>
+    <French>Rayon d'apparition (m):</French>
+    <Portuguese>Raio de spawn (m):</Portuguese>
+    <Russian>Радиус спавна (м):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_RADIUS_COMMENT">
     <English>Sets the distance from players to spawn civilian units</English>
@@ -59,7 +65,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ACTIVE_LIMITER">
     <English>Active Limiter (count):</English>
-</Key>
+
+    <Chinese>同時活動上限（數量）:</Chinese>
+    <Chinesesimp>同时活动上限（数量）:</Chinesesimp>
+    <Spanish>Límite activo (nº):</Spanish>
+    <French>Limite active (nb):</French>
+    <Portuguese>Limite ativo (qtd):</Portuguese>
+    <Russian>Активный лимит (шт):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ACTIVE_LIMITER_COMMENT">
     <English>Sets the max number of civilians to spawn at any one time</English>
@@ -73,7 +85,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_JET_RADIUS">
     <English>Spawn Planes Radius (m):</English>
-</Key>
+
+    <Chinese>噴射機生成半徑（公尺）:</Chinese>
+    <Chinesesimp>喷气机生成半径（米）:</Chinesesimp>
+    <Spanish>Radio aparición aviones (m):</Spanish>
+    <French>Rayon avions (m):</French>
+    <Portuguese>Raio de spawn aviões (m):</Portuguese>
+    <Russian>Радиус спавна самолётов (м):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_JET_RADIUS_COMMENT">
     <English>The radius around player in planes to spawn civilians. Set to 0 to disable spawning while in planes</English>
@@ -87,7 +105,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS">
     <English>Spawn Heli Radius (m):</English>
-</Key>
+
+    <Chinese>直升機生成半徑（公尺）:</Chinese>
+    <Chinesesimp>直升机生成半径（米）:</Chinesesimp>
+    <Spanish>Radio aparición helis (m):</Spanish>
+    <French>Rayon hélicos (m):</French>
+    <Portuguese>Raio de spawn helis (m):</Portuguese>
+    <Russian>Радиус спавна вертолётов (м):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_SPAWN_HELI_RADIUS_COMMENT">
     <English>The radius around player in helicopters to spawn civilians. Set to 0 to disable spawning while in helicopters</English>
@@ -101,7 +125,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_WEST">
     <English>BLUFOR Hostility:</English>
-</Key>
+
+    <Chinese>BLUFOR 敵意:</Chinese>
+    <Chinesesimp>BLUFOR 敌意:</Chinesesimp>
+    <Spanish>Hostilidad BLUFOR:</Spanish>
+    <French>Hostilité BLUFOR:</French>
+    <Portuguese>Hostilidade BLUFOR:</Portuguese>
+    <Russian>Враждебность к BLUFOR:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_WEST_COMMENT">
     <English>Initial hostility level of civilians toward the BLUFOR side (0-200 scale; higher = more hostile).
@@ -110,7 +140,43 @@
 • Medium (30) — mild pre-existing animosity; some settlements begin wary.
 • High (60) — strong pre-existing hostility; most settlements begin unfriendly.
 • Extreme (130) — population begins actively hostile; hearts-and-minds work is much harder.</English>
-</Key>
+
+    <Chinese>平民對 BLUFOR 陣營的初始敵意（0-200 級別；數值愈高愈敵對）。
+
+• 低 (0) — 平民起始中立；敵意僅源於叛亂活動。
+• 中 (30) — 輕度既有敵意；部分聚落起始警戒。
+• 高 (60) — 強烈既有敵意；多數聚落起始不友善。
+• 極端 (130) — 平民起始積極敵對；人心爭奪工作大幅受阻。</Chinese>
+    <Chinesesimp>平民对 BLUFOR 阵营的初始敌意（0-200 等级；数值越高越敌对）。
+
+• 低 (0) — 平民起始中立；敌意仅源于叛乱活动。
+• 中 (30) — 轻度既有敌意；部分聚落起始警戒。
+• 高 (60) — 强烈既有敌意；多数聚落起始不友好。
+• 极端 (130) — 平民起始积极敌对；民心工作大幅受阻。</Chinesesimp>
+    <Spanish>Nivel de hostilidad inicial de los civiles hacia el bando BLUFOR (escala 0-200; mayor = más hostil).
+
+• Bajo (0) — los civiles empiezan neutrales; la hostilidad sólo crece por la actividad insurgente.
+• Medio (30) — ligera animosidad preexistente; algunas localidades empiezan cautas.
+• Alto (60) — fuerte hostilidad preexistente; la mayoría de localidades empiezan poco amistosas.
+• Extremo (130) — la población empieza abiertamente hostil; el trabajo de corazones y mentes es mucho más difícil.</Spanish>
+    <French>Niveau d'hostilité initial des civils envers le camp BLUFOR (échelle 0-200; plus élevé = plus hostile).
+
+• Faible (0) — les civils sont neutres au départ; l'hostilité ne monte que suite à l'activité insurgée.
+• Moyen (30) — animosité préexistante légère; certaines agglomérations commencent méfiantes.
+• Élevé (60) — forte hostilité préexistente; la plupart des agglomérations commencent peu amicales.
+• Extrême (130) — la population commence activement hostile; le travail coeurs et esprits est bien plus ardu.</French>
+    <Portuguese>Nível de hostilidade inicial dos civis em relação ao lado BLUFOR (escala 0-200; maior = mais hostil).
+
+• Baixo (0) — civis começam neutros; a hostilidade só cresce pela atividade insurgente.
+• Médio (30) — leve animosidade pré-existente; alguns assentamentos começam cautelosos.
+• Alto (60) — forte hostilidade pré-existente; a maioria dos assentamentos começa pouco amistosa.
+• Extremo (130) — a população começa ativamente hostil; trabalho de corações e mentes fica muito mais difícil.</Portuguese>
+    <Russian>Исходный уровень враждебности гражданских к стороне BLUFOR (шкала 0-200; выше — враждебнее).
+
+• Низкий (0) — гражданские начинают нейтрально; враждебность растёт только от деятельности повстанцев.
+• Средний (30) — лёгкая предшествующая неприязнь; некоторые поселения начинают настороженными.
+• Высокий (60) — сильная предшествующая враждебность; большинство поселений начинают недружелюбными.
+• Экстремальный (130) — население начинает активно враждебным; работа на сердца и умы становится гораздо сложнее.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_WEST_LOW">
     <English>Low</English>
@@ -154,7 +220,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_EAST">
     <English>OPFOR Hostility:</English>
-</Key>
+
+    <Chinese>OPFOR 敵意:</Chinese>
+    <Chinesesimp>OPFOR 敌意:</Chinesesimp>
+    <Spanish>Hostilidad OPFOR:</Spanish>
+    <French>Hostilité OPFOR:</French>
+    <Portuguese>Hostilidade OPFOR:</Portuguese>
+    <Russian>Враждебность к OPFOR:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_EAST_COMMENT">
     <English>Initial hostility level of civilians toward the OPFOR side (0-200 scale; higher = more hostile).
@@ -163,7 +235,43 @@
 • Medium (30) — mild pre-existing animosity; some settlements begin wary.
 • High (60) — strong pre-existing hostility; most settlements begin unfriendly.
 • Extreme (130) — population begins actively hostile; hearts-and-minds work is much harder.</English>
-</Key>
+
+    <Chinese>平民對 OPFOR 陣營的初始敵意（0-200 級別；數值愈高愈敵對）。
+
+• 低 (0) — 平民起始中立；敵意僅源於叛亂活動。
+• 中 (30) — 輕度既有敵意；部分聚落起始警戒。
+• 高 (60) — 強烈既有敵意；多數聚落起始不友善。
+• 極端 (130) — 平民起始積極敵對；人心爭奪工作大幅受阻。</Chinese>
+    <Chinesesimp>平民对 OPFOR 阵营的初始敌意（0-200 等级；数值越高越敌对）。
+
+• 低 (0) — 平民起始中立；敌意仅源于叛乱活动。
+• 中 (30) — 轻度既有敌意；部分聚落起始警戒。
+• 高 (60) — 强烈既有敌意；多数聚落起始不友好。
+• 极端 (130) — 平民起始积极敌对；民心工作大幅受阻。</Chinesesimp>
+    <Spanish>Nivel de hostilidad inicial de los civiles hacia el bando OPFOR (escala 0-200; mayor = más hostil).
+
+• Bajo (0) — los civiles empiezan neutrales; la hostilidad sólo crece por la actividad insurgente.
+• Medio (30) — ligera animosidad preexistente; algunas localidades empiezan cautas.
+• Alto (60) — fuerte hostilidad preexistente; la mayoría de localidades empiezan poco amistosas.
+• Extremo (130) — la población empieza abiertamente hostil; el trabajo de corazones y mentes es mucho más difícil.</Spanish>
+    <French>Niveau d'hostilité initial des civils envers le camp OPFOR (échelle 0-200; plus élevé = plus hostile).
+
+• Faible (0) — les civils sont neutres au départ; l'hostilité ne monte que suite à l'activité insurgée.
+• Moyen (30) — animosité préexistante légère; certaines agglomérations commencent méfiantes.
+• Élevé (60) — forte hostilité préexistente; la plupart des agglomérations commencent peu amicales.
+• Extrême (130) — la population commence activement hostile; le travail coeurs et esprits est bien plus ardu.</French>
+    <Portuguese>Nível de hostilidade inicial dos civis em relação ao lado OPFOR (escala 0-200; maior = mais hostil).
+
+• Baixo (0) — civis começam neutros; a hostilidade só cresce pela atividade insurgente.
+• Médio (30) — leve animosidade pré-existente; alguns assentamentos começam cautelosos.
+• Alto (60) — forte hostilidade pré-existente; a maioria dos assentamentos começa pouco amistosa.
+• Extremo (130) — a população começa ativamente hostil; trabalho de corações e mentes fica muito mais difícil.</Portuguese>
+    <Russian>Исходный уровень враждебности гражданских к стороне OPFOR (шкала 0-200; выше — враждебнее).
+
+• Низкий (0) — гражданские начинают нейтрально; враждебность растёт только от деятельности повстанцев.
+• Средний (30) — лёгкая предшествующая неприязнь; некоторые поселения начинают настороженными.
+• Высокий (60) — сильная предшествующая враждебность; большинство поселений начинают недружелюбными.
+• Экстремальный (130) — население начинает активно враждебным; работа на сердца и умы становится гораздо сложнее.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_EAST_LOW">
     <English>Low</English>
@@ -207,7 +315,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_INDEP">
     <English>Independent Hostility:</English>
-</Key>
+
+    <Chinese>獨立陣營敵意:</Chinese>
+    <Chinesesimp>独立阵营敌意:</Chinesesimp>
+    <Spanish>Hostilidad Independiente:</Spanish>
+    <French>Hostilité Indépendant:</French>
+    <Portuguese>Hostilidade Independente:</Portuguese>
+    <Russian>Враждебность к Независимым:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_INDEP_COMMENT">
     <English>Initial hostility level of civilians toward the Independent side (0-200 scale; higher = more hostile).
@@ -216,7 +330,43 @@
 • Medium (30) — mild pre-existing animosity; some settlements begin wary.
 • High (60) — strong pre-existing hostility; most settlements begin unfriendly.
 • Extreme (130) — population begins actively hostile; hearts-and-minds work is much harder.</English>
-</Key>
+
+    <Chinese>平民對 Independent 陣營的初始敵意（0-200 級別；數值愈高愈敵對）。
+
+• 低 (0) — 平民起始中立；敵意僅源於叛亂活動。
+• 中 (30) — 輕度既有敵意；部分聚落起始警戒。
+• 高 (60) — 強烈既有敵意；多數聚落起始不友善。
+• 極端 (130) — 平民起始積極敵對；人心爭奪工作大幅受阻。</Chinese>
+    <Chinesesimp>平民对 Independent 阵营的初始敌意（0-200 等级；数值越高越敌对）。
+
+• 低 (0) — 平民起始中立；敌意仅源于叛乱活动。
+• 中 (30) — 轻度既有敌意；部分聚落起始警戒。
+• 高 (60) — 强烈既有敌意；多数聚落起始不友好。
+• 极端 (130) — 平民起始积极敌对；民心工作大幅受阻。</Chinesesimp>
+    <Spanish>Nivel de hostilidad inicial de los civiles hacia el bando Independiente (escala 0-200; mayor = más hostil).
+
+• Bajo (0) — los civiles empiezan neutrales; la hostilidad sólo crece por la actividad insurgente.
+• Medio (30) — ligera animosidad preexistente; algunas localidades empiezan cautas.
+• Alto (60) — fuerte hostilidad preexistente; la mayoría de localidades empiezan poco amistosas.
+• Extremo (130) — la población empieza abiertamente hostil; el trabajo de corazones y mentes es mucho más difícil.</Spanish>
+    <French>Niveau d'hostilité initial des civils envers le camp Indépendant (échelle 0-200; plus élevé = plus hostile).
+
+• Faible (0) — les civils sont neutres au départ; l'hostilité ne monte que suite à l'activité insurgée.
+• Moyen (30) — animosité préexistante légère; certaines agglomérations commencent méfiantes.
+• Élevé (60) — forte hostilité préexistente; la plupart des agglomérations commencent peu amicales.
+• Extrême (130) — la population commence activement hostile; le travail coeurs et esprits est bien plus ardu.</French>
+    <Portuguese>Nível de hostilidade inicial dos civis em relação ao lado Independente (escala 0-200; maior = mais hostil).
+
+• Baixo (0) — civis começam neutros; a hostilidade só cresce pela atividade insurgente.
+• Médio (30) — leve animosidade pré-existente; alguns assentamentos começam cautelosos.
+• Alto (60) — forte hostilidade pré-existente; a maioria dos assentamentos começa pouco amistosa.
+• Extremo (130) — a população começa ativamente hostil; trabalho de corações e mentes fica muito mais difícil.</Portuguese>
+    <Russian>Исходный уровень враждебности гражданских к стороне Независимый (шкала 0-200; выше — враждебнее).
+
+• Низкий (0) — гражданские начинают нейтрально; враждебность растёт только от деятельности повстанцев.
+• Средний (30) — лёгкая предшествующая неприязнь; некоторые поселения начинают настороженными.
+• Высокий (60) — сильная предшествующая враждебность; большинство поселений начинают недружелюбными.
+• Экстремальный (130) — население начинает активно враждебным; работа на сердца и умы становится гораздо сложнее.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_INDEP_LOW">
     <English>Low</English>
@@ -270,7 +420,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CIVILIAN_ROLES">
     <English>Civilian Roles:</English>
-</Key>
+
+    <Chinese>平民角色:</Chinese>
+    <Chinesesimp>平民角色:</Chinesesimp>
+    <Spanish>Roles civiles:</Spanish>
+    <French>Rôles civils:</French>
+    <Portuguese>Papéis civis:</Portuguese>
+    <Russian>Роли гражданских:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CIVILIAN_ROLES_COMMENT">
     <English>Adds civilian roles of either Eastern (muezzins, town elders) or Western type (priests, politicians)</English>
@@ -345,7 +501,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ENABLE_INTERACTION">
     <English>Enable Interaction:</English>
-</Key>
+
+    <Chinese>啟用互動:</Chinese>
+    <Chinesesimp>启用互动:</Chinesesimp>
+    <Spanish>Activar interacción:</Spanish>
+    <French>Activer l'interaction:</French>
+    <Portuguese>Ativar interação:</Portuguese>
+    <Russian>Включить взаимодействие:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ENABLE_INTERACTION_COMMENT">
     <English>Enable advanced dialogue and interaction options with civilians.</English>
@@ -359,7 +521,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_LIMIT_INTERACTION">
     <English>Limit Interaction:</English>
-</Key>
+
+    <Chinese>限制互動:</Chinese>
+    <Chinesesimp>限制互动:</Chinesesimp>
+    <Spanish>Limitar interacción:</Spanish>
+    <French>Limiter l'interaction:</French>
+    <Portuguese>Limitar interação:</Portuguese>
+    <Russian>Ограничить взаимодействие:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT">
     <English>Comma-separated list of classnames or player UIDs to restrict civilian interaction to. Leave empty to allow all players.</English>
@@ -370,12 +538,26 @@
     <Chinese>以逗號分隔的類別名稱或玩家 UID 清單,用於限制可進行平民互動的對象。留空則允許所有玩家。</Chinese>
     <Chinesesimp>用逗号分隔的 classname 或玩家 UID 列表,用于限制平民互动范围。留空则允许所有玩家。</Chinesesimp>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_INSURGENT_FACTION">
     <English>Insurgent Factions:</English>
-</Key>
+
+    <Chinese>叛軍派系:</Chinese>
+    <Chinesesimp>叛乱阵营:</Chinesesimp>
+    <Spanish>Facciones insurgentes:</Spanish>
+    <French>Factions insurgées:</French>
+    <Portuguese>Facções insurgentes:</Portuguese>
+    <Russian>Фракции повстанцев:</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_INSURGENT_FACTION_COMMENT">
     <English>Select one or more factions treated as the hostile insurgent force. Civilians will warn players about these factions during interactions, and nearby units of these factions count as insurgents in dialogue responses. Use the manual field below for factions from mods not currently loaded.</English>
-</Key>
+
+    <Chinese>選擇一個或多個被視為敵對叛亂勢力的派系。互動時平民會向玩家提及這些派系，附近屬於這些派系的單位在對話回應中會視為叛亂分子。對於目前未載入的模組派系，使用下方手動欄位。</Chinese>
+    <Chinesesimp>选择一个或多个被视为敌对叛乱势力的阵营。互动时平民会向玩家提及这些阵营，附近属于这些阵营的单位在对话回应中会视为叛乱分子。对于当前未加载的模组阵营，使用下方手动字段。</Chinesesimp>
+    <Spanish>Selecciona una o varias facciones tratadas como fuerza insurgente hostil. Los civiles advertirán a los jugadores sobre estas facciones durante las interacciones, y las unidades cercanas de estas facciones cuentan como insurgentes en las respuestas de diálogo. Usa el campo manual de abajo para facciones de mods no cargados actualmente.</Spanish>
+    <French>Sélectionnez une ou plusieurs factions considérées comme force insurgée hostile. Les civils avertiront les joueurs de ces factions lors des interactions, et les unités proches de ces factions comptent comme des insurgés dans les réponses de dialogue. Utilisez le champ manuel ci-dessous pour les factions de mods non chargés.</French>
+    <Portuguese>Selecione uma ou mais facções tratadas como força insurgente hostil. Os civis avisarão os jogadores sobre essas facções durante as interações, e as unidades próximas dessas facções contam como insurgentes nas respostas de diálogo. Use o campo manual abaixo para facções de mods não carregados.</Portuguese>
+    <Russian>Выберите одну или несколько фракций, считаемых враждебными повстанческими силами. Гражданские будут предупреждать игроков об этих фракциях во время взаимодействий, а ближайшие подразделения этих фракций считаются повстанцами в ответах диалогов. Для фракций из незагруженных модов используйте ручное поле ниже.</Russian></Key>
 <Key ID="STR_ALIVE_CIV_POP_FACTIONS_MANUAL">
     <English>Factions (manual override):</English>
     <Chinese>派系（手動覆蓋）:</Chinese>
@@ -397,7 +579,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS">
     <English>Crowd Spawn Radius (m):</English>
-</Key>
+
+    <Chinese>人群生成半徑（公尺）:</Chinese>
+    <Chinesesimp>人群生成半径（米）:</Chinesesimp>
+    <Spanish>Radio aparición multitudes (m):</Spanish>
+    <French>Rayon foules (m):</French>
+    <Portuguese>Raio spawn multidão (m):</Portuguese>
+    <Russian>Радиус спавна толп (м):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT">
     <English>The radius at which houses are activated to spawn civilians for crowds. Set to 0 to disable crowds.</English>
@@ -411,7 +599,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_DENSITY">
     <English>Crowd Civs per House (count):</English>
-</Key>
+
+    <Chinese>每棟房屋平民數（數量）:</Chinese>
+    <Chinesesimp>每栋房屋平民数（数量）:</Chinesesimp>
+    <Spanish>Civiles por casa (nº):</Spanish>
+    <French>Civils par maison (nb):</French>
+    <Portuguese>Civis por casa (qtd):</Portuguese>
+    <Russian>Гражданских на дом (шт):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT">
     <English>The number of civilians spawned per house for crowds</English>
@@ -425,7 +619,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER">
     <English>Crowd Limit (count):</English>
-</Key>
+
+    <Chinese>人群上限（數量）:</Chinese>
+    <Chinesesimp>人群上限（数量）:</Chinesesimp>
+    <Spanish>Límite de multitudes (nº):</Spanish>
+    <French>Limite foules (nb):</French>
+    <Portuguese>Limite multidões (qtd):</Portuguese>
+    <Russian>Лимит толп (шт):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_ACTIVE_LIMITER_COMMENT">
     <English>Maximum number of civilians that can be active for all crowds</English>
@@ -436,16 +636,36 @@
     <Chinese>所有人群可同時活動的平民最大數量</Chinese>
     <Chinesesimp>可以为所有人群活动的最大平民数量</Chinesesimp>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_FACTION">
     <English>Crowd Faction:</English>
-</Key>
+
+    <Chinese>人群派系:</Chinese>
+    <Chinesesimp>人群派系:</Chinesesimp>
+    <Spanish>Facción de multitudes:</Spanish>
+    <French>Faction des foules:</French>
+    <Portuguese>Facção da multidão:</Portuguese>
+    <Russian>Фракция толпы:</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_CROWD_FACTION_COMMENT">
     <English>Optional. Select a single civilian faction to use for ambient crowd spawns. Specifying a faction improves performance; leave unset to have the crowd activator pick a faction per building from nearby civilians. Factions from mods not currently loaded appear as "(unrecognised)" — the stored value is preserved regardless.</English>
-</Key>
+
+    <Chinese>選填。選擇一個單一平民派系用於環境人群生成。指定派系可提升效能；留空則由人群啟動器依附近平民為每棟建築選擇派系。目前未載入的模組派系會顯示為「(unrecognised)」——無論如何會保留儲存值。</Chinese>
+    <Chinesesimp>可选。选择一个单一平民阵营用于环境人群生成。指定阵营可提升性能；留空则由人群启动器按附近平民为每栋建筑选择阵营。当前未加载的模组阵营会显示为「(unrecognised)」——无论如何都会保留存储值。</Chinesesimp>
+    <Spanish>Opcional. Selecciona una única facción civil para las apariciones de multitudes ambientales. Especificar una facción mejora el rendimiento; déjalo sin marcar para que el activador de multitudes elija una facción por edificio a partir de los civiles cercanos. Las facciones de mods no cargados aparecen como «(unrecognised)» — el valor guardado se conserva igualmente.</Spanish>
+    <French>Facultatif. Sélectionnez une seule faction civile pour les apparitions de foules ambiantes. Spécifier une faction améliore les performances; laissez vide pour que l'activateur de foules choisisse une faction par bâtiment à partir des civils à proximité. Les factions de mods non chargés apparaissent comme «(unrecognised)» — la valeur enregistrée est préservée dans tous les cas.</French>
+    <Portuguese>Opcional. Selecione uma única facção civil para os spawns de multidões ambientais. Especificar uma facção melhora o desempenho; deixe em branco para que o ativador de multidões escolha uma facção por edifício a partir dos civis próximos. Facções de mods não carregados aparecem como «(unrecognised)» — o valor armazenado é preservado de qualquer forma.</Portuguese>
+    <Russian>Необязательно. Выберите одну гражданскую фракцию для спавна окружающих толп. Указание фракции повышает производительность; оставьте пустым, чтобы активатор толп выбирал фракцию по зданию из ближайших гражданских. Фракции из незагруженных модов отображаются как «(unrecognised)» — сохранённое значение сохраняется в любом случае.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE">
     <English>Humanitarian Hostility Decrease:</English>
-</Key>
+
+    <Chinese>人道援助敵意降低:</Chinese>
+    <Chinesesimp>人道援助敌意降低:</Chinesesimp>
+    <Spanish>Reducción hostilidad humanitaria:</Spanish>
+    <French>Baisse hostilité humanitaire:</French>
+    <Portuguese>Redução hostilidade humanitária:</Portuguese>
+    <Russian>Снижение враждебности от помощи:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_COMMENT">
     <English>Probability that giving humanitarian rations or water to a civilian decreases sector hostility.
@@ -454,23 +674,93 @@
 • Medium (40%) — balanced default for most campaigns.
 • High (60%) — aid usually helps; fast hearts-and-minds progression.
 • Extreme (80%) — aid almost always helps; trivial to flip sector mood.</English>
-</Key>
+
+    <Chinese>向平民提供人道口糧或飲水時，降低該聚落敵意的機率。
+
+• 低 (20%) — 每次援助行動有 5 分之 1 的機率見效。
+• 中 (40%) — 多數戰役的平衡預設。
+• 高 (60%) — 援助通常有效；人心爭奪進展較快。
+• 極端 (80%) — 援助幾乎總是有效；輕易翻轉聚落情緒。</Chinese>
+    <Chinesesimp>向平民提供人道口粮或饮水时，降低该聚落敌意的概率。
+
+• 低 (20%) — 每次援助行动有五分之一的几率见效。
+• 中 (40%) — 多数战役的平衡默认值。
+• 高 (60%) — 援助通常有效；民心工作进展较快。
+• 极端 (80%) — 援助几乎总是有效；轻易翻转聚落情绪。</Chinesesimp>
+    <Spanish>Probabilidad de que dar raciones humanitarias o agua a un civil reduzca la hostilidad del sector.
+
+• Bajo (20%) — cada acción de ayuda tiene 1 entre 5 de surtir efecto.
+• Medio (40%) — valor por defecto equilibrado para la mayoría de campañas.
+• Alto (60%) — la ayuda suele surtir efecto; progresión rápida de corazones y mentes.
+• Extremo (80%) — la ayuda casi siempre surte efecto; trivial voltear el ánimo del sector.</Spanish>
+    <French>Probabilité que donner des rations humanitaires ou de l'eau à un civil baisse l'hostilité du secteur.
+
+• Faible (20%) — chaque acte d'aide a 1 chance sur 5 de porter fruit.
+• Moyen (40%) — valeur par défaut équilibrée pour la plupart des campagnes.
+• Élevé (60%) — l'aide fonctionne généralement; progression rapide des coeurs et esprits.
+• Extrême (80%) — l'aide fonctionne presque toujours; trivial de retourner le climat du secteur.</French>
+    <Portuguese>Probabilidade de que dar rações humanitárias ou água a um civil reduza a hostilidade do setor.
+
+• Baixo (20%) — cada ação de ajuda tem 1 em 5 de chance de surtir efeito.
+• Médio (40%) — valor padrão equilibrado para a maioria das campanhas.
+• Alto (60%) — a ajuda geralmente funciona; progressão rápida de corações e mentes.
+• Extremo (80%) — a ajuda quase sempre funciona; trivial virar o ânimo do setor.</Portuguese>
+    <Russian>Вероятность того, что передача гуманитарных пайков или воды гражданскому снижает враждебность сектора.
+
+• Низкий (20%) — у каждого акта помощи 1 шанс из 5 сработать.
+• Средний (40%) — сбалансированное значение по умолчанию для большинства кампаний.
+• Высокий (60%) — помощь обычно срабатывает; быстрое развитие сердец и умов.
+• Экстремальный (80%) — помощь почти всегда срабатывает; легко перевернуть настроение сектора.</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_LOW">
     <English>Low (20%)</English>
-</Key>
+
+    <Chinese>低 (20%)</Chinese>
+    <Chinesesimp>低 (20%)</Chinesesimp>
+    <Spanish>Bajo (20%)</Spanish>
+    <French>Faible (20%)</French>
+    <Portuguese>Baixo (20%)</Portuguese>
+    <Russian>Низкий (20%)</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_MEDIUM">
     <English>Medium (40%)</English>
-</Key>
+
+    <Chinese>中 (40%)</Chinese>
+    <Chinesesimp>中 (40%)</Chinesesimp>
+    <Spanish>Medio (40%)</Spanish>
+    <French>Moyen (40%)</French>
+    <Portuguese>Médio (40%)</Portuguese>
+    <Russian>Средний (40%)</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_HIGH">
     <English>High (60%)</English>
-</Key>
+
+    <Chinese>高 (60%)</Chinese>
+    <Chinesesimp>高 (60%)</Chinesesimp>
+    <Spanish>Alto (60%)</Spanish>
+    <French>Élevé (60%)</French>
+    <Portuguese>Alto (60%)</Portuguese>
+    <Russian>Высокий (60%)</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_CHANCE_EXTREME">
     <English>Extreme (80%)</English>
-</Key>
+
+    <Chinese>極端 (80%)</Chinese>
+    <Chinesesimp>极端 (80%)</Chinesesimp>
+    <Spanish>Extremo (80%)</Spanish>
+    <French>Extrême (80%)</French>
+    <Portuguese>Extremo (80%)</Portuguese>
+    <Russian>Экстремальный (80%)</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_MAX_ALLOWED_AID">
     <English>Humanitarian Aid Limit (count):</English>
-</Key>
+
+    <Chinese>人道援助上限（數量）:</Chinese>
+    <Chinesesimp>人道援助上限（数量）:</Chinesesimp>
+    <Spanish>Límite ayuda humanitaria (nº):</Spanish>
+    <French>Limite aide humanitaire (nb):</French>
+    <Portuguese>Limite ajuda humanitária (qtd):</Portuguese>
+    <Russian>Лимит гумпомощи (шт):</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_MAX_ALLOWED_AID_COMMENT">
     <English>Maximum number of Humanitarian Rations/Water Bottles a Civilian is allowed to receive</English>
@@ -484,7 +774,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_WATER_ITEMS">
     <English>Custom Water Classes:</English>
-</Key>
+
+    <Chinese>自訂飲水類別:</Chinese>
+    <Chinesesimp>自定义饮水类别:</Chinesesimp>
+    <Spanish>Clases de agua personalizadas:</Spanish>
+    <French>Classes d'eau personnalisées:</French>
+    <Portuguese>Classes de água personalizadas:</Portuguese>
+    <Russian>Свои классы воды:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT">
     <English>Enter a list of classnames (comma separated) for any custom water items you want used for humanitarian purposes</English>
@@ -498,7 +794,13 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS">
     <English>Custom Ration Classes:</English>
-</Key>
+
+    <Chinese>自訂口糧類別:</Chinese>
+    <Chinesesimp>自定义口粮类别:</Chinesesimp>
+    <Spanish>Clases de raciones personalizadas:</Spanish>
+    <French>Classes de rations personnalisées:</French>
+    <Portuguese>Classes de ração personalizadas:</Portuguese>
+    <Russian>Свои классы пайков:</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT">
     <English>Enter a list of classnames (comma separated) for any custom ration items you want used for humanitarian purposes</English>
@@ -569,7 +871,8 @@
     <Spanish>almuédano</Spanish>
     <Chinese>宣禮員</Chinese>
     <Chinesesimp>穆兹津</Chinesesimp>
-</Key>
+
+    <French>muezzin</French></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_INTERACT_ACTIONS_ROLE_POLITICIAN">
     <English>politician</English>
@@ -598,7 +901,8 @@
     <Spanish>Detener</Spanish>
     <Chinese>停下</Chinese>
     <Chinesesimp>扣留</Chinesesimp>
-</Key>
+
+    <French>Arrêter</French></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_INTERACT_ACTIONS_DETAIN">
     <English>Detain</English>
