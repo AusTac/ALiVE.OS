@@ -32,6 +32,15 @@ params ["_building",["_faction","CIV_F"]];
 // cleanly skips sound-source tracking. Issue #857.
 if (missionNamespace getVariable ["ALiVE_CivPop_AmbientSoundsDisabled", false]) exitWith { objNull };
 
+// Skip ruined / damaged buildings. Music, radio, TV, prayer calls etc.
+// playing from collapsed or ruined structures break immersion. Issue #636.
+private _typeLower = toLower typeOf _building;
+if (
+    damage _building >= 1 ||
+    {_typeLower find "ruin" > -1} ||
+    {_typeLower find "_dam_" > -1}
+) exitWith { objNull };
+
 private _musicSource = "RoadCone_L_F" createVehicle position _building;
 _musicSource attachTo [_building,[1,1,1]];
 hideObjectGlobal _musicSource;
