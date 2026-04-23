@@ -144,6 +144,11 @@ class CfgVehicles {
                                     class Fireteam { name = "Fireteam (1-4)";  value = 4; };
                                 };
                         };
+                        // ---- Filters --------------------------------------------------------
+                        class HDR_FILTERS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_cqb_HDR_FILTERS"; displayName = "FILTERS"; };
+                        class whitelist : Edit { property = "ALiVE_mil_cqb_whitelist"; displayName = "$STR_ALIVE_CQB_WHITELIST"; tooltip = "$STR_ALIVE_CQB_WHITELIST_COMMENT"; defaultValue = """"""; };
+                        class blacklist : Edit { property = "ALiVE_mil_cqb_blacklist"; displayName = "$STR_ALIVE_CQB_BLACKLIST"; tooltip = "$STR_ALIVE_CQB_BLACKLIST_COMMENT"; defaultValue = """"""; };
+                        class units_blacklist : Edit { property = "ALiVE_mil_cqb_units_blacklist"; displayName = "$STR_ALIVE_CQB_UNIT_BLACKLIST"; tooltip = "$STR_ALIVE_CQB_UNIT_BLACKLIST_COMMENT"; defaultValue = """"""; };
                         // ---- Factions -------------------------------------------------------
                         class HDR_FACTIONS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_cqb_HDR_FACTIONS"; displayName = "FACTIONS"; };
                         class CQB_UseDominantFaction : Combo
@@ -254,11 +259,6 @@ class CfgVehicles {
                                 };
                         };
                         class CQB_staticWeaponsClassnames : Edit { property = "ALiVE_mil_cqb_CQB_staticWeaponsClassnames"; displayName = "$STR_ALIVE_CQB_STATICWEAPONS_CLASSNAMES"; tooltip = "$STR_ALIVE_CQB_STATICWEAPONS_CLASSNAMES_COMMENT"; defaultValue = """B_HMG_01_high_F,O_Mortar_01_F,O_HMG_01_high_F"""; };
-                        // ---- Filters --------------------------------------------------------
-                        class HDR_FILTERS : ALiVE_ModuleSubTitle { property = "ALiVE_mil_cqb_HDR_FILTERS"; displayName = "FILTERS"; };
-                        class whitelist : Edit { property = "ALiVE_mil_cqb_whitelist"; displayName = "$STR_ALIVE_CQB_WHITELIST"; tooltip = "$STR_ALIVE_CQB_WHITELIST_COMMENT"; defaultValue = """"""; };
-                        class blacklist : Edit { property = "ALiVE_mil_cqb_blacklist"; displayName = "$STR_ALIVE_CQB_BLACKLIST"; tooltip = "$STR_ALIVE_CQB_BLACKLIST_COMMENT"; defaultValue = """"""; };
-                        class units_blacklist : Edit { property = "ALiVE_mil_cqb_units_blacklist"; displayName = "$STR_ALIVE_CQB_UNIT_BLACKLIST"; tooltip = "$STR_ALIVE_CQB_UNIT_BLACKLIST_COMMENT"; defaultValue = """"""; };
                         // ---- On Spawn Hook --------------------------------------------------
                         class HDR_HOOK : ALiVE_ModuleSubTitle { property = "ALiVE_mil_cqb_HDR_HOOK"; displayName = "ON SPAWN HOOK"; };
                         class onEachSpawn : ALiVE_EditMultilineSQF
