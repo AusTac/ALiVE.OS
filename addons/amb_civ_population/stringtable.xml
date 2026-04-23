@@ -781,9 +781,16 @@
     <French>Classes d'eau personnalisées:</French>
     <Portuguese>Classes de água personalizadas:</Portuguese>
     <Russian>Свои классы воды:</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT">
     <English>Select water items civilians may receive as humanitarian aid. The list shows items from loaded mods (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — these are added to ALiVE's built-in defaults. Use the manual field below to include items from mods not currently loaded but expected at mission time.</English>
-</Key>
+
+    <Chinese>選擇平民可作為人道援助接收的飲水物品。清單顯示已載入模組（ACE3、MGM Foods、KSS、S.O.G. Prairie Fire、原版）提供的物品 — 這些項目會加到 ALiVE 內建預設之上。對於目前未載入但預期於任務時存在的模組物品，使用下方手動欄位。</Chinese>
+    <Chinesesimp>选择平民可作为人道援助接收的饮水物品。列表显示已加载模组（ACE3、MGM Foods、KSS、S.O.G. Prairie Fire、原版）提供的物品 — 这些项目会加到 ALiVE 内置默认之上。对于当前未加载但预期于任务时存在的模组物品，使用下方手动字段。</Chinesesimp>
+    <Spanish>Selecciona los objetos de agua que los civiles pueden recibir como ayuda humanitaria. La lista muestra objetos de los mods cargados (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — se añaden a los predeterminados integrados de ALiVE. Usa el campo manual de abajo para incluir objetos de mods no cargados actualmente pero esperados al momento de la misión.</Spanish>
+    <French>Sélectionnez les objets d'eau que les civils peuvent recevoir comme aide humanitaire. La liste affiche les objets des mods chargés (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — ils s'ajoutent aux valeurs par défaut intégrées d'ALiVE. Utilisez le champ manuel ci-dessous pour inclure des objets de mods non chargés actuellement mais attendus au moment de la mission.</French>
+    <Portuguese>Selecione os itens de água que os civis podem receber como ajuda humanitária. A lista mostra itens dos mods carregados (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — estes são adicionados aos padrões integrados do ALiVE. Use o campo manual abaixo para incluir itens de mods não carregados atualmente, mas esperados no momento da missão.</Portuguese>
+    <Russian>Выберите предметы воды, которые гражданские могут получить в качестве гуманитарной помощи. В списке показаны предметы из загруженных модов (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — они добавляются к встроенным по умолчанию ALiVE. Используйте ручное поле ниже, чтобы включить предметы из модов, не загруженных в настоящее время, но ожидаемых во время миссии.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS">
     <English>Custom Ration Classes:</English>
@@ -794,15 +801,36 @@
     <French>Classes de rations personnalisées:</French>
     <Portuguese>Classes de ração personalizadas:</Portuguese>
     <Russian>Свои классы пайков:</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT">
     <English>Select ration items civilians may receive as humanitarian aid. The list shows items from loaded mods (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — these are added to ALiVE's built-in defaults. Use the manual field below to include items from mods not currently loaded but expected at mission time.</English>
-</Key>
+
+    <Chinese>選擇平民可作為人道援助接收的口糧物品。清單顯示已載入模組（ACE3、MGM Foods、KSS、S.O.G. Prairie Fire、原版）提供的物品 — 這些項目會加到 ALiVE 內建預設之上。對於目前未載入但預期於任務時存在的模組物品，使用下方手動欄位。</Chinese>
+    <Chinesesimp>选择平民可作为人道援助接收的口粮物品。列表显示已加载模组（ACE3、MGM Foods、KSS、S.O.G. Prairie Fire、原版）提供的物品 — 这些项目会加到 ALiVE 内置默认之上。对于当前未加载但预期于任务时存在的模组物品，使用下方手动字段。</Chinesesimp>
+    <Spanish>Selecciona los objetos de ración que los civiles pueden recibir como ayuda humanitaria. La lista muestra objetos de los mods cargados (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — se añaden a los predeterminados integrados de ALiVE. Usa el campo manual de abajo para incluir objetos de mods no cargados actualmente pero esperados al momento de la misión.</Spanish>
+    <French>Sélectionnez les objets de ration que les civils peuvent recevoir comme aide humanitaire. La liste affiche les objets des mods chargés (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — ils s'ajoutent aux valeurs par défaut intégrées d'ALiVE. Utilisez le champ manuel ci-dessous pour inclure des objets de mods non chargés actuellement mais attendus au moment de la mission.</French>
+    <Portuguese>Selecione os itens de ração que os civis podem receber como ajuda humanitária. A lista mostra itens dos mods carregados (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — estes são adicionados aos padrões integrados do ALiVE. Use o campo manual abaixo para incluir itens de mods não carregados atualmente, mas esperados no momento da missão.</Portuguese>
+    <Russian>Выберите предметы пайков, которые гражданские могут получить в качестве гуманитарной помощи. В списке показаны предметы из загруженных модов (ACE3, MGM Foods, KSS, S.O.G. Prairie Fire, vanilla) — они добавляются к встроенным по умолчанию ALiVE. Используйте ручное поле ниже, чтобы включить предметы из модов, не загруженных в настоящее время, но ожидаемых во время миссии.</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ITEMS_MANUAL">
     <English>Classes (manual override):</English>
-</Key>
+
+    <Chinese>類別（手動覆蓋）:</Chinese>
+    <Chinesesimp>类别（手动覆盖）:</Chinesesimp>
+    <Spanish>Clases (anulación manual):</Spanish>
+    <French>Classes (remplacement manuel):</French>
+    <Portuguese>Classes (substituição manual):</Portuguese>
+    <Russian>Классы (ручное переопределение):</Russian></Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_ITEMS_MANUAL_COMMENT">
     <English>Optional. Type extra item classnames for mods not currently loaded but expected at mission time. Format: comma-separated classnames with no spaces or quotes — e.g. mod_item_01,mod_item_02. Combined with the selection above at runtime.</English>
-</Key>
+
+    <Chinese>可選。輸入目前未載入但預期於任務時存在的模組物品類名。格式：逗號分隔的類名，無空格無引號 — 例如 mod_item_01,mod_item_02。執行時與上方選擇合併。</Chinese>
+    <Chinesesimp>可选。输入当前未加载但预期于任务时存在的模组物品类名。格式：逗号分隔的类名，无空格无引号 — 例如 mod_item_01,mod_item_02。运行时与上方选择合并。</Chinesesimp>
+    <Spanish>Opcional. Escribe classnames de objeto adicionales para mods no cargados actualmente pero esperados al momento de la misión. Formato: classnames separados por comas, sin espacios ni comillas — p. ej. mod_item_01,mod_item_02. Combinado con la selección de arriba en tiempo de ejecución.</Spanish>
+    <French>Facultatif. Saisissez les classnames d'objets supplémentaires pour les mods non chargés actuellement mais attendus au moment de la mission. Format: classnames séparés par des virgules, sans espaces ni guillemets — p. ex. mod_item_01,mod_item_02. Combinés avec la sélection ci-dessus au moment de l'exécution.</French>
+    <Portuguese>Opcional. Digite classnames de item adicionais para mods não carregados atualmente, mas esperados no momento da missão. Formato: classnames separados por vírgulas, sem espaços ou aspas — p. ex. mod_item_01,mod_item_02. Combinados com a seleção acima em tempo de execução.</Portuguese>
+    <Russian>Необязательно. Введите дополнительные classnames предметов для модов, не загруженных в настоящее время, но ожидаемых во время миссии. Формат: classnames через запятую, без пробелов и кавычек — напр. mod_item_01,mod_item_02. Объединяется с выбором выше во время выполнения.</Russian></Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_TOOMUCHAID">
     <English>This civilian does not require any more humanitarian aid.</English>
