@@ -28,11 +28,11 @@ if (isNil "ALIVE_compiledFactions") then {
 
 private _debug = [(_logic getVariable ["debug", false])] call _parseBool;
 private _deleteTemplates = [(_logic getVariable ["deleteTemplates", true])] call _parseBool;
-private _factionId = _logic getVariable ["factionId", "ALIVE_CUSTOM_FACTION"];
-if !(_factionId isEqualType "") then {
-    _factionId = str _factionId;
+private _requestedFactionId = _logic getVariable ["factionId", "ALIVE_CUSTOM_FACTION"];
+if !(_requestedFactionId isEqualType "") then {
+    _requestedFactionId = str _requestedFactionId;
 };
-
+private _factionId = _requestedFactionId;
 private _normalizedFactionId = [];
 private _lastWasUnderscore = false;
 private _hasIdentifierChar = false;
@@ -74,6 +74,54 @@ if (_proxyFaction isEqualTo "") then {
     _proxyFaction = "OPF_F";
 };
 
+private _moduleSourceId = netId _logic;
+if (_moduleSourceId isEqualTo "") then {
+    _moduleSourceId = str _logic;
+};
+
+private _ownsExistingId = (_logic getVariable ["compiledFactionId", ""]) isEqualTo _factionId;
+private _collisionReason = "";
+private _collisionOwner = "";
+private _collisionSourceId = "";
+
+if (_factionId in (ALIVE_compiledFactions select 1)) then {
+    private _existingFactionData = [ALIVE_compiledFactions, _factionId] call ALIVE_fnc_hashGet;
+    private _existingSourceModule = [_existingFactionData, "sourceModule", objNull] call ALIVE_fnc_hashGet;
+    private _existingSourceModuleId = [_existingFactionData, "sourceModuleId", ""] call ALIVE_fnc_hashGet;
+
+    if ((isNull _existingSourceModule && {!_ownsExistingId && {_existingSourceModuleId != _moduleSourceId}}) || {!isNull _existingSourceModule && {!(_existingSourceModule isEqualTo _logic)}}) then {
+        _collisionReason = "compiled faction";
+        _collisionOwner = [_existingFactionData, "displayName", _factionId] call ALIVE_fnc_hashGet;
+        _collisionSourceId = _existingSourceModuleId;
+    };
+};
+
+if (_collisionReason isEqualTo "" && {!isNil "ALIVE_factionCustomMappings"} && {_factionId in (ALIVE_factionCustomMappings select 1)}) then {
+    private _existingMapping = [ALIVE_factionCustomMappings, _factionId] call ALIVE_fnc_hashGet;
+    private _mappingIsCompiled = [_existingMapping, "CompiledFaction", false] call ALIVE_fnc_hashGet;
+    private _existingSourceModule = [_existingMapping, "SourceModule", objNull] call ALIVE_fnc_hashGet;
+    private _existingSourceModuleId = [_existingMapping, "SourceModuleId", ""] call ALIVE_fnc_hashGet;
+    private _mappingOwnedByCurrentModule = _mappingIsCompiled && {(!isNull _existingSourceModule && {_existingSourceModule isEqualTo _logic}) || {(isNull _existingSourceModule) && {_ownsExistingId || {_existingSourceModuleId isEqualTo _moduleSourceId}}}};
+
+    if (!_mappingOwnedByCurrentModule) then {
+        _collisionReason = if (_mappingIsCompiled) then {"compiled faction mapping"} else {"custom faction mapping"};
+        _collisionOwner = [_existingMapping, "DisplayName", [_existingMapping, "FactionName", _factionId] call ALIVE_fnc_hashGet] call ALIVE_fnc_hashGet;
+        _collisionSourceId = _existingSourceModuleId;
+    };
+};
+
+if !(_collisionReason isEqualTo "") exitWith {
+    private _collisionSourceText = if (_collisionSourceId isEqualTo "") then {""} else {format [" (module %1)", _collisionSourceId]};
+    _logic setVariable ["compiledFactionId", "", true];
+    _logic setVariable ["compiledProxyFaction", "", true];
+    _logic setVariable ["compiledFactionSide", "", true];
+    _logic setVariable ["compiledFactionDisplayName", _displayName, true];
+    _logic setVariable ["compiledFactionGroupCount", 0, true];
+    _logic setVariable ["compiledFactionError", format ["Duplicate compiled faction id %1", _factionId], true];
+    ["Warning Faction compiler [%1] rejected normalized id %2 (requested %3) because it collides with existing %4 %5%6", _displayName, _factionId, _requestedFactionId, _collisionReason, _collisionOwner, _collisionSourceText] call ALIVE_fnc_dump;
+    [_logic, false, _moduleID] call ALIVE_fnc_dumpModuleInit;
+    false
+};
 private _groupsByCategory = [] call ALIVE_fnc_hashCreate;
 private _compiledGroups = [] call ALIVE_fnc_hashCreate;
 private _unitClasses = [];
@@ -228,6 +276,8 @@ private _mapping = [] call ALIVE_fnc_hashCreate;
 [_mapping, "Groups", _groupsByCategory] call ALIVE_fnc_hashSet;
 [_mapping, "CompiledFaction", true] call ALIVE_fnc_hashSet;
 [_mapping, "DisplayName", _displayName] call ALIVE_fnc_hashSet;
+[_mapping, "SourceModule", _logic] call ALIVE_fnc_hashSet;
+[_mapping, "SourceModuleId", _moduleSourceId] call ALIVE_fnc_hashSet;
 
 private _factionData = [] call ALIVE_fnc_hashCreate;
 [_factionData, "factionId", _factionId] call ALIVE_fnc_hashSet;
@@ -238,7 +288,8 @@ private _factionData = [] call ALIVE_fnc_hashCreate;
 [_factionData, "compiledGroups", _compiledGroups] call ALIVE_fnc_hashSet;
 [_factionData, "unitClasses", _unitClasses] call ALIVE_fnc_hashSet;
 [_factionData, "vehicleClasses", _vehicleClasses] call ALIVE_fnc_hashSet;
-
+[_factionData, "sourceModule", _logic] call ALIVE_fnc_hashSet;
+[_factionData, "sourceModuleId", _moduleSourceId] call ALIVE_fnc_hashSet;
 [ALIVE_compiledFactions, _factionId, _factionData] call ALIVE_fnc_hashSet;
 [ALIVE_factionCustomMappings, _factionId, _mapping] call ALIVE_fnc_hashSet;
 
@@ -247,6 +298,7 @@ _logic setVariable ["compiledProxyFaction", _proxyFaction, true];
 _logic setVariable ["compiledFactionSide", _sideText, true];
 _logic setVariable ["compiledFactionDisplayName", _displayName, true];
 _logic setVariable ["compiledFactionGroupCount", _groupIndex, true];
+_logic setVariable ["compiledFactionError", "", true];
 
 if (_deleteTemplates) then {
     {
