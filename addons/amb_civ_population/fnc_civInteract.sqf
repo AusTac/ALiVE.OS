@@ -24,6 +24,7 @@ See Also:
 - nil
 
 Author: SpyderBlack723
+Jman
 
 Peer Reviewed:
 nil
@@ -66,7 +67,7 @@ switch (_operation) do {
 
 		if (isNil QMOD(civInteractHandler)) then {
 			//-- Get settings
-			private ["_debug", "_factionEnemy", "_humanitarianDecrease", "_maxAllowAid", "_enableACEX", "_authorized"];
+			private ["_debug", "_factionEnemy", "_humanitarianDecrease", "_maxAllowAid", "_authorized"];
 
 			waitUntil {_result = _logic getVariable "waterItems"; !isNil "_result"};
 
@@ -77,7 +78,6 @@ switch (_operation) do {
 			_factionEnemy = _logic getVariable "insurgentFaction";
 			_humanitarianDecrease = parseNumber (_logic getVariable["humanitarianHostilityChance", "20"]);
 			_maxAllowAid = parseNumber (_logic getVariable["maxAllowAid", "3"]);
-			_enableACEX = _logic getVariable ["disableACEX", false];
 			_authorized = (_logic getVariable "limitInteraction") call ALiVE_fnc_stringListToArray;
 
 			//-- Create interact handler object

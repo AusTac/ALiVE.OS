@@ -614,26 +614,6 @@
     <Chinesesimp>输入您想用于人道主义目的的任何定制配给项目的类名列表(逗号分隔)</Chinesesimp>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_CIV_POP_ACEX_COMPAT">
-    <English>Use ACEX Humanitarian Items</English>
-    <French>Utiliser les objets humanitaires ACEX</French>
-    <Portuguese>Usar Itens Humanitários do ACEX</Portuguese>
-    <Russian>Использовать ACEX-предметы</Russian>
-    <Spanish>Usar objetos humanitarios de ACEX</Spanish>
-    <Chinese>使用 ACEX 人道援助物品</Chinese>
-    <Chinesesimp>使用ACEX人道主义物品</Chinesesimp>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_CIV_POP_ACEX_COMPAT_COMMENT">
-    <English>Enable the use of ACEX Humanitarian items instead of the default ALiVE ones</English>
-    <French>Activer l'utilisation des objets humanitaires ACEX à la place de ceux d'ALiVE par défaut</French>
-    <Portuguese>Ativa o uso dos itens humanitários do ACEX em vez dos padrões do ALiVE</Portuguese>
-    <Russian>Использовать гуманитарные предметы ACEX вместо стандартных ALiVE</Russian>
-    <Spanish>Activa el uso de los objetos humanitarios de ACEX en lugar de los predeterminados de ALiVE</Spanish>
-    <Chinese>啟用 ACEX 人道援助物品,取代預設的 ALiVE 物品</Chinese>
-    <Chinesesimp>启用ACEX人道物品的使用，而不是默认的生命物品</Chinesesimp>
-</Key>  
-<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_TOOMUCHAID">
     <English>This civilian does not require any more humanitarian aid.</English>
     <French>Ce civil n'a plus besoin d'aide humanitaire.</French>

@@ -64,7 +64,6 @@ class CfgVehicles {
             class maxAllowAid : Edit { property = "ALiVE_amb_civ_population_maxAllowAid"; displayName = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID"; tooltip = "$STR_ALIVE_CIV_POP_MAX_ALLOWED_AID_COMMENT"; defaultValue = """3"""; };
             class customWaterItems : Edit { property = "ALiVE_amb_civ_population_customWaterItems"; displayName = "$STR_ALIVE_CIV_POP_WATER_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_WATER_ITEMS_COMMENT"; defaultValue = """"""; };
             class customHumRatItems : Edit { property = "ALiVE_amb_civ_population_customHumRatItems"; displayName = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS"; tooltip = "$STR_ALIVE_CIV_POP_HUMRAT_ITEMS_COMMENT"; defaultValue = """"""; };
-            class disableACEX : Combo { property = "ALiVE_amb_civ_population_disableACEX"; displayName = "$STR_ALIVE_CIV_POP_ACEX_COMPAT"; tooltip = "$STR_ALIVE_CIV_POP_ACEX_COMPAT_COMMENT"; defaultValue = """false"""; class Values { class No{name="No";value=false;default=1;}; class Yes{name="Yes";value=true;}; }; };
 
             // ---- Advanced Civilians - General -----------------------------------
             class HDR_ADVCIV : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_ADVCIV"; displayName = "ADVANCED CIVILIANS - GENERAL"; };

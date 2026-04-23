@@ -40,15 +40,17 @@ ALIVE_civilianWeapons = [] call ALIVE_fnc_hashCreate;
 
 
 // Civ Pop Interaction
+// TODO (#837): expand with full current ACE3 field-rations class set
+// (`ace_field_rations` PBO). Class names to audit against latest ACE3.
 ALiVE_CivPop_Interaction_WaterItems = [
         "ALiVE_Waterbottle",
-        "ACE_WaterBottle",    // ACEX
+        "ACE_WaterBottle",    // ACE
         "vn_prop_drink_01", "vn_prop_drink_02", "vn_prop_drink_05" // VN crate drinks
 ];
 
 ALiVE_CivPop_Interaction_RationItems = [
         "ALiVE_Humrat",
-        "ACE_Humanitarian_Ration",  // ACEX
+        "ACE_Humanitarian_Ration",  // ACE
         "vn_b_item_rations_01",    // VN
         "vn_prop_food_fresh_01", "vn_prop_food_fresh_02", "vn_prop_food_meal_01", "vn_prop_food_sack_01", "vn_prop_food_sack_02" // VN crate food
 ];
