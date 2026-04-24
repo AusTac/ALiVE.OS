@@ -4513,6 +4513,56 @@
     <Chinese>滑鼠滾輪可顯示平民互動操作 (與平民交談 / 互動 / advciv 快速指令) 的最大距離。預設值:4。</Chinese>
     <Chinesesimp>滑鼠滚轮可显示平民互动操作 (与平民交谈 / 互动 / advciv 快速命令) 的最大距离。默认:4。</Chinesesimp>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_POP_INTEL_GATHER_CHANCE">
+    <English>Gather Intel Chance (%):</English>
+    <French>Chance de renseignement (%):</French>
+    <Portuguese>Chance de Coletar Informação (%):</Portuguese>
+    <Russian>Шанс получить разведданные (%):</Russian>
+    <Spanish>Probabilidad de obtener inteligencia (%):</Spanish>
+    <Chinese>蒐集情報機率 (%):</Chinese>
+    <Chinesesimp>搜集情报几率 (%):</Chinesesimp>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_POP_INTEL_GATHER_CHANCE_COMMENT">
+    <English>Base probability (0-100) that the Gather Intel civilian interaction reveals enemy installation markers on the map. Modulated at click time by the civilian's individual hostility (ALiVE_CivPop_Hostility, 0-100, default 30): a hostile civilian may refuse outright (chance scales up from hostility 50) or lie and reveal decoy markers at plausible-looking false positions (deception chance scales up from hostility 25). The civilian's intel opportunity is consumed on any attempt, so each civilian can only be queried once. Applies to the ALiVE Dialog and ACE Interact paths; the CLASSIC scroll-wheel path keeps its legacy behaviour (roughly 10 percent of civilians carry the entry, always successful when clicked). Default: 30.</English>
+    <French>Probabilité de base (0-100) que l'interaction Recueillir des renseignements révèle les marqueurs des installations ennemies sur la carte. Modulée au clic par l'hostilité individuelle du civil (ALiVE_CivPop_Hostility, 0-100, par défaut 30): un civil hostile peut refuser (chance qui augmente à partir d'une hostilité de 50) ou mentir et révéler des marqueurs leurres à de fausses positions plausibles (chance de tromperie qui augmente à partir d'une hostilité de 25). L'opportunité de renseignement du civil est consommée à chaque tentative, de sorte que chaque civil ne peut être interrogé qu'une seule fois. S'applique aux voies Dialogue ALiVE et ACE Interact; la voie CLASSIC à la molette conserve son comportement hérité (environ 10 pour cent des civils portent l'entrée, toujours réussie une fois cliquée). Par défaut: 30.</French>
+    <Portuguese>Probabilidade base (0-100) de a interação Coletar Informação revelar marcadores de instalações inimigas no mapa. Modulada no clique pela hostilidade individual do civil (ALiVE_CivPop_Hostility, 0-100, padrão 30): um civil hostil pode recusar-se (a chance aumenta a partir de uma hostilidade de 50) ou mentir e revelar marcadores falsos em posições plausíveis (a chance de engano aumenta a partir de uma hostilidade de 25). A oportunidade de informação do civil é consumida em qualquer tentativa, pelo que cada civil só pode ser questionado uma vez. Aplica-se aos caminhos do Diálogo ALiVE e ACE Interact; o caminho CLASSIC da roda do rato mantém o seu comportamento herdado (cerca de 10 por cento dos civis possuem a entrada, sempre bem-sucedida quando clicada). Padrão: 30.</Portuguese>
+    <Russian>Базовая вероятность (0-100), что взаимодействие "Собрать разведданные" покажет на карте маркеры вражеских установок. Модулируется при нажатии индивидуальной враждебностью гражданского (ALiVE_CivPop_Hostility, 0-100, по умолчанию 30): враждебный гражданский может отказаться (шанс растёт начиная с враждебности 50) или солгать и показать ложные маркеры в правдоподобных ложных местах (шанс обмана растёт начиная с враждебности 25). Возможность получить разведданные у гражданского расходуется при любой попытке, поэтому каждого гражданского можно опросить только один раз. Применяется к путям "Диалог ALiVE" и "ACE Interact"; путь CLASSIC через колесо прокрутки сохраняет своё прежнее поведение (примерно у 10 процентов гражданских есть эта опция, всегда успешная при нажатии). По умолчанию: 30.</Russian>
+    <Spanish>Probabilidad base (0-100) de que la interacción Obtener inteligencia revele en el mapa los marcadores de instalaciones enemigas. Modulada al hacer clic por la hostilidad individual del civil (ALiVE_CivPop_Hostility, 0-100, por defecto 30): un civil hostil puede negarse (la probabilidad aumenta a partir de una hostilidad de 50) o mentir y revelar marcadores señuelo en posiciones falsas plausibles (la probabilidad de engaño aumenta a partir de una hostilidad de 25). La oportunidad de inteligencia del civil se consume en cualquier intento, por lo que cada civil solo puede ser interrogado una vez. Se aplica a las rutas de Diálogo ALiVE y ACE Interact; la ruta CLASSIC de la rueda del ratón conserva su comportamiento heredado (aproximadamente el 10 por ciento de los civiles tiene la entrada, siempre exitosa al hacer clic). Predeterminado: 30.</Spanish>
+    <Chinese>蒐集情報 平民互動揭示地圖上敵方設施標記的基礎機率 (0-100)。點擊時會根據該平民的個別敵意 (ALiVE_CivPop_Hostility,0-100,預設 30) 進行調整:敵意高的平民可能直接拒絕 (敵意 50 起機率遞增),或撒謊並在看似合理的錯誤位置顯示誘餌標記 (敵意 25 起欺騙機率遞增)。無論結果如何,每次嘗試都會消耗該平民的情報機會,因此每位平民只能被詢問一次。適用於 ALiVE 對話框與 ACE Interact 路徑;CLASSIC 滑鼠滾輪路徑維持原有行為 (約 10 % 的平民具備此選項,點擊時必定成功)。預設值:30。</Chinese>
+    <Chinesesimp>搜集情报 平民互动揭示地图上敌方设施标记的基础几率 (0-100)。点击时会根据该平民的个人敌意 (ALiVE_CivPop_Hostility,0-100,默认 30) 进行调整:敌意高的平民可能直接拒绝 (敌意 50 起几率递增),或撒谎并在看似合理的错误位置显示诱饵标记 (敌意 25 起欺骗几率递增)。无论结果如何,每次尝试都会消耗该平民的情报机会,因此每位平民只能被询问一次。适用于 ALiVE 对话框与 ACE Interact 路径;CLASSIC 鼠标滚轮路径保持原有行为 (约 10 % 的平民具备此选项,点击时必定成功)。默认:30。</Chinesesimp>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_INTERACT_INTEL_REVEALED">
+    <English>The civilian points out nearby enemy installations on your map.</English>
+    <French>Le civil vous indique les installations ennemies proches sur votre carte.</French>
+    <Portuguese>O civil aponta as instalações inimigas próximas no seu mapa.</Portuguese>
+    <Russian>Гражданский показывает на вашей карте ближайшие вражеские установки.</Russian>
+    <Spanish>El civil señala las instalaciones enemigas cercanas en tu mapa.</Spanish>
+    <Chinese>該平民在你的地圖上指出附近的敵方設施。</Chinese>
+    <Chinesesimp>该平民在你的地图上指出附近的敌方设施。</Chinesesimp>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_INTERACT_INTEL_NOTHING">
+    <English>The civilian has nothing useful to share about enemy positions.</English>
+    <French>Le civil n'a rien d'utile à partager sur les positions ennemies.</French>
+    <Portuguese>O civil não tem nada de útil para partilhar sobre posições inimigas.</Portuguese>
+    <Russian>Гражданскому нечего рассказать о позициях противника.</Russian>
+    <Spanish>El civil no tiene nada útil que compartir sobre las posiciones enemigas.</Spanish>
+    <Chinese>該平民對敵軍位置一無所知。</Chinese>
+    <Chinesesimp>该平民对敌军位置一无所知。</Chinesesimp>
+</Key>
+<!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_CIV_INTERACT_INTEL_REFUSED">
+    <English>The civilian refuses to speak about enemy movements.</English>
+    <French>Le civil refuse de parler des mouvements ennemis.</French>
+    <Portuguese>O civil recusa-se a falar sobre os movimentos inimigos.</Portuguese>
+    <Russian>Гражданский отказывается говорить о передвижениях противника.</Russian>
+    <Spanish>El civil se niega a hablar sobre los movimientos enemigos.</Spanish>
+    <Chinese>該平民拒絕談論敵軍動向。</Chinese>
+    <Chinesesimp>该平民拒绝谈论敌军动向。</Chinesesimp>
+</Key>
 <!-- Vehicle -->
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_ADVCIV_VEHICLE_ESCAPE">

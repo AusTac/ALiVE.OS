@@ -280,6 +280,24 @@ class ALiVE_CivilianInteraction {
 			colorActive[] = {0,0,0,0.5};
 		};
 
+		// Gather Intel. One-shot per civilian; ctrlShow is gated by the
+		// intelGathered variable in fnc_civInteract's case "openMenu", so
+		// the button disappears after the first attempt against that civ.
+		// Outcome is chance-gated server-side in case "GatherIntel" via
+		// ALiVE_amb_civ_population_IntelGatherChance.
+		class CivInteract_GatherIntel: CivInteract_RscButton
+		{
+			idc = 92316;
+			action = "[ALiVE_civInteractHandler,'GatherIntel'] call ALiVE_fnc_civInteract";
+
+			text = "$STR_ALIVE_CIV_INTERACT_ACTIONS_GATHERINTEL";
+			x = 0.17 * safezoneW + safezoneX;
+			y = 0.731 * safezoneH + safezoneY;
+			w = 0.065625 * safezoneW;
+			h = 0.0280001 * safezoneH;
+			colorActive[] = {0,0,0,0.5};
+		};
+
 		class CivInteract_Close: CivInteract_RscButton {
 			idc = 9237;
 			action = "closeDialog 0";

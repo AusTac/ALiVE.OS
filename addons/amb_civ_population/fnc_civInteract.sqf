@@ -55,6 +55,7 @@ private ["_result"];
 #define CIVINTERACT_GEARLISTCONTROL 	(CIVINTERACT_DISPLAY displayCtrl 9244)
 #define CIVINTERACT_CONFISCATEBUTTON 	(CIVINTERACT_DISPLAY displayCtrl 9245)
 #define CIVINTERACT_OPENGEARCONTAINER	(CIVINTERACT_DISPLAY displayCtrl 9246)
+#define CIVINTERACT_GATHERINTEL		(CIVINTERACT_DISPLAY displayCtrl 92316)
 
 switch (_operation) do {
 
@@ -155,6 +156,12 @@ switch (_operation) do {
 		[nil,"toggleSearchMenu"] call MAINCLASS;
 		CIVINTERACT_CONFISCATEBUTTON ctrlShow false;
 		CIVINTERACT_OPENGEARCONTAINER ctrlShow false;
+
+		// Gather Intel is one-shot per civilian. Hide the button if this
+		// civ has already been queried, matching the ACE branch's
+		// {isNil {_target getVariable "intelGathered"}} visibility
+		// condition.
+		CIVINTERACT_GATHERINTEL ctrlShow (isNil {_civ getVariable "intelGathered"});
 
 		//-- Display loading
 		CIVINTERACT_QUESTIONLIST lbAdd "Loading . . .";
@@ -945,16 +952,65 @@ switch (_operation) do {
 		};
 	};
 
-	//-- GatherIntel: 10% random-chance intel reveal surfaced as its
-	//   own addAction today; exposed as a shared verb so the dialog
-	//   and ACE branch can drive the same effect.
+	//-- GatherIntel: hostility-aware intel reveal shared by the dialog
+	//   button and the ACE branch. Four possible outcomes per attempt,
+	//   all indistinguishable to the player at the moment of click
+	//   except via the hint text:
+	//
+	//     1. REFUSAL  - very hostile civs refuse outright. No markers.
+	//        Chance scales from 0 below hostility 50 to 60% at h=100,
+	//        capped at 75%.
+	//     2. NOTHING  - civ has nothing useful to share. Base chance
+	//        gate (civIntelGatherChance, percent, default 30). No
+	//        markers, no map open.
+	//     3. DECEPTIVE - civ lies. Decoy installation markers placed
+	//        at random positions 800-2800 m from the civ, styled
+	//        identically to real markers. Deception chance scales
+	//        from 0 at hostility 25 to ~45% at h=100, capped at 50%.
+	//        Map opens, same success hint as truthful path - the
+	//        ruse is only obvious on arrival at the marked location.
+	//     4. TRUTHFUL - real reveal via OPCOMToggleInstallations
+	//        within 2000 m of the civ.
+	//
+	//   The civilian's intel opportunity is consumed on ANY attempt
+	//   via the intelGathered flag, so spammed attempts are prevented.
+	//   The CLASSIC scroll-wheel path in fnc_addCivilianActions keeps
+	//   its legacy behaviour (~10% availability + guaranteed truthful
+	//   outcome) and does not route through this case.
+	//
+	//   Hint (not dumpR) - dumpR routes through sidechat which is
+	//   hidden for most players. hint renders top-right over the
+	//   map, visible as the markers appear.
 	case "GatherIntel": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then {
-			openMap true;
-			[getPosATL _civ, 2000] call ALiVE_fnc_OPCOMToggleInstallations;
+			private _chance = missionNamespace getVariable ["ALiVE_amb_civ_population_IntelGatherChance", 30];
+			private _h = _civ getVariable ["ALiVE_CivPop_Hostility", 30];
 			_civ setVariable ["intelGathered", true];
+
+			// Tier 1: refusal (hostility-driven)
+			private _refusalChance = ((((_h - 50) * 1.2) max 0) min 75);
+			if (random 100 < _refusalChance) exitWith {
+				hint (localize "STR_ALIVE_CIV_INTERACT_INTEL_REFUSED");
+			};
+
+			// Tier 2: base chance gate (civ has any info at all)
+			if (random 100 >= _chance) exitWith {
+				hint (localize "STR_ALIVE_CIV_INTERACT_INTEL_NOTHING");
+			};
+
+			// Tier 3 vs Tier 4: deception vs truth (hostility-driven)
+			private _deceptionChance = ((((_h - 25) * 0.6) max 0) min 50);
+			private _deceptive = random 100 < _deceptionChance;
+
+			openMap true;
+			if (_deceptive) then {
+				[getPosATL _civ] call ALiVE_fnc_gatherIntelDeceptive;
+			} else {
+				[getPosATL _civ, 2000] call ALiVE_fnc_OPCOMToggleInstallations;
+			};
+			hint (localize "STR_ALIVE_CIV_INTERACT_INTEL_REVEALED");
 		};
 	};
 

@@ -136,6 +136,11 @@ class cfgFunctions {
                 file = "\x\alive\addons\amb_civ_population\fnc_civInteract.sqf";
                 RECOMPILE;
             };
+            class gatherIntelDeceptive {
+                description = "Places decoy installation markers when a hostile civilian lies about enemy positions";
+                file = "\x\alive\addons\amb_civ_population\fnc_gatherIntelDeceptive.sqf";
+                RECOMPILE;
+            };
             class civInteractInit {
                 description = "Initializes civilian interaction";
                 file = "\x\alive\addons\amb_civ_population\fnc_civInteractInit.sqf";
