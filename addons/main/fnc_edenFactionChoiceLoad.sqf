@@ -41,27 +41,46 @@ with multi-line `"..."` strings containing backslash-newline continuations
 on Windows CRLF files (same rationale as mil_ied's edenIntegrationChoice
 handlers).
 
+The variable name on the logic and the Eden value slot is configurable
+via the third element of _this. Defaults to "faction" because that
+is the property name used by the majority of single-select faction
+attributes (mil_placement, civ_placement, mil_ato, sys_quickstart
+etc.). Modules whose faction attribute is named something else
+(e.g. `ambientVehicleFaction` in amb_civ_placement, `ambientCrowdFaction`
+in amb_civ_population) MUST override attributeLoad at the attribute
+level to pass their specific property name - otherwise the logic
+variable fallback reads the wrong variable and can silently
+cross-contaminate with another attribute's stored value on the same
+module. See reference_eden_multiselect_control.md for the overall
+parameter-passing pattern established by the Multi handler.
+
 Parameters:
-    [_display, _allowedSides]
+    [_display, _allowedSides, _varName]
     _display      : DISPLAY - Eden attribute display. Combo control IDC 100.
     _allowedSides : ARRAY of NUMBERs - sides to include in the dropdown.
                     Defaults to [0,1,2,3] (all) if missing/invalid.
+    _varName      : STRING - name of the logic variable storing the value.
+                    Defaults to "faction".
 
 Author:
 Jman
 ---------------------------------------------------------------------------- */
 
 // Unpack invocation. New-style call from the variant control classes is
-//   [_display, _allowedSides] call compile preprocessFileLineNumbers '...'
+//   [_display, _allowedSides, _varName] call compile preprocessFileLineNumbers '...'
 // Legacy direct call is just _this = display (older Cfg3DEN attributeLoad
 // shape, kept compatible so anyone overriding outside of our control
 // classes still works).
 private _display = controlNull;
 private _allowedSides = [0,1,2,3];
+private _varName = "faction";
 if (typeName _this == "ARRAY") then {
     _display = _this select 0;
     if (count _this > 1 && {typeName (_this select 1) == "ARRAY"}) then {
         _allowedSides = _this select 1;
+    };
+    if (count _this > 2 && {typeName (_this select 2) == "STRING"} && {(_this select 2) != ""}) then {
+        _varName = _this select 2;
     };
 } else {
     _display = _this;
@@ -80,7 +99,7 @@ if (typeName _this == "ARRAY") then {
 // ------------------------------------------------------------------------
 private _selected = get3DENSelected "logic";
 private _storedFromLogic = if (count _selected > 0) then {
-    (_selected select 0) getVariable ["faction", nil]
+    (_selected select 0) getVariable [_varName, nil]
 } else {
     nil
 };

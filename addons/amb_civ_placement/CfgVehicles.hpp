@@ -113,6 +113,12 @@ class CfgVehicles {
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['ambientVehicleFaction', _value];";
                                 defaultValue = """CIV_F""";
+                                // Override the control's default attributeLoad so the
+                                // logic-variable fallback reads ambientVehicleFaction
+                                // rather than the default "faction" property; otherwise
+                                // re-opening the attribute panel on this module (which
+                                // also owns a `faction` attribute) cross-contaminates.
+                                attributeLoad = "[_this, [3], 'ambientVehicleFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
                         };
                         class initialdamage : Combo { property = "ALiVE_amb_civ_placement_initialdamage"; displayName = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM"; tooltip = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM_COMMENT"; defaultValue = """false"""; class Values { class No{name="No";value=false;default=1;}; class Yes{name="Yes";value=true;}; }; };
                         class ModuleDescription : ModuleDescription {};

@@ -76,6 +76,14 @@ class CfgVehicles {
                 typeName     = "STRING";
                 expression   = "_this setVariable ['ambientCrowdFaction', _value];";
                 defaultValue = """CIV_F""";
+                // Override the control's default attributeLoad so the
+                // logic-variable fallback reads ambientCrowdFaction
+                // rather than the default "faction" property. Dormant on
+                // this module today (no sibling "faction" attribute) but
+                // preserves the re-open-picks-up-just-saved-value behaviour
+                // and guards against future cross-contamination if someone
+                // adds another FactionChoice attribute here.
+                attributeLoad = "[_this, [3], 'ambientCrowdFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
             };
             class disableAmbientSounds : Combo { property = "ALiVE_amb_civ_population_disableAmbientSounds"; displayName = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS"; tooltip = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS_COMMENT"; defaultValue = """false"""; class Values { class No { name = "No"; value = false; default = 1; }; class Yes { name = "Yes"; value = true; }; }; };
 
