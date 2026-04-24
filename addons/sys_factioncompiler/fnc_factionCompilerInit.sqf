@@ -6,6 +6,10 @@ params [
     ["_syncedObjects", [], [[]]]
 ];
 
+// Module callbacks do not consistently provide non-unit sync peers in the second
+// argument, so resolve the live sync graph from the module itself.
+_syncedObjects = synchronizedObjects _logic;
+
 if (!isServer) exitWith {true};
 if (isNull _logic) exitWith {false};
 
