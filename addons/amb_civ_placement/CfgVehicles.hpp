@@ -21,9 +21,12 @@ class CfgVehicles {
                 picture = "x\alive\addons\amb_civ_placement\icon_civ_AMBCP.paa";
                 class Attributes : AttributesBase
                 {
+                        class HDR_GENERAL : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_GENERAL"; displayName = "GENERAL"; };
                         class debug : Combo { property = "ALiVE_amb_civ_placement_debug"; displayName = "$STR_ALIVE_AMBCP_DEBUG"; tooltip = "$STR_ALIVE_AMBCP_DEBUG_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+                        class HDR_AREA : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_AREA"; displayName = "AREA DEFINITION"; };
                         class taor : Edit { property = "ALiVE_amb_civ_placement_taor"; displayName = "$STR_ALIVE_AMBCP_TAOR"; tooltip = "$STR_ALIVE_AMBCP_TAOR_COMMENT"; defaultValue = """"""; };
                         class blacklist : Edit { property = "ALiVE_amb_civ_placement_blacklist"; displayName = "$STR_ALIVE_AMBCP_BLACKLIST"; tooltip = "$STR_ALIVE_AMBCP_BLACKLIST_COMMENT"; defaultValue = """"""; };
+                        class HDR_FILTERS : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_FILTERS"; displayName = "OBJECTIVE FILTERS"; };
                         class sizeFilter : Combo
                         {
                                 property = "ALiVE_amb_civ_placement_sizeFilter";
@@ -57,6 +60,7 @@ class CfgVehicles {
                                     class HIGH { name = "$STR_ALIVE_AMBCP_PRIORITY_FILTER_HIGH"; value = "40"; };
                                 };
                         };
+                        class HDR_PLACEMENT : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_PLACEMENT"; displayName = "CIVILIAN PLACEMENT"; };
                         // Shared ALiVE_FactionChoice dropdown - see addons/main/CfgVehicles.hpp.
                         // Ambient Civilian Population module defaults to CIV_F (vanilla A3
                         // civilians). Dropdown's structural CfgGroups filter ensures only
@@ -85,6 +89,7 @@ class CfgVehicles {
                                     class EXTREME { name = "$STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_EXTREME"; value = "4"; };
                                 };
                         };
+                        class HDR_AMBIENT : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_AMBIENT"; displayName = "AMBIENT VEHICLES"; };
                         class ambientVehicleAmount : Combo
                         {
                                 property = "ALiVE_amb_civ_placement_ambientVehicleAmount";
@@ -99,7 +104,16 @@ class CfgVehicles {
                                     class HIGH { name = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT_HIGH"; value = "1"; };
                                 };
                         };
-                        class ambientVehicleFaction : Edit { property = "ALiVE_amb_civ_placement_ambientVehicleFaction"; displayName = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION"; tooltip = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION_COMMENT"; defaultValue = """CIV_F"""; };
+                        class ambientVehicleFaction
+                        {
+                                property     = "ALiVE_amb_civ_placement_ambientVehicleFaction";
+                                displayName  = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION";
+                                tooltip      = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION_COMMENT";
+                                control      = "ALiVE_FactionChoice_Civilian";
+                                typeName     = "STRING";
+                                expression   = "_this setVariable ['ambientVehicleFaction', _value];";
+                                defaultValue = """CIV_F""";
+                        };
                         class initialdamage : Combo { property = "ALiVE_amb_civ_placement_initialdamage"; displayName = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM"; tooltip = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM_COMMENT"; defaultValue = """false"""; class Values { class No{name="No";value=false;default=1;}; class Yes{name="Yes";value=true;}; }; };
                         class ModuleDescription : ModuleDescription {};
                 };

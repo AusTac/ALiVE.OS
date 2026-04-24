@@ -15,7 +15,7 @@
     <Chinesesimp>启用调试</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_DEBUG_COMMENT">
-    <English>Enables CP Module Debug</English>
+    <English>Enables Civilian Placement module debug</English>
     <Chinesesimp>启用cp模块调试</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_TAOR">
@@ -39,8 +39,7 @@
     <Chinesesimp>目标大小筛选器</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_SIZE_FILTER_COMMENT">
-    <English>Filter objectives less than selected size</English>
-    <Chinesesimp>筛选小于选定大小的目标</Chinesesimp>
+    <English>Filter civilian objectives by radius (metres). Positive thresholds skip small objectives; inverse thresholds skip the large ones.</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_SIZE_FILTER_NONE">
     <English>Do not filter</English>
@@ -103,44 +102,35 @@
     <Chinesesimp>仅高优先级目标</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_FACTION">
-    <English>Force Faction:</English>
-    <Chinesesimp>武力势力</Chinesesimp>
+    <English>Civilian Faction:</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_FACTION_COMMENT">
-    <English>Faction of the units to be placed (CIV_F,mod_faction_name)</English>
-    <Chinesesimp>要放置的单元的势力</Chinesesimp>
+    <English>Faction of the civilians to be placed (e.g. CIV_F, mod_faction_name)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER">
-    <English>Placement Level</English>
+    <English>Placement Level:</English>
     <Chinesesimp>放置级别</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_COMMENT">
-    <English>Amount of civilian agents to place in locations</English>
-    <Chinesesimp>部署在各个地点的平民人员数量</Chinesesimp>
+    <English>Number of civilian agents placed per location (Medium = baseline; Extreme multiplies by 4)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_LOW">
-    <English>Low</English>
-    <Chinesesimp>较少</Chinesesimp>
+    <English>Low (0.5x)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_MEDIUM">
-    <English>Medium</English>
-    <Chinesesimp>普通</Chinesesimp>
+    <English>Medium (1x)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_HIGH">
-    <English>High</English>
-    <Chinesesimp>较多</Chinesesimp>
+    <English>High (1.5x)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_PLACEMENT_MULTIPLIER_EXTREME">
-    <English>Extreme</English>
-    <Chinesesimp>极多</Chinesesimp>
+    <English>Extreme (4x)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT">
-    <English>Place ambient vehicles</English>
-    <Chinesesimp>放置周围的环境车辆</Chinesesimp>
+    <English>Ambient Vehicle Amount:</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT_COMMENT">
-    <English>Place ambeint vehicles in locations</English>
-    <Chinesesimp>将周围的环境车辆放置在适当位置</Chinesesimp>
+    <English>Density of ambient civilian vehicles at each location (Low fills roughly 20 percent, High fills every slot)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT_NONE">
     <English>No ambient vehicles</English>
@@ -159,15 +149,14 @@
     <Chinesesimp>较多周围的环境车辆</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION">
-    <English>Ambient Vehicle Faction</English>
+    <English>Ambient Vehicle Faction:</English>
     <Chinesesimp>周围的环境车辆势力</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION_COMMENT">
-    <English>Ambient vehicles pulled from this faction (CIV_F,mod_faction_name)</English>
-    <Chinesesimp>将该势力周围的环境车辆清除</Chinesesimp>
+    <English>Ambient vehicles pulled from this faction (e.g. CIV_F, mod_faction_name)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM">
-    <English>Random Vehicle Damage</English>
+    <English>Random Vehicle Damage:</English>
     <Chinesesimp>随机平民载具伤害</Chinesesimp>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM_COMMENT">
@@ -177,26 +166,5 @@
 <Key ID="STR_ALIVE_AMBCP_USAGE">
     <English>Define the settings on the module, place optional TAOR / Blacklist markers!</English>
     <Chinesesimp>定义模块上的设置,放置可选的TAOR/黑名单标记</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_AMBCP_AMBIENT_CIVILIAN_ROLES">
-    <English>Civilian roles:</English>
-    <Chinesesimp>平民人员角色</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_AMBCP_AMBIENT_CIVILIAN_ROLES_COMMENT">
-    <English>Selects the possible civilian roles like major, priest, townelder etc.</English>
-    <Chinesesimp>选择可能的平民角色,如牧师、镇民等</Chinesesimp>
-</Key>
-
-<Key ID="STR_ALIVE_AMBCP_AMBIENT_CIVILIAN_ROLES_NONE">
-    <English>None</English>
-    <Chinesesimp>无</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_AMBCP_AMBIENT_CIVILIAN_ROLES_WEST">
-    <English>Western</English>
-    <Chinesesimp>西部</Chinesesimp>
-</Key>
-<Key ID="STR_ALIVE_AMBCP_AMBIENT_CIVILIAN_ROLES_EAST">
-    <English>Eastern</English>
-    <Chinesesimp>东部</Chinesesimp>
 </Key>
 </Container></Package></Project>
