@@ -5,7 +5,7 @@ SCRIPT(AMBCP);
 /* ----------------------------------------------------------------------------
 Function: ALIVE_fnc_AMBCP
 Description:
-Civitary objectives
+Civilian objectives
 
 Parameters:
 Nil or Object - If Nil, return a new instance. If Object, reference an existing instance.
@@ -213,46 +213,6 @@ switch(_operation) do {
         _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
     };
 
-    // Return the HQ objectives as an array of clusters
-    case "objectivesHQ": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the Power objectives as an array of clusters
-    case "objectivesPower": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the Comms objectives as an array of clusters
-    case "objectivesComms": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the MARINE objectives as an array of clusters
-    case "objectivesMarine": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the RAIL objectives as an array of clusters
-    case "objectivesRail": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the FUEL objectives as an array of clusters
-    case "objectivesFuel": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the CONSTRUCTION objectives as an array of clusters
-    case "objectivesConstruction": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
-    // Return the SETTLEMENT objectives as an array of clusters
-    case "objectivesSettlement": {
-        _result = [_logic,_operation,_args,DEFAULT_OBJECTIVES] call ALIVE_fnc_OOsimpleOperation;
-    };
-
     // Main process
     case "init": {
 
@@ -276,7 +236,7 @@ switch(_operation) do {
             TRACE_1("After module init",_logic);
 
             [_logic, "taor", _logic getVariable ["taor", DEFAULT_TAOR]] call MAINCLASS;
-            [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_TAOR]] call MAINCLASS;
+            [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_BLACKLIST]] call MAINCLASS;
 
             if !([QMOD(sys_profile)] call ALiVE_fnc_isModuleAvailable) exitwith {
                 ["Profile System module not placed! Exiting..."] call ALiVE_fnc_DumpR;
@@ -294,9 +254,9 @@ switch(_operation) do {
             waituntil {!isnil QUOTE(ADDON)};
 
             [_logic, "taor", _logic getVariable ["taor", DEFAULT_TAOR]] call MAINCLASS;
-            [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_TAOR]] call MAINCLASS;
+            [_logic, "blacklist", _logic getVariable ["blacklist", DEFAULT_BLACKLIST]] call MAINCLASS;
             {_x setMarkerAlpha 0} foreach (_logic getVariable ["taor", DEFAULT_TAOR]);
-            {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_TAOR]);
+            {_x setMarkerAlpha 0} foreach (_logic getVariable ["blacklist", DEFAULT_BLACKLIST]);
         };
 
     };
@@ -350,13 +310,6 @@ switch(_operation) do {
                     [_message] call ALIVE_fnc_dump;
                     //_error = true;
                 };
-
-                /*
-                if (!(isnil "_message") && {isnil QGVAR(CLUSTERWARNING_DISPLAYED)}) then {
-                    GVAR(CLUSTERWARNING_DISPLAYED) = true;
-                    [[_message],"BIS_fnc_guiMessage",nil,true] spawn BIS_fnc_MP;
-                };
-                */
             };
 
             if!(_error) then {
@@ -406,135 +359,6 @@ switch(_operation) do {
                      [_logic, "objectives", _clusters] call MAINCLASS;
                 };
 
-                /*
-                _clusters = ALIVE_clustersCiv select 2;
-                _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                {
-                    [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                } forEach _clusters;
-                [_logic, "objectives", _clusters] call MAINCLASS;
-
-
-                if !(isnil "ALIVE_clustersCivSettlement") then {
-                     _clusters = ALIVE_clustersCivSettlement select 2;
-                     _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                     _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                     _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                     {
-                          [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                     } forEach _clusters;
-                     [_logic, "objectivesSettlement", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivHQ") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivHQ select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesHQ", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivPower") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivPower select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesPower", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivComms") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivComms select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesComms", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivMarine") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivMarine select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesMarine", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivRail") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivRail select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesRail", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivFuel") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivFuel select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesFuel", _clusters] call MAINCLASS;
-                };
-
-
-                if !(isnil "ALIVE_clustersCivConstruction") then {
-                    if(_sizeFilter == 160) then {
-                        _sizeFilter = 0;
-                    };
-                    _clusters = ALIVE_clustersCivConstruction select 2;
-                    _clusters = [_clusters,_sizeFilter,_priorityFilter] call ALIVE_fnc_copyClusters;
-                    _clusters = [_clusters, _taor] call ALIVE_fnc_clustersInsideMarker;
-                    _clusters = [_clusters, _blacklist] call ALIVE_fnc_clustersOutsideMarker;
-                    {
-                        [_x, "debug", [_logic, "debug"] call MAINCLASS] call ALIVE_fnc_cluster;
-                    } forEach _clusters;
-                    [_logic, "objectivesConstruction", _clusters] call MAINCLASS;
-                };
-                */
-
-
                 // DEBUG -------------------------------------------------------------------------------------
                 if(_debug) then {
                     ["AMBCP - Startup completed"] call ALiVE_fnc_dump;
@@ -580,20 +404,6 @@ switch(_operation) do {
             // DEBUG -------------------------------------------------------------------------------------
 
             private _clusters = [_logic, "objectives"] call MAINCLASS;
-
-            /*
-            private _clusters = [_logic, "objectives"] call MAINCLASS;
-            private _clustersSettlement = [_logic, "objectivesSettlement", _clusters] call MAINCLASS;
-            private _clustersHQ = [_logic, "objectivesHQ", _clusters] call MAINCLASS;
-            private _clustersPower = [_logic, "objectivesPower", _clusters] call MAINCLASS;
-            private _clustersComms = [_logic, "objectivesComms", _clusters] call MAINCLASS;
-            private _clustersMarine = [_logic, "objectivesMarine", _clusters] call MAINCLASS;
-            private _clustersRail = [_logic, "objectivesRail", _clusters] call MAINCLASS;
-            private _clustersFuel = [_logic, "objectivesFuel", _clusters] call MAINCLASS;
-            private _clustersConstruction = [_logic, "objectivesConstruction", _clusters] call MAINCLASS;
-            */
-
-
 
             if(count _clusters > 0) then {
                 {
@@ -641,18 +451,6 @@ switch(_operation) do {
 
             private _clusters = [_logic, "objectives"] call MAINCLASS;
 
-            /*
-            _clusters = [_logic, "objectives"] call MAINCLASS;
-            _clustersSettlement = [_logic, "objectivesSettlement", _clusters] call MAINCLASS;
-            _clustersHQ = [_logic, "objectivesHQ", _clusters] call MAINCLASS;
-            _clustersPower = [_logic, "objectivesPower", _clusters] call MAINCLASS;
-            _clustersComms = [_logic, "objectivesComms", _clusters] call MAINCLASS;
-            _clustersMarine = [_logic, "objectivesMarine", _clusters] call MAINCLASS;
-            _clustersRail = [_logic, "objectivesRail", _clusters] call MAINCLASS;
-            _clustersFuel = [_logic, "objectivesFuel", _clusters] call MAINCLASS;
-            _clustersConstruction = [_logic, "objectivesConstruction", _clusters] call MAINCLASS;
-            */
-
             private _faction = [_logic, "faction"] call MAINCLASS;
             private _placementMultiplier = parseNumber([_logic, "placementMultiplier"] call MAINCLASS);
             private _ambientVehicleAmount = parseNumber([_logic, "ambientVehicleAmount"] call MAINCLASS);
@@ -663,11 +461,8 @@ switch(_operation) do {
             private _sideObject = [_side] call ALIVE_fnc_sideTextToObject;
 
             private _initialdamage = [_logic, "initialdamage"] call MAINCLASS;
-            
-            // get current environment settings
-            private _env = call ALIVE_fnc_getEnvironment;
 
-            // get current global civilian population posture
+            // side-effect call: primes the civilian-population global posture
             [] call ALIVE_fnc_getGlobalPosture;
 
 
@@ -728,42 +523,6 @@ switch(_operation) do {
                         private _countBuildings = count _buildings;
                         private _parkingChance = 0.25 * _ambientVehicleAmount;
                         _supportMax = 3 * _parkingChance;
-
-                        //["COUNT BUILDINGS: %1",_countBuildings] call ALIVE_fnc_dump;
-                        //["CHANCE: %1",_parkingChance] call ALIVE_fnc_dump;
-
-                        /*if(_countBuildings > 50) then {
-                            _supportMax = 3;
-                            _parkingChance = 0.1 * _ambientVehicleAmount;
-                        };
-
-                        if(_countBuildings > 40 && _countBuildings < 50) then {
-                            _supportMax = 2;
-                            _parkingChance = 0.2 * _ambientVehicleAmount;
-                        };
-
-                        if(_countBuildings > 30 && _countBuildings < 41) then {
-                            _supportMax = 2;
-                            _parkingChance = 0.3 * _ambientVehicleAmount;
-                        };
-
-                        if(_countBuildings > 20 && _countBuildings < 31) then {
-                            _supportMax = 1;
-                            _parkingChance = 0.4 * _ambientVehicleAmount;
-                        };
-
-                        if(_countBuildings > 10 && _countBuildings < 21) then {
-                            _supportMax = 1;
-                            _parkingChance = 0.5 * _ambientVehicleAmount;
-                        };
-
-                        if(_countBuildings > 0 && _countBuildings < 11) then {
-                            _supportMax = 0;
-                            _parkingChance = 0.6 * _ambientVehicleAmount;
-                        };
-                        */
-                        //["SUPPORT MAX: %1",_supportMax] call ALIVE_fnc_dump;
-                        //["CHANCE: %1",_parkingChance] call ALIVE_fnc_dump;
 
                         private _usedPositions = [];
 
@@ -842,32 +601,6 @@ switch(_operation) do {
 
                     private _spawnChance = 0.25 * _placementMultiplier;
 
-                    /*
-                    From: https://github.com/ALiVEOS/ALiVE.OS/issues/205
-                    if(_countBuildings > 50) then {
-                        _spawnChance = 0.1 * _placementMultiplier;
-                    };
-
-                    if(_countBuildings > 40 && _countBuildings < 50) then {
-                        _spawnChance = 0.2 * _placementMultiplier;
-                    };
-
-                    if(_countBuildings > 30 && _countBuildings < 41) then {
-                        _spawnChance = 0.3 * _placementMultiplier;
-                    };
-
-                    if(_countBuildings > 20 && _countBuildings < 31) then {
-                        _spawnChance = 0.5 * _placementMultiplier;
-                    };
-
-                    if(_countBuildings > 10 && _countBuildings < 21) then {
-                        _spawnChance = 0.7 * _placementMultiplier;
-                    };
-
-                    if(_countBuildings > 0 && _countBuildings < 11) then {
-                        _spawnChance = 0.8 * _placementMultiplier;
-                    };
-                    */
                     {
 
                         if(random 1 < _spawnChance) then {
