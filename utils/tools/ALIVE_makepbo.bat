@@ -44,8 +44,11 @@ IF NOT EXIST %target% (
 )
 
 FOR /F "tokens=1* delims=," %%A in ('dir %source% /ad /b') do (
-	%exe% "%source%\%%A"
-	if ERRORLEVEL 1 goto err
+    echo %%A | findstr /b "\." >nul
+    if errorlevel 1 (
+        %exe% "%source%\%%A"
+        if ERRORLEVEL 1 goto err
+    )
 )
 
 del /Y %target%\*.pbo
@@ -60,8 +63,11 @@ IF NOT EXIST %target% (
 )
 
 FOR /F "tokens=1* delims=," %%A in ('dir %source% /ad /b') do (
-	%exe% "%source%\%%A"
-	if ERRORLEVEL 1 goto err
+    echo %%A | findstr /b "\." >nul
+    if errorlevel 1 (
+        %exe% "%source%\%%A"
+        if ERRORLEVEL 1 goto err
+    )
 )
 
 del /Y %target%\*.pbo
