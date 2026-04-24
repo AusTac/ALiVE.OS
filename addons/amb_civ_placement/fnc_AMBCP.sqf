@@ -318,32 +318,10 @@ switch(_operation) do {
                 private _sizeFilter = parseNumber([_logic, "sizeFilter"] call MAINCLASS);
                 private _priorityFilter = parseNumber([_logic, "priorityFilter"] call MAINCLASS);
 
-                // check markers for existance
-                private ["_marker","_counter"];
-
-                if(count _taor > 0) then {
-                    _counter = 0;
-                    {
-                        _marker =_x;
-                        if!(_marker call ALIVE_fnc_markerExists) then {
-                            _taor = _taor - [_taor select _counter];
-                        }else{
-                            _counter = _counter + 1;
-                        };
-                    } forEach _taor;
-                };
-
-                if(count _blacklist > 0) then {
-                    _counter = 0;
-                    {
-                        _marker =_x;
-                        if!(_marker call ALIVE_fnc_markerExists) then {
-                            _blacklist = _blacklist - [_blacklist select _counter];
-                        }else{
-                            _counter = _counter + 1;
-                        };
-                    } forEach _blacklist;
-                };
+                // drop any TAOR / blacklist markers that no longer exist
+                // (mission save may have outlived a marker the author removed)
+                _taor = _taor select { _x call ALIVE_fnc_markerExists };
+                _blacklist = _blacklist select { _x call ALIVE_fnc_markerExists };
 
                 private _clusters = DEFAULT_OBJECTIVES;
 
@@ -569,8 +547,11 @@ switch(_operation) do {
 
             // Place ambient civilians
 
-            // avoid error that stems from BIS population module CIV_F unit classes
-            // https://github.com/ALiVEOS/ALiVE.OS/issues/522
+            // Scope bump for known civilian factions whose generic Man units
+            // have scope = 1 (BI internal) but need to appear in the spawn
+            // class list. Kept as defensive guard even though the original
+            // trigger (issue #522, BI population module CIV_F side 7) was
+            // resolved engine-side.
             private _minScope = 1;
             if (_faction == "CIV_F" || _faction == "C_VIET" || _faction == "SPE_CIV") then {_minScope = 2};
 
