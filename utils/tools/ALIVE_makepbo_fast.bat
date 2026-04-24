@@ -4,7 +4,6 @@ set exe=MakePBO -A -P -N -U -X=thumbs.db,*.h,*.dep,*.bak,*.png,*.log,*.pew
 set source=P:\x\alive\addons
 
 set exeuncommpressed=MakePBO.exe -A -N -P -X=thumbs.db,*.h,*.dep,*.bak,*.png,*.log,*.pew
-set uncommpressedsource=P:\x\alive\addons\mil_OPCOM
 
 rem ********************
 rem find the arma3 path
@@ -40,13 +39,14 @@ echo SOURCE - %source%
 
 set target="%_ARMA3PATH%\@alive\addons"
 
+IF NOT EXIST %target% (
+	MD %target%
+)
+
 FOR /F "tokens=1* delims=," %%A in ('dir %source% /ad /b') do (
 	%exe% "%source%\%%A"
 	if ERRORLEVEL 1 goto err
 )
-
- echo %exeuncommpressed% %uncommpressedsource%
- %exeuncommpressed% "%uncommpressedsource%"
 
 del /Y %target%\*.pbo
 move /Y %source%\*.pbo %target%\
@@ -63,9 +63,6 @@ FOR /F "tokens=1* delims=," %%A in ('dir %source% /ad /b') do (
 	%exe% "%source%\%%A"
 	if ERRORLEVEL 1 goto err
 )
-
- echo %exeuncommpressed% %uncommpressedsource%
- %exeuncommpressed% "%uncommpressedsource%"
 
 del /Y %target%\*.pbo
 move /Y %source%\*.pbo %target%\
