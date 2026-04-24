@@ -32,6 +32,7 @@ See Also:
 
 Author:
 Highhead
+Jman
 
 Peer reviewed:
 nil
@@ -79,8 +80,8 @@ if (_menuName == "logistics") then {
         [
             ["logistics", localize "STR_ALIVE_PLAYEROPTIONS", "popup"],
             [
-                [localize "STR_ALIVE_LOGISTICS_ENABLEACTIONS_COMMENT",
-                    {[MOD(SYS_LOGISTICS),"addActions"] call ALiVE_fnc_Logistics},
+                [localize "STR_ALIVE_LOGISTICS_ENABLEACTIONS",
+                    "[ALiVE_SYS_LOGISTICS, ""addActions""] call ALiVE_fnc_Logistics",
                     "",
                     localize "STR_ALIVE_LOGISTICS_ENABLEACTIONS_COMMENT",
                     "",
@@ -88,8 +89,8 @@ if (_menuName == "logistics") then {
                     true,
                     (isnil {player getvariable [QGVAR(ACTIONS),nil]})
                 ],
-                [localize "STR_ALIVE_LOGISTICS_DISABLEACTIONS_COMMENT",
-                    {[MOD(SYS_LOGISTICS),"removeActions"] call ALiVE_fnc_Logistics},
+                [localize "STR_ALIVE_LOGISTICS_DISABLEACTIONS",
+                    "[ALiVE_SYS_LOGISTICS, ""removeActions""] call ALiVE_fnc_Logistics",
                     "",
                     localize "STR_ALIVE_LOGISTICS_DISABLEACTIONS_COMMENT",
                     "",

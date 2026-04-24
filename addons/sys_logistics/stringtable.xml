@@ -83,6 +83,18 @@
     <Russian>Выводит диагностику системы логистики в лог RPT.</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
+<Key ID="STR_ALIVE_LOGISTICS_ENABLEACTIONS">
+    <English>Enable Logistics Actions</English>
+</Key>
+<Key ID="STR_ALIVE_LOGISTICS_ENABLEACTIONS_COMMENT">
+    <English>Attach the scroll-wheel logistics actions (load, carry, tow, lift) to nearby vehicles and supplies.</English>
+</Key>
+<Key ID="STR_ALIVE_LOGISTICS_DISABLEACTIONS">
+    <English>Disable Logistics Actions</English>
+</Key>
+<Key ID="STR_ALIVE_LOGISTICS_DISABLEACTIONS_COMMENT">
+    <English>Remove the scroll-wheel logistics actions from your player until re-enabled.</English>
+</Key>
 <Key ID="STR_ALIVE_LOGISTICS_DISABLELOG">
     <English>Disable Logistics:</English>
     <Chinese>停用後勤:</Chinese>
