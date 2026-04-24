@@ -12,7 +12,9 @@ private _result = "";
 {
     if ((typeOf _x) isEqualTo "ALiVE_sys_factioncompiler") exitWith {
         private _compiledFaction = _x getVariable ["compiledFactionId", ""];
-        if (_compiledFaction isEqualTo "") then {
+        private _compilerError = _x getVariable ["compiledFactionError", ""];
+
+        if (_compiledFaction isEqualTo "" && {_compilerError isEqualTo ""}) then {
             _compiledFaction = _x getVariable ["factionId", ""];
         };
 

@@ -57,7 +57,6 @@ if (!_hasIdentifierChar || {_factionId isEqualTo ""}) then {
     _factionId = "ALIVE_CUSTOM_FACTION";
 };
 
-_logic setVariable ["factionId", _factionId, true];
 private _displayName = _logic getVariable ["displayName", _factionId];
 if !(_displayName isEqualType "") then {
     _displayName = str _displayName;
@@ -112,6 +111,7 @@ if (_collisionReason isEqualTo "" && {!isNil "ALIVE_factionCustomMappings"} && {
 
 if !(_collisionReason isEqualTo "") exitWith {
     private _collisionSourceText = if (_collisionSourceId isEqualTo "") then {""} else {format [" (module %1)", _collisionSourceId]};
+    _logic setVariable ["factionId", _requestedFactionId, true];
     _logic setVariable ["compiledFactionId", "", true];
     _logic setVariable ["compiledProxyFaction", "", true];
     _logic setVariable ["compiledFactionSide", "", true];
@@ -253,7 +253,13 @@ private _standardCategories = ["Infantry", "SpecOps", "Motorized", "Motorized_MT
 } forEach _syncedObjects;
 
 if (_groupIndex == 0) exitWith {
+    _logic setVariable ["factionId", _requestedFactionId, true];
     _logic setVariable ["compiledFactionId", "", true];
+    _logic setVariable ["compiledProxyFaction", "", true];
+    _logic setVariable ["compiledFactionSide", "", true];
+    _logic setVariable ["compiledFactionDisplayName", _displayName, true];
+    _logic setVariable ["compiledFactionGroupCount", 0, true];
+    _logic setVariable ["compiledFactionError", "No template groups captured", true];
     if (_debug) then {
         ["Faction compiler [%1] found no template groups", _factionId] call ALIVE_fnc_dump;
     };
@@ -293,6 +299,7 @@ private _factionData = [] call ALIVE_fnc_hashCreate;
 [ALIVE_compiledFactions, _factionId, _factionData] call ALIVE_fnc_hashSet;
 [ALIVE_factionCustomMappings, _factionId, _mapping] call ALIVE_fnc_hashSet;
 
+_logic setVariable ["factionId", _factionId, true];
 _logic setVariable ["compiledFactionId", _factionId, true];
 _logic setVariable ["compiledProxyFaction", _proxyFaction, true];
 _logic setVariable ["compiledFactionSide", _sideText, true];
