@@ -93,7 +93,29 @@ switch(_operation) do {
     };
     case "state": {
 
-        private _simple_operations = ["targets", "size","type","faction"];
+        // State save / restore list. Original hardcoded list only covered
+        // four keys (targets / size / type / faction), so every other Eden
+        // attribute silently reverted to its runtime default on persistence
+        // restore. Expanded to include all ten module attributes alongside
+        // the original three runtime-state keys; any legacy persisted state
+        // files that only contain the four original keys still round-trip
+        // correctly because the hashGet default returns nil for missing
+        // entries and the case handlers treat nil as "keep current".
+        private _simple_operations = [
+            // Runtime state (original entries, retained)
+            "targets", "size", "type",
+            // Eden attributes (persistence gap fix)
+            "debug",
+            "taor",
+            "blacklist",
+            "sizeFilter",
+            "priorityFilter",
+            "faction",
+            "placementMultiplier",
+            "ambientVehicleAmount",
+            "ambientVehicleFaction",
+            "initialdamage"
+        ];
 
         if !(_args isEqualType []) then {
             private _state = [] call CBA_fnc_hashCreate;
