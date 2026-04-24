@@ -154,6 +154,13 @@ switch(_operation) do {
     // Determine force faction
     case "faction": {
         _result = [_logic,_operation,_args,DEFAULT_FACTION,[] call ALiVE_fnc_configGetFactions] call ALIVE_fnc_OOsimpleOperation;
+
+        if !(_args isEqualType "") then {
+            private _compiledFaction = [_logic] call ALiVE_fnc_factionCompilerResolveForModule;
+            if !(_compiledFaction isEqualTo "") then {
+                _result = _compiledFaction;
+            };
+        };
     };
     // Return the Ambient Vehicle Amount
     case "ambientVehicleAmount": {
@@ -894,7 +901,8 @@ switch(_operation) do {
             if(_placeSupplies) then {
 
                 // attempt to get supplies by faction
-                _supplyClasses = [ALIVE_factionDefaultSupplies,_faction,[]] call ALIVE_fnc_hashGet;
+                private _staticFaction = [_faction] call ALiVE_fnc_factionCompilerGetConfigFaction;
+                _supplyClasses = [ALIVE_factionDefaultSupplies,_staticFaction,[]] call ALIVE_fnc_hashGet;
 
                 //["SUPPLY CLASSES: %1",_supplyClasses] call ALIVE_fnc_dump;
 
@@ -1161,7 +1169,8 @@ switch(_operation) do {
                 _landClasses = _carClasses + _armorClasses;
                 _landClasses = _landClasses - ALiVE_PLACEMENT_VEHICLEBLACKLIST;
 
-                _supportClasses = [ALIVE_factionDefaultSupports,_faction,[]] call ALIVE_fnc_hashGet;
+                private _staticFaction = [_faction] call ALiVE_fnc_factionCompilerGetConfigFaction;
+                _supportClasses = [ALIVE_factionDefaultSupports,_staticFaction,[]] call ALIVE_fnc_hashGet;
 
                 //["SUPPORT CLASSES: %1",_supportClasses] call ALIVE_fnc_dump;
 
