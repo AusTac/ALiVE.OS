@@ -69,7 +69,14 @@ if (typeName _this == "ARRAY") then {
 
 // ------------------------------------------------------------------------
 // 1. Resolve the currently-stored faction string.
-//    Priority: logic variable > Eden attribute value slot > "OPF_F" default.
+//    Priority: logic variable > Eden attribute value slot > side-aware default.
+//
+//    Default is side-aware so the Civilian variant doesn't fall back to a
+//    military faction classname (OPF_F). For civilian-only controls the
+//    default is CIV_F (vanilla A3 civilians); for military / all-sides
+//    variants it stays OPF_F. Without this, civilian modules whose
+//    defaultValue is empty render "(unrecognised) OPF_F" at the top of
+//    the dropdown on first open.
 // ------------------------------------------------------------------------
 private _selected = get3DENSelected "logic";
 private _storedFromLogic = if (count _selected > 0) then {
@@ -79,7 +86,7 @@ private _storedFromLogic = if (count _selected > 0) then {
 };
 private _edenValue = _display getVariable "value";
 
-private _value = "OPF_F";
+private _value = if (_allowedSides isEqualTo [3]) then { "CIV_F" } else { "OPF_F" };
 if (!isNil "_edenValue" && {typeName _edenValue == "STRING"} && {_edenValue != ""}) then {
     _value = _edenValue;
 };

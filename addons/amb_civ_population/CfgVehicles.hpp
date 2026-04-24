@@ -75,7 +75,7 @@ class CfgVehicles {
                 control      = "ALiVE_FactionChoice_Civilian";
                 typeName     = "STRING";
                 expression   = "_this setVariable ['ambientCrowdFaction', _value];";
-                defaultValue = """""";
+                defaultValue = """CIV_F""";
             };
             class disableAmbientSounds : Combo { property = "ALiVE_amb_civ_population_disableAmbientSounds"; displayName = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS"; tooltip = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS_COMMENT"; defaultValue = """false"""; class Values { class No { name = "No"; value = false; default = 1; }; class Yes { name = "Yes"; value = true; }; }; };
 
