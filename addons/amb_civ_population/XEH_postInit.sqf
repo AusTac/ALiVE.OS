@@ -185,6 +185,55 @@ if (isServer) then {
 //  CLIENT INITIALIZATION
 // ==============================================
 if (hasInterface) then {
+    // Stop-on-approach: freeze any nearby civilian and wave once when the
+    // local player closes within 2 m, so the scroll-wheel / ACE interact
+    // menu can lock on without the civ drifting out of range. Release
+    // when the player backs off beyond 3 m. Runs for ALL civilians (not
+    // only AdvCiv-active) because even vanilla-AI civilians can wander
+    // out of interaction range during menu use. Skipped in CLASSIC mode
+    // to preserve legacy UX.
+    //
+    // Per-frame rate 0.5 s is cheap - only scans a 5 m sphere around the
+    // local player. Config-side check (side == 3) gates to civilians.
+    // disableAI / enableAI / doWatch run on the unit's owner via
+    // remoteExec; the wave gesture broadcasts so every client renders it.
+    [{
+        if (isNull player || {!alive player}) exitWith {};
+        if ((missionNamespace getVariable ["ALiVE_amb_civ_population_UIMode", "AUTO"]) == "CLASSIC") exitWith {};
+
+        private _nearby = nearestObjects [player, ["CAManBase"], 5];
+        {
+            private _civ = _x;
+            if (
+                alive _civ &&
+                {_civ != player} &&
+                {!isPlayer _civ} &&
+                {(getNumber (configFile >> "CfgVehicles" >> typeOf _civ >> "side")) == 3} &&
+                {!(_civ getVariable ["ALiVE_advciv_blacklist", false])}
+            ) then {
+                // Skip if advciv is active and the civilian is in a non-CALM
+                // reactive / ordered state - their brain already owns movement.
+                private _advState = _civ getVariable ["ALiVE_advciv_state", "CALM"];
+                if (_advState == "CALM") then {
+                    private _d = _civ distance player;
+                    private _frozen = _civ getVariable ["ALiVE_civ_approachFreeze", false];
+
+                    if (_d < 2 && {!_frozen}) then {
+                        [_civ, "MOVE"] remoteExec ["disableAI", _civ];
+                        [_civ, player] remoteExec ["doWatch", _civ];
+                        [_civ, "GestureHi"] remoteExec ["playAction", 0];
+                        _civ setVariable ["ALiVE_civ_approachFreeze", true, true];
+                    };
+                    if (_d > 3 && {_frozen}) then {
+                        [_civ, "MOVE"] remoteExec ["enableAI", _civ];
+                        [_civ, objNull] remoteExec ["doWatch", _civ];
+                        _civ setVariable ["ALiVE_civ_approachFreeze", false, true];
+                    };
+                };
+            };
+        } forEach _nearby;
+    }, 0.5, []] call CBA_fnc_addPerFrameHandler;
+
     // Use CBA_fnc_waitUntilAndExecute instead of waitUntil to avoid suspending errors.
     // Guard on both isValidCiv (published by SystemInit) and ALiVE_advciv_enabled to
     // ensure the system actually completed initialisation before adding order menus.

@@ -522,10 +522,10 @@
     <English>Civilian Interaction UI:</English>
 </Key>
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_COMMENT">
-    <English>How players interact with civilians. Auto uses the ACE interaction menu when loaded, else the dialog. Classic keeps the legacy scroll-wheel action list (many entries).</English>
+    <English>How players interact with civilians. Auto registers both the dialog addAction and (when ACE is loaded) the ACE interaction menu branch. Dialog uses only the scroll-wheel addAction. Ace forces ACE-only. Classic keeps the legacy scroll-wheel action list (many entries).</English>
 </Key>
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_AUTO">
-    <English>Auto-detect (ACE or Dialog)</English>
+    <English>Auto (Dialog + ACE when loaded)</English>
 </Key>
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_DIALOG">
     <English>Dialog</English>
