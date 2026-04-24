@@ -128,9 +128,7 @@ if(isServer) then {
     private _advciv_preferBuildings  = (_logic getVariable ["advciv_preferBuildings",  "true"])  isEqualTo "true";
     private _advciv_voiceEnabled     = (_logic getVariable ["advciv_voiceEnabled",     "false"]) isEqualTo "true";
     private _advciv_voiceChance      = parseNumber (_logic getVariable ["advciv_voiceChance",      "0.6"]);
-    private _advciv_orderMenuEnabled = (_logic getVariable ["advciv_orderMenuEnabled", "true"])  isEqualTo "true";
     private _advciv_orderMenuRange   = parseNumber (_logic getVariable ["advciv_orderMenuRange",   "4"]);
-    private _advciv_playerAnimations = (_logic getVariable ["advciv_playerAnimations", "true"])  isEqualTo "true";
 
     private _advciv_vehicleEscape       = (_logic getVariable ["advciv_vehicleEscape",       "true"])  isEqualTo "true";
     private _advciv_vehicleEscapeChance = parseNumber (_logic getVariable ["advciv_vehicleEscapeChance", "0.3"]);
@@ -177,9 +175,7 @@ if(isServer) then {
     ALiVE_advciv_preferBuildings  = _advciv_preferBuildings;  publicVariable "ALiVE_advciv_preferBuildings";
     ALiVE_advciv_voiceEnabled     = _advciv_voiceEnabled;     publicVariable "ALiVE_advciv_voiceEnabled";
     ALiVE_advciv_voiceChance      = _advciv_voiceChance;      publicVariable "ALiVE_advciv_voiceChance";
-    ALiVE_advciv_orderMenuEnabled = _advciv_orderMenuEnabled; publicVariable "ALiVE_advciv_orderMenuEnabled";
     ALiVE_advciv_orderMenuRange   = _advciv_orderMenuRange;   publicVariable "ALiVE_advciv_orderMenuRange";
-    ALiVE_advciv_playerAnimations = _advciv_playerAnimations; publicVariable "ALiVE_advciv_playerAnimations";
 
     ALiVE_amb_civ_population_UIMode = _civilianInteractionUI; publicVariable "ALiVE_amb_civ_population_UIMode";
 

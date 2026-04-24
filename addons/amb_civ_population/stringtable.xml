@@ -518,23 +518,65 @@
     <Chinese>啟用與平民的進階對話和互動選項。</Chinese>
     <Chinesesimp>启用与平民的高级对话和互动选项。</Chinesesimp>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE">
     <English>Civilian Interaction UI:</English>
+    <Chinese>平民互動介面:</Chinese>
+    <Chinesesimp>平民互动界面:</Chinesesimp>
+    <Spanish>Interfaz de interacción civil:</Spanish>
+    <French>Interface d'interaction civile :</French>
+    <Portuguese>Interface de interação civil:</Portuguese>
+    <Russian>Интерфейс взаимодействия с гражданскими:</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_COMMENT">
     <English>How players interact with civilians. Auto registers both the dialog addAction and (when ACE is loaded) the ACE interaction menu branch. Dialog uses only the scroll-wheel addAction. Ace forces ACE-only. Classic keeps the legacy scroll-wheel action list (many entries).</English>
+    <Chinese>玩家與平民互動的方式。Auto 同時註冊對話框滑鼠滾輪選項與(若載入 ACE)ACE 互動選單分支。Dialog 僅使用滑鼠滾輪選項。Ace 僅啟用 ACE。Classic 保留傳統滑鼠滾輪操作列表(多個項目)。</Chinese>
+    <Chinesesimp>玩家与平民互动的方式。Auto 同时注册对话框滑鼠滚轮选项与(若加载 ACE)ACE 互动菜单分支。Dialog 仅使用滑鼠滚轮选项。Ace 仅启用 ACE。Classic 保留传统滑鼠滚轮操作列表(多个项目)。</Chinesesimp>
+    <Spanish>Cómo interactúan los jugadores con los civiles. Auto registra tanto la acción de rueda del ratón del diálogo como (si ACE está cargado) la rama del menú de interacción ACE. Dialog solo usa la acción de rueda. Ace fuerza solo ACE. Classic mantiene la lista tradicional de acciones (muchas entradas).</Spanish>
+    <French>Interaction entre joueurs et civils. Auto enregistre à la fois l'action roulette du dialogue et (si ACE est chargé) la branche du menu d'interaction ACE. Dialog n'utilise que l'action roulette. Ace force ACE uniquement. Classic conserve la liste d'actions roulette héritée (nombreuses entrées).</French>
+    <Portuguese>Como os jogadores interagem com civis. Auto regista tanto a ação de roda do rato do diálogo como (se o ACE estiver carregado) o ramo do menu de interação ACE. Dialog usa apenas a ação de roda. Ace força apenas ACE. Classic mantém a lista tradicional de ações (muitas entradas).</Portuguese>
+    <Russian>Как игроки взаимодействуют с гражданскими. Auto регистрирует и действие колёсика мыши диалога, и (если загружен ACE) ветку меню взаимодействия ACE. Dialog использует только действие колёсика. Ace форсирует только ACE. Classic сохраняет устаревший список действий колёсика (много пунктов).</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_AUTO">
     <English>Auto (Dialog + ACE when loaded)</English>
+    <Chinese>自動 (對話框 + 載入 ACE 時啟用 ACE)</Chinese>
+    <Chinesesimp>自动 (对话框 + 加载 ACE 时启用 ACE)</Chinesesimp>
+    <Spanish>Automático (Diálogo + ACE si está cargado)</Spanish>
+    <French>Automatique (Dialogue + ACE si chargé)</French>
+    <Portuguese>Automático (Diálogo + ACE quando carregado)</Portuguese>
+    <Russian>Авто (Диалог + ACE при загрузке)</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_DIALOG">
     <English>Dialog</English>
+    <Chinese>對話框</Chinese>
+    <Chinesesimp>对话框</Chinesesimp>
+    <Spanish>Diálogo</Spanish>
+    <French>Dialogue</French>
+    <Portuguese>Diálogo</Portuguese>
+    <Russian>Диалог</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_CLASSIC">
     <English>Classic scroll-wheel (legacy)</English>
+    <Chinese>傳統滑鼠滾輪 (舊版)</Chinese>
+    <Chinesesimp>传统滑鼠滚轮 (旧版)</Chinesesimp>
+    <Spanish>Rueda del ratón clásica (heredado)</Spanish>
+    <French>Roulette de souris classique (hérité)</French>
+    <Portuguese>Roda do rato clássica (legado)</Portuguese>
+    <Russian>Классическое колёсико мыши (устаревший)</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_UI_MODE_ACE">
     <English>ACE Interaction Menu</English>
+    <Chinese>ACE 互動選單</Chinese>
+    <Chinesesimp>ACE 互动菜单</Chinesesimp>
+    <Spanish>Menú de interacción ACE</Spanish>
+    <French>Menu d'interaction ACE</French>
+    <Portuguese>Menu de interação ACE</Portuguese>
+    <Russian>Меню взаимодействия ACE</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_LIMIT_INTERACTION">
@@ -3947,30 +3989,6 @@
 <!--  Advanced Civilians module parameters                        -->
 <!-- ============================================================ -->
 
-<!-- General -->
-<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER">
-    <English></English>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER_COMMENT">
-    <English>The following parameters apply only when Enable Advanced Civilians is set to Yes.</English>
-    <French>Les paramètres suivants ne s'appliquent que lorsque Activer les civils avancés est sur Oui.</French>
-    <Portuguese>Os parâmetros a seguir só se aplicam quando Ativar Civis Avançados estiver definido como Sim.</Portuguese>
-    <Russian>Следующие параметры применяются, только если параметр «Включить продвинутых гражданских» установлен в «Да».</Russian>
-    <Spanish>Los siguientes parámetros se aplican solo cuando Activar Civiles Avanzados está en Sí.</Spanish>
-    <Chinese>下列參數僅在「啟用進階平民」設為「是」時才會生效。</Chinese>
-    <Chinesesimp>以下参数仅在“启用高级平民”设为“是”时生效。</Chinesesimp>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_SECTION_HEADER_VALUE">
-    <English>-- Advanced Civilians Settings --</English>
-    <French>-- Paramètres Civils avancés --</French>
-    <Portuguese>-- Configurações de Civis Avançados --</Portuguese>
-    <Russian>-- Настройки продвинутых гражданских --</Russian>
-    <Spanish>-- Ajustes de Civiles Avanzados --</Spanish>
-    <Chinese>-- 進階平民設定 --</Chinese>
-    <Chinesesimp>-- 高级平民设置 --</Chinesesimp>
-</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_ADVCIV_ENABLED">
     <English>Enable Advanced Civilians:</English>
@@ -4476,66 +4494,25 @@
     <Chinesesimp>平民对危险作出反应时播放语音的机率。默认:0.6。</Chinesesimp>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_ORDER_MENU_ENABLED">
-    <English>Enable Order Menu:</English>
-    <French>Activer le menu d'ordres:</French>
-    <Portuguese>Ativar Menu de Ordens:</Portuguese>
-    <Russian>Включить меню приказов:</Russian>
-    <Spanish>Activar menú de órdenes:</Spanish>
-    <Chinese>啟用指令選單:</Chinese>
-    <Chinesesimp>启用命令菜单:</Chinesesimp>
+<Key ID="STR_ALIVE_CIV_POP_INTERACTION_RANGE">
+    <English>Interaction Range (m):</English>
+    <French>Portée d'interaction (m):</French>
+    <Portuguese>Alcance de Interação (m):</Portuguese>
+    <Russian>Дальность взаимодействия (м):</Russian>
+    <Spanish>Alcance de interacción (m):</Spanish>
+    <Chinese>互動範圍 (公尺):</Chinese>
+    <Chinesesimp>互动范围(米):</Chinesesimp>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_ORDER_MENU_ENABLED_COMMENT">
-    <English>Show a scroll-wheel action menu on civilians allowing players to issue orders. Default: Yes.</English>
-    <French>Affiche un menu d'actions à la molette sur les civils permettant aux joueurs de donner des ordres. Par défaut: Oui.</French>
-    <Portuguese>Exibe um menu de ações (roda do mouse) em civis, permitindo que os jogadores emitam ordens. Padrão: Sim.</Portuguese>
-    <Russian>Показывать меню действий в колесе прокрутки на гражданских, позволяющее игрокам отдавать приказы. По умолчанию: Да.</Russian>
-    <Spanish>Muestra un menú de acción de rueda en los civiles que permite a los jugadores dar órdenes. Por defecto: Sí.</Spanish>
-    <Chinese>在平民身上顯示滾輪動作選單,讓玩家可對其下達指令。預設值:是。</Chinese>
-    <Chinesesimp>在平民身上显示滚轮动作菜单,让玩家下达命令。默认:是。</Chinesesimp>
+<Key ID="STR_ALIVE_CIV_POP_INTERACTION_RANGE_COMMENT">
+    <English>Maximum scroll-wheel distance at which a civilian-interaction action (Talk to Civilian / Interact / advciv quick commands) appears on a civilian. Default: 4.</English>
+    <French>Distance maximale à la molette à laquelle une action d'interaction civile (Parler au civil / Interagir / ordres rapides advciv) apparaît sur un civil. Par défaut: 4.</French>
+    <Portuguese>Distância máxima da roda do rato à qual uma ação de interação civil (Falar com Civil / Interagir / comandos rápidos advciv) aparece num civil. Padrão: 4.</Portuguese>
+    <Russian>Максимальное расстояние колеса прокрутки, на котором действие взаимодействия с гражданским (Поговорить / Взаимодействовать / быстрые команды advciv) появляется на гражданском. По умолчанию: 4.</Russian>
+    <Spanish>Distancia máxima de la rueda del ratón a la que aparece una acción de interacción civil (Hablar con civil / Interactuar / comandos rápidos advciv) sobre un civil. Por defecto: 4.</Spanish>
+    <Chinese>滑鼠滾輪可顯示平民互動操作 (與平民交談 / 互動 / advciv 快速指令) 的最大距離。預設值:4。</Chinese>
+    <Chinesesimp>滑鼠滚轮可显示平民互动操作 (与平民交谈 / 互动 / advciv 快速命令) 的最大距离。默认:4。</Chinesesimp>
 </Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_ORDER_MENU_RANGE">
-    <English>Order Menu Range (m):</English>
-    <French>Portée menu d'ordres (m):</French>
-    <Portuguese>Alcance do Menu de Ordens (m):</Portuguese>
-    <Russian>Дальность меню приказов (м):</Russian>
-    <Spanish>Alcance del menú de órdenes (m):</Spanish>
-    <Chinese>指令選單範圍 (公尺):</Chinese>
-    <Chinesesimp>命令菜单范围(米):</Chinesesimp>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_ORDER_MENU_RANGE_COMMENT">
-    <English>Maximum distance at which the civilian scroll menu is accessible. Default: 4.</English>
-    <French>Distance maximale à laquelle le menu molette civil est accessible. Par défaut: 4.</French>
-    <Portuguese>Distância máxima na qual o menu de ações do civil é acessível. Padrão: 4.</Portuguese>
-    <Russian>Максимальное расстояние, на котором доступно меню прокрутки гражданских. По умолчанию: 4.</Russian>
-    <Spanish>Distancia máxima a la que el menú de rueda del civil es accesible. Por defecto: 4.</Spanish>
-    <Chinese>平民滾輪選單可用的最大距離。預設值:4。</Chinese>
-    <Chinesesimp>平民滚轮菜单可用的最大距离。默认:4。</Chinesesimp>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_PLAYER_ANIMATIONS">
-    <English>Player Gesture Animations:</English>
-    <French>Animations des gestes joueur:</French>
-    <Portuguese>Animações de Gestos do Jogador:</Portuguese>
-    <Russian>Анимации жестов игрока:</Russian>
-    <Spanish>Animaciones de gestos del jugador:</Spanish>
-    <Chinese>玩家手勢動畫:</Chinese>
-    <Chinesesimp>玩家手势动画:</Chinesesimp>
-</Key>
-<!-- AI-translated; native-speaker review welcome -->
-<Key ID="STR_ALIVE_ADVCIV_PLAYER_ANIMATIONS_COMMENT">
-    <English>Play hand signal animations on the player when issuing orders to civilians. Default: Yes.</English>
-    <French>Joue des animations de signes de la main sur le joueur lorsqu'il donne des ordres aux civils. Par défaut: Oui.</French>
-    <Portuguese>Reproduz animações de sinais manuais no jogador ao emitir ordens a civis. Padrão: Sim.</Portuguese>
-    <Russian>Проигрывать анимации жестов руками на игроке при отдаче приказов гражданским. По умолчанию: Да.</Russian>
-    <Spanish>Reproduce animaciones de señales manuales en el jugador al dar órdenes a los civiles. Por defecto: Sí.</Spanish>
-    <Chinese>對平民下達指令時,於玩家身上播放手勢動畫。預設值:是。</Chinese>
-    <Chinesesimp>对平民下达命令时在玩家身上播放手势信号动画。默认:是。</Chinesesimp>
-</Key>
-
 <!-- Vehicle -->
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_ADVCIV_VEHICLE_ESCAPE">

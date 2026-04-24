@@ -85,15 +85,42 @@
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_LOGISTICS_ENABLEACTIONS">
     <English>Enable Logistics Actions</English>
+    <Chinese>啟用後勤操作</Chinese>
+    <Chinesesimp>启用后勤操作</Chinesesimp>
+    <Spanish>Activar acciones de logística</Spanish>
+    <French>Activer les actions de logistique</French>
+    <Portuguese>Ativar ações de logística</Portuguese>
+    <Russian>Включить логистические действия</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_LOGISTICS_ENABLEACTIONS_COMMENT">
     <English>Attach the scroll-wheel logistics actions (load, carry, tow, lift) to nearby vehicles and supplies.</English>
+    <Chinese>將滑鼠滾輪後勤操作 (裝載、搬運、拖曳、吊掛) 附加到附近的載具與物資上。</Chinese>
+    <Chinesesimp>将滑鼠滚轮后勤操作 (装载、搬运、拖曳、吊挂) 附加到附近的载具与物资上。</Chinesesimp>
+    <Spanish>Adjunta las acciones de logística de la rueda del ratón (cargar, transportar, remolcar, elevar) a vehículos y suministros cercanos.</Spanish>
+    <French>Associe les actions de logistique à la roulette (charger, porter, remorquer, élinguer) aux véhicules et au ravitaillement proches.</French>
+    <Portuguese>Anexa as ações de logística da roda do rato (carregar, transportar, rebocar, içar) a veículos e suprimentos próximos.</Portuguese>
+    <Russian>Привязывает логистические действия колёсика (погрузка, переноска, буксировка, подъём) к ближайшим транспортным средствам и грузам.</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_LOGISTICS_DISABLEACTIONS">
     <English>Disable Logistics Actions</English>
+    <Chinese>停用後勤操作</Chinese>
+    <Chinesesimp>禁用后勤操作</Chinesesimp>
+    <Spanish>Desactivar acciones de logística</Spanish>
+    <French>Désactiver les actions de logistique</French>
+    <Portuguese>Desativar ações de logística</Portuguese>
+    <Russian>Отключить логистические действия</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_LOGISTICS_DISABLEACTIONS_COMMENT">
     <English>Remove the scroll-wheel logistics actions from your player until re-enabled.</English>
+    <Chinese>從您的玩家身上移除滑鼠滾輪後勤操作,直到再次啟用。</Chinese>
+    <Chinesesimp>从您的玩家身上移除滑鼠滚轮后勤操作,直到再次启用。</Chinesesimp>
+    <Spanish>Quita las acciones de logística de la rueda del ratón de tu jugador hasta que se reactiven.</Spanish>
+    <French>Retire les actions de logistique à la roulette du joueur jusqu'à réactivation.</French>
+    <Portuguese>Remove as ações de logística da roda do rato do jogador até serem reativadas.</Portuguese>
+    <Russian>Снимает логистические действия колёсика с игрока до повторного включения.</Russian>
 </Key>
 <Key ID="STR_ALIVE_LOGISTICS_DISABLELOG">
     <English>Disable Logistics:</English>
