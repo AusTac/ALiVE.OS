@@ -939,6 +939,7 @@ switch (_operation) do {
 	//   of the five role flags set; caller gates visibility.
 	case "Negotiate": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then {
 			[_civ, player] call ALIVE_fnc_selectRoleAction;
 		};
@@ -949,6 +950,7 @@ switch (_operation) do {
 	//   and ACE branch can drive the same effect.
 	case "GatherIntel": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then {
 			openMap true;
 			[getPosATL _civ, 2000] call ALiVE_fnc_OPCOMToggleInstallations;
@@ -961,34 +963,43 @@ switch (_operation) do {
 	//   advciv layer already enforces active-advciv / blacklist /
 	//   alive checks, so these stay thin. GetInVehicle takes a second
 	//   argument (the vehicle to enter); advciv_react picks the
-	//   nearest qualifying one when nil.
+	//   nearest qualifying one when nil. closeDialog 0 fires before
+	//   the action is dispatched so the civ is captured into _civ
+	//   first (onUnload clears the handler hash); a no-op when called
+	//   from a non-dialog path (ACE menu).
 	case "Follow": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "FOLLOW"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "StayHere": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "STAY"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "GoHome": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "GOHOME"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "HandsUp": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "HANDSUP"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "CalmDown": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "CALM"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "Kneel": {
 		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "KNEEL"] call ALIVE_fnc_advciv_react; };
 	};
 
@@ -1004,6 +1015,7 @@ switch (_operation) do {
 			if (_arguments isEqualType objNull) then { _civ = _arguments };
 		};
 		if (isNull _civ) then { _civ = [_logic, "Civ"] call ALiVE_fnc_hashGet };
+		closeDialog 0;
 		if (!isNil "_civ" && {!isNull _civ}) then {
 			if (isNull _vehicle) then {
 				[_civ, "GETIN"] call ALIVE_fnc_advciv_react;

@@ -96,6 +96,113 @@ class ALiVE_CivilianInteraction {
 		};
 		
 		
+		// --- AdvCiv command row (added in Phase 5b/5c of amb_civ_placement arc).
+		//     Mirrors the verb set from fnc_advciv_orderMenu into the dialog
+		//     so a single "Talk to Civilian" entry point can drive AdvCiv
+		//     commands without a separate scroll-wheel sprawl. Each action
+		//     closes the dialog first so the command feedback happens at
+		//     the right moment. "Negotiate" is dialog-gated visually but
+		//     the handler case does its own role check; a visually-disabled
+		//     state is not attempted here to keep the hpp simple.
+
+		class CivInteract_Follow: CivInteract_RscButton {
+			idc = 92320;
+			action = "[ALiVE_civInteractHandler,'Follow'] call ALiVE_fnc_civInteract";
+			text = "Follow";
+            x = 0.2375 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_Stay: CivInteract_RscButton {
+			idc = 92321;
+			action = "[ALiVE_civInteractHandler,'StayHere'] call ALiVE_fnc_civInteract";
+			text = "Stay";
+            x = 0.2930 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_GoHome: CivInteract_RscButton {
+			idc = 92322;
+			action = "[ALiVE_civInteractHandler,'GoHome'] call ALiVE_fnc_civInteract";
+			text = "Go Home";
+            x = 0.3485 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_HandsUp: CivInteract_RscButton {
+			idc = 92323;
+			action = "[ALiVE_civInteractHandler,'HandsUp'] call ALiVE_fnc_civInteract";
+			text = "Hands Up";
+            x = 0.4040 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_CalmDown: CivInteract_RscButton {
+			idc = 92324;
+			action = "[ALiVE_civInteractHandler,'CalmDown'] call ALiVE_fnc_civInteract";
+			text = "Calm";
+            x = 0.4595 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_Kneel: CivInteract_RscButton {
+			idc = 92325;
+			action = "[ALiVE_civInteractHandler,'Kneel'] call ALiVE_fnc_civInteract";
+			text = "Kneel";
+            x = 0.5150 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_GetIn: CivInteract_RscButton {
+			idc = 92326;
+			action = "[ALiVE_civInteractHandler,'GetInVehicle'] call ALiVE_fnc_civInteract";
+			text = "Get In";
+            x = 0.5705 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		class CivInteract_Negotiate: CivInteract_RscButton {
+			idc = 92327;
+			action = "[ALiVE_civInteractHandler,'Negotiate'] call ALiVE_fnc_civInteract";
+			text = "Negotiate";
+            x = 0.6260 * safezoneW + safezoneX;
+            y = 0.7916 * safezoneH + safezoneY;
+            w = 0.0525 * safezoneW;
+            h = 0.028 * safezoneH;
+			colorBackground[] = {0,0,0,0.5};
+			colorActive[] = {0,0,0,0.5};
+		};
+
+		// --- End AdvCiv command row ---
+
 		class CivInteract_Stop: CivInteract_RscButton {
 			idc = 92310;
 			action = "[ALiVE_civInteractHandler,'Stop'] call ALiVE_fnc_civInteract";
