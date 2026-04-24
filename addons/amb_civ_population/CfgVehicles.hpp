@@ -63,6 +63,20 @@ class CfgVehicles {
                     };
             };
             class enableInteraction : Combo { property = "ALiVE_amb_civ_population_enableInteraction"; displayName = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_ENABLE_INTERACTION_COMMENT"; defaultValue = """false"""; class Values { class Yes{name="Yes";value=true;}; class No{name="No";value=false;default=1;}; }; };
+            class civilianInteractionUI : Combo
+            {
+                property     = "ALiVE_amb_civ_population_civilianInteractionUI";
+                displayName  = "$STR_ALIVE_CIV_POP_UI_MODE";
+                tooltip      = "$STR_ALIVE_CIV_POP_UI_MODE_COMMENT";
+                defaultValue = """AUTO""";
+                class Values
+                {
+                    class AUTO    { name = "$STR_ALIVE_CIV_POP_UI_MODE_AUTO";    value = "AUTO"; default = 1; };
+                    class DIALOG  { name = "$STR_ALIVE_CIV_POP_UI_MODE_DIALOG";  value = "DIALOG"; };
+                    class CLASSIC { name = "$STR_ALIVE_CIV_POP_UI_MODE_CLASSIC"; value = "CLASSIC"; };
+                    class ACE     { name = "$STR_ALIVE_CIV_POP_UI_MODE_ACE";     value = "ACE"; };
+                };
+            };
             class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
             class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
             class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };

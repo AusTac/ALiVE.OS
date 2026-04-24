@@ -141,6 +141,14 @@ if(isServer) then {
 
     private _advciv_missionCriticalCheck = (_logic getVariable ["advciv_missionCriticalCheck", "true"])  isEqualTo "true";
 
+    // Civilian interaction UI mode (AUTO / DIALOG / CLASSIC / ACE).
+    // AUTO picks ACE when ace_interact_menu is loaded, else DIALOG at
+    // the addAction registration sites. CLASSIC preserves the legacy
+    // scroll-wheel sprawl (advciv_orderMenu + addCivilianActions).
+    // ACE is a reserved mode for the forthcoming sys_acemenu civilian
+    // branch; today it falls through to DIALOG until that branch lands.
+    private _civilianInteractionUI = _logic getVariable ["civilianInteractionUI", "AUTO"];
+
     // Publish all Advanced Civilian globals
     ALiVE_advciv_enabled          = _advciv_enabled;          publicVariable "ALiVE_advciv_enabled";
     ALiVE_advciv_debug            = _advciv_debug;            publicVariable "ALiVE_advciv_debug";
@@ -172,6 +180,8 @@ if(isServer) then {
     ALiVE_advciv_orderMenuEnabled = _advciv_orderMenuEnabled; publicVariable "ALiVE_advciv_orderMenuEnabled";
     ALiVE_advciv_orderMenuRange   = _advciv_orderMenuRange;   publicVariable "ALiVE_advciv_orderMenuRange";
     ALiVE_advciv_playerAnimations = _advciv_playerAnimations; publicVariable "ALiVE_advciv_playerAnimations";
+
+    ALiVE_amb_civ_population_UIMode = _civilianInteractionUI; publicVariable "ALiVE_amb_civ_population_UIMode";
 
     ALiVE_advciv_vehicleEscape       = _advciv_vehicleEscape;       publicVariable "ALiVE_advciv_vehicleEscape";
     ALiVE_advciv_vehicleEscapeChance = _advciv_vehicleEscapeChance; publicVariable "ALiVE_advciv_vehicleEscapeChance";

@@ -518,6 +518,24 @@
     <Chinese>啟用與平民的進階對話和互動選項。</Chinese>
     <Chinesesimp>启用与平民的高级对话和互动选项。</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE">
+    <English>Civilian Interaction UI:</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE_COMMENT">
+    <English>How players interact with civilians. Auto uses the ACE interaction menu when loaded, else the dialog. Classic keeps the legacy scroll-wheel action list (many entries).</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE_AUTO">
+    <English>Auto-detect (ACE or Dialog)</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE_DIALOG">
+    <English>Dialog</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE_CLASSIC">
+    <English>Classic scroll-wheel (legacy)</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_UI_MODE_ACE">
+    <English>ACE Interaction Menu</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_LIMIT_INTERACTION">
     <English>Limit Interaction:</English>
