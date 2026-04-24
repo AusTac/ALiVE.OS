@@ -850,9 +850,14 @@ switch (_operation) do {
 		hint "There is no room for this item in your inventory";
 	};
 
+	//-- Unified verb surface (Phase 5b of amb_civ_placement arc).
+	//   Existing dialog callers pass no _arguments and read the civ from
+	//   the handler hash (behaviour preserved). Non-dialog callers (ACE
+	//   interact menu, future vanilla single-action entry) pass the civ
+	//   directly as _arguments; the OR-fallback below resolves either.
 	case "Detain": {
 		//-- Function is exactly the same as ALiVE arrest/release --> Author: Highhead
-		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -868,9 +873,9 @@ switch (_operation) do {
 			};
 		};
 	};
-	
+
 	case "Stop": {
-		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -887,7 +892,7 @@ switch (_operation) do {
 	};
 
 	case "getDown": {
-		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -905,7 +910,7 @@ switch (_operation) do {
 	};
 
 	case "goAway": {
-		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -916,6 +921,94 @@ switch (_operation) do {
 				_civ setUnitPos "AUTO";
 				_fleePos = [position _civ, 30, 50, 1, 0, 1, 0] call BIS_fnc_findSafePos;
 				_civ doMove _fleePos;
+			};
+		};
+	};
+
+	//-- New shared verbs (Phase 5b). Thin bridges so the vanilla dialog
+	//   (5c), the sys_acemenu civilian branch (5d) and the classic
+	//   scroll-wheel path (legacy) all call identical code. Each case
+	//   accepts the civilian object directly as _arguments.
+
+	//-- Negotiate: consolidates the five role-gated "Talk to <Role>"
+	//   entries in fnc_addCivilianActions into a single context-aware
+	//   verb. Role detection reuses the existing getRole case; the
+	//   underlying flow still lives in ALIVE_fnc_selectRoleAction
+	//   (10% hostility-reduce success, sector-wide shift, role-
+	//   dependent magnitude). Only enabled when the civilian has one
+	//   of the five role flags set; caller gates visibility.
+	case "Negotiate": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then {
+			[_civ, player] call ALIVE_fnc_selectRoleAction;
+		};
+	};
+
+	//-- GatherIntel: 10% random-chance intel reveal surfaced as its
+	//   own addAction today; exposed as a shared verb so the dialog
+	//   and ACE branch can drive the same effect.
+	case "GatherIntel": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then {
+			openMap true;
+			[getPosATL _civ, 2000] call ALiVE_fnc_OPCOMToggleInstallations;
+			_civ setVariable ["intelGathered", true];
+		};
+	};
+
+	//-- AdvCiv quick-command bridges. Each one is a passthrough to
+	//   ALIVE_fnc_advciv_react with the appropriate verb string. The
+	//   advciv layer already enforces active-advciv / blacklist /
+	//   alive checks, so these stay thin. GetInVehicle takes a second
+	//   argument (the vehicle to enter); advciv_react picks the
+	//   nearest qualifying one when nil.
+	case "Follow": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "FOLLOW"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "StayHere": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "STAY"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "GoHome": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "GOHOME"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "HandsUp": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "HANDSUP"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "CalmDown": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "CALM"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "Kneel": {
+		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (!isNil "_civ") then { [_civ, "KNEEL"] call ALIVE_fnc_advciv_react; };
+	};
+
+	case "GetInVehicle": {
+		//-- Accepts either [_civ, _vehicle] or just _civ (advciv_react
+		//   picks the nearest qualifying vehicle in the latter case).
+		private _civ = objNull;
+		private _vehicle = objNull;
+		if (_arguments isEqualType [] && {count _arguments > 0}) then {
+			_civ = _arguments select 0;
+			if (count _arguments > 1) then { _vehicle = _arguments select 1; };
+		} else {
+			if (_arguments isEqualType objNull) then { _civ = _arguments };
+		};
+		if (isNull _civ) then { _civ = [_logic, "Civ"] call ALiVE_fnc_hashGet };
+		if (!isNil "_civ" && {!isNull _civ}) then {
+			if (isNull _vehicle) then {
+				[_civ, "GETIN"] call ALIVE_fnc_advciv_react;
+			} else {
+				[_civ, "GETIN", _vehicle] call ALIVE_fnc_advciv_react;
 			};
 		};
 	};
