@@ -42,18 +42,21 @@ Parameters:
              start with strings like "main"); otherwise as a list.
 
 Returns:
-    The same input array (modified in place), so the helper can be
-    used inline: `_menus = _menus call ALiVE_fnc_normalizeFlexiMenuActions;`
+    The same input array (modified in place). Do NOT reassign the call
+    result to the caller's variable; the helper mutates entries via
+    `set`, so the caller's reference keeps the correct structure
+    regardless. Reassigning is also unsafe because any runtime error
+    inside the helper would make the caller's variable nil.
 
 Examples:
 (begin example)
 // List-of-menus form (most MenuDef files)
-_menus = _menus call ALiVE_fnc_normalizeFlexiMenuActions;
+_menus call ALiVE_fnc_normalizeFlexiMenuActions;
 
 // Single-menu form (switch-based returns, e.g. sys_adminactions)
-switch (_menuName) do {
-    case "main": { <menu> call ALiVE_fnc_normalizeFlexiMenuActions };
-};
+private _menuDef = switch (_menuName) do { ... };
+_menuDef call ALiVE_fnc_normalizeFlexiMenuActions;
+_menuDef  // return the local, NOT the helper's return value
 (end)
 
 See Also:
@@ -63,11 +66,14 @@ Author:
 Jman
 ---------------------------------------------------------------------------- */
 
-params [["_input", [], [[]]]];
+// Input is _this directly (the whole array passed by the caller), NOT
+// _this select 0. `params [["_input", ...]]` extracts element 0, which
+// for a list-of-menus caller silently drops every menu after the first,
+// and for a single-menu caller (sys_adminactions switch result) reduces
+// the input to just the header triple. Use _this directly.
+private _input = _this;
 
-diag_log format ["[ALIVE_fnc_normalizeFlexiMenuActions] entry: type=%1, count=%2", typeName _input, count _input];
-
-if (count _input == 0) exitWith {_input};
+if (!(_input isEqualType []) || {count _input == 0}) exitWith {_input};
 
 // Shape detection: single menu vs list of menus. A single menu has the
 // header array as its first element, and a header starts with the menu-
@@ -83,21 +89,13 @@ private _menus = if (_isSingleMenu) then {[_input]} else {_input};
 
 {
     private _menu = _x;
-    // Defensive: skip anything not array-shaped (string / number / object
-    // / nil). A flexiMenu entry should always be an array, but some
-    // MenuDef patterns produce unusual shapes (e.g. a stray list wrapping
-    // that the detection heuristic can't fully disambiguate).
-    if (!(_menu isEqualType [])) then {
-        diag_log format ["[ALIVE_fnc_normalizeFlexiMenuActions] skipping non-array menu at index %1: type=%2, value=%3", _forEachIndex, typeName _menu, _menu];
-    } else {
-        if (count _menu >= 2 && {(_menu select 1) isEqualType []}) then {
-            private _entries = _menu select 1;
-            {
-                if (_x isEqualType [] && {count _x >= 2} && {(_x select 1) isEqualType {}}) then {
-                    _x set [1, format ["call %1", str (_x select 1)]];
-                };
-            } forEach _entries;
-        };
+    if (_menu isEqualType [] && {count _menu >= 2} && {(_menu select 1) isEqualType []}) then {
+        private _entries = _menu select 1;
+        {
+            if (_x isEqualType [] && {count _x >= 2} && {(_x select 1) isEqualType {}}) then {
+                _x set [1, format ["call %1", str (_x select 1)]];
+            };
+        } forEach _entries;
     };
 } forEach _menus;
 
