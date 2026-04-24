@@ -130,7 +130,7 @@
     <English>Ambient Vehicle Amount:</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT_COMMENT">
-    <English>Density of ambient civilian vehicles at each location (Low fills roughly 20 percent, High fills every slot)</English>
+    <English>Chance per building of an ambient vehicle spawning in an available parking position (Low ~5%, Medium ~15%, High ~25%)</English>
 </Key>
 <Key ID="STR_ALIVE_AMBCP_AMBIENT_VEHICLE_AMOUNT_NONE">
     <English>No ambient vehicles</English>

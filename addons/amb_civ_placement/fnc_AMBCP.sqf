@@ -30,6 +30,7 @@ See Also:
 Author:
 Wolffy
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 #define SUPERCLASS ALIVE_fnc_baseClass
@@ -392,11 +393,6 @@ switch(_operation) do {
                 };
 
                 private _clusters = DEFAULT_OBJECTIVES;
-
-
-                if(!(worldName == "Altis") && _sizeFilter == 160) then {
-                    _sizeFilter = 0;
-                };
 
                 if !(isnil "ALIVE_clustersCivSettlement") then {
 
@@ -894,10 +890,36 @@ switch(_operation) do {
                             [_agent, "homeCluster", _clusterID] call ALIVE_fnc_civilianAgent;
                             [_agent, "homePosition", _buildingPosition] call ALIVE_fnc_civilianAgent;
 
-                            // Add persistent name to civ
-                            private _genName = getText(configFile >> "CfgVehicles" >> _unitClass >> "genericNames");
-                            private _firstName = getText((configfile >> "CfgWorlds" >> "GenericNames" >> _genName >> "FirstNames") select (random (count (configfile >> "CfgWorlds" >> "GenericNames" >> _genName >> "FirstNames") -1) ));
-                            private _lastName = getText((configfile >> "CfgWorlds" >> "GenericNames" >> _genName >> "LastNames") select (random (count (configfile >> "CfgWorlds" >> "GenericNames" >> _genName >> "LastNames") -1) ));
+                            // Add persistent name to civ. Defensive path:
+                            // genericNames may be defined as either text (class
+                            // name pointing to CfgWorlds >> GenericNames) or as
+                            // an array (some third-party unit configs); handle
+                            // both. Also guard against missing GenericNames
+                            // sub-config or empty FirstNames / LastNames lists
+                            // so non-conforming factions don't silently assign
+                            // empty names.
+                            private _genNamesProperty = configFile >> "CfgVehicles" >> _unitClass >> "genericNames";
+                            private _genName = "";
+                            if (isText _genNamesProperty) then {
+                                _genName = getText _genNamesProperty;
+                            };
+                            if (isArray _genNamesProperty) then {
+                                _genName = (getArray _genNamesProperty) param [0, ""];
+                            };
+
+                            private _firstName = "";
+                            private _lastName = "";
+                            private _genNamesCfg = configFile >> "CfgWorlds" >> "GenericNames" >> _genName;
+                            if (isClass _genNamesCfg) then {
+                                private _firstNamesCfg = _genNamesCfg >> "FirstNames";
+                                private _lastNamesCfg = _genNamesCfg >> "LastNames";
+                                if (count _firstNamesCfg > 0) then {
+                                    _firstName = getText (_firstNamesCfg select floor random count _firstNamesCfg);
+                                };
+                                if (count _lastNamesCfg > 0) then {
+                                    _lastName = getText (_lastNamesCfg select floor random count _lastNamesCfg);
+                                };
+                            };
 
                             [_agent, "firstName", _firstName] call ALIVE_fnc_civilianAgent;
                             [_agent, "lastName", _lastName] call ALIVE_fnc_civilianAgent;
