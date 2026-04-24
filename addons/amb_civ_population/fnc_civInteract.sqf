@@ -121,7 +121,18 @@ switch (_operation) do {
 
 	//-- On load
 	case "openMenu": {
-		_civ = _arguments;
+		// Guard against callers that pass a non-object arg shape (corrupt
+		// MenuDef action dispatch, unexpected remote-exec param). Without
+		// this, a stray caller could land here with _arguments = [] and
+		// _civ would be an array that crashes later commands with type
+		// errors, or worse, leak a scope-unbound _civ across sibling code.
+		if (!(_arguments isEqualType objNull)) exitWith {};
+		// `private` anchors _civ to this case block's scope. Previously
+		// _civ = _arguments assigned unprivated, which lets SQF resolve
+		// the name against any enclosing scope chain - fragile in nested
+		// dialog-onUnload / BIS_fnc_MP contexts where the outer scope can
+		// go stale between use sites within the same case body.
+		private _civ = _arguments;
 
  		private _authorized = [MOD(civInteractHandler), "authorized", []] call ALiVE_fnc_hashGet;
 
@@ -181,7 +192,7 @@ switch (_operation) do {
 
 		//-- Create hash
 		_civData = [] call ALIVE_fnc_hashCreate;
-		_civ = [_logic,"Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [_logic,"Civ"] call ALiVE_fnc_hashGet;
 		_answersGiven = _civ getVariable ["AnswersGiven", []];
 
 		//-- Hash data to logic
@@ -251,7 +262,7 @@ switch (_operation) do {
 		closeDialog 0;
 
 		//-- Un-stop civilian
-		_civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
 		[[[_civ],{(_this select 0) enableAI "MOVE"}],"BIS_fnc_spawn",_civ,false,true] call BIS_fnc_MP;
 		//_civ enableAI "MOVE"; //-- Needs further testing but wasn't reliable in MP (Arguments must be local -- unit is local to server (or hc))
 
@@ -466,7 +477,7 @@ switch (_operation) do {
 
 	case "getRole": {
 		private ["_role"];
-		_civ = _arguments;
+		private _civ = _arguments;
 		_role = "none";
 		{if (_civ getvariable [_x,false]) exitwith {_role = _x}} foreach ["townelder","major","priest","muezzin","politician"];
 
@@ -625,7 +636,7 @@ switch (_operation) do {
 
 	case "displayGearContainers": {
 		private ["_configPath","_index"];
-		_civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
 		lbClear CIVINTERACT_GEARLIST;
 		_index = 0;
 
@@ -661,7 +672,7 @@ switch (_operation) do {
 	};
 
 	case "openGearContainer": {
-		_civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
 		_data = CIVINTERACT_GEARLIST lbData (lbCurSel CIVINTERACT_GEARLIST);
 
 		if (_data == backpack _civ) exitWith {
@@ -718,7 +729,7 @@ switch (_operation) do {
 	case "onGearClick": {
 		_index = lbCurSel CIVINTERACT_GEARLIST;
 		_data = CIVINTERACT_GEARLIST lbData _index;
-		_civ = [MOD(civInteractHandler),"Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [MOD(civInteractHandler),"Civ"] call ALiVE_fnc_hashGet;
 
 		if (_index == -1) then {
 			CIVINTERACT_CONFISCATEBUTTON ctrlShow false;
@@ -758,7 +769,7 @@ switch (_operation) do {
 
 	case "refreshContainer": {
 		_container = [_logic,"CurrentGearMode"] call ALiVE_fnc_hashGet;
-		_civ = [_logic,"Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [_logic,"Civ"] call ALiVE_fnc_hashGet;
 
 		switch (_container) do {
 			case "Backpack": {
@@ -780,7 +791,7 @@ switch (_operation) do {
 		private ["_exit"];
 		_index = lbCurSel CIVINTERACT_GEARLIST;
 		_item = CIVINTERACT_GEARLIST lbData _index;
-		_civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
+		private _civ = [MOD(civInteractHandler), "Civ"] call ALiVE_fnc_hashGet;
 		_exit = false;
 
 		switch true do {
@@ -864,7 +875,7 @@ switch (_operation) do {
 	//   directly as _arguments; the OR-fallback below resolves either.
 	case "Detain": {
 		//-- Function is exactly the same as ALiVE arrest/release --> Author: Highhead
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -882,7 +893,7 @@ switch (_operation) do {
 	};
 
 	case "Stop": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -899,7 +910,7 @@ switch (_operation) do {
 	};
 
 	case "getDown": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -917,7 +928,7 @@ switch (_operation) do {
 	};
 
 	case "goAway": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 
 		closeDialog 0;
 
@@ -945,7 +956,7 @@ switch (_operation) do {
 	//   dependent magnitude). Only enabled when the civilian has one
 	//   of the five role flags set; caller gates visibility.
 	case "Negotiate": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then {
 			[_civ, player] call ALIVE_fnc_selectRoleAction;
@@ -982,7 +993,7 @@ switch (_operation) do {
 	//   hidden for most players. hint renders top-right over the
 	//   map, visible as the markers appear.
 	case "GatherIntel": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then {
 			private _chance = missionNamespace getVariable ["ALiVE_amb_civ_population_IntelGatherChance", 30];
@@ -1024,37 +1035,37 @@ switch (_operation) do {
 	//   first (onUnload clears the handler hash); a no-op when called
 	//   from a non-dialog path (ACE menu).
 	case "Follow": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "FOLLOW"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "StayHere": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "STAY"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "GoHome": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "GOHOME"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "HandsUp": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "HANDSUP"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "CalmDown": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "CALM"] call ALIVE_fnc_advciv_react; };
 	};
 
 	case "Kneel": {
-		_civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
 		closeDialog 0;
 		if (!isNil "_civ") then { [_civ, "KNEEL"] call ALIVE_fnc_advciv_react; };
 	};
