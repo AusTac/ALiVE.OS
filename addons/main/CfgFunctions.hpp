@@ -36,6 +36,11 @@ class cfgFunctions {
                 file = "\x\alive\addons\main\fnc_isModuleInitialised.sqf";
                 RECOMPILE;
             };
+            class normalizeFlexiMenuActions {
+                description = "Converts CBA flexiMenu code-block actions to string form required by buttonSetAction";
+                file = "\x\alive\addons\main\fnc_normalizeFlexiMenuActions.sqf";
+                RECOMPILE;
+            };
             class pauseModule {
                 description = "Pauses given module(s)";
                 file = "\x\alive\addons\main\fnc_pauseModule.sqf";
