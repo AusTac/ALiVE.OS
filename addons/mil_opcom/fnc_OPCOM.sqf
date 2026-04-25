@@ -90,7 +90,6 @@ switch(_operation) do {
 
         case "init": {
             if (isServer) then {
-                // if server, initialise module game logic
                 _logic setVariable ["super", SUPERCLASS];
                 _logic setVariable ["class", MAINCLASS];
                 _logic setVariable ["moduleType", "ALIVE_OPCOM"];
@@ -100,15 +99,9 @@ switch(_operation) do {
 
                     PublicVariable QUOTE(ADDON);
                 };
-            };
+                TRACE_1("After module init",_logic);
 
-            TRACE_1("After module init",_logic);
-
-            waituntil {!isnil QUOTE(ADDON)};
-
-            TRACE_1("Starting process",_logic);
-
-            if (isServer) then {
+                TRACE_1("Starting process",_logic);
                 [_logic,"start"] call MAINCLASS;
             };
         };
