@@ -56,6 +56,7 @@ private ["_result"];
 #define CIVINTERACT_CONFISCATEBUTTON 	(CIVINTERACT_DISPLAY displayCtrl 9245)
 #define CIVINTERACT_OPENGEARCONTAINER	(CIVINTERACT_DISPLAY displayCtrl 9246)
 #define CIVINTERACT_GATHERINTEL		(CIVINTERACT_DISPLAY displayCtrl 92316)
+#define CIVINTERACT_HOSTILITYLABEL	(CIVINTERACT_DISPLAY displayCtrl 9247)
 
 switch (_operation) do {
 
@@ -212,6 +213,45 @@ switch (_operation) do {
 			CIVINTERACT_CIVNAME ctrlSetText (format ["%1 (%2)", _name, [configFile >> "CfgVehicles" >> typeOf vehicle _civ] call BIS_fnc_displayName]);
 		} else {
 			CIVINTERACT_CIVNAME ctrlSetText (format ["%1 (%2)", _name, _role]);
+		};
+
+		//-- Hostility indicator (player-facing perceived-hostility readout, opt-in
+		//   via the civHostilityIndicator module attribute). When OFF: hidden.
+		//   When DESCRIPTIVE / NUMERIC: a small per-civ deterministic offset is
+		//   lazy-initialised on first dialog open against this civ and broadcast
+		//   so subsequent re-opens (and other clients) see the same offset, giving
+		//   a stable but slightly-wrong reading. Mirrors the imperfect-perception
+		//   model used by Gather Intel.
+		private _hostilityMode = missionNamespace getVariable ["ALiVE_amb_civ_population_HostilityIndicator", "OFF"];
+		if (_hostilityMode == "OFF") then {
+			CIVINTERACT_HOSTILITYLABEL ctrlShow false;
+		} else {
+			if (isNil {_civ getVariable "ALiVE_CivPop_PerceivedOffset"}) then {
+				_civ setVariable ["ALiVE_CivPop_PerceivedOffset", floor (random 11) - 5, true];
+			};
+			private _h = (_civInfo select 1) max 0 min 100;
+			private _offset = _civ getVariable ["ALiVE_CivPop_PerceivedOffset", 0];
+			private _perceived = (_h + _offset) max 0 min 100;
+
+			private _label = "";
+			private _color = [];
+			switch (true) do {
+				case (_perceived < 20): { _label = localize "STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_FRIENDLY";  _color = [0.4,  0.8,  0.4,  1]; };
+				case (_perceived < 40): { _label = localize "STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_NEUTRAL";   _color = [0.7,  0.8,  0.4,  1]; };
+				case (_perceived < 60): { _label = localize "STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_WARY";      _color = [0.9,  0.8,  0.3,  1]; };
+				case (_perceived < 80): { _label = localize "STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_DEFIANT";   _color = [0.95, 0.55, 0.2,  1]; };
+				default                 { _label = localize "STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_HOSTILE";   _color = [0.9,  0.3,  0.3,  1]; };
+			};
+
+			private _text = if (_hostilityMode == "NUMERIC") then {
+				format ["%1 (~%2", _label, _perceived] + "%)"
+			} else {
+				_label
+			};
+
+			CIVINTERACT_HOSTILITYLABEL ctrlSetText _text;
+			CIVINTERACT_HOSTILITYLABEL ctrlSetTextColor _color;
+			CIVINTERACT_HOSTILITYLABEL ctrlShow true;
 		};
 
 		[_logic,"enableMain"] call MAINCLASS;
