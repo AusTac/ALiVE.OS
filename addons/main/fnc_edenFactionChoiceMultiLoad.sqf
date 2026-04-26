@@ -17,7 +17,7 @@ allowlist passed alongside _this:
     ALiVE_FactionChoiceMulti_Military  sides [0,1,2]   (no civilians)
     ALiVE_FactionChoiceMulti_Civilian  sides [3]       (civilians only)
 
-Backward-compatible stored-value parsing — accepts ALL of these forms:
+Backward-compatible stored-value parsing - accepts ALL of these forms:
   - Empty string / nil           -> no items selected
   - Empty array literal "[]"     -> no items selected
   - SQF array literal "[\"a\",\"b\"]" -> parseSimpleArray to list
@@ -35,12 +35,22 @@ attribute name) but can be overridden by the per-control attributeLoad
 expression for other modules whose attribute is named differently
 (e.g. "CQB_FACTIONS" for mil_cqb).
 
+Optional 4th element (_initialDefault) is an array of faction classnames
+to pre-tick when no stored value is found - i.e. fresh module placement
+with no logic variable set and no Eden value slot. Used by mil_opcom to
+mirror its runtime BLU_F fallback so the listbox shows a sensible default
+rather than blank. Most consumers omit it - empty default is semantic
+opt-in for them. Encoded as if the user had explicitly stored that list,
+so it goes through the same parse/populate path as a real saved value.
+
 Parameters:
-    [_display, _allowedSides, _varName]
-    _display      : DISPLAY - Eden attribute display. ListBox control IDC 100.
-    _allowedSides : ARRAY of NUMBERs - sides to include. Defaults [0,1,2,3].
-    _varName      : STRING - name of the logic variable storing the value.
-                    Defaults to "factions".
+    [_display, _allowedSides, _varName, _initialDefault]
+    _display        : DISPLAY - Eden attribute display. ListBox control IDC 100.
+    _allowedSides   : ARRAY of NUMBERs - sides to include. Defaults [0,1,2,3].
+    _varName        : STRING - name of the logic variable storing the value.
+                      Defaults to "factions".
+    _initialDefault : ARRAY of STRINGs - faction classnames to pre-tick when
+                      no value is stored. Defaults to [] (no pre-tick).
 
 Author:
 Jman
@@ -54,6 +64,7 @@ Jman
 private _display = controlNull;
 private _allowedSides = [0,1,2,3];
 private _varName = "factions";
+private _initialDefault = [];
 if (typeName _this == "ARRAY") then {
     _display = _this select 0;
     if (count _this > 1 && {typeName (_this select 1) == "ARRAY"}) then {
@@ -61,6 +72,9 @@ if (typeName _this == "ARRAY") then {
     };
     if (count _this > 2 && {typeName (_this select 2) == "STRING"} && {(_this select 2) != ""}) then {
         _varName = _this select 2;
+    };
+    if (count _this > 3 && {typeName (_this select 3) == "ARRAY"}) then {
+        _initialDefault = _this select 3;
     };
 } else {
     _display = _this;
@@ -133,6 +147,30 @@ if (_value != "") then {
             if (_p != "") then { _selectedFactions pushBack _p };
         } forEach _parts;
     };
+};
+
+// Per-attribute initial-default fallback. Triggered when parsing yielded
+// no selection AND the caller passed a non-empty _initialDefault list.
+// This catches three flavours of "no current selection":
+//   1. Genuinely fresh placement (Eden may or may not have applied the
+//      attribute expression to the logic - depends on engine path).
+//   2. Eden-default empty literal "[]" written by defaultValue.
+//   3. User explicitly unticked everything and saved.
+//
+// Triggering uniformly across all three is intentional. For consumers
+// that pass _initialDefault (mil_opcom factions today), an empty
+// selection is functionally equivalent to the runtime fallback - the
+// runtime warns + defaults regardless - so the listbox showing what
+// the runtime will use is the right UX. Consumers that omit
+// _initialDefault (mil_cqb / sup_player_resupply / sys_aiskill /
+// amb_civ_population) keep "user can persist empty" semantics
+// because the seed never fires for them.
+if (count _selectedFactions == 0 && {count _initialDefault > 0}) then {
+    {
+        if (typeName _x == "STRING" && {_x != ""}) then {
+            _selectedFactions pushBack _x;
+        };
+    } forEach _initialDefault;
 };
 
 // ------------------------------------------------------------------------

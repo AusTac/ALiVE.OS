@@ -44,7 +44,7 @@ class CfgVehicles {
                                 control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction', _value];";
-                                defaultValue = """OPF_F""";
+                                defaultValue = """BLU_F""";
                         };
                         class sizeFilter : Combo
                         {

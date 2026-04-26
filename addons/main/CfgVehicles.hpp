@@ -347,6 +347,33 @@ class Cfg3DEN
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
+        // Variant of _Military that pre-ticks BLU_F when the listbox
+        // resolves empty. Used by mil_opcom's `factions` attribute,
+        // which has a runtime fallback to BLU_F (warns + defaults in
+        // fnc_OPCOM.sqf when the configured factions list is empty);
+        // showing BLU_F pre-ticked in the listbox aligns the visual
+        // state with what the runtime will use.
+        //
+        // Encoded as a control-class variant rather than a per-attribute
+        // attributeLoad override because Eden's attribute system reads
+        // attributeLoad from the control class for controls-group-based
+        // custom controls; per-attribute overrides on the Cfg3DEN /
+        // CfgVehicles attribute class do not propagate. (Confirmed via
+        // ENTRY-state diagnostic logging during #860 testing - the
+        // override path produced _this count=3 / initialDefault=[],
+        // matching the inherited control-class shape rather than the
+        // 4-element override.)
+        //
+        // Other ALiVE_FactionChoiceMulti consumers (mil_cqb /
+        // sup_player_resupply / sys_aiskill / amb_civ_population) keep
+        // the unmodified _Military / _Civilian / base variant - their
+        // empty default is semantic opt-in, not a broken-state
+        // placeholder.
+        class ALiVE_FactionChoiceMulti_Military_Default_BLU_F: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, [0,1,2], 'factions', ['BLU_F']] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
+        };
+
         // ALiVE_ItemChoiceMulti family:
         //   Multi-select listbox of humanitarian items (water or ration)
         //   populated from the CfgALiVEHumanitarianItems registry. Each

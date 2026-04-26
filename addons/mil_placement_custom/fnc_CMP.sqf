@@ -23,7 +23,7 @@ Array - state - Save and restore module state
 Array - faction - Faction associated with module
 
 Examples:
-[_logic, "faction", "OPF_F"] call ALiVE_fnc_CMP;
+[_logic, "faction", "BLU_F"] call ALiVE_fnc_CMP;
 
 See Also:
 - <ALIVE_fnc_CMPInit>
@@ -35,7 +35,7 @@ ARJay
 #define SUPERCLASS                      ALIVE_fnc_baseClass
 #define MAINCLASS                       ALIVE_fnc_CMP
 #define MTEMPLATE                       "ALiVE_CMP_%1"
-#define DEFAULT_FACTION                 QUOTE(OPF_F)
+#define DEFAULT_FACTION                 QUOTE(BLU_F)
 #define DEFAULT_SIZE                    "50"
 #define DEFAULT_PRIORITY                "50"
 #define DEFAULT_NO_TEXT                 "0"

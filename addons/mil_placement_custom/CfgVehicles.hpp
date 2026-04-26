@@ -33,7 +33,7 @@ class CfgVehicles {
                                 control      = "ALiVE_FactionChoice_Military";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['faction', _value];";
-                                defaultValue = """OPF_F""";
+                                defaultValue = """BLU_F""";
                         };
                         class priority : Edit { property = "ALiVE_mil_placement_custom_priority"; displayName = "$STR_ALIVE_CMP_PRIORITY"; tooltip = "$STR_ALIVE_CMP_PRIORITY_COMMENT"; defaultValue = """50"""; };
                         class size : Edit { property = "ALiVE_mil_placement_custom_size"; displayName = "$STR_ALIVE_CMP_SIZE"; tooltip = "$STR_ALIVE_CMP_SIZE_COMMENT"; defaultValue = """50"""; };

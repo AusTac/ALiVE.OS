@@ -23,7 +23,7 @@ Array - state - Save and restore module state
 Array - faction - Faction associated with module
 
 Examples:
-[_logic, "faction", "OPF_F"] call ALiVE_fnc_MP;
+[_logic, "faction", "BLU_F"] call ALiVE_fnc_MP;
 
 See Also:
 - <ALIVE_fnc_MPInit>
@@ -39,7 +39,7 @@ Jman
 #define MTEMPLATE "ALiVE_MP_%1"
 #define DEFAULT_SIZE "100"
 #define DEFAULT_TYPE QUOTE(RANDOM)
-#define DEFAULT_FACTION QUOTE(OPF_F)
+#define DEFAULT_FACTION QUOTE(BLU_F)
 #define DEFAULT_TAOR []
 #define DEFAULT_BLACKLIST []
 #define DEFAULT_WITH_PLACEMENT true
