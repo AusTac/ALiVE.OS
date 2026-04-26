@@ -245,6 +245,93 @@ if (hasInterface) then {
         } forEach _nearby;
     }, 0.5, []] call CBA_fnc_addPerFrameHandler;
 
+    // Weapon-aim civ-pressure handler. Runs alongside the approach-
+    // freeze handler. Per-frame at 0.25 s for finer 2 s sustained-aim
+    // detection than approach-freeze's 0.5 s tick.
+    //
+    // Trigger gates, cheap-to-expensive:
+    //   1. Module attribute civWeaponAimRange > 0 (0 disables system).
+    //   2. Player on foot (vehicle weapons are out of scope here).
+    //   3. Player has a raised weapon.
+    //   4. Civilian within civWeaponAimRange (sphere).
+    //   5. Civilian under the player's cursor (cursorObject).
+    //   6. Civilian has line-of-sight to the player (eye-to-eye, civ
+    //      side - the civ has to actually see the threat).
+    //   7. All conditions sustained for 2 s before reaction fires.
+    //
+    // Hysteresis on the hold-time clear: brief cursor flicker (one or
+    // a few ticks of cursorObject momentarily missing the civ during
+    // their walk animation) is forgiven for up to 1 s. Without it the
+    // accumulated hold timer would reset constantly on a moving civ.
+    //
+    // Reaction dispatch lives in ALIVE_fnc_advciv_civAimReact (server-
+    // authoritative). Bucket varies by the civ's hostility: Friendly
+    // shrugs, Neutral / Wary surrender, Defiant / Hostile flee.
+    [{
+        if (isNull player || {!alive player}) exitWith {};
+
+        private _aimRange = missionNamespace getVariable ["ALiVE_amb_civ_population_WeaponAimRange", 15];
+        if (_aimRange <= 0) exitWith {};
+        if (vehicle player != player) exitWith {};
+        if (currentWeapon player == "") exitWith {};
+        if (weaponLowered player) exitWith {};
+
+        private _nearby = nearestObjects [player, ["CAManBase"], _aimRange];
+        private _civsInRange = _nearby select {
+            alive _x &&
+            {_x != player} &&
+            {!isPlayer _x} &&
+            {(getNumber (configFile >> "CfgVehicles" >> typeOf _x >> "side")) == 3} &&
+            {!(_x getVariable ["ALiVE_advciv_blacklist", false])}
+        };
+
+        {
+            private _civ = _x;
+            private _state = _civ getVariable ["ALiVE_advciv_state", "CALM"];
+            private _order = _civ getVariable ["ALiVE_advciv_order", "NONE"];
+            if ((_state in ["PANIC", "HIDING"]) || {_order == "HANDSUP"}) then {
+                // Skip - civ already in a target state.
+            } else {
+                private _aimingAt = (cursorObject == _civ);
+                private _civCanSeePlayer = false;
+                if (_aimingAt) then {
+                    _civCanSeePlayer = !(lineIntersects [eyePos _civ, eyePos player, _civ, player]);
+                };
+
+                if (_aimingAt && _civCanSeePlayer) then {
+                    _civ setVariable ["ALiVE_advciv_lastAimTick", time, true];
+
+                    private _sinceVar = _civ getVariable ["ALiVE_advciv_aimedAtSince", -1];
+                    if (_sinceVar < 0) then {
+                        _civ setVariable ["ALiVE_advciv_aimedAtSince", time, true];
+                    };
+                    private _heldFor = time - (_civ getVariable ["ALiVE_advciv_aimedAtSince", time]);
+                    if (_heldFor >= 2 && {isNil {_civ getVariable "ALiVE_advciv_aimReactFired"}}) then {
+                        private _hostility = _civ getVariable ["ALiVE_CivPop_Hostility", 30];
+                        private _bucket = switch (true) do {
+                            case (_hostility < 20):  { "Friendly" };
+                            case (_hostility < 40):  { "Neutral" };
+                            case (_hostility < 60):  { "Wary" };
+                            case (_hostility < 80):  { "Defiant" };
+                            default                  { "Hostile" };
+                        };
+                        _civ setVariable ["ALiVE_advciv_aimReactFired", true, true];
+                        [_civ, _bucket, player] remoteExec ["ALIVE_fnc_advciv_civAimReact", 2];
+                    };
+                } else {
+                    private _lastSeen = _civ getVariable ["ALiVE_advciv_lastAimTick", -10];
+                    if (time - _lastSeen > 1) then {
+                        if !(isNil {_civ getVariable "ALiVE_advciv_aimedAtSince"}) then {
+                            _civ setVariable ["ALiVE_advciv_aimedAtSince", nil, true];
+                            _civ setVariable ["ALiVE_advciv_aimReactFired", nil, true];
+                            _civ setVariable ["ALiVE_advciv_lastAimTick", nil, true];
+                        };
+                    };
+                };
+            };
+        } forEach _civsInRange;
+    }, 0.25, []] call CBA_fnc_addPerFrameHandler;
+
     // Use CBA_fnc_waitUntilAndExecute instead of waitUntil to avoid suspending errors.
     // Guard on both isValidCiv (published by SystemInit) and ALiVE_advciv_enabled to
     // ensure the system actually completed initialisation before adding order menus.

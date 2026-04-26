@@ -211,6 +211,16 @@ class cfgFunctions {
                 file = "\x\alive\addons\amb_civ_population\fnc_advciv_react.sqf";
                 RECOMPILE;
             };
+            class advciv_civAimReact {
+                description = "AdvCiv server-side civilian aim-pressure reaction dispatch";
+                file = "\x\alive\addons\amb_civ_population\fnc_advciv_civAimReact.sqf";
+                RECOMPILE;
+            };
+            class advciv_civAimRelease {
+                description = "AdvCiv server-side release of an aim-pressure-triggered HandsUp civilian";
+                file = "\x\alive\addons\amb_civ_population\fnc_advciv_civAimRelease.sqf";
+                RECOMPILE;
+            };
             class advciv_convertAgentAndFollow {
                 description = "AdvCiv server-side agent-to-unit conversion for FOLLOW order";
                 file = "\x\alive\addons\amb_civ_population\fnc_advciv_convertAgentAndFollow.sqf";

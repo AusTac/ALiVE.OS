@@ -4583,6 +4583,14 @@
     <Chinese>數值式 (感知)</Chinese>
     <Chinesesimp>数值式 (感知)</Chinesesimp>
 </Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_POP_WEAPON_AIM_RANGE">
+    <English>Weapon Aim Reaction Range (m):</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_POP_WEAPON_AIM_RANGE_COMMENT">
+    <English>Maximum distance (in metres) at which a civilian will react to a player aiming a weapon at them. Reaction is gated on three additional conditions: the player has a raised weapon, the civilian has line-of-sight to the player, and the player holds aim on the civilian for 2 seconds. Reaction varies by the civilian's hostility (Friendly civilians react with confusion and keep walking; Neutral and Wary civilians surrender; Defiant and Hostile civilians flee). Set to 0 to disable the system entirely. Default: 15.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_FRIENDLY">
     <English>Friendly</English>
