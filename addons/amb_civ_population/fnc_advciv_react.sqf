@@ -57,6 +57,44 @@ private _fnc_shout = {
     _unit setVariable ["ALiVE_advciv_lastVoice", time];
 };
 
+// Order-change animation cleanup: HANDSUP is the only order that locks the
+// unit into a custom playMove (the surrender anim
+// AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon set in the HANDSUP case
+// below). setUnitPos changes alone don't escape a playMove loop, so any
+// subsequent player order other than HANDSUP itself needs an explicit
+// switchMove "" to clear the locked animation - otherwise the unit walks /
+// kneels / lies prone with hands still raised.
+//
+// Centralised here so each individual order case can do its pose work
+// without duplicating the cleanup. Reactions (GUNFIRE / HIT / HIDING / etc.)
+// are intentionally excluded - those don't change the player-issued order
+// variable, so the previous HANDSUP intent should persist through a
+// transient event reaction.
+private _priorOrder = _unit getVariable ["ALiVE_advciv_order", "NONE"];
+if (
+    _priorOrder == "HANDSUP" &&
+    {_type in ["FOLLOW", "STAY", "GOHOME", "CALM", "KNEEL", "GETDOWN", "GETIN"]}
+) then {
+    _unit switchMove "";
+};
+
+// Stand-up transition from a low-pose order to a stand-pose order.
+// Per BIKI's setUnitPos page, the command updates the AI's stance
+// preference but does NOT force an animation transition out of a
+// current rest-loop animation - so a KNEEL'd civ getting setUnitPos
+// "UP" from a follow-up order would stay visibly kneeling. switchMove
+// "" would snap to standing without transition (jarring). playAction
+// "Stand" plays the engine's natural stand-up transition animation
+// smoothly. Skipped when prior order is HANDSUP because that civ is
+// already standing - the centralised switchMove "" above clears the
+// surrender anim and re-animating standing would be redundant.
+if (
+    _priorOrder in ["KNEEL", "GETDOWN"] &&
+    {_type in ["FOLLOW", "STAY", "GOHOME", "CALM", "GETIN"]}
+) then {
+    _unit playAction "Stand";
+};
+
 switch (_type) do {
 
     // -----------------------------------------------------------------------
@@ -289,7 +327,12 @@ switch (_type) do {
             _unit setVariable ["ALiVE_advciv_hidingPos", [], true];
 
             [_unit] joinSilent (group player);
-            _unit setUnitPos "AUTO";
+            // setUnitPos "UP" not "AUTO": AUTO lets the AI choose stance based
+            // on combat / awareness, so a civ that was previously KNEEL'd or
+            // HIDING with elevated AWARE behaviour can stay crouched after
+            // the order. Forcing UP guarantees the visible standing pose
+            // expected for a follow order on a non-combatant.
+            _unit setUnitPos "UP";
             _unit enableAI "MOVE";
             _unit enableAI "PATH";
             _unit setSpeedMode "NORMAL";
@@ -311,7 +354,8 @@ switch (_type) do {
 
         doStop _unit;
         _unit disableAI "MOVE";
-        _unit setUnitPos "AUTO";
+        // setUnitPos "UP" not "AUTO" - see CALM case for rationale.
+        _unit setUnitPos "UP";
     };
 
     // -----------------------------------------------------------------------
@@ -335,7 +379,8 @@ switch (_type) do {
 
         _unit enableAI "MOVE";
         _unit enableAI "PATH";
-        _unit setUnitPos "AUTO";
+        // setUnitPos "UP" not "AUTO" - see CALM case for rationale.
+        _unit setUnitPos "UP";
         _unit setSpeedMode "LIMITED";
     };
 
@@ -353,7 +398,27 @@ switch (_type) do {
         doStop _unit;
         _unit disableAI "MOVE";
         _unit setUnitPos "UP";
+        // Per BIKI's playMove page, the command plays the named
+        // animation ONCE then returns the unit to its AI-default
+        // animation. So this transition (stand -> surrender) plays
+        // smoothly, but afterwards the AI reverts to regular standing
+        // rest (CARELESS+UP unarmed civ default), dropping the hands.
+        // Lock the surrender rest pose AmovPercMstpSsurWnonDnon via a
+        // delayed switchMove (per BIKI, switchMove sets the unit's
+        // current animation in a way the AI cannot override). The 2 s
+        // delay matches the approximate transition duration; the
+        // reentrancy guard checks the order is still HANDSUP in case
+        // the player issued a different order during the transition.
         _unit playMove "AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon";
+        [{
+            params ["_unit"];
+            if (
+                alive _unit &&
+                {_unit getVariable ["ALiVE_advciv_order", "NONE"] == "HANDSUP"}
+            ) then {
+                _unit switchMove "AmovPercMstpSsurWnonDnon";
+            };
+        }, [_unit], 2] call CBA_fnc_waitAndExecute;
     };
 
     // -----------------------------------------------------------------------
@@ -404,13 +469,16 @@ switch (_type) do {
 
         _unit enableAI "MOVE";
         _unit enableAI "PATH";
-        // Cancel any custom animation left over from a prior order - specifically
-        // the HANDSUP surrender anim set via playMove in react.sqf HANDSUP case.
-        // setUnitPos "AUTO" alone changes stance category but does not clear a
-        // custom playMove loop, so without this switchMove the unit would keep
-        // arms raised after the CALM command (issue #855).
-        _unit switchMove "";
-        _unit setUnitPos "AUTO";
+        // setUnitPos "UP" not "AUTO": AUTO lets the AI keep crouched stance
+        // when prior behaviour was AWARE (KNEEL'd / HIDING / etc.) so the
+        // unit could stay visibly crouched even after CALM. Forcing UP
+        // matches the expected "civilian stands and chills" semantics of
+        // CALM. The brainTick CALM stateChange handler still runs and sets
+        // CARELESS behaviour, so the AI's overall calm posture takes hold
+        // on the next tick alongside the now-explicit standing pose. The
+        // HANDSUP-specific animation cleanup is handled centrally at the
+        // top of this function (see issue #855 reference).
+        _unit setUnitPos "UP";
         _unit setSpeedMode "LIMITED";
 
         doStop _unit;
