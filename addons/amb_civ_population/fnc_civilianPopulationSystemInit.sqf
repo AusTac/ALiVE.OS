@@ -130,6 +130,7 @@ if(isServer) then {
     private _advciv_voiceChance      = parseNumber (_logic getVariable ["advciv_voiceChance",      "0.6"]);
     private _advciv_orderMenuRange   = parseNumber (_logic getVariable ["advciv_orderMenuRange",   "4"]);
     private _civIntelGatherChance    = parseNumber (_logic getVariable ["civIntelGatherChance",    "30"]);
+    private _civHostilityIndicator   = _logic getVariable ["civHostilityIndicator", "OFF"];
 
     private _advciv_vehicleEscape       = (_logic getVariable ["advciv_vehicleEscape",       "true"])  isEqualTo "true";
     private _advciv_vehicleEscapeChance = parseNumber (_logic getVariable ["advciv_vehicleEscapeChance", "0.3"]);
@@ -180,6 +181,7 @@ if(isServer) then {
 
     ALiVE_amb_civ_population_UIMode = _civilianInteractionUI; publicVariable "ALiVE_amb_civ_population_UIMode";
     ALiVE_amb_civ_population_IntelGatherChance = _civIntelGatherChance; publicVariable "ALiVE_amb_civ_population_IntelGatherChance";
+    ALiVE_amb_civ_population_HostilityIndicator = _civHostilityIndicator; publicVariable "ALiVE_amb_civ_population_HostilityIndicator";
 
     ALiVE_advciv_vehicleEscape       = _advciv_vehicleEscape;       publicVariable "ALiVE_advciv_vehicleEscape";
     ALiVE_advciv_vehicleEscapeChance = _advciv_vehicleEscapeChance; publicVariable "ALiVE_advciv_vehicleEscapeChance";

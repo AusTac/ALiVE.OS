@@ -95,6 +95,19 @@ class CfgVehicles {
                 tooltip = "$STR_ALIVE_CIV_POP_INTEL_GATHER_CHANCE_COMMENT";
                 defaultValue = """30""";
             };
+            class civHostilityIndicator : Combo
+            {
+                property     = "ALiVE_amb_civ_population_civHostilityIndicator";
+                displayName  = "$STR_ALIVE_CIV_POP_HOSTILITY_INDICATOR";
+                tooltip      = "$STR_ALIVE_CIV_POP_HOSTILITY_INDICATOR_COMMENT";
+                defaultValue = """OFF""";
+                class Values
+                {
+                    class OFF         { name = "$STR_ALIVE_CIV_POP_HOSTILITY_INDICATOR_OFF";         value = "OFF"; default = 1; };
+                    class DESCRIPTIVE { name = "$STR_ALIVE_CIV_POP_HOSTILITY_INDICATOR_DESCRIPTIVE"; value = "DESCRIPTIVE"; };
+                    class NUMERIC     { name = "$STR_ALIVE_CIV_POP_HOSTILITY_INDICATOR_NUMERIC";     value = "NUMERIC"; };
+                };
+            };
             class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
             class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
             class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };
