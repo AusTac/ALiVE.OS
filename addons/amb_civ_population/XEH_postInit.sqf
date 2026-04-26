@@ -195,8 +195,16 @@ if (hasInterface) then {
     //
     // Per-frame rate 0.5 s is cheap - only scans a 5 m sphere around the
     // local player. Config-side check (side == 3) gates to civilians.
-    // disableAI / enableAI / doWatch run on the unit's owner via
-    // remoteExec; the wave gesture broadcasts so every client renders it.
+    // disableAI / enableAI / doWatch / doStop / setDir run on the unit's
+    // owner via remoteExec; the wave gesture broadcasts so every client
+    // renders it.
+    //
+    // setDir snaps the civ to face the player at the moment of freeze.
+    // Without it, civs approached from behind get the doWatch (which
+    // orients the gun-aim vector) but their body stays aimed in the
+    // walking direction - the player ends up talking to the civ's back.
+    // doStop halts any in-flight pathing animation that disableAI "MOVE"
+    // alone leaves running until the next AI tick.
     [{
         if (isNull player || {!alive player}) exitWith {};
         if ((missionNamespace getVariable ["ALiVE_amb_civ_population_UIMode", "AUTO"]) == "CLASSIC") exitWith {};
@@ -219,7 +227,10 @@ if (hasInterface) then {
                     private _frozen = _civ getVariable ["ALiVE_civ_approachFreeze", false];
 
                     if (_d < 2 && {!_frozen}) then {
+                        private _bearing = _civ getDir player;
                         [_civ, "MOVE"] remoteExec ["disableAI", _civ];
+                        [_civ] remoteExec ["doStop", _civ];
+                        [_civ, _bearing] remoteExec ["setDir", _civ];
                         [_civ, player] remoteExec ["doWatch", _civ];
                         [_civ, "GestureHi"] remoteExec ["playAction", 0];
                         _civ setVariable ["ALiVE_civ_approachFreeze", true, true];
