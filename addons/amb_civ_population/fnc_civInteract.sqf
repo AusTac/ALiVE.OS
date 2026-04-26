@@ -229,7 +229,23 @@ switch (_operation) do {
 			if (isNil {_civ getVariable "ALiVE_CivPop_PerceivedOffset"}) then {
 				_civ setVariable ["ALiVE_CivPop_PerceivedOffset", floor (random 11) - 5, true];
 			};
-			private _h = (_civInfo select 1) max 0 min 100;
+
+			// The displayed hostility is the higher of per-civ history
+			// (wounds, bad questioning - tracked in agent profile posture
+			// or runtime variable) and the mission's side-baseline from
+			// the module's hostilityWest / East / Indep attribute set
+			// (stored in ALIVE_civilianHostility for the player's side).
+			// Per-civ tracks INDIVIDUAL events; side-baseline sets the
+			// CAMPAIGN floor. max() means a wounded civ in a Low-hostility
+			// area still reads Hostile, and unwounded civs in a High-
+			// hostility area read Defiant out of the gate without needing
+			// the per-civ value to be re-initialised.
+			private _civPosture = (_civInfo select 1) max 0 min 100;
+			private _playerSide = str (side (group player));
+			private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
+				[ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
+			} else { 0 };
+			private _h = (_civPosture max _sideBaseline) max 0 min 100;
 			private _offset = _civ getVariable ["ALiVE_CivPop_PerceivedOffset", 0];
 			private _perceived = (_h + _offset) max 0 min 100;
 
