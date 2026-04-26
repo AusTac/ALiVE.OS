@@ -997,8 +997,13 @@ switch (_operation) do {
 	//   of the five role flags set; caller gates visibility.
 	case "Negotiate": {
 		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
-		closeDialog 0;
 		if (!isNil "_civ") then {
+			// Dialog stays open through both success and failure paths
+			// so the player can try other actions if the negotiation
+			// failed (10% success rate per ALIVE_fnc_selectRoleAction).
+			// The narrative result text appears on the side-panel UI
+			// (ALiVE_fnc_displayMenu "openSideSmall") which coexists
+			// with the civInteract dialog.
 			[_civ, player] call ALIVE_fnc_selectRoleAction;
 		};
 	};
@@ -1034,27 +1039,37 @@ switch (_operation) do {
 	//   map, visible as the markers appear.
 	case "GatherIntel": {
 		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
-		closeDialog 0;
 		if (!isNil "_civ") then {
 			private _chance = missionNamespace getVariable ["ALiVE_amb_civ_population_IntelGatherChance", 30];
 			private _h = _civ getVariable ["ALiVE_CivPop_Hostility", 30];
 			_civ setVariable ["intelGathered", true];
 
+			// Hide the button on the still-open dialog so the player sees
+			// the attempt was consumed (matches the openMenu visibility
+			// gate that hides on subsequent re-opens via the intelGathered
+			// flag).
+			CIVINTERACT_GATHERINTEL ctrlShow false;
+
 			// Tier 1: refusal (hostility-driven)
+			// Dialog stays open so the player can try other actions.
 			private _refusalChance = ((((_h - 50) * 1.2) max 0) min 75);
 			if (random 100 < _refusalChance) exitWith {
 				hint (localize "STR_ALIVE_CIV_INTERACT_INTEL_REFUSED");
 			};
 
 			// Tier 2: base chance gate (civ has any info at all)
+			// Dialog stays open so the player can try other actions.
 			if (random 100 >= _chance) exitWith {
 				hint (localize "STR_ALIVE_CIV_INTERACT_INTEL_NOTHING");
 			};
 
 			// Tier 3 vs Tier 4: deception vs truth (hostility-driven)
+			// Success path - close the dialog so the map can take focus
+			// and the markers are visible.
 			private _deceptionChance = ((((_h - 25) * 0.6) max 0) min 50);
 			private _deceptive = random 100 < _deceptionChance;
 
+			closeDialog 0;
 			openMap true;
 			if (_deceptive) then {
 				[getPosATL _civ] call ALiVE_fnc_gatherIntelDeceptive;

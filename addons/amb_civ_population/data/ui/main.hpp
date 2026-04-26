@@ -182,7 +182,7 @@ class ALiVE_CivilianInteraction {
 		class CivInteract_CalmDown: CivInteract_RscButton {
 			idc = 92324;
 			action = "[ALiVE_civInteractHandler,'CalmDown'] call ALiVE_fnc_civInteract";
-			text = "Calm";
+			text = "Calm Down";
             x = 0.4595 * safezoneW + safezoneX;
             y = 0.7916 * safezoneH + safezoneY;
             w = 0.0525 * safezoneW;
