@@ -57,6 +57,17 @@ private ["_result"];
 #define CIVINTERACT_OPENGEARCONTAINER	(CIVINTERACT_DISPLAY displayCtrl 9246)
 #define CIVINTERACT_GATHERINTEL		(CIVINTERACT_DISPLAY displayCtrl 92316)
 #define CIVINTERACT_HOSTILITYLABEL	(CIVINTERACT_DISPLAY displayCtrl 9247)
+#define CIVINTERACT_NEGOTIATE		(CIVINTERACT_DISPLAY displayCtrl 92327)
+#define CIVINTERACT_RATION			(CIVINTERACT_DISPLAY displayCtrl 92314)
+#define CIVINTERACT_WATER			(CIVINTERACT_DISPLAY displayCtrl 92315)
+#define CIVINTERACT_CALMDOWN		(CIVINTERACT_DISPLAY displayCtrl 92324)
+#define CIVINTERACT_FOLLOW			(CIVINTERACT_DISPLAY displayCtrl 92320)
+#define CIVINTERACT_STAY			(CIVINTERACT_DISPLAY displayCtrl 92321)
+#define CIVINTERACT_HANDSUP			(CIVINTERACT_DISPLAY displayCtrl 92323)
+#define CIVINTERACT_KNEEL			(CIVINTERACT_DISPLAY displayCtrl 92325)
+#define CIVINTERACT_GETIN			(CIVINTERACT_DISPLAY displayCtrl 92326)
+#define CIVINTERACT_STOP			(CIVINTERACT_DISPLAY displayCtrl 92310)
+#define CIVINTERACT_GETDOWN			(CIVINTERACT_DISPLAY displayCtrl 92312)
 
 switch (_operation) do {
 
@@ -215,6 +226,24 @@ switch (_operation) do {
 			CIVINTERACT_CIVNAME ctrlSetText (format ["%1 (%2)", _name, _role]);
 		};
 
+		// Effective hostility for this civ: the higher of per-civ history
+		// (wounds, bad questioning - tracked in agent profile posture or
+		// runtime variable) and the mission's side-baseline from the
+		// module's hostilityWest / East / Indep attribute set (stored in
+		// ALIVE_civilianHostility for the player's side). Per-civ tracks
+		// INDIVIDUAL events; side-baseline sets the CAMPAIGN floor. max()
+		// means a wounded civ in a Low-hostility area still reads Hostile,
+		// and unwounded civs in a High-hostility area read Defiant out of
+		// the gate without needing the per-civ value to be re-initialised.
+		// Hoisted out of the indicator gate so the tier-driven action
+		// restriction below can reuse the same value regardless of mode.
+		private _civPosture = (_civInfo select 1) max 0 min 100;
+		private _playerSide = str (side (group player));
+		private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
+			[ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
+		} else { 0 };
+		private _h = (_civPosture max _sideBaseline) max 0 min 100;
+
 		//-- Hostility indicator (player-facing perceived-hostility readout, opt-in
 		//   via the civHostilityIndicator module attribute). When OFF: hidden.
 		//   When DESCRIPTIVE / NUMERIC: a small per-civ deterministic offset is
@@ -230,22 +259,6 @@ switch (_operation) do {
 				_civ setVariable ["ALiVE_CivPop_PerceivedOffset", floor (random 11) - 5, true];
 			};
 
-			// The displayed hostility is the higher of per-civ history
-			// (wounds, bad questioning - tracked in agent profile posture
-			// or runtime variable) and the mission's side-baseline from
-			// the module's hostilityWest / East / Indep attribute set
-			// (stored in ALIVE_civilianHostility for the player's side).
-			// Per-civ tracks INDIVIDUAL events; side-baseline sets the
-			// CAMPAIGN floor. max() means a wounded civ in a Low-hostility
-			// area still reads Hostile, and unwounded civs in a High-
-			// hostility area read Defiant out of the gate without needing
-			// the per-civ value to be re-initialised.
-			private _civPosture = (_civInfo select 1) max 0 min 100;
-			private _playerSide = str (side (group player));
-			private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
-				[ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
-			} else { 0 };
-			private _h = (_civPosture max _sideBaseline) max 0 min 100;
 			private _offset = _civ getVariable ["ALiVE_CivPop_PerceivedOffset", 0];
 			private _perceived = (_h + _offset) max 0 min 100;
 
@@ -269,6 +282,65 @@ switch (_operation) do {
 			CIVINTERACT_HOSTILITYLABEL ctrlSetTextColor _color;
 			CIVINTERACT_HOSTILITYLABEL ctrlShow true;
 		};
+
+		// Tier-driven action restriction. Hostile (h>=80) and Defiant
+		// (60-79) civilians both refuse cooperation; the active button
+		// set differs between the two tiers to signal the gradient:
+		//
+		//   Defiant: Go Away, Go Home, Close, Calm Down, Detain
+		//            (player can attempt de-escalation via Calm Down,
+		//             or cuff-and-detain).
+		//   Hostile: Go Away, Go Home, Close, Search, Detain
+		//            (no cooperation possible - just frisk, cuff, or
+		//             dismiss; Calm Down is locked out at this tier).
+		//
+		// Below Defiant (h<60) the full button set is active; existing
+		// hostility-driven refusal/deception arithmetic in the
+		// question/negotiate handlers carries the disposition signal.
+		//
+		// Go Away, Go Home, and Close are NOT in the restrictable list -
+		// they are always available exits. The Response area shows a
+		// centered red hint so the sparse dialog state is self-explaining
+		// whether the indicator is on or off. Re-runs on every dialog
+		// open so a civ whose hostility decayed below 60 since the last
+		// interaction has their buttons re-enabled.
+		private _restrictable = [
+			CIVINTERACT_NEGOTIATE, CIVINTERACT_GATHERINTEL,
+			CIVINTERACT_RATION, CIVINTERACT_WATER, CIVINTERACT_QUESTIONLIST,
+			CIVINTERACT_SEARCHBUTTON, CIVINTERACT_DETAIN, CIVINTERACT_CALMDOWN,
+			CIVINTERACT_FOLLOW, CIVINTERACT_STAY,
+			CIVINTERACT_HANDSUP, CIVINTERACT_KNEEL, CIVINTERACT_GETIN,
+			CIVINTERACT_STOP, CIVINTERACT_GETDOWN
+		];
+		private _activeAtTier = switch (true) do {
+			case (_h >= 80): { [CIVINTERACT_SEARCHBUTTON, CIVINTERACT_DETAIN] };
+			case (_h >= 60): { [CIVINTERACT_CALMDOWN, CIVINTERACT_DETAIN] };
+			default          { _restrictable };  // Below Defiant - all active
+		};
+		private _showRefusesHint = (_h >= 60);
+
+		if (_showRefusesHint) then {
+			CIVINTERACT_RESPONSELIST ctrlSetStructuredText parseText (
+				format ["<t color='#e64d4d' align='center'>%1</t>",
+					localize "STR_ALIVE_CIV_INTERACT_REFUSES_COOPERATION"]
+			);
+		};
+
+		private _refusesTooltip = localize "STR_ALIVE_CIV_INTERACT_REFUSES_TOOLTIP";
+		{
+			if (_x in _activeAtTier) then {
+				_x ctrlEnable true;
+				_x ctrlSetTooltip "";
+			} else {
+				if (_showRefusesHint) then {
+					_x ctrlEnable false;
+					_x ctrlSetTooltip _refusesTooltip;
+				} else {
+					_x ctrlEnable true;
+					_x ctrlSetTooltip "";
+				};
+			};
+		} forEach _restrictable;
 
 		[_logic,"enableMain"] call MAINCLASS;
 	};
@@ -932,19 +1004,32 @@ switch (_operation) do {
 	case "Detain": {
 		//-- Function is exactly the same as ALiVE arrest/release --> Author: Highhead
 		private _civ = if (_arguments isEqualType objNull) then {_arguments} else {[_logic, "Civ"] call ALiVE_fnc_hashGet};
+		if (isNil "_civ") exitWith { closeDialog 0; };
+
+		// Handcuffs requirement: when ACE is loaded, the player must
+		// carry an ACE_CableTie (zip-tie) to INITIATE detention. The
+		// item is not consumed - cuffs are reusable. Releasing a
+		// previously-detained civ is exempt from the check so a player
+		// who lost / dropped their cuffs can still free a civ they
+		// detained earlier. Without ACE the legacy unconditional
+		// behaviour stands so non-ACE missions are unaffected.
+		private _alreadyDetained = _civ getVariable ["detained", false];
+		private _aceLoaded = isClass (configFile >> "CfgPatches" >> "ace_main");
+		if (_aceLoaded && {!_alreadyDetained} && {!("ACE_CableTie" in (items player))}) exitWith {
+			hintSilent localize "STR_ALIVE_CIV_INTERACT_DETAIN_NEED_CUFFS";
+			// Dialog stays open so the player can pick another action.
+		};
 
 		closeDialog 0;
 
-		if (!isNil "_civ") then {
-			if !(_civ getVariable ["detained", false]) then {
-				//-- Join caller group
-				[_civ] joinSilent (group player);
-				_civ setVariable ["detained", true, true];
-			} else {
-				//-- Join civilian group
-				[_civ] joinSilent (createGroup civilian);
-				_civ setVariable ["detained", false, true];
-			};
+		if (!_alreadyDetained) then {
+			//-- Join caller group
+			[_civ] joinSilent (group player);
+			_civ setVariable ["detained", true, true];
+		} else {
+			//-- Join civilian group
+			[_civ] joinSilent (createGroup civilian);
+			_civ setVariable ["detained", false, true];
 		};
 	};
 

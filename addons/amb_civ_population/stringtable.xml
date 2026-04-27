@@ -1053,6 +1053,18 @@
     <Chinese>蒐集情報</Chinese>
     <Chinesesimp>搜集情报</Chinesesimp>
 </Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_REFUSES_COOPERATION">
+    <English>Civilian refuses to cooperate</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_REFUSES_TOOLTIP">
+    <English>Civilian refuses cooperation</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_DETAIN_NEED_CUFFS">
+    <English>You need a Cable Tie to detain a civilian.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_INTERACT_QUESTIONS_HOME">
     <English>Where do you live?</English>
