@@ -1027,6 +1027,85 @@ switch (_question) do {
         };
     };
 
+    //-- What humanitarian aid does the civilian need
+    case "Needs": {
+        // Lazy-init the civ's per-needs profile on first ask. Random per
+        // civ (60% chance each independently), persisted via setVariable
+        // broadcast so re-asks - and re-opens by other clients - return
+        // the same answer. Drives the player toward Give Ration / Give
+        // Water without forcing them to guess.
+        if (isNil {_civ getVariable "ALiVE_CivPop_NeedsFood"}) then {
+            _civ setVariable ["ALiVE_CivPop_NeedsFood", random 1 < 0.6, true];
+        };
+        if (isNil {_civ getVariable "ALiVE_CivPop_NeedsWater"}) then {
+            _civ setVariable ["ALiVE_CivPop_NeedsWater", random 1 < 0.6, true];
+        };
+        private _needsFood  = _civ getVariable ["ALiVE_CivPop_NeedsFood", false];
+        private _needsWater = _civ getVariable ["ALiVE_CivPop_NeedsWater", false];
+
+        if (_hostile) then {
+            _response1 = localize "STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_1";
+            _response2 = localize "STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_2";
+            _response3 = localize "STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_3";
+            _response = [_response1, _response2, _response3] call BIS_fnc_selectRandom;
+            CIVINTERACT_RESPONSELIST ctrlSetText _response;
+        } else {
+            private _stem = switch (true) do {
+                case (_needsFood && _needsWater): { "STR_ALIVE_CIV_INTERACT_NEEDS_BOTH" };
+                case (_needsFood):                 { "STR_ALIVE_CIV_INTERACT_NEEDS_FOOD" };
+                case (_needsWater):                { "STR_ALIVE_CIV_INTERACT_NEEDS_WATER" };
+                default                            { "STR_ALIVE_CIV_INTERACT_NEEDS_NOTHING" };
+            };
+            _response1 = localize format ["%1_1", _stem];
+            _response2 = localize format ["%1_2", _stem];
+            _response3 = localize format ["%1_3", _stem];
+            _response = [_response1, _response2, _response3] call BIS_fnc_selectRandom;
+            CIVINTERACT_RESPONSELIST ctrlSetText _response;
+            _answersGiven pushBack "Needs"; _answerGiven = true;
+        };
+    };
+
+    //-- Has anyone been pressuring the civilian (insurgent contact)
+    case "Pressure": {
+        // Reads the per-civ insurgent-contact flag. The flag is currently
+        // unwritten by any consumer - a future hook will set it when an
+        // insurgent NPC interacts with the civ (recruitment / shakedown
+        // mechanic). Until then this case always reports "no pressure"
+        // for non-hostile civs, which is the correct stub behaviour.
+        //
+        // _response1/2/3 are pre-declared `private` at the case scope so
+        // the nested if-then-else (insurgent vs none) updates the same
+        // variables the outer branch's `BIS_fnc_selectRandom` reads.
+        // Without `private`, an assignment inside an inner `then` block
+        // would create the variable local to that block and the outer
+        // read would get nil.
+        private _insurgentContact = _civ getVariable ["ALiVE_CivPop_InsurgentContact", false];
+        private _response1 = "";
+        private _response2 = "";
+        private _response3 = "";
+
+        if (_hostile) then {
+            _response1 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_1";
+            _response2 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_2";
+            _response3 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_3";
+            _response = [_response1, _response2, _response3] call BIS_fnc_selectRandom;
+            CIVINTERACT_RESPONSELIST ctrlSetText _response;
+        } else {
+            if (_insurgentContact) then {
+                _response1 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_YES_1";
+                _response2 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_YES_2";
+                _response3 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_YES_3";
+            } else {
+                _response1 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_1";
+                _response2 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_2";
+                _response3 = localize "STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_3";
+            };
+            _response = [_response1, _response2, _response3] call BIS_fnc_selectRandom;
+            CIVINTERACT_RESPONSELIST ctrlSetText _response;
+            _answersGiven pushBack "Pressure"; _answerGiven = true;
+        };
+    };
+
 };
 
 //-- Check if civilian is irritated

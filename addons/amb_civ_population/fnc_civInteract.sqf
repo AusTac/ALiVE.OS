@@ -391,6 +391,12 @@ switch (_operation) do {
 		CIVINTERACT_QUESTIONLIST lbAdd (localize "STR_ALIVE_CIV_INTERACT_QUESTIONS_TOWNOPINION");
 		CIVINTERACT_QUESTIONLIST lbSetData [7, "TownOpinion"];
 
+		CIVINTERACT_QUESTIONLIST lbAdd (localize "STR_ALIVE_CIV_INTERACT_QUESTIONS_NEEDS");
+		CIVINTERACT_QUESTIONLIST lbSetData [8, "Needs"];
+
+		CIVINTERACT_QUESTIONLIST lbAdd (localize "STR_ALIVE_CIV_INTERACT_QUESTIONS_PRESSURE");
+		CIVINTERACT_QUESTIONLIST lbSetData [9, "Pressure"];
+
 		CIVINTERACT_QUESTIONLIST ctrlAddEventHandler ["LBSelChanged","
 			params ['_control','_index'];
 			_question = _control lbData _index;

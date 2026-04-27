@@ -1145,6 +1145,115 @@
     <Chinese>本地對我方部隊的看法如何?</Chinese>
     <Chinesesimp>我们在这个地区的部队有什么看法？</Chinesesimp>
 </Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_QUESTIONS_NEEDS">
+    <English>What do you need?</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_QUESTIONS_PRESSURE">
+    <English>Has anyone been pressuring you?</English>
+</Key>
+<!-- ---- Needs responses (no hostile-tier branch needed - the dialog
+     greys the Question listbox at Defiant+; this case only runs at
+     Friendly / Neutral / Wary) ---- -->
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_BOTH_1">
+    <English>Anything you can spare. We've got nothing - no food, no clean water.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_BOTH_2">
+    <English>Food and water, please. The children are suffering.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_BOTH_3">
+    <English>We're hungry and thirsty. Anything would help.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_FOOD_1">
+    <English>We could really use some food. Haven't had a proper meal in days.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_FOOD_2">
+    <English>Food, if you have any. We're getting by on water but the cupboards are bare.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_FOOD_3">
+    <English>A ration would mean a lot. We're hungry but at least the well still runs.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_WATER_1">
+    <English>Water, please. The supply has been bad for weeks.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_WATER_2">
+    <English>Clean water, if you can spare any. Food we can manage.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_WATER_3">
+    <English>We're thirsty - the wells are running dry.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_NOTHING_1">
+    <English>We're alright. Thank you for asking.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_NOTHING_2">
+    <English>Nothing right now. Save your supplies for those who need them more.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_NOTHING_3">
+    <English>We have enough for now. Bless you for offering.</English>
+</Key>
+<!-- ---- Pressure responses ---- -->
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_1">
+    <English>No, no one has come around. Things have been quiet.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_2">
+    <English>Not lately. The neighbours would say the same.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_NONE_3">
+    <English>No - we keep our heads down and they leave us alone.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_YES_1">
+    <English>Yes. Men came through, asking questions. We told them nothing.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_YES_2">
+    <English>They were here. Said we'd regret it if we spoke to soldiers like you.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_YES_3">
+    <English>A few of them came around. Took what they wanted, made threats. We're frightened.</English>
+</Key>
+<!-- ---- Hostile-roll responses for Needs / Pressure ---- -->
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_1">
+    <English>I don't want anything from you. Just leave.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_2">
+    <English>Keep your handouts. We'll manage on our own.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_NEEDS_HOSTILE_3">
+    <English>Nothing. Take your charity somewhere it's wanted.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_1">
+    <English>That's not your business.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_2">
+    <English>I'm not talking about that with you.</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_INTERACT_PRESSURE_HOSTILE_3">
+    <English>Ask someone else. I've got nothing to say.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_INTERACT_QUESTIONS_IRRITATED_HOSTILE_1">
     <English> *%1 grows visibly annoyed*</English>
