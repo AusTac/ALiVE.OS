@@ -82,6 +82,16 @@ class cfgFunctions {
                 preInit = 1;
                 RECOMPILE;
             };
+            class getVehicleBoundingBox {
+                description = "Returns cached [length, width, height] bbox dimensions for a vehicle classname";
+                file = "\x\alive\addons\main\fnc_getVehicleBoundingBox.sqf";
+                RECOMPILE;
+            };
+            class findVehicleSpawnPosition {
+                description = "Unified vehicle spawn-position validator with bbox-aware footprint check + side-of-road placement";
+                file = "\x\alive\addons\main\fnc_findVehicleSpawnPosition.sqf";
+                RECOMPILE;
+            };
         };
     };
 };

@@ -79,6 +79,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -522,18 +523,39 @@ switch (_operation) do {
                     if (tolower _vehicleType == "ship") then {
                         _position = [_position, 0, 50, 10, 2, 5 , 0, [], [_position]] call BIS_fnc_findSafePos;
                     } else {
-                        if !(_isSPE) then { _position = [_position,0,100,10,0,0.5,0,[],[_position], _vehicleType] call ALIVE_fnc_findFilteredSafePos; };
-                        //Check direction of street
-                        _roads = _position nearRoads 25;
-                        _roadsConnected = roadsConnectedTo (_roads select 0);
+                        // Switch to the unified spawn-position validator
+                        // (#850 fix). Returns [_pos, _dir] with side-of-road
+                        // lateral offset, bbox-aware footprint clearance,
+                        // and full obstacle-table rejection. Falls back to
+                        // the original profile position when no safe spot
+                        // is found in the search radius - the existing
+                        // 5 s allowDamage window catches the residual
+                        // bad-spawn cases.
+                        if !(_isSPE) then {
+                            private _spawnResult = [_vehicleClass, _position, 100, "auto"] call ALiVE_fnc_findVehicleSpawnPosition;
+                            if (count _spawnResult >= 2) then {
+                                _position = _spawnResult select 0;
+                                _direction = _spawnResult select 1;
+                            };
+                            // else: keep the original position + later
+                            // direction logic; allowDamage window covers it.
+                        };
 
-                        
-                        if (!isnil "_roadsConnected" && {count _roadsConnected > 1}) then {
-                            _roads = _roadsConnected;
-                            _direction = (_roads select 0) getDir (_roads select 1);
-                        } else {
-                            if (count _roads > 1) then {
-                                _direction = (_roads select 0) getDir (_roads select 1);
+                        // Direction fallback / refinement. Only run when
+                        // the unified validator didn't already supply a
+                        // direction (SPE branch above, or empty result).
+                        if (_direction == 0 || _isSPE) then {
+                            _roads = _position nearRoads 25;
+                            if (count _roads > 0) then {
+                                _roadsConnected = roadsConnectedTo (_roads select 0);
+                                if (!isnil "_roadsConnected" && {count _roadsConnected > 1}) then {
+                                    _roads = _roadsConnected;
+                                    _direction = (_roads select 0) getDir (_roads select 1);
+                                } else {
+                                    if (count _roads > 1) then {
+                                        _direction = (_roads select 0) getDir (_roads select 1);
+                                    };
+                                };
                             };
                         };
                        // Update the direction of static weapons!
