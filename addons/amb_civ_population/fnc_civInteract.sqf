@@ -357,6 +357,32 @@ switch (_operation) do {
 				};
 			};
 		} forEach _restrictable;
+
+		// GETIN/GETOUT toggle button - text + enable context-aware:
+		//   civ in vehicle               -> "Get Out", enabled
+		//   civ on foot, vehicle nearby  -> "Get In",  enabled
+		//   civ on foot, no vehicle      -> "Get In",  greyed (no-vehicle tooltip)
+		// Tier-restriction (above) still wins: at h>=60 the button is
+		// already greyed with the refuses tooltip; this block only fires
+		// the no-vehicle override when the tier check left it enabled.
+		private _civInVehicle = (vehicle _civ != _civ);
+		if (_civInVehicle) then {
+			CIVINTERACT_GETIN ctrlSetText "Get Out";
+		} else {
+			CIVINTERACT_GETIN ctrlSetText "Get In";
+			if (ctrlEnabled CIVINTERACT_GETIN) then {
+				// Match the react GETIN target search - any alive movable
+				// LandVehicle in range; the literal nearest one is what
+				// react picks on click.
+				private _candidates = nearestObjects [_civ, ["LandVehicle"], 50] select {
+					alive _x && {canMove _x}
+				};
+				if (count _candidates == 0) then {
+					CIVINTERACT_GETIN ctrlEnable false;
+					CIVINTERACT_GETIN ctrlSetTooltip "No vehicle within range";
+				};
+			};
+		};
 	};
 
 	case "enableMain": {
@@ -1247,8 +1273,15 @@ switch (_operation) do {
 	};
 
 	case "GetInVehicle": {
-		//-- Accepts either [_civ, _vehicle] or just _civ (advciv_react
-		//   picks the nearest qualifying vehicle in the latter case).
+		//-- Toggle dispatch:
+		//     civ in a vehicle  -> GETOUT (player-coerced dismount + HANDSUP)
+		//     civ on foot       -> GETIN  (advciv_react picks nearest empty
+		//                                   vehicle within 50 m; or uses the
+		//                                   _vehicle param if explicitly
+		//                                   passed by a caller).
+		//   The dialog button text + enable state is driven by
+		//   case "refreshHostilityIndicator" so the player sees the right
+		//   verb before clicking.
 		private _civ = objNull;
 		private _vehicle = objNull;
 		if (_arguments isEqualType [] && {count _arguments > 0}) then {
@@ -1260,10 +1293,14 @@ switch (_operation) do {
 		if (isNull _civ) then { _civ = [_logic, "Civ"] call ALiVE_fnc_hashGet };
 		closeDialog 0;
 		if (!isNil "_civ" && {!isNull _civ}) then {
-			if (isNull _vehicle) then {
-				[_civ, "GETIN"] call ALIVE_fnc_advciv_react;
+			if (vehicle _civ != _civ) then {
+				[_civ, "GETOUT"] call ALIVE_fnc_advciv_react;
 			} else {
-				[_civ, "GETIN", _vehicle] call ALIVE_fnc_advciv_react;
+				if (isNull _vehicle) then {
+					[_civ, "GETIN"] call ALIVE_fnc_advciv_react;
+				} else {
+					[_civ, "GETIN", _vehicle] call ALIVE_fnc_advciv_react;
+				};
 			};
 		};
 	};

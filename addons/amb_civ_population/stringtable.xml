@@ -4712,6 +4712,14 @@
 <Key ID="STR_ALIVE_CIV_POP_WEAPON_AIM_RANGE_COMMENT">
     <English>Maximum distance (in metres) at which a civilian will react to a player aiming a weapon at them. Reaction is gated on three additional conditions: the player has a raised weapon, the civilian has line-of-sight to the player, and the player holds aim on the civilian for 2 seconds. Reaction varies by the civilian's hostility (Friendly civilians react with confusion and keep walking; Neutral and Wary civilians surrender; Defiant and Hostile civilians flee). Set to 0 to disable the system entirely. Default: 15.</English>
 </Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM">
+    <English>Civ Vehicle Stops on Weapon Aim or Gesture:</English>
+</Key>
+<!-- TRANSLATION PENDING (end-of-overhaul translation pass) -->
+<Key ID="STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM_COMMENT">
+    <English>When a player signals a civilian-driven vehicle, the driver complies by braking, cutting the engine, dismounting, and standing by the door in surrender pose so the player can engage. Two trigger paths: aiming a raised weapon at the vehicle (range 50 metres) or playing a stop / cease-fire / freeze gesture while looking at the vehicle (range 30 metres - hand signal, COIN-friendly). The driver refuses if they are hostile (effective hostility 60 or higher). Multi-occupant vehicles only stop the driver; passengers stay seated. Default: Yes.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_FRIENDLY">
     <English>Friendly</English>

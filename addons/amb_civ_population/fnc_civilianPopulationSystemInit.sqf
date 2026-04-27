@@ -132,6 +132,7 @@ if(isServer) then {
     private _civIntelGatherChance    = parseNumber (_logic getVariable ["civIntelGatherChance",    "30"]);
     private _civHostilityIndicator   = _logic getVariable ["civHostilityIndicator", "OFF"];
     private _civWeaponAimRange       = parseNumber (_logic getVariable ["civWeaponAimRange",       "15"]);
+    private _civVehicleStopOnAim     = (_logic getVariable ["civVehicleStopOnAim",     "true"]) isEqualTo "true";
 
     private _advciv_vehicleEscape       = (_logic getVariable ["advciv_vehicleEscape",       "true"])  isEqualTo "true";
     private _advciv_vehicleEscapeChance = parseNumber (_logic getVariable ["advciv_vehicleEscapeChance", "0.3"]);
@@ -184,6 +185,7 @@ if(isServer) then {
     ALiVE_amb_civ_population_IntelGatherChance = _civIntelGatherChance; publicVariable "ALiVE_amb_civ_population_IntelGatherChance";
     ALiVE_amb_civ_population_HostilityIndicator = _civHostilityIndicator; publicVariable "ALiVE_amb_civ_population_HostilityIndicator";
     ALiVE_amb_civ_population_WeaponAimRange = _civWeaponAimRange; publicVariable "ALiVE_amb_civ_population_WeaponAimRange";
+    ALiVE_amb_civ_population_VehicleStopOnAim = _civVehicleStopOnAim; publicVariable "ALiVE_amb_civ_population_VehicleStopOnAim";
 
     ALiVE_advciv_vehicleEscape       = _advciv_vehicleEscape;       publicVariable "ALiVE_advciv_vehicleEscape";
     ALiVE_advciv_vehicleEscapeChance = _advciv_vehicleEscapeChance; publicVariable "ALiVE_advciv_vehicleEscapeChance";

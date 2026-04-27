@@ -353,6 +353,124 @@ if (hasInterface) then {
         } forEach _civsInRange;
     }, 0.25, []] call CBA_fnc_addPerFrameHandler;
 
+    // Civilian vehicle stop on player weapon-aim or stop gesture. When
+    // the local player aims a raised weapon at a civ-driven vehicle OR
+    // plays a stop / cease-fire / freeze gesture while looking at one,
+    // the driver is signalled to stop and dismount. Two triggers cover
+    // two play styles:
+    //   - Weapon-aim: "pull over or I shoot". Range 50 m.
+    //   - Gesture:    non-threatening hand signal, COIN-friendly.
+    //                 Range 30 m (tighter - it's a hand-signal, not an
+    //                 optic-range threat).
+    // Both share the same dispatch endpoint and refusal gates.
+    //
+    // Once-per-driver debounce via the ALiVE_CivPop_VehicleStopTriggered
+    // flag.
+    //
+    // Trigger gates, cheap-to-expensive:
+    //   1. Module attribute civVehicleStopOnAim = true.
+    //   2. Player on foot.
+    //   3. EITHER (a) raised weapon, OR (b) stop / cease-fire / freeze
+    //      gesture currently playing on the player.
+    //   4. Civ-driven vehicle within range (50 m weapon / 30 m gesture).
+    //   5. Aim cone <= 10 degrees between camera view direction and
+    //      bearing-to-vehicle.
+    //   6. Driver state allows compliance (not already triggered) and
+    //      effective hostility < 60.
+    //
+    // Per-frame at 0.5 s - vehicles move slower than pedestrians so the
+    // tighter 0.25 s tick of the aim-pressure handler is unnecessary.
+    [{
+        if (isNull player || {!alive player}) exitWith {};
+
+        if (!(missionNamespace getVariable ["ALiVE_amb_civ_population_VehicleStopOnAim", true])) exitWith {};
+        if (vehicle player != player) exitWith {};
+
+        // Resolve trigger source. Weapon-aim has priority - if both are
+        // active, range stays at the weapon-aim 50 m.
+        private _weaponAim = (currentWeapon player != "") && {!weaponLowered player};
+        private _animLower = toLower (animationState player);
+        private _gestureStop = (_animLower find "ceasefire" >= 0) ||
+                               {_animLower find "stop" >= 0} ||
+                               {_animLower find "freeze" >= 0};
+
+        if (!_weaponAim && {!_gestureStop}) exitWith {};
+
+        private _range = if (_weaponAim) then { 50 } else { 30 };
+        private _trigger = if (_weaponAim) then { "WEAPON" } else { "GESTURE" };
+
+        private _vehicles = nearestObjects [player, ["LandVehicle", "Air", "Ship"], _range];
+        if (count _vehicles == 0) exitWith {};
+
+        // Use the camera's actual view direction as the source-of-truth
+        // for "what the player is aiming at". eyeDirection / weaponDirection
+        // both follow the character model, which in 3rd person is locked
+        // to the body forward direction even when the camera (and the
+        // player's perception of aim) is rotated elsewhere. Camera view
+        // direction always matches what the player sees on screen,
+        // regardless of 1st / 3rd person / freelook.
+        private _camPos = positionCameraToWorld [0, 0, 0];
+        private _camForward = positionCameraToWorld [0, 0, 1];
+        private _playerEye = _camPos;  // anchor the angle math at the camera, not the head
+        private _aimDir = vectorNormalized (_camForward vectorDiff _camPos);
+
+        {
+            private _veh = _x;
+            if (alive _veh) then {
+                private _drv = driver _veh;
+                if (
+                    !isNull _drv &&
+                    {alive _drv} &&
+                    {!isPlayer _drv}
+                ) then {
+                    private _drvSide = getNumber (configFile >> "CfgVehicles" >> typeOf _drv >> "side");
+                    if (_drvSide == 3) then {
+                        if (
+                            !(_drv getVariable ["ALiVE_advciv_blacklist", false]) &&
+                            {!(_drv getVariable ["ALiVE_CivPop_VehicleStopTriggered", false])}
+                        ) then {
+                            private _state = _drv getVariable ["ALiVE_advciv_state", "CALM"];
+                            private _order = _drv getVariable ["ALiVE_advciv_order", "NONE"];
+
+                            // Use aimPos so the angle math uses the vehicle's
+                            // natural aim-target point (chest / centre height),
+                            // not the ground-level position. With eyePos at
+                            // ~1.7 m and position at 0 m the angle is wildly
+                            // off at close range.
+                            private _aimPt = aimPos _veh;
+                            private _toVeh = vectorNormalized (_aimPt vectorDiff _playerEye);
+                            private _dot = (_aimDir vectorDotProduct _toVeh) max -1 min 1;
+                            private _angle = acos _dot;
+                            private _dist = round (player distance _veh);
+
+                            // Skip only already-triggered drivers. State is
+                            // not gated - the player aiming a weapon is a
+                            // stronger immediate threat than whatever the
+                            // civ's brain-tick state was, and the gameplay
+                            // intent is "all drivers comply" so the
+                            // feature works in tense fleeing-driver
+                            // scenarios as well as calm ones.
+                            if !(_order == "STOP_VEHICLE") then {
+                                if (_angle < 10) then {
+                                    private _civHostility = _drv getVariable ["ALiVE_CivPop_Hostility", 30];
+                                    private _playerSide = str (side (group player));
+                                    private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
+                                        [ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
+                                    } else { 0 };
+                                    private _h = (_civHostility max _sideBaseline) max 0 min 100;
+
+                                    if (_h < 60) then {
+                                        _drv setVariable ["ALiVE_CivPop_VehicleStopTriggered", true, true];
+                                        [_drv, "STOP_VEHICLE", _veh] remoteExec ["ALIVE_fnc_advciv_react", _drv];
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        } forEach _vehicles;
+    }, 0.5, []] call CBA_fnc_addPerFrameHandler;
+
     // Use CBA_fnc_waitUntilAndExecute instead of waitUntil to avoid suspending errors.
     // Guard on both isValidCiv (published by SystemInit) and ALiVE_advciv_enabled to
     // ensure the system actually completed initialisation before adding order menus.

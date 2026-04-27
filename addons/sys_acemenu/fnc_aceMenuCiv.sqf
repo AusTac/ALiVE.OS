@@ -169,8 +169,43 @@ _a = ["ALiVE_Civ_GoHome", "Go Home", "",
 ] call ace_interact_menu_fnc_createAction;
 ["CAManBase", 0, _pCmd, _a, true] call ace_interact_menu_fnc_addActionToClass;
 
+// Get In - visible only when the civ is on foot AND an empty unlocked
+// LandVehicle is within 50 m. Below-Defiant tier-gated. The two
+// context conditions are merged into one closure so ACE can re-evaluate
+// each menu open as the civ / nearby vehicles move.
 _a = ["ALiVE_Civ_GetIn", "Get In Vehicle", "",
-    { [ALiVE_civInteractHandler, "GetInVehicle", _target] call ALiVE_fnc_civInteract }, _condBelowDefiant
+    { [ALiVE_civInteractHandler, "GetInVehicle", _target] call ALiVE_fnc_civInteract },
+    {
+        alive _target &&
+        {(getNumber (configFile >> "CfgVehicles" >> typeOf _target >> "side")) == 3} &&
+        {!(_target getVariable ["ALiVE_advciv_blacklist", false])} &&
+        {[_target, 60] call ALiVE_fnc_civAceTierGate} &&
+        {vehicle _target == _target} &&
+        {
+            // Match the react GETIN target search - any alive movable
+            // LandVehicle in range. Locked / full filtering is handled
+            // by the brain-tick GETIN cancel path, not here.
+            (count (nearestObjects [_target, ["LandVehicle"], 50] select {
+                alive _x && {canMove _x}
+            })) > 0
+        }
+    }
+] call ace_interact_menu_fnc_createAction;
+["CAManBase", 0, _pCmd, _a, true] call ace_interact_menu_fnc_addActionToClass;
+
+// Get Out - visible only when the civ is in a vehicle. Below-Defiant
+// tier-gated. Same dispatch endpoint as Get In; case "GetInVehicle"
+// in fnc_civInteract toggles between GETIN / GETOUT based on the
+// civ's vehicle state.
+_a = ["ALiVE_Civ_GetOut", "Get Out Vehicle", "",
+    { [ALiVE_civInteractHandler, "GetInVehicle", _target] call ALiVE_fnc_civInteract },
+    {
+        alive _target &&
+        {(getNumber (configFile >> "CfgVehicles" >> typeOf _target >> "side")) == 3} &&
+        {!(_target getVariable ["ALiVE_advciv_blacklist", false])} &&
+        {[_target, 60] call ALiVE_fnc_civAceTierGate} &&
+        {vehicle _target != _target}
+    }
 ] call ace_interact_menu_fnc_createAction;
 ["CAManBase", 0, _pCmd, _a, true] call ace_interact_menu_fnc_addActionToClass;
 

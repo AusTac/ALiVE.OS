@@ -21,11 +21,27 @@ Description:
       GETDOWN  - Halts the unit and forces prone stance.
       KNEEL    - Halts the unit and forces kneeling stance.
       CALM     - Resets the unit to the CALM state, clearing all panic variables.
-      GETIN    - Orders the unit to board a specified vehicle.
+      GETIN    - Orders the unit to board a vehicle. If the caller passes
+                 a specific vehicle as the extra parameter that vehicle is
+                 used; otherwise the unit boards the nearest empty unlocked
+                 LandVehicle within 50 m, or no-ops if none in range.
+      GETOUT   - Dismounts the unit from their current vehicle, then
+                 locks them in HANDSUP next to the vehicle (player-coerced
+                 dismount, mirrors STOP_VEHICLE's post-dismount lock).
+                 No-op if the unit is already on foot.
+      STOP_VEHICLE - Civ-driver compliance: cancel current AI move, brake to a
+                 stop, kill the engine, dismount, then transition to HANDSUP
+                 so the player can engage with the now-stopped driver.
+                 Triggered by the per-frame civ-vehicle handler in
+                 XEH_postInit (weapon-aim or stop-gesture path). Refusal
+                 gates (hostility >= 60, already-triggered debounce) are
+                 pre-checked at the trigger site so the case body assumes
+                 the driver is willing to comply.
 Parameters:
     _this select 0: OBJECT - The civilian unit to react
     _this select 1: STRING - The reaction type (see above)
-    _this select 2: ANY    - Optional extra parameter (vehicle OBJECT for GETIN)
+    _this select 2: ANY    - Optional extra parameter (vehicle OBJECT for GETIN
+                             and STOP_VEHICLE)
 Returns:
     Nil
 See Also:
@@ -490,21 +506,176 @@ switch (_type) do {
     // brainTick's GETIN case handles approach and boarding each tick.
     // -----------------------------------------------------------------------
     case "GETIN": {
-        if (!isNil "_extraParam" && {_extraParam isEqualType objNull} && {!isNull _extraParam}) then {
-            private _vehicle = _extraParam;
-
-            if (ALiVE_advciv_debug) then {
-                systemChat format ["[AdvCiv] %1 ordered: GET IN vehicle", name _unit];
+        // Resolve the target vehicle. If the caller passed one explicitly
+        // (legacy dialog path), use it. Otherwise the literal nearest
+        // alive movable LandVehicle within 50 m. nearestObjects returns
+        // results in distance order, so `select 0` is the nearest. The
+        // brain-tick GETIN handler downgrades gracefully if the chosen
+        // vehicle turns out to be locked or full (cancels back to CALM)
+        // - we don't pre-filter on those here because the player picks
+        // the action expecting the visibly-nearest vehicle, not the
+        // nearest "empty unlocked" one.
+        private _vehicle = if (!isNil "_extraParam" && {_extraParam isEqualType objNull} && {!isNull _extraParam}) then {
+            _extraParam
+        } else {
+            private _candidates = nearestObjects [_unit, ["LandVehicle"], 50] select {
+                alive _x && {canMove _x}
             };
-
-            _unit setVariable ["ALiVE_advciv_state", "ORDERED", true];
-            _unit setVariable ["ALiVE_advciv_order", "GETIN", true];
-            _unit setVariable ["ALiVE_advciv_orderVehicle", _vehicle, true];
-
-            _unit enableAI "MOVE";
-            _unit enableAI "PATH";
-            _unit assignAsCargo _vehicle;
-            [_unit] orderGetIn true;
+            if (count _candidates > 0) then { _candidates select 0 } else { objNull };
         };
+
+        if (isNull _vehicle) exitWith {
+        };
+
+        _unit setVariable ["ALiVE_advciv_state", "ORDERED", true];
+        _unit setVariable ["ALiVE_advciv_order", "GETIN", true];
+        _unit setVariable ["ALiVE_advciv_orderVehicle", _vehicle, true];
+
+        // Reset the boarding flag. brain-tick GETIN gates both the
+        // approach (doMove) and assign-seat branches on `!_isBoarding`,
+        // and the only path that clears the flag is the brain-tick's
+        // own 15 s timeout spawn - which never fires unless the assign
+        // branch ran first. So a stale boarding=true (left over from a
+        // previous GETIN that completed via vehicle entry, or from any
+        // earlier interrupted GETIN) silently blocks every subsequent
+        // GETIN until a few minutes pass and something clears it.
+        _unit setVariable ["ALiVE_advciv_boarding", false, true];
+
+        // Clear any prior switchMove-locked animation (e.g. the surrender
+        // rest pose set by the HANDSUP case after a GETOUT or
+        // STOP_VEHICLE). switchMove locks override AI movement; without
+        // this the civ stays rooted in the previous pose even after
+        // re-enabling MOVE / PATH below.
+        [_unit, ""] remoteExec ["switchMove", _unit];
+
+        _unit enableAI "MOVE";
+        _unit enableAI "PATH";
+        _unit setUnitPos "AUTO";
+        _unit assignAsCargo _vehicle;
+        [_unit] orderGetIn true;
+    };
+
+    // -----------------------------------------------------------------------
+    // GETOUT: dismount the unit if they are currently in a vehicle, then
+    // lock them in surrender pose next to the vehicle. Counterpart to
+    // GETIN. Player-coerced dismount, so the post-dismount lock is HANDSUP
+    // (not CALM) - same shape as the post-dismount tail of STOP_VEHICLE.
+    // No-op if the unit is already on foot.
+    // -----------------------------------------------------------------------
+    case "GETOUT": {
+        if (vehicle _unit == _unit) exitWith {
+        };
+
+        _unit setVariable ["ALiVE_advciv_state", "ORDERED", true];
+        _unit setVariable ["ALiVE_advciv_order", "GETOUT", true];
+
+        unassignVehicle _unit;
+        [_unit] orderGetIn false;
+
+        // After the dismount animation, lock to HANDSUP so the civ stays
+        // next to the vehicle in surrender pose rather than running off.
+        // HANDSUP plays the stand->surrender animation and switchMove-locks
+        // the rest pose; brain-tick respects ORDERED state and doesn't
+        // override.
+        [
+            {
+                params ["_unit"];
+                if (isNull _unit || {!alive _unit}) exitWith {};
+                if (vehicle _unit == _unit) then {
+                    [_unit, "HANDSUP"] call ALIVE_fnc_advciv_react;
+                };
+            },
+            [_unit],
+            3
+        ] call CBA_fnc_waitAndExecute;
+    };
+
+    // -----------------------------------------------------------------------
+    // STOP_VEHICLE: civ-driver compliance flow. Cancel current move, brake the
+    // vehicle to a stop, cut the engine, dismount, then lock the dismounted
+    // civ to STAY so the player can engage on foot. Sequenced via CBA wait
+    // chains so the engine-off and dismount play their natural animations
+    // rather than snapping. Reuses the existing STAY case for the final
+    // post-dismount lock - no separate "stopped on foot" state needed.
+    // -----------------------------------------------------------------------
+    case "STOP_VEHICLE": {
+        if (isNil "_extraParam" || {!(_extraParam isEqualType objNull)} || {isNull _extraParam}) exitWith {};
+        private _vehicle = _extraParam;
+        if (!alive _vehicle) exitWith {};
+
+        if (ALiVE_advciv_debug) then {
+            systemChat format ["[AdvCiv] %1 ordered: STOP VEHICLE", name _unit];
+        };
+
+        _unit setVariable ["ALiVE_advciv_state", "ORDERED", true];
+        _unit setVariable ["ALiVE_advciv_order", "STOP_VEHICLE", true];
+        _unit setVariable ["ALiVE_CivPop_VehicleStopTriggered", true, true];
+
+        doStop _unit;
+        _vehicle limitSpeed 0;
+        // Immediate hard brake. limitSpeed 0 alone only caps the AI's
+        // commanded speed; the vehicle still coasts metres before stopping
+        // at typical road speeds, and a player in front of the vehicle
+        // gets run over. Drop velocity immediately to ~15% of current to
+        // simulate hard braking, then let the engine-off path take over.
+        // setVelocity [0,0,0] is too jarring; the partial scale keeps the
+        // physics smooth while shedding most of the kinetic energy in the
+        // first tick.
+        _vehicle setVelocity ((velocity _vehicle) vectorMultiply 0.15);
+
+        // Wait for the vehicle to slow below 1 m/s, then engine-off + dismount
+        // chain. setVelocity-style instant stops are physics-jarring; limitSpeed
+        // 0 + brake-to-rest looks natural at any approach speed.
+        [
+            {
+                params ["_unit", "_vehicle"];
+                isNull _unit ||
+                {!alive _unit} ||
+                {isNull _vehicle} ||
+                {!alive _vehicle} ||
+                {speed _vehicle < 1}
+            },
+            {
+                params ["_unit", "_vehicle"];
+                if (isNull _unit || {!alive _unit} || {isNull _vehicle} || {!alive _vehicle}) exitWith {};
+
+                _unit action ["EngineOff", _vehicle];
+
+                // Allow the engine-off animation a beat, then dismount.
+                [
+                    {
+                        params ["_unit", "_vehicle"];
+                        if (isNull _unit || {!alive _unit}) exitWith {};
+                        unassignVehicle _unit;
+                        [_unit] orderGetIn false;
+
+                        // After the dismount animation, lock the civ in
+                        // surrender pose next to the vehicle. HANDSUP plays
+                        // the stand->surrender animation and switchMove-locks
+                        // the surrender rest pose, sets state=ORDERED +
+                        // order=HANDSUP (brain-tick respects ORDERED and
+                        // doesn't override). Without this lock the civ runs
+                        // off on dismount because the brain-tick resumes
+                        // normal pathing or escalates to PANIC from the
+                        // weapon-raised player nearby.
+                        [
+                            {
+                                params ["_unit"];
+                                if (isNull _unit || {!alive _unit}) exitWith {};
+                                if (vehicle _unit == _unit) then {
+                                    [_unit, "HANDSUP"] call ALIVE_fnc_advciv_react;
+                                };
+                            },
+                            [_unit],
+                            3
+                        ] call CBA_fnc_waitAndExecute;
+                    },
+                    [_unit, _vehicle],
+                    1.5
+                ] call CBA_fnc_waitAndExecute;
+            },
+            [_unit, _vehicle],
+            10  // safety timeout: if the vehicle never slows below 1 m/s in 10 s, abandon
+        ] call CBA_fnc_waitUntilAndExecute;
     };
 };

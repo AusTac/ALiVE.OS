@@ -115,6 +115,18 @@ class CfgVehicles {
                 tooltip      = "$STR_ALIVE_CIV_POP_WEAPON_AIM_RANGE_COMMENT";
                 defaultValue = """15""";
             };
+            class civVehicleStopOnAim : Combo
+            {
+                property     = "ALiVE_amb_civ_population_civVehicleStopOnAim";
+                displayName  = "$STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM";
+                tooltip      = "$STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM_COMMENT";
+                defaultValue = """true""";
+                class Values
+                {
+                    class Yes { name = "Yes"; value = true; default = 1; };
+                    class No  { name = "No";  value = false; };
+                };
+            };
             class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
             class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
             class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };
