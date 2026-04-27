@@ -47,8 +47,8 @@ class CfgVehicles {
             class insurgentFactionManual : Edit { property = "ALiVE_amb_civ_population_insurgentFactionManual"; displayName = "$STR_ALIVE_CIV_POP_FACTIONS_MANUAL"; tooltip = "$STR_ALIVE_CIV_POP_FACTIONS_MANUAL_COMMENT"; defaultValue = """"""; typeName = "STRING"; };
             class SPACER_INSURGENT_FACTION : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_SPACER_INSURGENT_FACTION"; displayName = " "; };
 
-            // ---- Crowd & Interaction --------------------------------------------
-            class HDR_CROWD : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_CROWD"; displayName = "CROWD & INTERACTION"; };
+            // ---- Interaction & Crowd --------------------------------------------
+            class HDR_CROWD : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_population_HDR_CROWD"; displayName = "INTERACTION & CROWD"; };
             class ambientCivilianRoles : Combo
             {
                     property = "ALiVE_amb_civ_population_ambientCivilianRoles";

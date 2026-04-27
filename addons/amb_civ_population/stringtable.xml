@@ -4900,13 +4900,13 @@
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM">
-    <English>Civ Vehicle Stops on Weapon Aim or Gesture:</English>
-    <French>Vehicule civil s'arrete sous la menace d'une arme ou un geste:</French>
-    <Portuguese>Veiculo civil para perante mira de arma ou gesto:</Portuguese>
-    <Russian>Гражданский транспорт останавливается при наведении оружия или жесте:</Russian>
-    <Spanish>El vehiculo civil se detiene al apuntar con arma o hacer un gesto:</Spanish>
-    <Chinese>平民車輛在武器瞄準或手勢示意時停車:</Chinese>
-    <Chinesesimp>平民车辆在武器瞄准或手势示意时停车:</Chinesesimp>
+    <English>Vehicle Stops on Aim/Gesture:</English>
+    <French>Vehicule s'arrete sur arme/geste:</French>
+    <Portuguese>Veiculo para com mira/gesto:</Portuguese>
+    <Russian>Стоп транспорта по сигналу:</Russian>
+    <Spanish>Detener vehiculo con senal:</Spanish>
+    <Chinese>武器或手勢停車:</Chinese>
+    <Chinesesimp>武器或手势停车:</Chinesesimp>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_VEHICLE_STOP_ON_AIM_COMMENT">
