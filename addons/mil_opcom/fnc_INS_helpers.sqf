@@ -1414,6 +1414,85 @@ ALiVE_fnc_INS_protectInstallationActionObject = {
     _object setVariable [QGVAR(INSTALLATION_ACTION_OBJECT), true, true];
 };
 
+ALiVE_fnc_INS_registerInstallationOnBuilding = {
+    params [
+        ["_building", objNull, [objNull]],
+        ["_installationVar", "", [""]],
+        "_id",
+        ["_disabledVar", "", [""]]
+    ];
+
+    if (isNull _building) exitwith {};
+    if (_installationVar == "") exitwith {};
+
+    private _installationIDs = _building getVariable [_installationVar, []];
+    if !(_installationIDs isEqualType []) then {
+        _installationIDs = [_installationIDs];
+    };
+    if !(_id in _installationIDs) then {
+        _installationIDs pushBack _id;
+    };
+    _building setVariable [_installationVar, _installationIDs, true];
+
+    if (_disabledVar != "") then {
+        _building setVariable [_disabledVar, false, true];
+    };
+
+    if !(_building getVariable [QGVAR(INSTALLATION_KILLED_EH_ADDED), false]) then {
+        _building addEventHandler ["Killed", ALIVE_fnc_INS_buildingKilledEH];
+        _building setVariable [QGVAR(INSTALLATION_KILLED_EH_ADDED), true, true];
+    };
+};
+
+ALiVE_fnc_INS_getBuildingInstallations = {
+    params [["_building", objNull, [objNull]]];
+
+    if (isNull _building) exitwith {[]};
+
+    private _installations = [];
+
+    {
+        _x params ["_objectiveKey", "_installationVar", "_disabledVar", "_actionKey"];
+
+        private _ids = _building getVariable [_installationVar, nil];
+        if !(isNil "_ids") then {
+            if !(_ids isEqualType []) then {
+                _ids = [_ids];
+            };
+
+            {
+                _installations pushBack [_objectiveKey, _installationVar, _disabledVar, _actionKey, _x];
+            } forEach _ids;
+        };
+    } forEach [
+        ["factory", QGVAR(factory), "ALiVE_MIL_OPCOM_FACTORY_DISABLED", "factory"],
+        ["HQ", QGVAR(HQ), "ALiVE_MIL_OPCOM_HQ_DISABLED", "recruit"],
+        ["depot", QGVAR(depot), "ALiVE_MIL_OPCOM_DEPOT_DISABLED", "depot"]
+    ];
+
+    _installations
+};
+
+ALiVE_fnc_INS_disableBuildingInstallations = {
+    params [
+        ["_building", objNull, [objNull]],
+        ["_caller", objNull, [objNull]]
+    ];
+
+    if (isNull _building) exitwith {};
+
+    {
+        _x params ["_objectiveKey", "_installationVar", "_disabledVar"];
+        _building setVariable [_disabledVar, true, true];
+    } forEach ([_building] call ALiVE_fnc_INS_getBuildingInstallations);
+
+    if (isServer) then {
+        [_building, _caller] call ALIVE_fnc_INS_buildingKilledEH;
+    } else {
+        [_building, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH", 2];
+    };
+};
+
 ALiVE_fnc_spawnFurniture = {
 
     private ["_pos","_furniture","_bomb","_box","_created"];
@@ -1595,10 +1674,8 @@ ALiVE_fnc_INS_addInstallationHoldActions = {
 
                     if (isNull _building) exitWith {};
 
-                    _building setVariable [_disabledVar,true,true];
                     [_target, _ID] remoteExec ["BIS_fnc_holdActionRemove", 0, _target];
-
-                    [_building, _caller] remoteExec ["ALIVE_fnc_INS_buildingKilledEH",2];
+                    [_building, _caller] call ALiVE_fnc_INS_disableBuildingInstallations;
 
                     [_subtitleTitle, format [_subtitleText,name _caller, mapGridPosition _building]] remoteExec ["BIS_fnc_showSubtitle",side (group _caller)];
                 },
@@ -1618,8 +1695,7 @@ ALiVE_fnc_INS_spawnIEDfactory = {
 
     if !(alive _building) exitwith {};
 
-    _building setvariable [QGVAR(factory),_id];
-    _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    [_building, QGVAR(factory), _id, "ALiVE_MIL_OPCOM_FACTORY_DISABLED"] call ALiVE_fnc_INS_registerInstallationOnBuilding;
     private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
 
     [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
@@ -1642,8 +1718,7 @@ ALiVE_fnc_INS_spawnHQ = {
 
     if !(alive _building) exitwith {};
 
-    _building setvariable [QGVAR(HQ),_id];
-    _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    [_building, QGVAR(HQ), _id, "ALiVE_MIL_OPCOM_HQ_DISABLED"] call ALiVE_fnc_INS_registerInstallationOnBuilding;
     private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
 
     [_building,true,false,false] call ALiVE_fnc_spawnFurniture;
@@ -1667,8 +1742,7 @@ ALiVE_fnc_INS_spawnDepot = {
 
     if !(alive _building) exitwith {};
 
-    _building setvariable [QGVAR(depot),_id];
-    _building addEventHandler["killed", ALIVE_fnc_INS_buildingKilledEH];
+    [_building, QGVAR(depot), _id, "ALiVE_MIL_OPCOM_DEPOT_DISABLED"] call ALiVE_fnc_INS_registerInstallationOnBuilding;
     private _duration = 10 + ((count (_building getvariable [QGVAR(furnitured),[]]))*4);
 
     [_building,true,false,true] call ALiVE_fnc_spawnFurniture;
@@ -1695,74 +1769,77 @@ ALiVE_fnc_getRelativeTop = {
 
 ALIVE_fnc_INS_buildingKilledEH = {
 
-    private ["_building","_killer","_id","_opcom","_pos"];
+    private ["_building","_killer","_opcom","_pos"];
 
     _building = _this select 0;
     _killer = _this select 1;
     _pos = getposATL _building;
 
-    private _factory = _building getvariable QGVAR(factory);
-    private _depot = _building getvariable QGVAR(depot);
-    private _HQ = _building getvariable QGVAR(HQ);
     private _furniture = _building getvariable [QGVAR(furnitured),[]];
+    private _installations = [_building] call ALiVE_fnc_INS_getBuildingInstallations;
 
-    private _installationType = "";
-    if !(isnil "_factory") then {
-        _id = _factory;
-        _installationType = "factory";
-    };
-    if !(isnil "_depot") then {
-        _id = _depot;
-        _installationType = "depot";
-    };
-    if !(isnil "_HQ") then {
-        _id = _HQ;
-        _installationType = "hq";
-    };
-
-    if (isnil "_id") exitwith {};
+    if (_installations isEqualTo []) exitwith {};
 
     // fire event
     // TODO: cba events should be fired from core event loop, not here
 
-    ["ASYMM_INSTALLATION_DESTROYED", [_installationType,_building,_killer]] call CBA_fnc_globalEvent;
-
-    private _event = ['ASYMM_INSTALLATION_DESTROYED', [_installationType,_building,_killer],"OPCOM"] call ALIVE_fnc_event;
-    [ALiVE_eventLog, "addEvent", _event] call ALIVE_fnc_eventLog;
-
-    private _objective = [[],"getobjectivebyid",_id] call ALiVE_fnc_OPCOM;
-    private _opcomID = [_objective,"opcomID",""] call ALiVE_fnc_HashGet;
-    _pos = [_objective,"center",_pos] call ALiVE_fnc_HashGet;
-
-    if !(isnil "_factory") then {
-        [_objective,"factory"] call ALiVE_fnc_HashRem;
-        [_objective,"actionsFulfilled",([_objective,"actionsFulfilled",[]] call ALiVE_fnc_HashGet) - ["factory"]] call ALiVE_fnc_HashSet;
-    };
-    if !(isnil "_depot") then {
-        [_objective,"depot"] call ALiVE_fnc_HashRem;
-        [_objective,"actionsFulfilled",([_objective,"actionsFulfilled",[]] call ALiVE_fnc_HashGet) - ["depot"]] call ALiVE_fnc_HashSet;
-    };
-    if !(isnil "_HQ") then {
-        [_objective,"HQ"] call ALiVE_fnc_HashRem;
-        [_objective,"actionsFulfilled",([_objective,"actionsFulfilled",[]] call ALiVE_fnc_HashGet) - ["recruit"]] call ALiVE_fnc_HashSet;
-    };
-
-    {deleteVehicle _x} foreach _furniture;
-    _building setvariable [QGVAR(furnitured),[]];
+    private _hostilityUpdates = [];
 
     {
-        if (([_x,"opcomID"," "] call ALiVE_fnc_HashGet) == _opcomID) exitwith {
-            _opcom = _x
-        }
-    } foreach OPCOM_instances;
+        _x params ["_objectiveKey", "_installationVar", "_disabledVar", "_actionKey", "_id"];
 
-    if !(isnil "_opcom") then {
-        private _opcomSide = [_opcom,"side",""] call ALiVE_fnc_HashGet;
-        private _allSides = ["EAST","WEST","GUER"];
+        private _installationType = toLower _objectiveKey;
+        ["ASYMM_INSTALLATION_DESTROYED", [_installationType,_building,_killer]] call CBA_fnc_globalEvent;
 
-        [_pos,[_opcomSide], 50] call ALiVE_fnc_updateSectorHostility;
-        [_pos,_allSides - [_opcomSide], -50] call ALiVE_fnc_updateSectorHostility;
-    };
+        private _event = ['ASYMM_INSTALLATION_DESTROYED', [_installationType,_building,_killer],"OPCOM"] call ALIVE_fnc_event;
+        [ALiVE_eventLog, "addEvent", _event] call ALiVE_fnc_eventLog;
+
+        private _objective = [[],"getobjectivebyid",_id] call ALiVE_fnc_OPCOM;
+        if ([_objective] call ALIVE_fnc_isHash) then {
+            private _objectiveOpcomID = [_objective,"opcomID",""] call ALiVE_fnc_HashGet;
+            private _objectivePos = [_objective,"center",_pos] call ALiVE_fnc_HashGet;
+
+            if (
+                _objectiveOpcomID != ""
+                && {(_hostilityUpdates findIf {(_x select 0) == _objectiveOpcomID && {(_x select 1) isEqualTo _objectivePos}}) == -1}
+            ) then {
+                _hostilityUpdates pushBack [_objectiveOpcomID, _objectivePos];
+            };
+
+            [_objective,_objectiveKey] call ALiVE_fnc_HashRem;
+            [_objective,"actionsFulfilled",([_objective,"actionsFulfilled",[]] call ALiVE_fnc_HashGet) - [_actionKey]] call ALiVE_fnc_HashSet;
+        };
+
+        _building setVariable [_installationVar, nil, true];
+        _building setVariable [_disabledVar, true, true];
+    } forEach _installations;
+
+    {
+        _x setVariable [QGVAR(INSTALLATION_ACTIONS_ADDED), [], true];
+        _x setVariable ["ALiVE_MIL_OPCOM_INSTALLATION_BUILDING", nil, true];
+    } forEach (([_building, _furniture] call ALiVE_fnc_INS_getInstallationActionObjects) + [_building]);
+
+    {deleteVehicle _x} foreach _furniture;
+    _building setvariable [QGVAR(furnitured),[], true];
+
+    {
+        _x params ["_opcomID", "_objectivePos"];
+
+        private _objectiveOpcom = [];
+        {
+            if (([_x,"opcomID"," "] call ALiVE_fnc_HashGet) == _opcomID) exitwith {
+                _objectiveOpcom = _x
+            }
+        } foreach OPCOM_instances;
+
+        if ([_objectiveOpcom] call ALIVE_fnc_isHash) then {
+            private _opcomSide = [_objectiveOpcom,"side",""] call ALiVE_fnc_HashGet;
+            private _allSides = ["EAST","WEST","GUER"];
+
+            [_objectivePos,[_opcomSide], 50] call ALiVE_fnc_updateSectorHostility;
+            [_objectivePos,_allSides - [_opcomSide], -50] call ALiVE_fnc_updateSectorHostility;
+        };
+    } forEach _hostilityUpdates;
 };
 
 ALiVE_fnc_INS_compileList = {
