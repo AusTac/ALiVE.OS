@@ -44,27 +44,43 @@ opt-in for them. Encoded as if the user had explicitly stored that list,
 so it goes through the same parse/populate path as a real saved value.
 
 Parameters:
-    [_display, _allowedSides, _varName, _initialDefault]
+    [_display, _allowedSides, _varName, _initialDefault, _sqmValue]
     _display        : DISPLAY - Eden attribute display. ListBox control IDC 100.
     _allowedSides   : ARRAY of NUMBERs - sides to include. Defaults [0,1,2,3].
     _varName        : STRING - name of the logic variable storing the value.
                       Defaults to "factions".
     _initialDefault : ARRAY of STRINGs - faction classnames to pre-tick when
                       no value is stored. Defaults to [] (no pre-tick).
+    _sqmValue       : STRING - SQM-serialised attribute value passed in from
+                      the variant control class's attributeLoad expression
+                      using Cfg3DEN's engine-auto-populated `_value` magic
+                      variable. When non-empty this is the highest-priority
+                      source - it carries the value the engine de-serialised
+                      from the .sqm directly, regardless of which logic
+                      variable name the consuming attribute uses. Fixes a
+                      cross-consumer varName mismatch where the listbox
+                      highlights didn't persist on Eden re-load for any
+                      attribute whose `expression` writes to a logic var
+                      not named "factions" (insurgentFaction / CQB_FACTIONS
+                      / pr_factionWhitelist / skillFactions* etc.). Optional;
+                      callers that don't pass it get the legacy logic-var /
+                      display.value resolution path.
 
 Author:
 Jman
 ---------------------------------------------------------------------------- */
 
 // ------------------------------------------------------------------------
-// Unpack invocation. The new-style call from variant control classes is
-//   [_display, _allowedSides, _varName] call compile preprocessFileLineNumbers '...'
+// Unpack invocation. Variant control classes call:
+//   [_display, _allowedSides, _varName, _initialDefault, _value] ...
+// (where _value is the engine-auto-populated SQM value for the attribute).
 // Legacy direct call (just the display) kept compatible.
 // ------------------------------------------------------------------------
 private _display = controlNull;
 private _allowedSides = [0,1,2,3];
 private _varName = "factions";
 private _initialDefault = [];
+private _sqmValue = "";
 if (typeName _this == "ARRAY") then {
     _display = _this select 0;
     if (count _this > 1 && {typeName (_this select 1) == "ARRAY"}) then {
@@ -76,13 +92,23 @@ if (typeName _this == "ARRAY") then {
     if (count _this > 3 && {typeName (_this select 3) == "ARRAY"}) then {
         _initialDefault = _this select 3;
     };
+    if (count _this > 4 && {typeName (_this select 4) == "STRING"}) then {
+        _sqmValue = _this select 4;
+    };
 } else {
     _display = _this;
 };
 
 // ------------------------------------------------------------------------
 // 1. Resolve the currently-stored value.
-//    Priority: logic variable > Eden attribute "value" slot > "" default.
+//    Priority: SQM-serialised _value (passed in from attributeLoad's
+//              engine-auto-populated `_value`) > logic variable >
+//              Eden attribute "value" slot > "" default.
+//
+//    The SQM source wins because it's the canonical de-serialised value
+//    for this specific attribute, independent of how the consuming
+//    module names its logic variable. Legacy logic-var path stays as a
+//    fallback for callers that don't plumb _value through.
 // ------------------------------------------------------------------------
 private _selected = get3DENSelected "logic";
 private _storedFromLogic = if (count _selected > 0) then {
@@ -97,7 +123,10 @@ if (!isNil "_edenValue" && {typeName _edenValue == "STRING"} && {_edenValue != "
     _value = _edenValue;
 };
 if (!isNil "_storedFromLogic" && {typeName _storedFromLogic == "STRING"} && {_storedFromLogic != ""}) then {
-    _value = _storedFromLogic;  // logic variable wins on re-open
+    _value = _storedFromLogic;  // logic variable wins over display.value
+};
+if (_sqmValue != "") then {
+    _value = _sqmValue;  // SQM auto-populated value wins over both
 };
 
 // Defensive: strip surrounding single quotes (same legacy quote-escape
@@ -353,9 +382,10 @@ private _tickIdxs = +_unrecognisedTickIdxs;
 // "I selected these factions but they didn't stick" issues.
 // ------------------------------------------------------------------------
 diag_log format [
-    "ALIVE FactionChoiceMulti LOAD: varName='%1' allowedSides=%2 stored='%3' parsed=%4 populated=%5 ticked=%6 (incl %7 unrecognised at top)",
+    "ALIVE FactionChoiceMulti LOAD: varName='%1' allowedSides=%2 sqm='%3' resolved='%4' parsed=%5 populated=%6 ticked=%7 (incl %8 unrecognised at top)",
     _varName,
     _allowedSides,
+    _sqmValue,
     _value,
     _selectedFactions,
     lbSize _ctrl,

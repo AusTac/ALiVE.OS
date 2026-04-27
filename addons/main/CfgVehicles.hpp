@@ -333,17 +333,17 @@ class Cfg3DEN
         };
 
         class ALiVE_FactionChoiceMulti: ALiVE_FactionChoiceMulti_Base {
-            attributeLoad = "[_this, [0,1,2,3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeLoad = "[_this, [0,1,2,3], 'factions', [], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
         class ALiVE_FactionChoiceMulti_Military: ALiVE_FactionChoiceMulti_Base {
-            attributeLoad = "[_this, [0,1,2], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeLoad = "[_this, [0,1,2], 'factions', [], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
         class ALiVE_FactionChoiceMulti_Civilian: ALiVE_FactionChoiceMulti_Base {
-            attributeLoad = "[_this, [3], 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeLoad = "[_this, [3], 'factions', [], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
@@ -370,7 +370,7 @@ class Cfg3DEN
         // empty default is semantic opt-in, not a broken-state
         // placeholder.
         class ALiVE_FactionChoiceMulti_Military_Default_BLU_F: ALiVE_FactionChoiceMulti_Base {
-            attributeLoad = "[_this, [0,1,2], 'factions', ['BLU_F']] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
+            attributeLoad = "[_this, [0,1,2], 'factions', ['BLU_F'], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiLoad.sqf'";
             attributeSave = "[_this, 'factions'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceMultiSave.sqf'";
         };
 
