@@ -1032,6 +1032,14 @@ switch (_question) do {
 //-- Check if civilian is irritated
 [_logic,"isIrritated", [_hostile,_asked,_civ]] call MAINCLASS;
 
+//-- Refresh the hostility indicator label and tier-driven button
+//   states. The irritation post-processing above may have just
+//   bumped the civ's posture (UpdateHostility +10 every few
+//   questions, scaled by _asked). The player should see the
+//   indicator label and any newly-greyed buttons react in real
+//   time, not only on the next dialog open.
+[_logic, "refreshHostilityIndicator"] call MAINCLASS;
+
 if (_answerGiven) then {
     [_civData, "AnswersGiven", _answersGiven] call ALiVE_fnc_hashSet;
     _civ setVariable ["AnswersGiven",_answersGiven];

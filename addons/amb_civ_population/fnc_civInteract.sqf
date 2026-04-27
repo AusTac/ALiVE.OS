@@ -226,17 +226,16 @@ switch (_operation) do {
 			CIVINTERACT_CIVNAME ctrlSetText (format ["%1 (%2)", _name, _role]);
 		};
 
-		// Effective hostility for this civ: the higher of per-civ history
-		// (wounds, bad questioning - tracked in agent profile posture or
-		// runtime variable) and the mission's side-baseline from the
-		// module's hostilityWest / East / Indep attribute set (stored in
-		// ALIVE_civilianHostility for the player's side). Per-civ tracks
-		// INDIVIDUAL events; side-baseline sets the CAMPAIGN floor. max()
-		// means a wounded civ in a Low-hostility area still reads Hostile,
-		// and unwounded civs in a High-hostility area read Defiant out of
-		// the gate without needing the per-civ value to be re-initialised.
-		// Hoisted out of the indicator gate so the tier-driven action
-		// restriction below can reuse the same value regardless of mode.
+		// Effective hostility for this civ at dialog open. The full
+		// indicator render and tier-driven button gating live in case
+		// "refreshHostilityIndicator" so they can also be re-driven from
+		// fnc_questionHandler after each question (the irritation post-
+		// processing may have just bumped the civ's posture and the
+		// player should see the dialog react in real time). The
+		// Response-area "Civilian refuses to cooperate" hint stays
+		// here - it's a one-shot at dialog open and refreshing it
+		// mid-dialog would clobber the question response text the
+		// player just received.
 		private _civPosture = (_civInfo select 1) max 0 min 100;
 		private _playerSide = str (side (group player));
 		private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
@@ -244,13 +243,47 @@ switch (_operation) do {
 		} else { 0 };
 		private _h = (_civPosture max _sideBaseline) max 0 min 100;
 
-		//-- Hostility indicator (player-facing perceived-hostility readout, opt-in
-		//   via the civHostilityIndicator module attribute). When OFF: hidden.
-		//   When DESCRIPTIVE / NUMERIC: a small per-civ deterministic offset is
-		//   lazy-initialised on first dialog open against this civ and broadcast
-		//   so subsequent re-opens (and other clients) see the same offset, giving
-		//   a stable but slightly-wrong reading. Mirrors the imperfect-perception
-		//   model used by Gather Intel.
+		if (_h >= 60) then {
+			CIVINTERACT_RESPONSELIST ctrlSetStructuredText parseText (
+				format ["<t color='#e64d4d' align='center'>%1</t>",
+					localize "STR_ALIVE_CIV_INTERACT_REFUSES_COOPERATION"]
+			);
+		};
+
+		[_logic, "refreshHostilityIndicator"] call MAINCLASS;
+
+		[_logic,"enableMain"] call MAINCLASS;
+	};
+
+	//-- Re-renders the hostility indicator label + tier-driven button
+	//   enable states from the current _civInfo cached on _logic. Called
+	//   from case "loadData" on dialog open and from fnc_questionHandler
+	//   after each question (UpdateHostility may have just bumped the
+	//   posture via the irritation post-processing). Idempotent - safe
+	//   to call repeatedly. Does NOT touch the Response area; the
+	//   refuses-cooperation hint there is one-shot in loadData so a
+	//   mid-dialog tier crossing doesn't overwrite the question response
+	//   text the player just received.
+	case "refreshHostilityIndicator": {
+		private _civData = [_logic, "CivData"] call ALiVE_fnc_hashGet;
+		if (isNil "_civData") exitWith {};
+		private _civInfo = [_civData, "CivInfo"] call ALiVE_fnc_hashGet;
+		if (isNil "_civInfo") exitWith {};
+		private _civ = [_logic, "Civ"] call ALiVE_fnc_hashGet;
+		if (isNil "_civ" || {isNull _civ}) exitWith {};
+
+		// Effective hostility (same source-of-truth as loadData).
+		private _civPosture = (_civInfo select 1) max 0 min 100;
+		private _playerSide = str (side (group player));
+		private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
+			[ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
+		} else { 0 };
+		private _h = (_civPosture max _sideBaseline) max 0 min 100;
+
+		// Indicator label render (DESCRIPTIVE / NUMERIC mode). Reuses
+		// the per-civ deterministic perceived-offset, lazy-initialised
+		// here on first call and broadcast so subsequent re-opens and
+		// other clients see the same offset.
 		private _hostilityMode = missionNamespace getVariable ["ALiVE_amb_civ_population_HostilityIndicator", "OFF"];
 		if (_hostilityMode == "OFF") then {
 			CIVINTERACT_HOSTILITYLABEL ctrlShow false;
@@ -283,27 +316,17 @@ switch (_operation) do {
 			CIVINTERACT_HOSTILITYLABEL ctrlShow true;
 		};
 
-		// Tier-driven action restriction. Hostile (h>=80) and Defiant
-		// (60-79) civilians both refuse cooperation; the active button
-		// set differs between the two tiers to signal the gradient:
-		//
-		//   Defiant: Go Away, Go Home, Close, Calm Down, Detain
-		//            (player can attempt de-escalation via Calm Down,
-		//             or cuff-and-detain).
-		//   Hostile: Go Away, Go Home, Close, Search, Detain
-		//            (no cooperation possible - just frisk, cuff, or
-		//             dismiss; Calm Down is locked out at this tier).
-		//
-		// Below Defiant (h<60) the full button set is active; existing
-		// hostility-driven refusal/deception arithmetic in the
-		// question/negotiate handlers carries the disposition signal.
-		//
+		// Tier-driven action restriction.
+		//   Defiant (60-79): active set is Go Away, Go Home, Close,
+		//                    Calm Down, Detain.
+		//   Hostile (80+):   active set is Go Away, Go Home, Close,
+		//                    Search, Detain (Calm Down locks out).
+		//   Below Defiant:   full button set active.
 		// Go Away, Go Home, and Close are NOT in the restrictable list -
-		// they are always available exits. The Response area shows a
-		// centered red hint so the sparse dialog state is self-explaining
-		// whether the indicator is on or off. Re-runs on every dialog
-		// open so a civ whose hostility decayed below 60 since the last
-		// interaction has their buttons re-enabled.
+		// they are always-available exits. Tooltip on disabled controls
+		// reads "Civilian refuses cooperation". Idempotent re-runs let
+		// the player watch buttons grey/ungrey as the civ's posture
+		// crosses tier boundaries during the session.
 		private _restrictable = [
 			CIVINTERACT_NEGOTIATE, CIVINTERACT_GATHERINTEL,
 			CIVINTERACT_RATION, CIVINTERACT_WATER, CIVINTERACT_QUESTIONLIST,
@@ -315,24 +338,17 @@ switch (_operation) do {
 		private _activeAtTier = switch (true) do {
 			case (_h >= 80): { [CIVINTERACT_SEARCHBUTTON, CIVINTERACT_DETAIN] };
 			case (_h >= 60): { [CIVINTERACT_CALMDOWN, CIVINTERACT_DETAIN] };
-			default          { _restrictable };  // Below Defiant - all active
+			default          { _restrictable };
 		};
-		private _showRefusesHint = (_h >= 60);
-
-		if (_showRefusesHint) then {
-			CIVINTERACT_RESPONSELIST ctrlSetStructuredText parseText (
-				format ["<t color='#e64d4d' align='center'>%1</t>",
-					localize "STR_ALIVE_CIV_INTERACT_REFUSES_COOPERATION"]
-			);
-		};
-
+		private _refuses = (_h >= 60);
 		private _refusesTooltip = localize "STR_ALIVE_CIV_INTERACT_REFUSES_TOOLTIP";
+
 		{
 			if (_x in _activeAtTier) then {
 				_x ctrlEnable true;
 				_x ctrlSetTooltip "";
 			} else {
-				if (_showRefusesHint) then {
+				if (_refuses) then {
 					_x ctrlEnable false;
 					_x ctrlSetTooltip _refusesTooltip;
 				} else {
@@ -341,8 +357,6 @@ switch (_operation) do {
 				};
 			};
 		} forEach _restrictable;
-
-		[_logic,"enableMain"] call MAINCLASS;
 	};
 
 	case "enableMain": {
