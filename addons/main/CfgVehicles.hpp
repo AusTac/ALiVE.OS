@@ -407,6 +407,40 @@ class Cfg3DEN
             attributeSave = "[_this, 'customHumRatItems'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiSave.sqf'";
         };
 
+        // ALiVE_AnimalChoiceMulti family:
+        //   Multi-select listbox of ambient animal classnames populated
+        //   from the CfgALiVEAmbientAnimals registry. Each registry
+        //   entry is gated on a cfgPatchesName, so animals from
+        //   unloaded mods are excluded - mission-makers only see the
+        //   classes their current mod set actually provides.
+        //
+        //   Two species categories: poultry (urban backyard birds -
+        //   spawn near civilian buildings inside towns) and herd
+        //   (sheep / goats - spawn in open fields outside the town
+        //   footprint). Used by amb_civ_placement's ambient-animals
+        //   feature.
+        //
+        //   Each variant pre-ticks a vanilla A3 default pool when no
+        //   stored value is found (4th arg to attributeLoad), so
+        //   fresh module placement shows the standard farm-animal
+        //   classes already selected. The 5th arg plumbs Cfg3DEN's
+        //   engine-auto-populated `_value` through so saved
+        //   selections persist across Eden re-open regardless of
+        //   logic-var name (matches the FactionChoiceMulti fix in
+        //   commit 4d9d7e14).
+        //
+        //   Substrate inherited from ALiVE_FactionChoiceMulti_Base -
+        //   same listbox geometry, font, scrollbars.
+        class ALiVE_AnimalChoiceMulti_Poultry: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, 'poultry', 'customPoultryClasses', ['Hen_random_F', 'Cock_random_F'], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenAnimalChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'customPoultryClasses'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiSave.sqf'";
+        };
+
+        class ALiVE_AnimalChoiceMulti_Herd: ALiVE_FactionChoiceMulti_Base {
+            attributeLoad = "[_this, 'herd', 'customHerdClasses', ['Goat_random_F', 'Sheep_random_F'], _value] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenAnimalChoiceMultiLoad.sqf'";
+            attributeSave = "[_this, 'customHerdClasses'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenItemChoiceMultiSave.sqf'";
+        };
+
         // Hidden attribute - renders zero UI (h = 0, empty controls).
         // Used by legacy attributes that need to round-trip SQM data
         // through their `expression` without surfacing in the panel.

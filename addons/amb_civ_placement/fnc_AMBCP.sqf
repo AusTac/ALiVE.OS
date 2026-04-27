@@ -44,6 +44,7 @@ Jman
 #define DEFAULT_PRIORITY_FILTER "0"
 #define DEFAULT_FACTION QUOTE(CIV_F)
 #define DEFAULT_AMBIENT_VEHICLE_AMOUNT "0.2"
+#define DEFAULT_AMBIENT_ANIMAL_AMOUNT "0"
 #define DEFAULT_PLACEMENT_MULTIPLIER "0.5"
 
 private ["_result"];
@@ -114,6 +115,11 @@ switch(_operation) do {
             "placementMultiplier",
             "ambientVehicleAmount",
             "ambientVehicleFaction",
+            "ambientAnimalAmount",
+            "customPoultryClasses",
+            "customPoultryClassesManual",
+            "customHerdClasses",
+            "customHerdClassesManual",
             "initialdamage"
         ];
 
@@ -211,8 +217,13 @@ switch(_operation) do {
     case "ambientVehicleFaction": {
         _result = [_logic,_operation,_args,DEFAULT_FACTION,[] call ALiVE_fnc_configGetFactions] call ALIVE_fnc_OOsimpleOperation;
     };
-    
-    
+
+    // Return the Ambient Animal Amount
+    case "ambientAnimalAmount": {
+        _result = [_logic,_operation,_args,DEFAULT_AMBIENT_ANIMAL_AMOUNT] call ALIVE_fnc_OOsimpleOperation;
+    };
+
+
     // Ambient vehicle Initial Damage
     case "initialdamage": {
         if (_args isEqualType true) then {
@@ -455,6 +466,7 @@ switch(_operation) do {
             private _placementMultiplier = parseNumber([_logic, "placementMultiplier"] call MAINCLASS);
             private _ambientVehicleAmount = parseNumber([_logic, "ambientVehicleAmount"] call MAINCLASS);
             private _ambientVehicleFaction = [_logic, "ambientVehicleFaction"] call MAINCLASS;
+            private _ambientAnimalAmount = parseNumber([_logic, "ambientAnimalAmount"] call MAINCLASS);
             private _factionConfig = _faction call ALiVE_fnc_configGetFactionClass;
             private _factionSideNumber = getNumber(_factionConfig >> "side");
             private _side = _factionSideNumber call ALIVE_fnc_sideNumberToText;
@@ -564,6 +576,199 @@ switch(_operation) do {
                         } forEach _buildings;
 
                     } forEach _clusters;
+                };
+            };
+
+            // Place ambient animals.
+            //
+            // Two species pools placed differently to match real-world
+            // animal husbandry:
+            //   - Poultry (Hen, Cock): in town - spawn near civilian
+            //     buildings inside the cluster footprint. Backyard
+            //     chickens are realistic in any built-up area.
+            //   - Herd animals (Goat, Sheep): in fields - spawn
+            //     OUTSIDE the cluster footprint, away from buildings,
+            //     in open countryside near where farms would live.
+            // Resolves #488. Default amount is NONE (opt-in).
+            //
+            // Density at each amount level:
+            //   LOW    (0.2): poultry 2 % per civ building; 0-1 herd / cluster.
+            //   MEDIUM (0.6): poultry 6 %;                  1-2 herds / cluster.
+            //   HIGH   (1.0): poultry 10 %;                 2-4 herds / cluster.
+            // Each group is homogeneous (one species per group;
+            // real-world flocks aren't mixed-species). Animals don't
+            // register with the cluster handler or the agent system -
+            // they're decorative ambient life.
+            if (_ambientAnimalAmount > 0) then {
+                // Resolve the poultry / herd pools from the per-attribute
+                // multi-select listboxes plus the manual-override edit
+                // fields. Multi-select is the registry-driven path
+                // (CfgALiVEAmbientAnimals); manual is for classnames the
+                // mission-maker knows about that aren't in the registry.
+                // Final pool = union of (multi-select selection) +
+                // (manual override, parsed as SQF array literal or CSV).
+                private _fnc_resolvePool = {
+                    params ["_logicVar", "_manualVar", "_vanillaFallback"];
+                    private _multiRaw = _logic getVariable [_logicVar, ""];
+                    private _manualRaw = _logic getVariable [_manualVar, ""];
+                    private _pool = [];
+
+                    // Parse multi-select. Same forms accepted by the load
+                    // handler: SQF array literal, CSV, or single name.
+                    if (_multiRaw isEqualType "" && {_multiRaw != ""}) then {
+                        if ((_multiRaw select [0,1]) == "[") then {
+                            private _parsed = parseSimpleArray _multiRaw;
+                            if (typeName _parsed == "ARRAY") then {
+                                { if (typeName _x == "STRING" && {_x != ""}) then { _pool pushBackUnique _x } } forEach _parsed;
+                            };
+                        } else {
+                            {
+                                private _p = _x;
+                                while {count _p > 0 && {(_p select [0, 1]) == " "}} do { _p = _p select [1] };
+                                while {count _p > 0 && {(_p select [count _p - 1, 1]) == " "}} do { _p = _p select [0, count _p - 1] };
+                                if (_p != "") then { _pool pushBackUnique _p };
+                            } forEach ([_multiRaw, ","] call CBA_fnc_split);
+                        };
+                    };
+
+                    // Append manual-override entries (CSV).
+                    if (_manualRaw isEqualType "" && {_manualRaw != ""}) then {
+                        {
+                            private _p = _x;
+                            while {count _p > 0 && {(_p select [0, 1]) == " "}} do { _p = _p select [1] };
+                            while {count _p > 0 && {(_p select [count _p - 1, 1]) == " "}} do { _p = _p select [0, count _p - 1] };
+                            if (_p != "") then { _pool pushBackUnique _p };
+                        } forEach ([_manualRaw, ","] call CBA_fnc_split);
+                    };
+
+                    // Vanilla fallback if the user emptied both fields.
+                    // Mission-maker can disable this category by setting
+                    // ambientAnimalAmount to NONE; deselecting all classes
+                    // in the listbox + leaving manual blank otherwise
+                    // falls back to the canonical pool so the feature
+                    // doesn't silently no-op.
+                    if (count _pool == 0) then {
+                        _pool = _vanillaFallback;
+                    };
+
+                    // Filter to classes actually present in CfgVehicles.
+                    _pool select { isClass (configFile >> "CfgVehicles" >> _x) }
+                };
+
+                private _poultryPool = ["customPoultryClasses", "customPoultryClassesManual", ["Hen_random_F", "Cock_random_F"]] call _fnc_resolvePool;
+                private _herdPool    = ["customHerdClasses",    "customHerdClassesManual",    ["Goat_random_F", "Sheep_random_F"]] call _fnc_resolvePool;
+
+                private _countPoultry = 0;
+                private _countHerd = 0;
+
+                // ---- Poultry near civilian buildings ----
+                if (count _poultryPool > 0) then {
+                    private _poultryChance = 0.10 * _ambientAnimalAmount;
+                    {
+                        private _nodes = [_x, "nodes"] call ALIVE_fnc_hashGet;
+                        private _buildings = [_nodes, ALIVE_civilianPopulationBuildingTypes] call ALIVE_fnc_findBuildingsInClusterNodes;
+                        {
+                            if (random 1 < _poultryChance) then {
+                                private _basePos = _x getRelPos [3 + random 8, random 360];
+                                private _animalGroup = createGroup civilian;
+                                private _animalClass = selectRandom _poultryPool;
+                                private _groupSize = 1 + floor (random 4);
+                                for "_i" from 1 to _groupSize do {
+                                    private _spawnOffset = _basePos vectorAdd [(random 4) - 2, (random 4) - 2, 0];
+                                    _animalGroup createUnit [_animalClass, _spawnOffset, [], 0, "CAN_COLLIDE"];
+                                };
+                                _countPoultry = _countPoultry + _groupSize;
+                            };
+                        } forEach _buildings;
+                    } forEach _clusters;
+                };
+
+                // ---- Herd animals in fields outside the cluster ----
+                // Spawn anywhere outside the cluster footprint (town,
+                // military site, industrial area) - the geometric
+                // "outside cluster_size" check is sufficient because
+                // a cluster's `size` IS the radius the placer treats
+                // as that location's built-up area. Fields, hill
+                // sides, open country: all valid. The only per-
+                // position filter is surfaceIsWater (don't spawn
+                // sheep in the sea). No building-proximity filter -
+                // a stray fence or shed in open country is fine.
+                if (count _herdPool > 0) then {
+                    private _herdsTried = 0;
+                    private _herdsPlaced = 0;
+                    {
+                        private _center = [_x, "center"] call ALIVE_fnc_hashGet;
+                        private _clusterSize = [_x, "size"] call ALIVE_fnc_hashGet;
+                        if (isNil "_clusterSize" || {_clusterSize isEqualType ""}) then { _clusterSize = 200 };
+
+                        // Per-cluster herd count = base + random bonus,
+                        // both scaled by the amount setting. The base
+                        // guarantees a minimum density at any non-zero
+                        // setting (so HIGH feels like "many"); the
+                        // bonus adds spread.
+                        //   LOW    (0.2): base 1 + 0       = 1 / cluster
+                        //   MEDIUM (0.6): base 2 + 0..2    = 2-4 / cluster
+                        //   HIGH   (1.0): base 3 + 0..4    = 3-7 / cluster
+                        private _herdBase = ceil (_ambientAnimalAmount * 3);
+                        private _herdBonus = floor (random (_ambientAnimalAmount * 5));
+                        private _herdCount = _herdBase + _herdBonus;
+
+                        for "_h" from 1 to _herdCount do {
+                            _herdsTried = _herdsTried + 1;
+
+                            // Spawn radius: cluster_size + 50 to
+                            // cluster_size + 350. Wider band than
+                            // before so terrain that has a long
+                            // approach (ridge / valley) gets at least
+                            // some open ground in the sample range.
+                            // 10 attempts to dodge water; first one
+                            // usually wins on land terrains.
+                            private _herdPos = [];
+                            for "_a" from 1 to 10 do {
+                                private _candidate = _center getPos [_clusterSize + 50 + random 300, random 360];
+                                if !(surfaceIsWater _candidate) exitWith {
+                                    _herdPos = _candidate;
+                                };
+                            };
+
+                            if !(_herdPos isEqualTo []) then {
+                                private _animalGroup = createGroup civilian;
+                                private _animalClass = selectRandom _herdPool;
+                                // Herds bigger than poultry groups -
+                                // sheep flocks of 2-5 read more
+                                // naturally than 1-2 lone goats.
+                                private _groupSize = 2 + floor (random 4);
+                                for "_i" from 1 to _groupSize do {
+                                    private _spawnOffset = _herdPos vectorAdd [(random 12) - 6, (random 12) - 6, 0];
+                                    _animalGroup createUnit [_animalClass, _spawnOffset, [], 0, "CAN_COLLIDE"];
+                                };
+                                _countHerd = _countHerd + _groupSize;
+                                _herdsPlaced = _herdsPlaced + 1;
+
+                                // Debug map marker at each herd spawn so the
+                                // mission-maker can find them via the Eden /
+                                // mission map. Server-created markers are
+                                // global. Markers stay around for the
+                                // session - cheap visualisation aid that's
+                                // only created when module debug is on.
+                                if (_debug) then {
+                                    private _markerName = format ["ALIVE_AMBCP_herd_%1_%2", floor diag_tickTime * 1000, _herdsPlaced];
+                                    createMarker [_markerName, _herdPos];
+                                    _markerName setMarkerType "mil_triangle";
+                                    _markerName setMarkerColor "ColorCIV";
+                                    _markerName setMarkerText format ["%1x %2", _groupSize, _animalClass];
+                                };
+                            };
+                        };
+                    } forEach _clusters;
+
+                    if (_debug) then {
+                        ["AMBCP - Herds: tried %1 placed %2 across %3 clusters", _herdsTried, _herdsPlaced, count _clusters] call ALiVE_fnc_dump;
+                    };
+                };
+
+                if (_debug) then {
+                    ["AMBCP - Placed %1 ambient animals (poultry: %2, herds: %3, amount: %4)", _countPoultry + _countHerd, _countPoultry, _countHerd, _ambientAnimalAmount] call ALiVE_fnc_dump;
                 };
             };
 
