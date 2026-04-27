@@ -227,12 +227,33 @@ if (hasInterface) then {
                     private _frozen = _civ getVariable ["ALiVE_civ_approachFreeze", false];
 
                     if (_d < 2 && {!_frozen}) then {
+                        // Pick the approach gesture by the civ's effective
+                        // hostility - per-civ ALiVE_CivPop_Hostility floored
+                        // by the module's per-side campaign baseline (the
+                        // same combined value the dialog hostility indicator
+                        // displays). Fires regardless of indicator mode so
+                        // even indicator-off missions get a discoverable
+                        // disposition cue from the wave / head-shake choice.
+                        private _civHostility = _civ getVariable ["ALiVE_CivPop_Hostility", 30];
+                        private _playerSide = str (side (group player));
+                        private _sideBaseline = if (!isNil "ALIVE_civilianHostility") then {
+                            [ALIVE_civilianHostility, _playerSide, 0] call ALiVE_fnc_hashGet
+                        } else { 0 };
+                        private _hostility = (_civHostility max _sideBaseline) max 0 min 100;
+                        private _gesture = switch (true) do {
+                            case (_hostility < 20):  { "GestureHi" };       // Friendly - wave
+                            case (_hostility < 40):  { "GestureHi" };       // Neutral  - wave (baseline cue)
+                            case (_hostility < 60):  { "Gesture_No" };      // Wary     - short head shake
+                            case (_hostility < 80):  { "Gesture_NoLong" };  // Defiant  - emphatic refusal
+                            default                  { "Gesture_NoLong" };  // Hostile  - emphatic refusal
+                        };
+
                         private _bearing = _civ getDir player;
                         [_civ, "MOVE"] remoteExec ["disableAI", _civ];
                         [_civ] remoteExec ["doStop", _civ];
                         [_civ, _bearing] remoteExec ["setDir", _civ];
                         [_civ, player] remoteExec ["doWatch", _civ];
-                        [_civ, "GestureHi"] remoteExec ["playAction", 0];
+                        [_civ, _gesture] remoteExec ["playAction", 0];
                         _civ setVariable ["ALiVE_civ_approachFreeze", true, true];
                     };
                     if (_d > 3 && {_frozen}) then {
