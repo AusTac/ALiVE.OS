@@ -462,6 +462,7 @@ if (hasInterface) then {
                                     if (_h < 60) then {
                                         _drv setVariable ["ALiVE_CivPop_VehicleStopTriggered", true, true];
                                         [_drv, "STOP_VEHICLE", _veh] remoteExec ["ALIVE_fnc_advciv_react", _drv];
+                                    };
                                 };
                             };
                         };
