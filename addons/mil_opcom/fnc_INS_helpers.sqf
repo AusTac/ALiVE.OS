@@ -1425,7 +1425,14 @@ ALiVE_fnc_INS_registerInstallationOnBuilding = {
     if (isNull _building) exitwith {};
     if (_installationVar == "") exitwith {};
 
-    _building setVariable [_installationVar, _id, true];
+    private _installationIDs = _building getVariable [_installationVar, []];
+    if !(_installationIDs isEqualType []) then {
+        _installationIDs = [_installationIDs];
+    };
+    if !(_id in _installationIDs) then {
+        _installationIDs pushBack _id;
+    };
+    _building setVariable [_installationVar, _installationIDs, true];
 
     if (_disabledVar != "") then {
         _building setVariable [_disabledVar, false, true];
@@ -1447,9 +1454,15 @@ ALiVE_fnc_INS_getBuildingInstallations = {
     {
         _x params ["_objectiveKey", "_installationVar", "_disabledVar", "_actionKey"];
 
-        private _id = _building getVariable [_installationVar, nil];
-        if !(isNil "_id") then {
-            _installations pushBack [_objectiveKey, _installationVar, _disabledVar, _actionKey, _id];
+        private _ids = _building getVariable [_installationVar, nil];
+        if !(isNil "_ids") then {
+            if !(_ids isEqualType []) then {
+                _ids = [_ids];
+            };
+
+            {
+                _installations pushBack [_objectiveKey, _installationVar, _disabledVar, _actionKey, _x];
+            } forEach _ids;
         };
     } forEach [
         ["factory", QGVAR(factory), "ALiVE_MIL_OPCOM_FACTORY_DISABLED", "factory"],
@@ -1770,7 +1783,7 @@ ALIVE_fnc_INS_buildingKilledEH = {
     // fire event
     // TODO: cba events should be fired from core event loop, not here
 
-    private _opcomID = "";
+    private _hostilityUpdates = [];
 
     {
         _x params ["_objectiveKey", "_installationVar", "_disabledVar", "_actionKey", "_id"];
@@ -1783,9 +1796,14 @@ ALIVE_fnc_INS_buildingKilledEH = {
 
         private _objective = [[],"getobjectivebyid",_id] call ALiVE_fnc_OPCOM;
         if ([_objective] call ALIVE_fnc_isHash) then {
-            if (_opcomID == "") then {
-                _opcomID = [_objective,"opcomID",""] call ALiVE_fnc_HashGet;
-                _pos = [_objective,"center",_pos] call ALiVE_fnc_HashGet;
+            private _objectiveOpcomID = [_objective,"opcomID",""] call ALiVE_fnc_HashGet;
+            private _objectivePos = [_objective,"center",_pos] call ALiVE_fnc_HashGet;
+
+            if (
+                _objectiveOpcomID != ""
+                && {(_hostilityUpdates findIf {(_x select 0) == _objectiveOpcomID && {(_x select 1) isEqualTo _objectivePos}}) == -1}
+            ) then {
+                _hostilityUpdates pushBack [_objectiveOpcomID, _objectivePos];
             };
 
             [_objective,_objectiveKey] call ALiVE_fnc_HashRem;
@@ -1804,21 +1822,24 @@ ALIVE_fnc_INS_buildingKilledEH = {
     {deleteVehicle _x} foreach _furniture;
     _building setvariable [QGVAR(furnitured),[], true];
 
-    if (_opcomID != "") then {
+    {
+        _x params ["_opcomID", "_objectivePos"];
+
+        private _objectiveOpcom = [];
         {
             if (([_x,"opcomID"," "] call ALiVE_fnc_HashGet) == _opcomID) exitwith {
-                _opcom = _x
+                _objectiveOpcom = _x
             }
         } foreach OPCOM_instances;
 
-        if !(isnil "_opcom") then {
-            private _opcomSide = [_opcom,"side",""] call ALiVE_fnc_HashGet;
+        if ([_objectiveOpcom] call ALIVE_fnc_isHash) then {
+            private _opcomSide = [_objectiveOpcom,"side",""] call ALiVE_fnc_HashGet;
             private _allSides = ["EAST","WEST","GUER"];
 
-            [_pos,[_opcomSide], 50] call ALiVE_fnc_updateSectorHostility;
-            [_pos,_allSides - [_opcomSide], -50] call ALiVE_fnc_updateSectorHostility;
+            [_objectivePos,[_opcomSide], 50] call ALiVE_fnc_updateSectorHostility;
+            [_objectivePos,_allSides - [_opcomSide], -50] call ALiVE_fnc_updateSectorHostility;
         };
-    };
+    } forEach _hostilityUpdates;
 };
 
 ALiVE_fnc_INS_compileList = {

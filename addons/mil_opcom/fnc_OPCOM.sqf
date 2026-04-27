@@ -2152,23 +2152,42 @@ switch(_operation) do {
 
             if (_installationType in ["HQ", "factory", "depot"]) then {
                 private _buildings = [_center, _size] call ALiVE_fnc_INS_filterObjectiveBuildings;
-                private _usedBuildings = [];
+                private _locallyUsedBuildings = [];
+                private _externallyUsedBuildings = [];
 
                 {
                     private _occupied = [_logic, "convertObject", [_objective, _x, []] call ALiVE_fnc_HashGet] call ALiVE_fnc_OPCOM;
                     if (alive _occupied) then {
-                        _usedBuildings pushBackUnique _occupied;
+                        _locallyUsedBuildings pushBackUnique _occupied;
                     };
                 } foreach ["factory", "HQ", "depot"];
 
+                {
+                    private _candidateObjective = _x;
+                    if (([_candidateObjective, "objectiveID", ""] call ALiVE_fnc_HashGet) != _objectiveID) then {
+                        {
+                            private _occupied = [_logic, "convertObject", [_candidateObjective, _x, []] call ALiVE_fnc_HashGet] call ALiVE_fnc_OPCOM;
+                            if (alive _occupied) then {
+                                _externallyUsedBuildings pushBackUnique _occupied;
+                            };
+                        } foreach ["factory", "HQ", "depot"];
+                    };
+                } foreach ([_logic, "objectives", []] call ALiVE_fnc_HashGet);
+
                 private _candidateBuildings = [];
                 {
-                    if !(_x in _usedBuildings) then {
+                    if !(_x in _externallyUsedBuildings) then {
                         _candidateBuildings pushBack _x;
                     };
                 } foreach _buildings;
-                if (count _candidateBuildings == 0) then {
-                    _candidateBuildings = _buildings;
+
+                private _preferredBuildings = _candidateBuildings select {
+                    !(_x in _locallyUsedBuildings)
+                };
+                private _selectionBuildings = if (count _preferredBuildings > 0) then {
+                    _preferredBuildings
+                } else {
+                    _candidateBuildings
                 };
 
                 if (_target isEqualType objNull && {!isNull _target} && {alive _target} && {_target in _candidateBuildings}) then {
@@ -2176,7 +2195,7 @@ switch(_operation) do {
                 };
 
                 if (isNull _selectedTarget) then {
-                    private _sortedBuildings = [_candidateBuildings, [_anchorPos], {_Input0 distance2D _x}, "ASCEND"] call ALiVE_fnc_SortBy;
+                    private _sortedBuildings = [_selectionBuildings, [_anchorPos], {_Input0 distance2D _x}, "ASCEND"] call ALiVE_fnc_SortBy;
                     if (count _sortedBuildings > 0) then {
                         if (_useClosestBuilding || {(_anchorPos distance2D (_sortedBuildings select 0)) <= 15}) then {
                             _selectedTarget = _sortedBuildings select 0;
