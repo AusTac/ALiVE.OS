@@ -797,8 +797,15 @@ switch (_operation) do {
             // store the profile id on the active profiles index
             [ALIVE_profileHandler,"setActive",[_profileID,_side,_logic]] call ALIVE_fnc_profileHandler;
 
-            // Kick off timer to enable damage
-            [{_this allowDamage true;}, _vehicle, 5] call CBA_fnc_waitAndExecute;
+            // Kick off timer to enable damage. Settle window is tunable
+            // via the sys_profile module attribute vehicleSpawnSettleSeconds
+            // (default 15 s). Longer windows cover edge cases where the
+            // unified spawn validator returned [] and the vehicle is
+            // sitting on a residual bad position; the engine has more
+            // time to resolve the impact before damage re-engages.
+            private _settleSeconds = [ALIVE_profileSystem, "vehicleSpawnSettleSeconds"] call ALIVE_fnc_profileSystem;
+            if (isNil "_settleSeconds" || {_settleSeconds <= 0}) then { _settleSeconds = 15 };
+            [{_this allowDamage true;}, _vehicle, _settleSeconds] call CBA_fnc_waitAndExecute;
 
             // DEBUG -------------------------------------------------------------------------------------
             if(_debug) then {
