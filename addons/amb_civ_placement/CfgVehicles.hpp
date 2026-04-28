@@ -109,16 +109,20 @@ class CfgVehicles {
                                 property     = "ALiVE_amb_civ_placement_ambientVehicleFaction";
                                 displayName  = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION";
                                 tooltip      = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_FACTION_COMMENT";
-                                control      = "ALiVE_FactionChoice_Civilian";
+                                // Variant control class so Eden persists / restores
+                                // this selection under setVariable key
+                                // 'ambientVehicleFaction' rather than 'faction'.
+                                // Without the variant, the shared save handler's
+                                // hardcoded write to 'faction' would clobber this
+                                // module's sibling `faction` attribute. Per-
+                                // attribute attributeLoad / attributeSave overrides
+                                // on the `class X { control = "Y"; }` shape are
+                                // silently ignored by Eden - the variant control
+                                // class is the only honoured hook.
+                                control      = "ALiVE_FactionChoice_Civilian_AmbientVehicleFaction";
                                 typeName     = "STRING";
                                 expression   = "_this setVariable ['ambientVehicleFaction', _value];";
                                 defaultValue = """CIV_F""";
-                                // Override the control's default attributeLoad so the
-                                // logic-variable fallback reads ambientVehicleFaction
-                                // rather than the default "faction" property; otherwise
-                                // re-opening the attribute panel on this module (which
-                                // also owns a `faction` attribute) cross-contaminates.
-                                attributeLoad = "[_this, [3], 'ambientVehicleFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
                         };
                         class initialdamage : Combo { property = "ALiVE_amb_civ_placement_initialdamage"; displayName = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM"; tooltip = "$STR_ALIVE_AMBCP_AMBIENT_VEHICLE_DAM_COMMENT"; defaultValue = """false"""; class Values { class No{name="No";value=false;default=1;}; class Yes{name="Yes";value=true;}; }; };
                         class HDR_ANIMALS : ALiVE_ModuleSubTitle { property = "ALiVE_amb_civ_placement_HDR_ANIMALS"; displayName = "AMBIENT ANIMALS"; };

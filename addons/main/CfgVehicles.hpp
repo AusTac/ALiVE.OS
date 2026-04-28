@@ -123,6 +123,30 @@ class Cfg3DEN
             attributeSave = "_this call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
         };
 
+        // Variant control classes for civilian-side single-select
+        // faction attributes that store the selection under a non-
+        // default setVariable key (i.e. NOT "faction"). The variant
+        // class is the canonical hook because per-attribute
+        // attributeLoad / attributeSave overrides on the
+        // `class X { control = "Y"; }` shape are silently ignored
+        // by Eden - only attributes inheriting from a base class
+        // that itself defines attributeLoad / attributeSave have
+        // those overrides honoured.
+        //
+        // Each variant passes its target setVariable key as the
+        // third argument to the load handler and the second
+        // argument to the save handler, ensuring the persisted
+        // logic-variable name matches what the consuming module's
+        // expression writes (and what its case-accessor reads).
+        class ALiVE_FactionChoice_Civilian_AmbientVehicleFaction: ALiVE_FactionChoice_Civilian {
+            attributeLoad = "[_this, [3], 'ambientVehicleFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "[_this, 'ambientVehicleFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+        class ALiVE_FactionChoice_Civilian_AmbientCrowdFaction: ALiVE_FactionChoice_Civilian {
+            attributeLoad = "[_this, [3], 'ambientCrowdFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
+            attributeSave = "[_this, 'ambientCrowdFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceSave.sqf'";
+        };
+
         // ALiVE_FactionChoiceMulti family:
         //   Multi-select counterpart to ALiVE_FactionChoice. Same dynamic
         //   population (CfgFactionClasses + missionConfig, side filtered,

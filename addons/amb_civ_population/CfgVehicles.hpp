@@ -136,18 +136,20 @@ class CfgVehicles {
                 property     = "ALiVE_amb_civ_population_ambientCrowdFaction";
                 displayName  = "$STR_ALIVE_CIV_POP_CROWD_FACTION";
                 tooltip      = "$STR_ALIVE_CIV_POP_CROWD_FACTION_COMMENT";
-                control      = "ALiVE_FactionChoice_Civilian";
+                // Variant control class so Eden persists / restores
+                // this selection under setVariable key
+                // 'ambientCrowdFaction' rather than 'faction'. No
+                // sibling 'faction' attribute on this module today,
+                // but the variant guards against future cross-
+                // contamination and aligns with the canonical
+                // pattern used by amb_civ_placement.ambientVehicleFaction.
+                // Per-attribute attributeLoad / attributeSave
+                // overrides on the `class X { control = "Y"; }` shape
+                // are silently ignored by Eden.
+                control      = "ALiVE_FactionChoice_Civilian_AmbientCrowdFaction";
                 typeName     = "STRING";
                 expression   = "_this setVariable ['ambientCrowdFaction', _value];";
                 defaultValue = """CIV_F""";
-                // Override the control's default attributeLoad so the
-                // logic-variable fallback reads ambientCrowdFaction
-                // rather than the default "faction" property. Dormant on
-                // this module today (no sibling "faction" attribute) but
-                // preserves the re-open-picks-up-just-saved-value behaviour
-                // and guards against future cross-contamination if someone
-                // adds another FactionChoice attribute here.
-                attributeLoad = "[_this, [3], 'ambientCrowdFaction'] call compile preprocessFileLineNumbers '\x\alive\addons\main\fnc_edenFactionChoiceLoad.sqf'";
             };
             class disableAmbientSounds : Combo { property = "ALiVE_amb_civ_population_disableAmbientSounds"; displayName = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS"; tooltip = "$STR_ALIVE_CIV_POP_DISABLE_AMBIENT_SOUNDS_COMMENT"; defaultValue = """false"""; class Values { class No { name = "No"; value = false; default = 1; }; class Yes { name = "Yes"; value = true; }; }; };
 
