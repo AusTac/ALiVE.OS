@@ -979,46 +979,28 @@ switch(_operation) do {
 
                         //[_x, "debug", true] call ALIVE_fnc_cluster;
                         {
-                            // Check node does not have a helicopter placed already
-                            private _nearbyObj = nearestObjects [position _x, ["Helicopter"], 20];
-                            private _nearbyProfiles = [position _x, 20, [_side,"vehicle","Helicopter"]] call ALIVE_fnc_getNearProfiles;
-                            if (count _nearbyObj == 0 && count _nearbyProfiles == 0) then {
+                            // Validator finds a clear helipad (or hangar /
+                            // apron / field if no helipad fits) within 200 m
+                            // of the cluster node. The session registry
+                            // replaces the per-cluster 20 m proximity check;
+                            // the obstacle-table sweep covers map-maker-
+                            // placed HeliH markers in cluttered camps that
+                            // were the explode-on-spawn source. Returns []
+                            // if every candidate failed - skip this node.
+                            _vehicleClass = (selectRandom _heliClasses);
+                            private _airResult = [_vehicleClass, position _x, 200, "auto"] call ALiVE_fnc_findAirSpawnPosition;
+                            if (count _airResult >= 2) then {
+                                _position = _airResult select 0;
+                                _direction = _airResult select 1;
 
-                                if (_x isKindOf "HeliH") then {
-                                    _position = position _x;
-                                    _direction = direction _x;
+                                if(random 1 > 0.2) then {
+                                    [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
+                                    _countProfiles = _countProfiles + 1;
+                                    _countUncrewedHelis = _countUncrewedHelis + 1;
                                 } else {
-                                    _helipad = nearestObject [position _x, "HeliH"];
-
-                                    if !(isnull _helipad) then {
-                                        //Helipad can be detected
-    		                            _position = position _helipad;
-    	                                _direction = direction _helipad;
-                                    } else {
-                                        // Helipad is a built in object or misses config parents
-                                        _position = position _x;
-                                        _direction = direction _x;
-
-                                        //_helipad = createVehicle ["Land_HelipadEmpty_F", _position, [], 0, "CAN_COLLIDE"];
-                                        //_helipad setdir _direction;
-                                    };
-                                };
-
-                                _vehicleClass = (selectRandom _heliClasses);
-
-                                if !(_position isEqualTo [0,0,0]) then {
-
-    	                            if(random 1 > 0.2) then {
-    	                                [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
-
-    	                                _countProfiles = _countProfiles + 1;
-    	                                _countUncrewedHelis =_countUncrewedHelis + 1;
-    	                            }else{
-    	                                [_vehicleClass,_side,_faction,"CAPTAIN",_position,_direction,false,_faction] call ALIVE_fnc_createProfilesCrewedVehicle;
-
-    	                                _countProfiles = _countProfiles + 2;
-    	                                _countCrewedHelis = _countCrewedHelis + 1;
-    	                            };
+                                    [_vehicleClass,_side,_faction,"CAPTAIN",_position,_direction,false,_faction] call ALIVE_fnc_createProfilesCrewedVehicle;
+                                    _countProfiles = _countProfiles + 2;
+                                    _countCrewedHelis = _countCrewedHelis + 1;
                                 };
                             };
                         } forEach _nodes;
@@ -1060,85 +1042,27 @@ switch(_operation) do {
                         //[_x, "debug", true] call ALIVE_fnc_cluster;
                         {
                             if(random 1 > 0.3) then {
-
-                                // Choose an aircraft
                                 _vehicleClass = (selectRandom _airClasses);
-                                private _position = position _x;
 
-                                // Check aircraft can fit in hangar
-                                private _large = false;
-                                private _hangarSize = _x call BIS_fnc_boundingBoxDimensions;
-                                private _aircraftSize = sizeOf _vehicleClass;
-                                if (_aircraftSize > 0) then {
-                                    _large = (_hangarSize select 0 < _aircraftSize) || (_hangarSize select 1 < _aircraftSize);
-                                } else {
-                                    private _tmpVehicle = _vehicleClass createVehicle [0,0,5000];
-                                    _aircraftSize = sizeOf _vehicleClass;
-                                    deleteVehicle _tmpVehicle;
-                                    _large = (_hangarSize select 0 < _aircraftSize) || (_hangarSize select 1 < _aircraftSize);
-                                };
+                                // Validator handles bbox fit, door
+                                // verification, auto-orient, apron
+                                // fallback, runway/taxiway exclusion,
+                                // and the session registry. The legacy
+                                // hand-rolled hangar / taxiway / safe-
+                                // pos branches collapse into one call.
+                                // The ALIVE_problematicHangarBuildings
+                                // override list is preserved as the
+                                // raycast-uncertain fallback inside
+                                // the validator. Returns [] when no
+                                // safe spot exists - skip this building.
+                                private _airResult = [_vehicleClass, position _x, 100, "auto"] call ALiVE_fnc_findAirSpawnPosition;
+                                if (count _airResult >= 2) then {
+                                    _position = _airResult select 0;
+                                    _direction = _airResult select 1;
 
-                                if (!_large && {_aircraftSize > 39}) then {
-                                    _large = true;
-                                };
-
-                                // Find safe place to put aircraft
-                                private ["_pavement","_runway"];
-                                if ( ([tolower(typeOf _x), "hangar"] call CBA_fnc_find != -1) && !_large) then {
-
-                                    _direction = direction _x;
-
-                                    // Handle reversed hangars
-                                    if (typeof _x in ALIVE_problematicHangarBuildings || str(_position) in ALIVE_problematicHangarBuildings) then {
-                                        // reverse the direction of planes
-                                        _direction = _direction + 180;
-                                    };
-
-                                    // open all doors of hangar
-                                    private _numOfDoors = getNumber (configfile >> "CfgVehicles" >> typeOf _x >> "numberOfDoors");
-                                    if (_numOfDoors > 0) then {
-                                        for "_i" from 1 to _numOfDoors do {
-                                            [_x, _i, 1] call BIS_fnc_door;
-                                        };
-                                    }
-
-                                } else { // find a taxiway
-                                    _runway = [];
-                                    {
-                                        if (([str(_x),"taxiway"] call CBA_fnc_find != -1 && typeof _x == "")) then {
-                                            _runway pushback _x;
-                                        };
-                                    } foreach (nearestObjects [position _x, [], 100]);
-                                    if (count _runway > 0) then {
-                                        // ["Cannot find hangar, choosing safe taxiway from: %1", _runway] call ALiVE_fnc_dump;
-
-                                        _pavement = selectRandom _runway;
-                                        _position = [_pavement, 0, _aircraftSize * 3, _aircraftSize * 1.2, 0, 0.065, 0, [], [position _pavement, position _pavement]] call BIS_fnc_findSafePos;
-
-                                        _direction = direction _pavement;
-                                    } else {
-                                        // Find safe place near by
-                                        // ["Cannot find hangar or taxiway, looking for safe place to put aircraft %1", _x] call ALiVE_fnc_dump;
-                                        _position = [position _x, 25, 200, _aircraftSize, 0, 0.2, 0] call BIS_fnc_findSafePos;
-                                        _direction = direction _x;
-                                    };
-                                };
-
-                                // Check node does not have a planes placed already
-                                private _nearbyObj = nearestObjects [_position, ["Plane"], _aircraftSize];
-                                private _nearbyProfiles = [_position, _aircraftSize, [_side,"vehicle","Plane"]] call ALIVE_fnc_getNearProfiles;
-                                if (count _nearbyObj == 0 && count _nearbyProfiles == 0) then {
-                                    // Place Aircraft
-
-                                    //if (random 1 > 1) then {
-                                        [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
-                                        _countProfiles = _countProfiles + 1;
-                                        _countUncrewedAir =_countUncrewedAir + 1;
-                                    /*} else {
-                                        [_vehicleClass,_side,_faction,"CAPTAIN",_position,_direction,false,_faction,false,true] call ALIVE_fnc_createProfilesCrewedVehicle;
-                                        _countProfiles = _countProfiles + 2;
-                                        _countCrewedAir = _countCrewedAir + 1;
-                                    };*/
+                                    [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
+                                    _countProfiles = _countProfiles + 1;
+                                    _countUncrewedAir = _countUncrewedAir + 1;
                                 };
                             };
 

@@ -505,6 +505,21 @@ switch (_operation) do {
 
                     // Check to see if placed on carrier/ship
                     if !([_position] call ALiVE_fnc_nearShip) then {
+                        // Run the unified air spawn validator (#850).
+                        // Profile coords may be stale - world state can
+                        // shift between virtualise and de-virtualise
+                        // (other vehicles, IED clutter, mod-added
+                        // objects). When the validator finds a clear
+                        // spot in range, use it; otherwise fall back
+                        // to the profile position with the existing
+                        // vehicleSpawnSettleSeconds safety window.
+                        if !(_isSPE) then {
+                            private _airResult = [_vehicleClass, _position, 200, "auto"] call ALiVE_fnc_findAirSpawnPosition;
+                            if (count _airResult >= 2) then {
+                                _position = _airResult select 0;
+                                _direction = _airResult select 1;
+                            };
+                        };
                         _position set [2,0.5];
                     } else {
                        // _special = "NONE";

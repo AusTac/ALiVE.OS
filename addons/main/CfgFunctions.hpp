@@ -92,6 +92,16 @@ class cfgFunctions {
                 file = "\x\alive\addons\main\fnc_findVehicleSpawnPosition.sqf";
                 RECOMPILE;
             };
+            class getAirfieldGeometry {
+                description = "Returns runway and taxiway segments around a position (mil_ato attrs + ALiVE_runway tags + BI substring matches)";
+                file = "\x\alive\addons\main\fnc_getAirfieldGeometry.sqf";
+                RECOMPILE;
+            };
+            class findAirSpawnPosition {
+                description = "Unified air-unit spawn-position validator: helipad/hangar/apron/field cascade, runway+taxiway exclusion, door verification";
+                file = "\x\alive\addons\main\fnc_findAirSpawnPosition.sqf";
+                RECOMPILE;
+            };
         };
     };
 };
