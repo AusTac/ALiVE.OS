@@ -134,14 +134,26 @@ if (is3DEN) then {
         if !(_dest isEqualType objNull) exitWith {};      // unexpected shape
         if (isNull _dest) exitWith {};
 
+        // OnConnectingEnd fires for every connection type the editor
+        // supports - Sync between modules, Group between units, etc.
+        // Skip non-module destinations: a unit being grouped to another
+        // unit can't be the OPCOM peer the validator cares about, and
+        // walking get3DENConnections on a unit can return Group entries
+        // that don't fit the [type, peers] array shape Sync entries do.
+        if !(_dest isKindOf "Logic") exitWith {};
+
         private _scope = [];
         if ((typeOf _dest) == "ALiVE_mil_OPCOM") then {
             _scope pushBack _dest;
         } else {
             // Destination is not an OPCOM - it's the other end of the sync
             // (typically a placement). Walk its current sync connections to
-            // find the OPCOM(s) the user just linked it to.
-            private _syncs = (get3DENConnections _dest) select {(_x select 0) == "Sync"};
+            // find the OPCOM(s) the user just linked it to. Defensive type
+            // check on each entry: get3DENConnections can return non-array
+            // entries (Group, IsAttachedTo, etc.) on some destination types.
+            private _syncs = (get3DENConnections _dest) select {
+                _x isEqualType [] && {count _x >= 2} && {(_x select 0) == "Sync"}
+            };
             {
                 private _peer = _x select 1;
                 if (!isNil "_peer" && {_peer isEqualType objNull} && {!isNull _peer} && {(typeOf _peer) == "ALiVE_mil_OPCOM"}) then {
