@@ -93,7 +93,10 @@ ALiVE_fnc_INS_getHostilitySetting = {
 // Returns: string tier, or "excluded" if any unit in the group would
 // cross the asymmetric-force capability cap.
 ALiVE_fnc_INS_classifyGroupTier = {
-                params [["_groupConfig", configNull, [configNull]]];
+                params [
+                    ["_groupConfig", configNull, [configNull]],
+                    ["_excludedKinds", ["Tank", "Plane", "Helicopter", "Ship"], [[]]]
+                ];
 
                 if (isNull _groupConfig) exitWith {"excluded"};
 
@@ -106,14 +109,18 @@ ALiVE_fnc_INS_classifyGroupTier = {
                     if (isClass _unitConfig) then {
                         private _vehicle = getText (_unitConfig >> "vehicle");
                         if (_vehicle != "") then {
-                            // Absolute exclusion list - asymmetric forces
-                            // never recruit these regardless of faction.
-                            if (
-                                _vehicle isKindOf "Tank"
-                                || {_vehicle isKindOf "Plane"}
-                                || {_vehicle isKindOf "Helicopter"}
-                                || {_vehicle isKindOf "Ship"}
-                            ) then {
+                            // Mission-maker-configurable exclusion list.
+                            // Default keeps the legacy hard-coded list
+                            // (Tank / Plane / Helicopter / Ship) - missions
+                            // that don't touch the asym_excludeKinds attr
+                            // get identical behaviour to before #861.
+                            // Edit the attribute on mil_opcom to widen
+                            // (e.g. allow tanks for state-backed
+                            // insurgencies) or narrow the list.
+                            private _isExcluded = (_excludedKinds findIf {
+                                _vehicle isKindOf _x
+                            }) >= 0;
+                            if (_isExcluded) then {
                                 _hasExcluded = true;
                             } else {
                                 // StaticWeapon units (MGs, mortars, AT
@@ -127,7 +134,9 @@ ALiVE_fnc_INS_classifyGroupTier = {
                                         // Any other non-infantry, non-
                                         // excluded vehicle - treated as
                                         // medium (wheeled APC, armed
-                                        // truck, non-Car transport).
+                                        // truck, non-Car transport, and
+                                        // any heavy types the mission-
+                                        // maker has un-excluded).
                                         _hasMedium = true;
                                     };
                                 };
@@ -153,7 +162,10 @@ ALiVE_fnc_INS_classifyGroupTier = {
 // Called once per faction at asymmetric-OPCOM init; result cached on
 // the handler hashmap under "tieredGroupRoster".
 ALiVE_fnc_INS_buildTieredGroupRoster = {
-                params [["_faction", "", [""]]];
+                params [
+                    ["_faction", "", [""]],
+                    ["_excludedKinds", ["Tank", "Plane", "Helicopter", "Ship"], [[]]]
+                ];
 
                 private _roster = [[], [], []];
                 if (_faction == "") exitWith {_roster};
@@ -167,7 +179,7 @@ ALiVE_fnc_INS_buildTieredGroupRoster = {
                         for "_j" from 0 to (count _categoryConfig - 1) do {
                             private _groupConfig = _categoryConfig select _j;
                             if (isClass _groupConfig) then {
-                                private _tier = [_groupConfig] call ALiVE_fnc_INS_classifyGroupTier;
+                                private _tier = [_groupConfig, _excludedKinds] call ALiVE_fnc_INS_classifyGroupTier;
                                 switch (_tier) do {
                                     case "infantry": { (_roster select 0) pushBack (configName _groupConfig); };
                                     case "light":    { (_roster select 1) pushBack (configName _groupConfig); };

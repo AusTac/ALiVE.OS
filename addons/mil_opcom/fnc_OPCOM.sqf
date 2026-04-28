@@ -189,6 +189,22 @@ switch(_operation) do {
                     // buildTieredGroupRoster helpers.
                     _asymEscalationIntensity = _logic getvariable ["asym_escalationIntensity","off"];
 
+                    // #861: configurable per-OPCOM list of CfgVehicles parent
+                    // class names whose group entries are excluded from the
+                    // asymmetric tiered roster. Default matches the previous
+                    // hard-coded behaviour (no tanks / planes / helis / ships)
+                    // so existing missions keep working without a touch;
+                    // mission-makers running state-backed insurgent factions
+                    // can edit the comma-separated list to widen recruitment.
+                    private _asymExcludeRaw = _logic getVariable ["asym_excludeKinds", "Tank,Plane,Helicopter,Ship"];
+                    private _asymExcludeKinds = [];
+                    {
+                        private _t = _x;
+                        while {count _t > 0 && {(_t select [0, 1]) == " "}} do { _t = _t select [1] };
+                        while {count _t > 0 && {(_t select [count _t - 1, 1]) == " "}} do { _t = _t select [0, count _t - 1] };
+                        if (_t != "") then { _asymExcludeKinds pushBackUnique _t };
+                    } forEach ([_asymExcludeRaw, ","] call CBA_fnc_split);
+
                     //Get position
                     _position = getposATL _logic;
 
@@ -318,6 +334,7 @@ switch(_operation) do {
                     [_handler, "roadblocks",_roadblocks] call ALiVE_fnc_HashSet;
                     [_handler, "friendlyDisableMode",_friendlyDisableMode] call ALiVE_fnc_HashSet;
                     [_handler, "asymEscalationIntensity",_asymEscalationIntensity] call ALiVE_fnc_HashSet;
+                    [_handler, "asymExcludeKinds",_asymExcludeKinds] call ALiVE_fnc_HashSet;
 
                     // Issue #697 Phases 2.2 + 2.3: periodic scan lets
                     // friendly AI automatically disable this OPCOM's
@@ -432,8 +449,9 @@ switch(_operation) do {
                                 // loop picks from the pre-built roster each
                                 // cycle instead of re-walking CfgGroups.
                                 private _tieredGroupRoster = [] call ALiVE_fnc_hashCreate;
+                                private _excludeKinds = [_handler, "asymExcludeKinds", ["Tank", "Plane", "Helicopter", "Ship"]] call ALiVE_fnc_HashGet;
                                 {
-                                    private _factionRoster = [_x] call ALiVE_fnc_INS_buildTieredGroupRoster;
+                                    private _factionRoster = [_x, _excludeKinds] call ALiVE_fnc_INS_buildTieredGroupRoster;
                                     [_tieredGroupRoster, _x, _factionRoster] call ALiVE_fnc_hashSet;
                                 } foreach _factions;
                                 [_handler, "tieredGroupRoster", _tieredGroupRoster] call ALiVE_fnc_HashSet;

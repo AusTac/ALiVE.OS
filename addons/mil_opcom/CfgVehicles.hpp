@@ -256,6 +256,14 @@ class CfgVehicles {
                                     class high   { name = "$STR_ALIVE_OPCOM_ASYM_ESCALATION_INTENSITY_HIGH";   value = "high"; };
                                 };
                         };
+                        class asym_excludeKinds : Edit
+                        {
+                                property = "ALiVE_mil_opcom_asym_excludeKinds";
+                                displayName = "$STR_ALIVE_OPCOM_ASYM_EXCLUDE_KINDS";
+                                tooltip = "$STR_ALIVE_OPCOM_ASYM_EXCLUDE_KINDS_COMMENT";
+                                defaultValue = """Tank,Plane,Helicopter,Ship""";
+                                typeName = "STRING";
+                        };
                         class minAgents : Edit
                         {
                                 property = "ALiVE_mil_opcom_minAgents";
