@@ -117,7 +117,71 @@
             <Key ID="STR_ALIVE_Data_customPerfMonCode_COMMENT">
                 <English>Customize objects counted and intervals. Ensure interval values are in ascending order. 'triggers' will count allMissionObjects "EmptyDetector", 'entities' will count entities "All", 'objects' will count allMissionObjects "All", 'activeScripts' will count all active scripts. Any thing else will be count YOURPARAM i.e. count allDead.</English>
                 <Chinesesimp>自定义对象计数和间隔。确保间隔值按升序排列。'triggers'将计算所有的missionobjects "EmptyDetector", 'entities'将计算实体"All", 'objects'将计算所有的missionobjects "All", 'activeScripts'将计算所有的活动脚本。其他的将被计算为YOURPARAM,也就是计算allDead。</Chinesesimp>
-            </Key>                        
+            </Key>
+            <Key ID="STR_ALIVE_DATA_MENU">
+                <English>Persist Data</English>
+                <Chinesesimp>持久化数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_MENU_COMMENT">
+                <English>Wipe ALiVE persistence data (current mission or all data)</English>
+                <Chinesesimp>清除ALiVE持久化数据(当前任务或全部数据)</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_MISSION">
+                <English>Clear Current Mission's Data</English>
+                <Chinesesimp>清除当前任务的数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_MISSION_COMMENT">
+                <English>Removes only the current mission's saved ALiVE data. Cannot be undone.</English>
+                <Chinesesimp>仅删除当前任务的ALiVE存档数据。无法撤销。</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_ALL">
+                <English>Wipe ALL ALiVE Data</English>
+                <Chinesesimp>清除所有ALiVE数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_ALL_COMMENT">
+                <English>Removes all saved ALiVE data for every mission. Cannot be undone.</English>
+                <Chinesesimp>删除所有任务的全部ALiVE存档数据。无法撤销。</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_CONFIRM_TITLE">
+                <English>Confirm: Clear Mission Data</English>
+                <Chinesesimp>确认:清除任务数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_CONFIRM_YES">
+                <English>Yes, Clear This Mission's Data</English>
+                <Chinesesimp>是的,清除该任务的数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_CONFIRM_YES_COMMENT">
+                <English>Permanently clears the current mission's saved data. Cannot be undone.</English>
+                <Chinesesimp>永久清除当前任务的存档数据。无法撤销。</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_CONFIRM_TITLE">
+                <English>Confirm: Wipe ALL Data</English>
+                <Chinesesimp>确认:清除全部数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_CONFIRM_YES">
+                <English>Yes, Wipe ALL ALiVE Data</English>
+                <Chinesesimp>是的,清除全部ALiVE数据</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_CONFIRM_YES_COMMENT">
+                <English>Permanently wipes all ALiVE saved data across every mission. Cannot be undone.</English>
+                <Chinesesimp>永久清除所有任务的全部ALiVE存档数据。无法撤销。</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CONFIRM_CANCEL">
+                <English>Cancel</English>
+                <Chinesesimp>取消</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CONFIRM_CANCEL_COMMENT">
+                <English>Return to the previous menu without wiping anything</English>
+                <Chinesesimp>返回上一级菜单,不清除任何内容</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_CLEAR_DONE">
+                <English>ALiVE: Current mission's data cleared</English>
+                <Chinesesimp>ALiVE:当前任务数据已清除</Chinesesimp>
+            </Key>
+            <Key ID="STR_ALIVE_DATA_WIPE_DONE">
+                <English>ALiVE: All ALiVE data wiped</English>
+                <Chinesesimp>ALiVE:所有ALiVE数据已清除</Chinesesimp>
+            </Key>
         </Container>
     </Package>
 </Project>
