@@ -119,7 +119,7 @@
                 <Chinesesimp>自定义对象计数和间隔。确保间隔值按升序排列。'triggers'将计算所有的missionobjects "EmptyDetector", 'entities'将计算实体"All", 'objects'将计算所有的missionobjects "All", 'activeScripts'将计算所有的活动脚本。其他的将被计算为YOURPARAM,也就是计算allDead。</Chinesesimp>
             </Key>
             <Key ID="STR_ALIVE_DATA_MENU">
-                <English>Persist Data</English>
+                <English>Persistent Data</English>
                 <Chinesesimp>持久化数据</Chinesesimp>
             </Key>
             <Key ID="STR_ALIVE_DATA_MENU_COMMENT">

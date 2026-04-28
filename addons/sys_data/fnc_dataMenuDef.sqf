@@ -7,7 +7,7 @@ SCRIPT(dataMenuDef);
 Function: ALiVE_fnc_dataMenuDef
 
 Description:
-Admin-menu submenu for the ALiVE Persist Data section. Surfaces the
+Admin-menu submenu for the ALiVE Persistent Data section. Surfaces the
 existing ALiVE_fnc_ProfileNameSpaceClear and ALiVE_fnc_ProfileNameSpaceWipe
 helpers (#853) so a server admin can wipe persistence without dropping
 to the debug console.
