@@ -50,7 +50,15 @@ class CfgVehicles {
                 tooltip = "Config-backed faction used for side, compositions, and static fallback data.";
                 control = "ALiVE_FactionChoice_Military";
                 typeName = "STRING";
-                expression = "_this setVariable ['proxyFaction', _value];";
+                // Internal setVariable key is "faction" so the shared
+                // save / load handlers in addons/main (which hardcode
+                // "faction" in their broadcast write + default read
+                // path) persist the value end-to-end. Per-attribute
+                // attributeLoad overrides on this `class X { control
+                // = "Y"; }` shape are not honoured by Eden, so we
+                // align the variable name with the handlers' default
+                // instead. Init code reads getVariable ["faction"].
+                expression = "_this setVariable ['faction', _value];";
                 defaultValue = """OPF_F""";
             };
             class deleteTemplates : Combo {

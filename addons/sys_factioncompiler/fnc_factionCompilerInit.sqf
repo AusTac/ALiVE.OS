@@ -69,7 +69,10 @@ if (_displayName isEqualTo "") then {
     _displayName = _factionId;
 };
 
-private _proxyFaction = _logic getVariable ["proxyFaction", "OPF_F"];
+// Read from "faction" key (set by attribute expression) with
+// "proxyFaction" as a legacy fallback for missions saved against
+// the earlier internal-key name.
+private _proxyFaction = _logic getVariable ["faction", _logic getVariable ["proxyFaction", "OPF_F"]];
 if !(_proxyFaction isEqualType "") then {
     _proxyFaction = str _proxyFaction;
 };
