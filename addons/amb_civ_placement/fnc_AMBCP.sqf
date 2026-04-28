@@ -661,6 +661,16 @@ switch(_operation) do {
                 private _countPoultry = 0;
                 private _countHerd = 0;
 
+                // Mission-scope registry. Each entry:
+                //   [pos, class, groupSize, units, kind]
+                // Spawning is deferred to a player-proximity handler
+                // attached at the bottom of this block - keeping
+                // hundreds of always-on animal units across the map
+                // costs the server ~40 server FPS.
+                if (isNil "ALiVE_AMBCP_animalRegistry") then {
+                    ALiVE_AMBCP_animalRegistry = [];
+                };
+
                 // ---- Poultry near civilian buildings ----
                 if (count _poultryPool > 0) then {
                     private _poultryChance = 0.10 * _ambientAnimalAmount;
@@ -670,13 +680,9 @@ switch(_operation) do {
                         {
                             if (random 1 < _poultryChance) then {
                                 private _basePos = _x getRelPos [3 + random 8, random 360];
-                                private _animalGroup = createGroup civilian;
                                 private _animalClass = selectRandom _poultryPool;
                                 private _groupSize = 1 + floor (random 4);
-                                for "_i" from 1 to _groupSize do {
-                                    private _spawnOffset = _basePos vectorAdd [(random 4) - 2, (random 4) - 2, 0];
-                                    _animalGroup createUnit [_animalClass, _spawnOffset, [], 0, "CAN_COLLIDE"];
-                                };
+                                ALiVE_AMBCP_animalRegistry pushBack [_basePos, _animalClass, _groupSize, [], "poultry"];
                                 _countPoultry = _countPoultry + _groupSize;
                             };
                         } forEach _buildings;
@@ -732,16 +738,12 @@ switch(_operation) do {
                             };
 
                             if !(_herdPos isEqualTo []) then {
-                                private _animalGroup = createGroup civilian;
                                 private _animalClass = selectRandom _herdPool;
                                 // Herds bigger than poultry groups -
                                 // sheep flocks of 2-5 read more
                                 // naturally than 1-2 lone goats.
                                 private _groupSize = 2 + floor (random 4);
-                                for "_i" from 1 to _groupSize do {
-                                    private _spawnOffset = _herdPos vectorAdd [(random 12) - 6, (random 12) - 6, 0];
-                                    _animalGroup createUnit [_animalClass, _spawnOffset, [], 0, "CAN_COLLIDE"];
-                                };
+                                ALiVE_AMBCP_animalRegistry pushBack [_herdPos, _animalClass, _groupSize, [], "herd"];
                                 _countHerd = _countHerd + _groupSize;
                                 _herdsPlaced = _herdsPlaced + 1;
 
@@ -765,6 +767,53 @@ switch(_operation) do {
                     if (_debug) then {
                         ["AMBCP - Herds: tried %1 placed %2 across %3 clusters", _herdsTried, _herdsPlaced, count _clusters] call ALiVE_fnc_dump;
                     };
+                };
+
+                // Player-proximity spawn / despawn handler. Walks the
+                // registry every 30 s. For each entry:
+                //   - any player within 1500 m AND empty -> spawn
+                //   - no player within 2000 m AND populated -> delete
+                // The 500 m hysteresis avoids flicker at the boundary.
+                // Server-only; clients see the spawned units via the
+                // engine's normal network replication.
+                //
+                // Guard prevents the handler from being attached
+                // twice if the start case fires more than once
+                // (mission load, debug re-init, etc).
+                if (isNil "ALiVE_AMBCP_animalHandlerAttached") then {
+                    ALiVE_AMBCP_animalHandlerAttached = true;
+
+                    ALiVE_AMBCP_fnc_animalUpdate = {
+                        {
+                            _x params ["_pos", "_class", "_count", "_units", "_kind"];
+                            private _activate   = (allPlayers findIf { alive _x && {(_x distance _pos) < 1500} }) >= 0;
+                            private _deactivate = (allPlayers findIf { alive _x && {(_x distance _pos) < 2000} }) <  0;
+
+                            if (_activate && {count _units == 0}) then {
+                                // createAgent is lighter than createUnit:
+                                // no group attachment, no group AI tick.
+                                // Animals (Animal_Base_F subclasses) are
+                                // CAManBase-ancestor types so createAgent
+                                // works on them.
+                                private _spread = if (_kind == "herd") then { 12 } else { 4 };
+                                private _half = _spread / 2;
+                                private _newUnits = [];
+                                for "_i" from 1 to _count do {
+                                    private _offset = _pos vectorAdd [(random _spread) - _half, (random _spread) - _half, 0];
+                                    _newUnits pushBack (createAgent [_class, _offset, [], 0, "CAN_COLLIDE"]);
+                                };
+                                _x set [3, _newUnits];
+                            };
+
+                            if (_deactivate && {count _units > 0}) then {
+                                { deleteVehicle _x } forEach _units;
+                                _x set [3, []];
+                            };
+                        } forEach ALiVE_AMBCP_animalRegistry;
+                    };
+
+                    [] call ALiVE_AMBCP_fnc_animalUpdate;
+                    [ALiVE_AMBCP_fnc_animalUpdate, 30] call CBA_fnc_addPerFrameHandler;
                 };
 
                 if (_debug) then {
