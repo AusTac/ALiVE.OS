@@ -127,6 +127,13 @@ class CfgVehicles {
                     class No  { name = "No";  value = false; };
                 };
             };
+            class civHostilityDecayRate : Edit
+            {
+                property     = "ALiVE_amb_civ_population_civHostilityDecayRate";
+                displayName  = "$STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE";
+                tooltip      = "$STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE_COMMENT";
+                defaultValue = """1""";
+            };
             class limitInteraction : Edit { property = "ALiVE_amb_civ_population_limitInteraction"; displayName = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION"; tooltip = "$STR_ALIVE_CIV_POP_LIMIT_INTERACTION_COMMENT"; defaultValue = """"""; };
             class ambientCrowdSpawn : Edit { property = "ALiVE_amb_civ_population_ambientCrowdSpawn"; displayName = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_SPAWN_RADIUS_COMMENT"; defaultValue = """0"""; };
             class ambientCrowdDensity : Edit { property = "ALiVE_amb_civ_population_ambientCrowdDensity"; displayName = "$STR_ALIVE_CIV_POP_CROWD_DENSITY"; tooltip = "$STR_ALIVE_CIV_POP_CROWD_DENSITY_COMMENT"; defaultValue = """4"""; };

@@ -4918,6 +4918,12 @@
     <Chinese>當玩家對平民駕駛的車輛發出信號時,駕駛會配合:踩煞車、熄火、下車,並以投降姿勢站在車門旁讓玩家進行互動。兩種觸發方式:以舉起的武器瞄準車輛(範圍 50 公尺),或在注視車輛的同時做出停止 / 停火 / 凍結手勢(範圍 30 公尺 — 手勢示意,適合 COIN 任務)。如果駕駛處於敵對狀態(實際敵意 60 或以上)則拒絕。多人載具只有駕駛會停車;乘客留在座位上。預設:是。</Chinese>
     <Chinesesimp>当玩家对平民驾驶的车辆发出信号时,驾驶会配合:踩刹车、熄火、下车,并以投降姿势站在车门旁让玩家进行互动。两种触发方式:以举起的武器瞄准车辆(范围 50 米),或在注视车辆的同时做出停止 / 停火 / 冻结手势(范围 30 米 — 手势示意,适合 COIN 任务)。如果驾驶处于敌对状态(实际敌意 60 或以上)则拒绝。多人载具只有驾驶会停车;乘客留在座位上。默认:是。</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE">
+    <English>Hostility decay rate (per minute):</English>
+</Key>
+<Key ID="STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE_COMMENT">
+    <English>How fast individual civilian hostility recovers per minute toward neutral when the civilian isn't being interacted with. Decay applies only to civilians currently in the active world; virtualised civilians reset to default on their next spawn cycle. The side-baseline floor (set by the BLUFOR / OPFOR / Independent Hostility attributes above) still applies at indicator render time. 0 disables decay. Default: 1.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_FRIENDLY">
     <English>Friendly</English>
