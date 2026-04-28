@@ -1454,6 +1454,25 @@ ALiVE_fnc_INS_registerInstallationOnBuilding = {
         _building addEventHandler ["Killed", ALIVE_fnc_INS_buildingKilledEH];
         _building setVariable [QGVAR(INSTALLATION_KILLED_EH_ADDED), true, true];
     };
+
+    // Civilian dialog write-side for the "Has anyone been pressuring
+    // you?" question (introduced by commit a229a841 in
+    // amb_civ_population, currently the sole reader at
+    // fnc_questionHandler.sqf case "Pressure"). When an asymmetric
+    // installation registers on a building, sweep civilians within
+    // 50 m and flag them as having had insurgent contact - the
+    // installation's spawn implies insurgents physically present in
+    // the area at registration time. Idempotent (skips already-
+    // flagged civs); multi-installation buildings re-trigger the
+    // sweep but the flag-check short-circuits.
+    {
+        if (
+            side _x == civilian
+            && {!(_x getVariable ["ALiVE_CivPop_InsurgentContact", false])}
+        ) then {
+            _x setVariable ["ALiVE_CivPop_InsurgentContact", true, true];
+        };
+    } forEach (_building nearObjects ["CAManBase", 50]);
 };
 
 ALiVE_fnc_INS_getBuildingInstallations = {
