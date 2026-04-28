@@ -1067,11 +1067,11 @@ switch (_question) do {
 
     //-- Has anyone been pressuring the civilian (insurgent contact)
     case "Pressure": {
-        // Reads the per-civ insurgent-contact flag. The flag is currently
-        // unwritten by any consumer - a future hook will set it when an
-        // insurgent NPC interacts with the civ (recruitment / shakedown
-        // mechanic). Until then this case always reports "no pressure"
-        // for non-hostile civs, which is the correct stub behaviour.
+        // Reads the per-civ insurgent-contact flag set by mil_opcom's
+        // INS_registerInstallationOnBuilding when an insurgent installation
+        // registers onto a building - every civ within 50 m of that building
+        // gets flagged. Civs in clean areas keep the default `false` and get
+        // the PRESSURE_NONE_* responses; flagged civs get PRESSURE_YES_*.
         //
         // _response1/2/3 are pre-declared `private` at the case scope so
         // the nested if-then-else (insurgent vs none) updates the same
