@@ -108,9 +108,10 @@ class CfgVehicles {
         };
         class ModuleDescription {
             description[] = {"$STR_ALIVE_CPC_COMMENT","","$STR_ALIVE_CPC_USAGE"};
-            sync[] = {"ALiVE_mil_OPCOM","ALiVE_mil_CQB"};
+            sync[] = {"ALiVE_mil_OPCOM","ALiVE_mil_CQB","ALiVE_sys_factioncompiler"};
             class ALiVE_mil_OPCOM { description[] = {"$STR_ALIVE_OPCOM_COMMENT","","$STR_ALIVE_OPCOM_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
             class ALiVE_mil_CQB { description[] = {"$STR_ALIVE_CQB_COMMENT","","$STR_ALIVE_CQB_USAGE"}; position=0; direction=0; optional=1; duplicate=1; };
+            class ALiVE_sys_factioncompiler { description[] = {"Custom Faction Compiler module."}; position=0; direction=0; optional=1; duplicate=0; };
         };
     };
 };

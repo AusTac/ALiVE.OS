@@ -74,7 +74,11 @@ class CfgVehicles {
             sync[] = {
                 "ALiVE_sys_factioncompiler_category",
                 "ALiVE_mil_placement",
-                "ALiVE_mil_placement_custom"
+                "ALiVE_mil_placement_custom",
+                "ALiVE_mil_placement_spe",
+                "ALiVE_civ_placement",
+                "ALiVE_civ_placement_custom",
+                "ALiVE_mil_ato"
             };
             class ALiVE_sys_factioncompiler_category {
                 description[] = {"Group category helper module."};
@@ -92,6 +96,34 @@ class CfgVehicles {
             };
             class ALiVE_mil_placement_custom {
                 description[] = {"Custom Military Placement module."};
+                position = 0;
+                direction = 0;
+                optional = 1;
+                duplicate = 1;
+            };
+            class ALiVE_mil_placement_spe {
+                description[] = {"Garrison-Objective Military Placement module."};
+                position = 0;
+                direction = 0;
+                optional = 1;
+                duplicate = 1;
+            };
+            class ALiVE_civ_placement {
+                description[] = {"Military Placement at Civilian Objectives module."};
+                position = 0;
+                direction = 0;
+                optional = 1;
+                duplicate = 1;
+            };
+            class ALiVE_civ_placement_custom {
+                description[] = {"Custom Military Placement at Civilian Objectives module."};
+                position = 0;
+                direction = 0;
+                optional = 1;
+                duplicate = 1;
+            };
+            class ALiVE_mil_ato {
+                description[] = {"Air Tasking Order module."};
                 position = 0;
                 direction = 0;
                 optional = 1;
