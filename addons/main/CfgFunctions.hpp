@@ -82,6 +82,12 @@ class cfgFunctions {
                 preInit = 1;
                 RECOMPILE;
             };
+            class edenValidateFactionCompilerSync {
+                description = "3DEN editor-time validator: warns when sys_factioncompiler categories have vehicles synced directly instead of crew";
+                file = "\x\alive\addons\main\fnc_edenValidateFactionCompilerSync.sqf";
+                preInit = 1;
+                RECOMPILE;
+            };
             class getVehicleBoundingBox {
                 description = "Returns cached [length, width, height] bbox dimensions for a vehicle classname";
                 file = "\x\alive\addons\main\fnc_getVehicleBoundingBox.sqf";
