@@ -96,26 +96,33 @@ private _classObstacles = [
 ];
 
 // ------------------------------------------------------------------------
-// Footprint clearance check. Tests the rotated rectangle of the vehicle
-// at the candidate position; rejects if any sample point intersects an
-// obstacle from either filter. 9 samples (centre + 4 sides + 4 corners).
+// Footprint clearance check. Tiles the rotated rectangle of the vehicle
+// with samples spaced <= 2 m along each axis so the obstacle-detection
+// radius (~1 m around each sample) covers the whole bbox without gaps.
+// A 4 m x 2 m sedan ends up with 8 samples; a 12 m x 3 m fuel tanker
+// gets 21 samples - the longer body needs more coverage along its
+// flanks where a static 9-sample pattern would leave 6 m unsampled
+// between the mid-side and the front/rear corner.
 // ------------------------------------------------------------------------
 private _fnc_footprintClear = {
     params ["_pos", "_dir"];
 
-    private _diag = sqrt (_hl^2 + _hw^2);
-    private _diagAngle = (_hw atan2 _hl);
-    private _samples = [
-        _pos,
-        _pos getPos [_hl, _dir],
-        _pos getPos [_hl, _dir + 180],
-        _pos getPos [_hw, _dir + 90],
-        _pos getPos [_hw, _dir - 90],
-        _pos getPos [_diag, _dir + _diagAngle],
-        _pos getPos [_diag, _dir - _diagAngle],
-        _pos getPos [_diag, 180 + _dir + _diagAngle],
-        _pos getPos [_diag, 180 + _dir - _diagAngle]
-    ];
+    private _samplesAlongLength = (ceil (_vehLen / 2)) max 2;
+    private _samplesAlongWidth  = (ceil (_vehWid / 2)) max 2;
+    private _samples = [];
+    for "_i" from 0 to _samplesAlongLength do {
+        private _localY = ((_i / _samplesAlongLength) - 0.5) * _vehLen;
+        for "_j" from 0 to _samplesAlongWidth do {
+            private _localX = ((_j / _samplesAlongWidth) - 0.5) * _vehWid;
+            if (_localX == 0 && _localY == 0) then {
+                _samples pushBack _pos;
+            } else {
+                private _dist = sqrt (_localX * _localX + _localY * _localY);
+                private _bear = _dir + (_localX atan2 _localY);
+                _samples pushBack (_pos getPos [_dist, _bear]);
+            };
+        };
+    };
 
     if ({surfaceIsWater _x} count _samples > 0) exitWith { false };
 
