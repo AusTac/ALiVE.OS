@@ -1352,7 +1352,17 @@ switch (_operation) do {
 		};
 
 		if (_decreaseChance > random 100) then {
-			[_logic, "UpdateHostility", [_civ, -7]] remoteExecCall [QUOTE(MAINCLASS),2]
+			// Use local `call MAINCLASS` (matching the question handler's
+			// UpdateHostility call site) so the client-side CivData cache on
+			// _logic is updated synchronously - that's the same source the
+			// refreshHostilityIndicator hook below reads from. The previous
+			// `remoteExecCall [..., 2]` only updated server-side agent /
+			// cluster state and left the open dialog's cached posture stale,
+			// so the player wouldn't see the indicator label or tier-driven
+			// button states react to a successful give until the next
+			// question or dialog re-open.
+			[_logic, "UpdateHostility", [_civ, -7]] call MAINCLASS;
+			[_logic, "refreshHostilityIndicator"] call MAINCLASS;
 		};
 	};
 };
