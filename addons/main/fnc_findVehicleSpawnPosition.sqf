@@ -31,6 +31,12 @@ Parameters:
     _this select 1: ARRAY  - centre position [x, y, z] for the search.
     _this select 2: NUMBER - search radius (default 100 m).
     _this select 3: STRING - "road" / "field" / "auto" (default "auto").
+    _this select 4: NUMBER - preferred direction in degrees [0, 360].
+                             Used at Stage 1 (centre) when the caller's
+                             parking position is accepted. -1 (default)
+                             = no preference, random direction at Stage 1.
+                             Stages 2 (road) and 3 (field) override with
+                             their own direction regardless.
 
 Returns:
     ARRAY [_pos, _dir] on success, [] on failure.
@@ -58,10 +64,24 @@ params [
     ["_vehicleClass", "", [""]],
     ["_centerPos", [0,0,0], [[]], [2,3]],
     ["_maxDistance", 100, [0]],
-    ["_preference", "auto", [""]]
+    ["_preference", "auto", [""]],
+    ["_preferredDir", -1, [0]]
 ];
 
 if (_vehicleClass == "" || count _centerPos < 2) exitWith { [] };
+
+// Normalise to a 3-element position. Callers pass 2-element [x, y] in
+// some paths (e.g. amb_civ_population's stored agent position from
+// getParkingPosition). The geometry sweep needs Z to compute sweep
+// heights via (_pos select 2) + heightOffset, and missing Z propagates
+// nil into AGLToASL -> lineIntersectsSurfaces and errors out with
+// "0 elements provided, 3 expected".
+if (count _centerPos < 3) then { _centerPos = _centerPos + [0] };
+
+// Debug flag - enable in initServer.sqf or debug console:
+//   ALiVE_vehicleSpawn_debug = true; publicVariable "ALiVE_vehicleSpawn_debug";
+// Logs per-call summary + per-stage decisions to RPT. Off by default.
+private _debug = !isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug};
 
 // Vehicle dimensions (cached per class).
 private _bbox = [_vehicleClass] call ALiVE_fnc_getVehicleBoundingBox;
@@ -70,6 +90,11 @@ private _hl = _vehLen / 2;
 private _hw = _vehWid / 2;
 private _sampleRadius = 0.4;
 private _gap = 0.5;
+
+if (_debug) then {
+    diag_log format ["[ALiVE VehSpawn DEBUG] ENTER class=%1 pos=%2 radius=%3 pref=%4 bbox=[%5,%6]",
+        _vehicleClass, _centerPos, _maxDistance, _preference, _vehLen, _vehWid];
+};
 
 // Static obstacle terrain types - the full list, not just BUSH/HIDE.
 // Includes building outer walls, fences, signage, lighting, vegetation.
@@ -85,14 +110,38 @@ private _staticTerrainTypes = [
 
 // Class-based obstacles. Catches mod-spawned content that doesn't carry
 // terrain-type tags + the mil_ied DEFAULT_CLUTTER set (vehicles must not
-// spawn on roadside IED-hide objects). Keep classnames in sync with
-// addons/mil_ied/fnc_IED.sqf:94 - update both lists together.
+// spawn on roadside IED-hide objects). Keep clutter classnames in sync
+// with addons/mil_ied/fnc_IED.sqf:94 - update both lists together.
+//
+// Military fortification classes are listed explicitly because they
+// don't share a common kindOf parent (HBarrier, Bagfence, Bagbunker
+// etc. all descend straight from NonStrategic / Strategic). Without
+// these entries, parked composition vehicles next to hesco walls
+// passed the obstacle check and clipped the bbox into the barrier
+// geometry. Reported in #850.
 private _classObstacles = [
     "Wall", "House", "AllVehicles",
     "Land_JunkPile_F", "Land_GarbageContainer_closed_F",
     "Land_GarbageBags_F", "Land_Tyres_F", "Land_GarbagePallet_F",
     "Land_Basket_F", "Land_Sack_F", "Land_Sacks_goods_F",
-    "Land_Sacks_heap_F", "Land_BarrelTrash_F"
+    "Land_Sacks_heap_F", "Land_BarrelTrash_F",
+    // Hesco-style barriers (vanilla Arma 3)
+    "Land_HBarrier_1_F", "Land_HBarrier_3_F", "Land_HBarrier_5_F",
+    "Land_HBarrier_Big_F", "Land_HBarrierWall4_F", "Land_HBarrierWall6_F",
+    "Land_HBarrierWall_corner_F", "Land_HBarrierWall_corridor_F",
+    "Land_HBarrierTower_F",
+    // Sandbag walls / bunkers
+    "Land_BagFence_Round_F", "Land_BagFence_Long_F",
+    "Land_BagFence_Short_F", "Land_BagFence_End_F",
+    "Land_BagFence_Corner_F",
+    "Land_BagBunker_Small_F", "Land_BagBunker_Large_F",
+    "Land_BagBunker_Tower_F",
+    // Concrete jersey barriers
+    "Land_CncBarrier_F", "Land_CncBarrierMedium_F",
+    "Land_CncBarrierMedium4_F", "Land_CncShelter_F",
+    "Land_CncWall1_F", "Land_CncWall4_F",
+    // Razor wire / fortification fences
+    "Land_Razorwire_F"
 ];
 
 // ------------------------------------------------------------------------
@@ -104,6 +153,10 @@ private _classObstacles = [
 // flanks where a static 9-sample pattern would leave 6 m unsampled
 // between the mid-side and the front/rear corner.
 // ------------------------------------------------------------------------
+// Last-rejection reason for debug logging. Read by the cascade after each
+// _fnc_footprintClear call when _debug is true. Stays nil on success.
+private _lastRejectReason = "";
+
 private _fnc_footprintClear = {
     params ["_pos", "_dir"];
 
@@ -124,17 +177,23 @@ private _fnc_footprintClear = {
         };
     };
 
-    if ({surfaceIsWater _x} count _samples > 0) exitWith { false };
+    if ({surfaceIsWater _x} count _samples > 0) exitWith { _lastRejectReason = "water"; false };
 
     private _terrainHit = _samples findIf {
         !((nearestTerrainObjects [_x, _staticTerrainTypes, _sampleRadius + _gap, false, true]) isEqualTo [])
     };
-    if (_terrainHit >= 0) exitWith { false };
+    if (_terrainHit >= 0) exitWith { _lastRejectReason = "terrain-blocker"; false };
 
     private _classHit = _samples findIf {
         !((nearestObjects [_x, _classObstacles, _sampleRadius + _gap]) isEqualTo [])
     };
-    if (_classHit >= 0) exitWith { false };
+    if (_classHit >= 0) exitWith {
+        // Capture which class blocked - useful for diagnosing missing entries
+        // in _classObstacles when bad spawns slip through.
+        private _blockingClasses = (nearestObjects [_samples select _classHit, _classObstacles, _sampleRadius + _gap]) apply {typeOf _x};
+        _lastRejectReason = format ["class-blocker:%1", _blockingClasses];
+        false
+    };
 
     // Geometry sweep across the bbox perimeter. nearestObjects /
     // nearestTerrainObjects return objects whose bounding-sphere centre
@@ -160,23 +219,33 @@ private _fnc_footprintClear = {
 
     private _sweepHeights = [0.3, 1.5];
     private _heightBlocked = _sweepHeights findIf {
-        private _h = (_pos select 2) + _x;
+        private _heightOffset = _x;
+        private _h = (_pos select 2) + _heightOffset;
         private _frASL = AGLToASL [_frPos select 0, _frPos select 1, _h];
         private _flASL = AGLToASL [_flPos select 0, _flPos select 1, _h];
         private _rrASL = AGLToASL [_rrPos select 0, _rrPos select 1, _h];
         private _rlASL = AGLToASL [_rlPos select 0, _rlPos select 1, _h];
         // 4 edges + 2 diagonals at this height
-        ([
-            [_flASL, _frASL],   // FL -> FR (front)
-            [_frASL, _rrASL],   // FR -> RR (right side)
-            [_rrASL, _rlASL],   // RR -> RL (rear)
-            [_rlASL, _flASL],   // RL -> FL (left side)
-            [_frASL, _rlASL],   // FR -> RL (diagonal 1)
-            [_flASL, _rrASL]    // FL -> RR (diagonal 2)
-        ] findIf {
-            _x params ["_a", "_b"];
+        private _edges = [
+            ["front",     [_flASL, _frASL]],
+            ["right",     [_frASL, _rrASL]],
+            ["rear",      [_rrASL, _rlASL]],
+            ["left",      [_rlASL, _flASL]],
+            ["diagonal1", [_frASL, _rlASL]],
+            ["diagonal2", [_flASL, _rrASL]]
+        ];
+        private _hitEdge = _edges findIf {
+            _x params ["_label", "_pair"];
+            _pair params ["_a", "_b"];
             !((lineIntersectsSurfaces [_a, _b, objNull, objNull, true, 1, "GEOM", "NONE"]) isEqualTo [])
-        }) >= 0
+        };
+        if (_hitEdge >= 0) then {
+            private _label = (_edges select _hitEdge) select 0;
+            _lastRejectReason = format ["geometry-sweep:height=%1m,edge=%2", _heightOffset, _label];
+            true
+        } else {
+            false
+        }
     };
     if (_heightBlocked >= 0) exitWith { false };
 
@@ -187,18 +256,35 @@ private _fnc_footprintClear = {
 // Cascade with explicit found-flag tracking.
 // ------------------------------------------------------------------------
 private _found = [];
-private _centerDir = random 360;
+// Stage 1 direction: prefer caller's intent (parking direction from
+// getParkingPosition / road-alignment from createRoadblock / etc.). Only
+// generate a random direction when the caller had no preference - that
+// path is for "find any clear spot" calls where direction doesn't matter.
+// Without this, ambient parked vehicles validated at their own parking
+// position were getting random rotations and ended up angled across the
+// road instead of parallel to it.
+private _centerDir = if (_preferredDir >= 0) then { _preferredDir } else { random 360 };
+private _acceptedStage = "";
 
 // Stage 1: centre check.
 if ([_centerPos, _centerDir] call _fnc_footprintClear) then {
     _found = [_centerPos, _centerDir];
+    _acceptedStage = "centre";
+    if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 1 centre - ACCEPT pos=%1", _centerPos]; };
+} else {
+    if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 1 centre - REJECT reason=%1", _lastRejectReason]; };
 };
 
 // Stage 2: road search (preference road / auto).
 if (count _found == 0 && {_preference in ["road", "auto"]}) then {
     private _closestRoad = [_centerPos] call ALIVE_fnc_getClosestRoad;
-    if (!isNil "_closestRoad" && {_centerPos distance _closestRoad <= _maxDistance}) then {
+    if (isNil "_closestRoad" || {_centerPos distance _closestRoad > _maxDistance}) then {
+        if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 2 road - SKIP (no road within %1m)", _maxDistance]; };
+    } else {
         private _segments = [_closestRoad, _maxDistance, 30] call ALIVE_fnc_getSortedSeriesRoadPositions;
+        private _segmentsTried = 0;
+        private _sidesTried = 0;
+        private _sidesRejected = 0;
         {
             if (count _found > 0) exitWith {};
             private _segPos = _x;
@@ -206,6 +292,8 @@ if (count _found == 0 && {_preference in ["road", "auto"]}) then {
             // Skip bridge segments - vehicles spawning on a bridge with
             // any side offset fall off the edge.
             if (!isNil "_road" && {(getRoadInfo _road) select 8}) then { continue };
+
+            _segmentsTried = _segmentsTried + 1;
 
             // Compute road direction from the segment's adjacent connections.
             private _connected = if (!isNil "_road") then { roadsConnectedTo _road } else { [] };
@@ -225,15 +313,25 @@ if (count _found == 0 && {_preference in ["road", "auto"]}) then {
             {
                 if (count _found > 0) exitWith {};
                 _x params ["_tryPos", "_tryDir"];
+                _sidesTried = _sidesTried + 1;
                 if ([_tryPos, _tryDir] call _fnc_footprintClear) then {
                     // Small jitter for visual variety.
                     _found = [_tryPos, _tryDir + (random 10 - 5)];
+                    _acceptedStage = "road";
+                    if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 2 road - ACCEPT segment=%1 pos=%2", _segmentsTried, _tryPos]; };
+                } else {
+                    _sidesRejected = _sidesRejected + 1;
                 };
             } forEach [
                 [_segPos getPos [_lateralOffset, _roadDir + 90], _roadDir],
                 [_segPos getPos [_lateralOffset, _roadDir - 90], _roadDir]
             ];
         } forEach _segments;
+
+        if (_debug && {count _found == 0}) then {
+            diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 2 road - REJECT (segments=%1, sides=%2, all blocked) lastReason=%3",
+                _segmentsTried, _sidesTried, _lastRejectReason];
+        };
     };
 };
 
@@ -242,25 +340,52 @@ if (count _found == 0 && {_preference in ["field", "auto"]}) then {
     // Surface-type whitelist. Vehicles bog on sand / mud.
     private _surfaceAllowed = ["GdtAsphalt", "GdtConcrete", "GdtDirt", "GdtGrass", "GdtRoad", "GdtRubble", "GdtSoil"];
 
+    private _candidatesTried = 0;
+    private _surfaceRejects = 0;
+    private _gradientRejects = 0;
+    private _footprintRejects = 0;
     for "_i" from 1 to 500 do {
         if (count _found > 0) exitWith {};
 
         private _pos = _centerPos getPos [random _maxDistance, random 360];
         private _dir = random 360;
+        _candidatesTried = _candidatesTried + 1;
 
         // Surface filter (cheap, runs first).
         private _surface = surfaceType _pos;
         if ((_surface select [0, 1]) == "#") then { _surface = _surface select [1] };
-        if !(_surface in _surfaceAllowed) then { continue };
+        if !(_surface in _surfaceAllowed) then { _surfaceRejects = _surfaceRejects + 1; continue };
 
         // Gradient filter - skip steep slopes. The check radius is
         // the larger of half-length / half-width so it covers the
         // whole vehicle footprint.
-        if ((_pos isFlatEmpty [-1, -1, 0.4, (_hl max _hw), 0, false, objNull]) isEqualTo []) then { continue };
+        if ((_pos isFlatEmpty [-1, -1, 0.4, (_hl max _hw), 0, false, objNull]) isEqualTo []) then {
+            _gradientRejects = _gradientRejects + 1;
+            continue
+        };
 
         if ([_pos, _dir] call _fnc_footprintClear) then {
             _found = [_pos, _dir];
+            _acceptedStage = "field";
+            if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 3 field - ACCEPT iteration=%1 pos=%2", _candidatesTried, _pos]; };
+        } else {
+            _footprintRejects = _footprintRejects + 1;
         };
+    };
+
+    if (_debug && {count _found == 0}) then {
+        diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 3 field - REJECT (tried=%1 surfaceRejects=%2 gradientRejects=%3 footprintRejects=%4) lastReason=%5",
+            _candidatesTried, _surfaceRejects, _gradientRejects, _footprintRejects, _lastRejectReason];
+    };
+};
+
+if (_debug) then {
+    if (count _found > 0) then {
+        diag_log format ["[ALiVE VehSpawn DEBUG] EXIT class=%1 result=ACCEPT stage=%2 pos=%3 dir=%4",
+            _vehicleClass, _acceptedStage, _found select 0, _found select 1];
+    } else {
+        diag_log format ["[ALiVE VehSpawn DEBUG] EXIT class=%1 result=FAIL (caller falls back to %2)",
+            _vehicleClass, _centerPos];
     };
 };
 
