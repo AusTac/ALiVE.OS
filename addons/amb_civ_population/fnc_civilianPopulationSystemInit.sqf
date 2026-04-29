@@ -126,6 +126,7 @@ if(isServer) then {
     private _advciv_hideTimeMin      = parseNumber (_logic getVariable ["advciv_hideTimeMin",      "60"]);
     private _advciv_hideTimeMax      = parseNumber (_logic getVariable ["advciv_hideTimeMax",      "180"]);
     private _advciv_preferBuildings  = (_logic getVariable ["advciv_preferBuildings",  "true"])  isEqualTo "true";
+    private _advciv_nightSleepAnim   = (_logic getVariable ["advciv_nightSleepAnim",   "true"])  isEqualTo "true";
     private _advciv_voiceEnabled     = (_logic getVariable ["advciv_voiceEnabled",     "false"]) isEqualTo "true";
     private _advciv_voiceChance      = parseNumber (_logic getVariable ["advciv_voiceChance",      "0.6"]);
     private _advciv_orderMenuRange   = parseNumber (_logic getVariable ["advciv_orderMenuRange",   "4"]);
@@ -178,6 +179,7 @@ if(isServer) then {
     ALiVE_advciv_hideTimeMin      = _advciv_hideTimeMin;      publicVariable "ALiVE_advciv_hideTimeMin";
     ALiVE_advciv_hideTimeMax      = _advciv_hideTimeMax;      publicVariable "ALiVE_advciv_hideTimeMax";
     ALiVE_advciv_preferBuildings  = _advciv_preferBuildings;  publicVariable "ALiVE_advciv_preferBuildings";
+    ALiVE_advciv_nightSleepAnim   = _advciv_nightSleepAnim;   publicVariable "ALiVE_advciv_nightSleepAnim";
     ALiVE_advciv_voiceEnabled     = _advciv_voiceEnabled;     publicVariable "ALiVE_advciv_voiceEnabled";
     ALiVE_advciv_voiceChance      = _advciv_voiceChance;      publicVariable "ALiVE_advciv_voiceChance";
     ALiVE_advciv_orderMenuRange   = _advciv_orderMenuRange;   publicVariable "ALiVE_advciv_orderMenuRange";

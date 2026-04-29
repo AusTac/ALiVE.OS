@@ -4748,6 +4748,12 @@
     <Chinese>啟用時,平民會先尋找建築物內躲藏,再考慮開放地面。預設值:是。</Chinese>
     <Chinesesimp>启用后,平民会先到建筑内寻求掩蔽,然后再寻找空地。默认:是。</Chinesesimp>
 </Key>
+<Key ID="STR_ALIVE_ADVCIV_NIGHT_SLEEP_ANIM">
+    <English>Night Sleep Animation:</English>
+</Key>
+<Key ID="STR_ALIVE_ADVCIV_NIGHT_SLEEP_ANIM_COMMENT">
+    <English>When enabled, civilians at home indoors during night hours (22:00 - 06:00) play a lying-down sleep animation. When disabled, civilians still go indoors and stand idle at night (existing behaviour) but skip the visual sleep pose. Default: Yes.</English>
+</Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_ADVCIV_VOICE_ENABLED">
     <English>Enable Voice Lines:</English>
