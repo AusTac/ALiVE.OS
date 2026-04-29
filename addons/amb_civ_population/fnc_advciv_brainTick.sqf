@@ -270,7 +270,16 @@ switch (_state) do {
                     alive _x
                     && {side _x != civilian}
                     && {side _x != sideLogic}
-                    && {(_x getVariable ["ALiVE_advciv_firedAtCiv", false]) || {rating _x < -500}}
+                    && {
+                    // firedAtCivTime is the wall-clock timestamp at which this
+                    // unit fired/exploded near a civilian. Treat them as a live
+                    // threat only while time-since-fire is within the shot
+                    // memory window, so the perma-flag stale-state bug (a
+                    // single AI fire event keeping civs in HIDING for the
+                    // rest of the mission) can't recur.
+                    private _firedAt = _x getVariable ["ALiVE_advciv_firedAtCivTime", -1];
+                    (_firedAt > 0 && {time - _firedAt < ALiVE_advciv_shotMemoryTime}) || {rating _x < -500}
+                }
                 };
                 _realThreat = (count _hostiles > 0);
             };
@@ -606,13 +615,28 @@ switch (_state) do {
                 alive _x
                 && {side _x != civilian}
                 && {side _x != sideLogic}
-                && {(_x getVariable ["ALiVE_advciv_firedAtCiv", false]) || {rating _x < -500}}
+                && {
+                    // firedAtCivTime is the wall-clock timestamp at which this
+                    // unit fired/exploded near a civilian. Treat them as a live
+                    // threat only while time-since-fire is within the shot
+                    // memory window, so the perma-flag stale-state bug (a
+                    // single AI fire event keeping civs in HIDING for the
+                    // rest of the mission) can't recur.
+                    private _firedAt = _x getVariable ["ALiVE_advciv_firedAtCivTime", -1];
+                    (_firedAt > 0 && {time - _firedAt < ALiVE_advciv_shotMemoryTime}) || {rating _x < -500}
+                }
             } count (_unit nearEntities ["CAManBase", ALiVE_advciv_reactionRadius]);
 
+            if (ALiVE_advciv_debug) then {
+                diag_log format ["[ALiVE Threat DEBUG] HIDING-exit-check civ=%1 hostileNear=%2 lastShot=%3 elapsedSinceLastShot=%4 shotMemoryTime=%5", name _unit, _hostileNear, _lastShot, (time - _lastShot), ALiVE_advciv_shotMemoryTime];
+                {diag_log format ["[ALiVE Threat DEBUG]   nearby unit=%1 side=%2 firedAt=%3 elapsedSinceFire=%4 rating=%5", name _x, side _x, _x getVariable ["ALiVE_advciv_firedAtCivTime", -1], (if ((_x getVariable ["ALiVE_advciv_firedAtCivTime", -1]) > 0) then {time - (_x getVariable ["ALiVE_advciv_firedAtCivTime", -1])} else {-1}), rating _x]} forEach (_unit nearEntities ["CAManBase", ALiVE_advciv_reactionRadius]);
+            };
             if (_hostileNear > 0 && {(time - _lastShot) < ALiVE_advciv_shotMemoryTime}) then {
+                if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Threat DEBUG] civ=%1 EXTENDING hide timer (still threatened)", name _unit]; };
                 // Still dangerous — extend the hide timer and keep hiding
                 _unit setVariable ["ALiVE_advciv_stateTimer", time + ALiVE_advciv_hideTimeMin + random (ALiVE_advciv_hideTimeMax - ALiVE_advciv_hideTimeMin)];
             } else {
+                if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Threat DEBUG] civ=%1 RELEASING HIDING -> ALERT (cooldown clear)", name _unit]; };
                 // Safe — transition back to ALERT for a brief observation window
                 _unit setVariable ["ALiVE_advciv_state", "ALERT", true];
                 _unit setVariable ["ALiVE_advciv_stateTimer", 0];
