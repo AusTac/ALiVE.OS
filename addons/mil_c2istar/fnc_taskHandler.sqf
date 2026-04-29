@@ -481,6 +481,8 @@ switch (_operation) do {
 
                 if !(isNull _player) then {
                     _taskLocation = position _player;
+                    _requestPlayerID = getPlayerUID _player;
+                    _taskFaction = faction _player;
                 };
 
                 private _tasksCurrent = ([_logic, "tasks", ["", [], [], nil]] call ALIVE_fnc_hashGet) select 2;
