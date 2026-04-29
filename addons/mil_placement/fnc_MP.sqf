@@ -993,7 +993,22 @@ switch(_operation) do {
                                 _position = _airResult select 0;
                                 _direction = _airResult select 1;
 
-                                if(random 1 > 0.2) then {
+                                // Crewed helis only make sense as a pool for mil_ato to
+                                // task (CAS / transport / scout). Without mil_ato in the
+                                // mission, the crew sit idle on the helipad burning AI
+                                // forever - waste of slots. Gate the crewed branch on
+                                // mil_ato module presence: if not placed in Eden, force
+                                // 100% uncrewed. If placed, fall back to the 20% chance.
+                                private _atoActive = count (allMissionObjects "ALiVE_mil_ato") > 0;
+                                private _diceRoll = random 1;
+                                private _crewed = _atoActive && {_diceRoll <= 0.2};
+                                if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
+                                    diag_log format ["[ALiVE VehSpawn DEBUG] HELI-PLACEMENT module=mil_placement faction=%1 class=%2 pos=%3 atoActive=%4 dice=%5 threshold=0.2 result=%6",
+                                        _faction, _vehicleClass, _position, _atoActive, _diceRoll,
+                                        if (_crewed) then {"CREWED"} else {"UNCREWED"}];
+                                };
+
+                                if !(_crewed) then {
                                     [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
                                     _countProfiles = _countProfiles + 1;
                                     _countUncrewedHelis = _countUncrewedHelis + 1;
@@ -1028,9 +1043,13 @@ switch(_operation) do {
                 _airClasses = [0,_faction,"Plane"] call ALiVE_fnc_findVehicleType;
                 _airClasses = _airClasses - ALiVE_PLACEMENT_VEHICLEBLACKLIST;
 
-                if(count _airClasses == 0) then {
-                    _airClasses = _airClasses + _heliClasses;
-                };
+                // Hangar placement is for FIXED-WING aircraft only. The
+                // pre-existing fallback `_airClasses = _airClasses +
+                // _heliClasses` produced helis sitting inside hangars when
+                // a faction had no plane classes - undesirable visually
+                // (helis are meant for the helipad path at line 970) and
+                // a frequent source of clipping. If the faction has no
+                // planes, leave the hangar empty.
 
                 if(count _airClasses > 0) then {
 
@@ -1059,6 +1078,16 @@ switch(_operation) do {
                                 if (count _airResult >= 2) then {
                                     _position = _airResult select 0;
                                     _direction = _airResult select 1;
+
+                                    // Diagnostic. Hangar-path air units are always
+                                    // uncrewed (createProfileVehicle, no Crewed
+                                    // variant), but logging the placement gives
+                                    // visibility into faction / class / hangar
+                                    // positions for debugging.
+                                    if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
+                                        diag_log format ["[ALiVE VehSpawn DEBUG] HELI-PLACEMENT module=mil_placement source=hangar faction=%1 class=%2 pos=%3 result=UNCREWED",
+                                            _faction, _vehicleClass, _position];
+                                    };
 
                                     [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
                                     _countProfiles = _countProfiles + 1;
@@ -1197,7 +1226,21 @@ switch(_operation) do {
                                     //["POS OK: %1",_positionOK] call ALIVE_fnc_dump;
 
                                     if(_positionOK) then {
-                                        [_vehicleClass,_side,_faction,_parkingPosition select 0,_parkingPosition select 1,false,_faction,[],true] call ALIVE_fnc_createProfileVehicle;
+                                        // The trailing `,[],true` previously here passed `true`
+                                        // as the 9th positional arg, which maps to `_isSPE` per
+                                        // ALiVE_fnc_createProfileVehicle's params block. That
+                                        // flagged every ambient mil vehicle as SPE and skipped
+                                        // the unified spawn-position validator at activation
+                                        // time (fnc_profileVehicle.sqf:549 gates the validator
+                                        // call behind `if !(_isSPE)`). On non-SPE maps that
+                                        // meant ambient mil vehicles materialised at the raw
+                                        // parking position with no bbox-aware footprint check
+                                        // and no settle window - causing spawn-clip explosions
+                                        // at military bases. Drop the trailing args so _cargo
+                                        // and _isSPE fall back to their defaults ([] and false)
+                                        // and the validator engages on activation. Same fix
+                                        // applied to mil_placement_custom/fnc_CMP.sqf:939.
+                                        [_vehicleClass,_side,_faction,_parkingPosition select 0,_parkingPosition select 1,false,_faction] call ALIVE_fnc_createProfileVehicle;
 
                                         _countLandUnits = _countLandUnits + 1;
 

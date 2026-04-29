@@ -30,6 +30,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 ---------------------------------------------------------------------------- */
 
 #define SUPERCLASS                      ALIVE_fnc_baseClass
@@ -797,7 +798,22 @@ switch(_operation) do {
                             private _direction = direction _x;
                             private _vehicleClass = (selectRandom _heliClasses);
 
-                            if(random 1 > 0.8) then {
+                            // Threshold reconciled to 0.2 to match mil_placement (was
+                            // `> 0.8` = 80% crewed, an inversion bug or historical drift
+                            // that produced unwanted AI pilots on most ambient helis).
+                            // Crewed helis are gated on mil_ato presence - same logic as
+                            // mil_placement: if no ATO module to task them, no point
+                            // burning AI slots on idle pilots.
+                            private _atoActive = count (allMissionObjects "ALiVE_mil_ato") > 0;
+                            private _diceRoll = random 1;
+                            private _crewed = _atoActive && {_diceRoll <= 0.2};
+                            if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
+                                diag_log format ["[ALiVE VehSpawn DEBUG] HELI-PLACEMENT module=mil_placement_custom faction=%1 class=%2 pos=%3 atoActive=%4 dice=%5 threshold=0.2 result=%6",
+                                    _faction, _vehicleClass, _position, _atoActive, _diceRoll,
+                                    if (_crewed) then {"CREWED"} else {"UNCREWED"}];
+                            };
+
+                            if !(_crewed) then {
                                 [_vehicleClass,_side,_faction,_position,_direction,false,_faction] call ALIVE_fnc_createProfileVehicle;
                                 _countProfiles = _countProfiles + 1;
                                 _countUncrewedHelis =_countUncrewedHelis + 1;
@@ -936,7 +952,11 @@ switch(_operation) do {
                                 //["POS OK: %1",_positionOK] call ALIVE_fnc_dump;
 
                                 if(_positionOK) then {
-                                    [_vehicleClass,_side,_faction,_parkingPosition select 0,_parkingPosition select 1,false,_faction,[],true] call ALIVE_fnc_createProfileVehicle;
+                                    // Trailing `,[],true` removed - paired fix with
+                                    // mil_placement/fnc_MP.sqf:1200. The `true` was
+                                    // mis-positionally setting `_isSPE` and skipping the
+                                    // unified spawn-position validator on activation.
+                                    [_vehicleClass,_side,_faction,_parkingPosition select 0,_parkingPosition select 1,false,_faction] call ALIVE_fnc_createProfileVehicle;
 
                                     _countLandUnits = _countLandUnits + 1;
 
