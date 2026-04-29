@@ -1569,7 +1569,22 @@ switch(_operation) do {
                 } forEach _clusters;
 
             } else {
-                ["MP - Warning no usable groups found to use, the faction (%1) may be faulty.", _faction] call ALiVE_fnc_dumpR;
+                // Differentiate "specialised faction with categories outside
+                // mil_placement's lookup" from "actually faulty faction".
+                // sys_factioncompiler synthesises specialised factions like
+                // BLUFOR_AIR / OPFOR_AIR / IND_AIR that hold Air groups only;
+                // they're working as designed but the four-category sweep
+                // above (Motorized_MTP / Infantry / SpecOps / Air-when-
+                // placeHelis) returns empty when _placeHelis is false on the
+                // calling placement instance. Log informationally rather
+                // than warn-with-may-be-faulty so the RPT signal stays
+                // meaningful for genuinely-faulty factions.
+                private _hasAir = !((["Air", _faction] call ALIVE_fnc_configGetRandomGroup) isEqualTo "FALSE");
+                if (_hasAir) then {
+                    ["MP - faction (%1) has Air groups only; skipping placement (placeHelis disabled or no Air slots requested for this placement instance).", _faction] call ALiVE_fnc_dump;
+                } else {
+                    ["MP - Warning no usable groups found to use, the faction (%1) may be faulty.", _faction] call ALiVE_fnc_dumpR;
+                };
             };
 
             ["MP %2 - Total profiles created: %1",_countProfiles, _faction] call ALiVE_fnc_dump;
