@@ -4918,11 +4918,25 @@
     <Chinese>當玩家對平民駕駛的車輛發出信號時,駕駛會配合:踩煞車、熄火、下車,並以投降姿勢站在車門旁讓玩家進行互動。兩種觸發方式:以舉起的武器瞄準車輛(範圍 50 公尺),或在注視車輛的同時做出停止 / 停火 / 凍結手勢(範圍 30 公尺 — 手勢示意,適合 COIN 任務)。如果駕駛處於敵對狀態(實際敵意 60 或以上)則拒絕。多人載具只有駕駛會停車;乘客留在座位上。預設:是。</Chinese>
     <Chinesesimp>当玩家对平民驾驶的车辆发出信号时,驾驶会配合:踩刹车、熄火、下车,并以投降姿势站在车门旁让玩家进行互动。两种触发方式:以举起的武器瞄准车辆(范围 50 米),或在注视车辆的同时做出停止 / 停火 / 冻结手势(范围 30 米 — 手势示意,适合 COIN 任务)。如果驾驶处于敌对状态(实际敌意 60 或以上)则拒绝。多人载具只有驾驶会停车;乘客留在座位上。默认:是。</Chinesesimp>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE">
     <English>Hostility decay rate (per minute):</English>
+    <Chinese>敵意衰減速率(每分鐘):</Chinese>
+    <Chinesesimp>敌意衰减速率(每分钟):</Chinesesimp>
+    <French>Taux de decroissance de l'hostilite (par minute):</French>
+    <Spanish>Tasa de reduccion de hostilidad (por minuto):</Spanish>
+    <Portuguese>Taxa de reducao da hostilidade (por minuto):</Portuguese>
+    <Russian>Скорость спада враждебности (в минуту):</Russian>
 </Key>
+<!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_DECAY_RATE_COMMENT">
     <English>How fast individual civilian hostility recovers per minute toward neutral when the civilian isn't being interacted with. Decay applies only to civilians currently in the active world; virtualised civilians reset to default on their next spawn cycle. The side-baseline floor (set by the BLUFOR / OPFOR / Independent Hostility attributes above) still applies at indicator render time. 0 disables decay. Default: 1.</English>
+    <Chinese>當沒有與平民互動時,個別平民的敵意每分鐘朝中立方向恢復的速度。衰減僅適用於當前活躍世界中的平民;虛擬化的平民會在下次生成循環時重置為預設值。陣營基準下限(由上方的 BLUFOR / OPFOR / 獨立陣營敵意屬性設定)在指示器顯示時仍會生效。0 表示停用衰減。預設值:1。</Chinese>
+    <Chinesesimp>当没有与平民互动时,个别平民的敌意每分钟朝中立方向恢复的速度。衰减仅适用于当前活跃世界中的平民;虚拟化的平民会在下次生成循环时重置为默认值。阵营基准下限(由上方的 BLUFOR / OPFOR / 独立阵营敌意属性设定)在指示器显示时仍会生效。0 表示禁用衰减。默认值:1。</Chinesesimp>
+    <French>Vitesse a laquelle l'hostilite individuelle d'un civil revient vers la neutralite par minute lorsqu'aucune interaction n'a lieu. La decroissance ne s'applique qu'aux civils actuellement actifs dans le monde; les civils virtualises sont reinitialises a la valeur par defaut au prochain cycle de spawn. Le seuil minimum par camp (defini par les attributs Hostilite BLUFOR / OPFOR / Independent ci-dessus) reste applique au rendu de l'indicateur. 0 desactive la decroissance. Par defaut: 1.</French>
+    <Spanish>Velocidad con la que la hostilidad individual de un civil se reduce por minuto hacia la neutralidad cuando no se interactua con el civil. La reduccion solo se aplica a civiles actualmente activos en el mundo; los civiles virtualizados se reinician al valor por defecto en su proximo ciclo de aparicion. El minimo por bando (definido por los atributos Hostilidad BLUFOR / OPFOR / Independiente arriba) sigue aplicandose al renderizar el indicador. 0 desactiva la reduccion. Predeterminado: 1.</Spanish>
+    <Portuguese>Velocidade com que a hostilidade individual de um civil diminui por minuto em direcao a neutralidade quando nao ha interacao com o civil. A reducao so se aplica a civis atualmente ativos no mundo; civis virtualizados sao redefinidos para o valor padrao no proximo ciclo de spawn. O minimo por lado (definido pelos atributos Hostilidade BLUFOR / OPFOR / Independente acima) continua a aplicar-se no rendering do indicador. 0 desativa a reducao. Padrao: 1.</Portuguese>
+    <Russian>Скорость, с которой индивидуальная враждебность мирного жителя восстанавливается к нейтральному уровню за минуту, когда с ним не взаимодействуют. Спад действует только на мирных жителей, активных в мире в данный момент; виртуализированные мирные жители сбрасываются к значению по умолчанию при следующем цикле появления. Базовый минимум по стороне (заданный атрибутами враждебности BLUFOR / OPFOR / Independent выше) по-прежнему применяется при отображении индикатора. 0 отключает спад. По умолчанию: 1.</Russian>
 </Key>
 <!-- AI-translated; native-speaker review welcome -->
 <Key ID="STR_ALIVE_CIV_POP_HOSTILITY_BUCKET_FRIENDLY">
