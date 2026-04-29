@@ -142,10 +142,14 @@ private _fnc_footprintClear = {
     // any sample (e.g. a 30 m fence whose centre is 15 m from the end)
     // can slip past a 0.9 m radius check even when the wall geometry
     // passes right through the vehicle's footprint. Cast lines along
-    // the bbox edges + diagonals at 1 m height to catch the geometry
-    // directly. Any GEOM-LOD surface hit between the corners means the
-    // bbox is crossed by something solid - vehicle would clip on spawn.
-    private _h = (_pos select 2) + 1;
+    // the bbox edges + diagonals to catch the geometry directly.
+    //
+    // Two heights: 0.3 m catches low obstacles (jersey concrete
+    // barriers ~0.8 m tall, sandbag walls, hesco bases, low fences)
+    // that a single 1 m sweep would pass over. 1.5 m catches walls,
+    // tall fences, and most vehicle-height obstacles. 12 line tests
+    // per candidate (6 edges x 2 heights), still well under the
+    // perf budget for this stage.
     private _diag = sqrt (_hl * _hl + _hw * _hw);
     private _frBear = _dir + (_hw atan2 _hl);
     private _flBear = _dir - (_hw atan2 _hl);
@@ -153,25 +157,28 @@ private _fnc_footprintClear = {
     private _flPos = _pos getPos [_diag, _flBear];
     private _rrPos = _pos getPos [_diag, _frBear + 180];
     private _rlPos = _pos getPos [_diag, _flBear + 180];
-    private _frASL = AGLToASL [_frPos select 0, _frPos select 1, _h];
-    private _flASL = AGLToASL [_flPos select 0, _flPos select 1, _h];
-    private _rrASL = AGLToASL [_rrPos select 0, _rrPos select 1, _h];
-    private _rlASL = AGLToASL [_rlPos select 0, _rlPos select 1, _h];
 
-    // 4 edges + 2 diagonals = 6 line tests. Catches walls running along
-    // any axis or crossing diagonally through the bbox.
-    private _edgeBlocked = ([
-        [_flASL, _frASL],   // FL -> FR (front)
-        [_frASL, _rrASL],   // FR -> RR (right side)
-        [_rrASL, _rlASL],   // RR -> RL (rear)
-        [_rlASL, _flASL],   // RL -> FL (left side)
-        [_frASL, _rlASL],   // FR -> RL (diagonal 1)
-        [_flASL, _rrASL]    // FL -> RR (diagonal 2)
-    ] findIf {
-        _x params ["_a", "_b"];
-        !((lineIntersectsSurfaces [_a, _b, objNull, objNull, true, 1, "GEOM", "NONE"]) isEqualTo [])
-    });
-    if (_edgeBlocked >= 0) exitWith { false };
+    private _sweepHeights = [0.3, 1.5];
+    private _heightBlocked = _sweepHeights findIf {
+        private _h = (_pos select 2) + _x;
+        private _frASL = AGLToASL [_frPos select 0, _frPos select 1, _h];
+        private _flASL = AGLToASL [_flPos select 0, _flPos select 1, _h];
+        private _rrASL = AGLToASL [_rrPos select 0, _rrPos select 1, _h];
+        private _rlASL = AGLToASL [_rlPos select 0, _rlPos select 1, _h];
+        // 4 edges + 2 diagonals at this height
+        ([
+            [_flASL, _frASL],   // FL -> FR (front)
+            [_frASL, _rrASL],   // FR -> RR (right side)
+            [_rrASL, _rlASL],   // RR -> RL (rear)
+            [_rlASL, _flASL],   // RL -> FL (left side)
+            [_frASL, _rlASL],   // FR -> RL (diagonal 1)
+            [_flASL, _rrASL]    // FL -> RR (diagonal 2)
+        ] findIf {
+            _x params ["_a", "_b"];
+            !((lineIntersectsSurfaces [_a, _b, objNull, objNull, true, 1, "GEOM", "NONE"]) isEqualTo [])
+        }) >= 0
+    };
+    if (_heightBlocked >= 0) exitWith { false };
 
     true
 };
