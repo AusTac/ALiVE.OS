@@ -498,19 +498,39 @@ switch (_state) do {
                 _u forceSpeed -1;
                 [_u, "GUNFIRE"] call ALiVE_fnc_advciv_react;
 
-                // After ~25 s of running, transition to HIDING wherever they ended up
+                // After ~25 s of running, re-attempt to find a building near the
+                // unit's NEW position before dropping to HIDING in place. The flee
+                // movement may have brought the unit into range of cover that
+                // wasn't reachable from the original spawn position. If no
+                // building is in range now either, fall back to HIDING wherever
+                // the unit ended up (legacy behaviour, prevents civs running forever).
                 [{
                     params ["_u2"];
                     if (alive _u2 && {_u2 getVariable ["ALiVE_advciv_state", "CALM"] == "PANIC"}) then {
-                        if (vehicle _u2 == _u2) then { _u2 setUnitPos "DOWN"; };
-                        _u2 setVariable ["ALiVE_advciv_state", "HIDING", true];
-                        _u2 setVariable ["ALiVE_advciv_stateTimer", time + ALiVE_advciv_hideTimeMin + random (ALiVE_advciv_hideTimeMax - ALiVE_advciv_hideTimeMin)];
+                        private _retryHouse = [_u2] call ALiVE_fnc_advciv_findHouseProgressive;
+                        private _retryBld   = _retryHouse select 0;
+                        private _retryPos   = _retryHouse select 1;
+                        if (!isNull _retryBld && {count _retryPos > 0}) then {
+                            private _targetPos = selectRandom _retryPos;
+                            _u2 setVariable ["ALiVE_advciv_hidingPos", _targetPos, true];
+                            _u2 setVariable ["ALiVE_advciv_hidingBuilding", _retryBld, true];
+                            _u2 setVariable ["ALiVE_advciv_panicRunStart", 0];
+                            _u2 doMove _targetPos;
+                            _u2 setSpeedMode "FULL";
+                            _u2 forceSpeed -1;
+                            if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Hide DEBUG] fleeOpen-25s civ=%1 retry FOUND building dist=%2 - retargeting", name _u2, _u2 distance _retryBld]; };
+                        } else {
+                            if (vehicle _u2 == _u2) then { _u2 setUnitPos "DOWN"; };
+                            _u2 setVariable ["ALiVE_advciv_state", "HIDING", true];
+                            _u2 setVariable ["ALiVE_advciv_stateTimer", time + ALiVE_advciv_hideTimeMin + random (ALiVE_advciv_hideTimeMax - ALiVE_advciv_hideTimeMin)];
+                            if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Hide DEBUG] fleeOpen-25s civ=%1 retry FOUND NOTHING - HIDING in place at %2", name _u2, getPos _u2]; };
+                        };
                     };
                 }, [_u], 25] call CBA_fnc_waitAndExecute;
             };
 
             if (ALiVE_advciv_preferBuildings) then {
-                private _houseData = [_unit] call ALiVE_fnc_advciv_findHouse;
+                private _houseData = [_unit] call ALiVE_fnc_advciv_findHouseProgressive;
                 private _building  = _houseData select 0;
                 private _positions = _houseData select 1;
 
@@ -554,15 +574,33 @@ switch (_state) do {
                     _unit setVariable ["ALiVE_advciv_panicRunStart", time];
                 };
 
-                // If the unit has been running for 30 s without arriving, give up and
-                // drop into HIDING in place rather than running forever
+                // If the unit has been running for 30 s without arriving, re-attempt
+                // findHouse from the unit's CURRENT position before giving up. The
+                // run may have brought a closer building into range, so try one more
+                // time. If still nothing usable, drop into HIDING in place per the
+                // legacy give-up behaviour.
                 if (time - (_unit getVariable ["ALiVE_advciv_panicRunStart", time]) > 30) then {
-                    _unit setVariable ["ALiVE_advciv_hidingPos", [], true];
-                    _unit setVariable ["ALiVE_advciv_panicRunStart", 0];
-                    _unit setVariable ["ALiVE_advciv_hidingBuilding", objNull, true];
-                    if (vehicle _unit == _unit) then { _unit setUnitPos "DOWN"; };
-                    _unit setVariable ["ALiVE_advciv_state", "HIDING", true];
-                    _unit setVariable ["ALiVE_advciv_stateTimer", time + 60 + random 60];
+                    private _retryHouse = [_unit] call ALiVE_fnc_advciv_findHouseProgressive;
+                    private _retryBld   = _retryHouse select 0;
+                    private _retryPos   = _retryHouse select 1;
+                    if (!isNull _retryBld && {count _retryPos > 0}) then {
+                        private _targetPos = selectRandom _retryPos;
+                        _unit setVariable ["ALiVE_advciv_hidingPos", _targetPos, true];
+                        _unit setVariable ["ALiVE_advciv_hidingBuilding", _retryBld, true];
+                        _unit setVariable ["ALiVE_advciv_panicRunStart", 0];
+                        _unit doMove _targetPos;
+                        _unit setSpeedMode "FULL";
+                        _unit forceSpeed -1;
+                        if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Hide DEBUG] panicRun-30s-timeout civ=%1 retry FOUND building dist=%2 - retargeting", name _unit, _unit distance _retryBld]; };
+                    } else {
+                        _unit setVariable ["ALiVE_advciv_hidingPos", [], true];
+                        _unit setVariable ["ALiVE_advciv_panicRunStart", 0];
+                        _unit setVariable ["ALiVE_advciv_hidingBuilding", objNull, true];
+                        if (vehicle _unit == _unit) then { _unit setUnitPos "DOWN"; };
+                        _unit setVariable ["ALiVE_advciv_state", "HIDING", true];
+                        _unit setVariable ["ALiVE_advciv_stateTimer", time + 60 + random 60];
+                        if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Hide DEBUG] panicRun-30s-timeout civ=%1 retry FOUND NOTHING - HIDING in place at %2", name _unit, getPos _unit]; };
+                    };
                 };
             };
         };
