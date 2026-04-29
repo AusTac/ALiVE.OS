@@ -229,13 +229,27 @@ switch (_state) do {
         if (_stateChanged) then {
             _unit setBehaviour "CARELESS";
             _unit setSpeedMode "LIMITED";
-            if (vehicle _unit == _unit) then { _unit setUnitPos "UP"; };
+            if (vehicle _unit == _unit) then {
+                _unit setUnitPos "UP";
+                // Clear any lingering animation lock from prior state. The HANDSUP
+                // path in fnc_advciv_react locks the unit into the surrender anim
+                // via `switchMove "AmovPercMstpSsurWnonDnon"`, and similar locks
+                // can come from HIDING / HIT_REACT reactions. setUnitPos "UP" alone
+                // does NOT escape a switchMove lock - it just updates the AI's
+                // stance preference. Order-driven transitions handle this in
+                // fnc_advciv_react and civAimRelease, but the autonomous state
+                // machine path (HIDING -> ALERT -> CALM via state-timer expiry,
+                // no order change) had no equivalent and left civs visually
+                // stuck in surrender / cower poses while reporting CALM.
+                _unit switchMove "";
+            };
             _unit enableAI "PATH";
             // Reset escape/panic flags so they're clean for the next threat
             _unit setVariable ["ALiVE_advciv_vehicleEscapeTried", false];
             _unit setVariable ["ALiVE_advciv_nearShots", 0];
             _unit setVariable ["ALiVE_advciv_panicRunStart", 0];
             _unit setVariable ["ALiVE_advciv_hidingBuilding", objNull, true];
+            if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Pose DEBUG] CALM entry civ=%1 - cleared switchMove lock", name _unit]; };
         };
         if (vehicle _unit == _unit) then {
             [_unit] call ALiVE_fnc_advciv_ambientLife;
@@ -249,11 +263,19 @@ switch (_state) do {
         if (_stateChanged) then {
             _unit setBehaviour "AWARE";
             _unit setSpeedMode "LIMITED";
-            if (vehicle _unit == _unit) then { _unit setUnitPos "UP"; };
+            if (vehicle _unit == _unit) then {
+                _unit setUnitPos "UP";
+                // Clear any lingering animation lock - see CALM-entry comment
+                // for the full rationale. ALERT is a stand-and-watch state, so
+                // any prior surrender / cower anim from HIDING / HANDSUP needs
+                // clearing for the unit to actually face / track the threat.
+                _unit switchMove "";
+            };
             _unit setVariable ["ALiVE_advciv_stateTimer", time + 8 + random 12];
             _unit setVariable ["ALiVE_advciv_vehicleEscapeTried", false];
             private _source = _unit getVariable ["ALiVE_advciv_panicSource", [0,0,0]];
             if !(_source isEqualTo [0,0,0]) then { _unit doWatch _source; };
+            if (ALiVE_advciv_debug) then { diag_log format ["[ALiVE Pose DEBUG] ALERT entry civ=%1 - cleared switchMove lock", name _unit]; };
         };
 
         private _alertTimer = _unit getVariable ["ALiVE_advciv_stateTimer", 0];
