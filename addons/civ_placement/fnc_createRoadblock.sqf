@@ -205,7 +205,7 @@ for "_j" from 1 to (count _roadpoints) do {
                         // through walls / fences. Falls back to _parkPosition
                         // if the validator can't find a clear spot - the
                         // allowDamage window below catches the residual case.
-                        private _spawnResult = [_vehtype, _parkPosition, 50, "auto"] call ALiVE_fnc_findVehicleSpawnPosition;
+                        private _spawnResult = [_vehtype, _parkPosition, 50, "auto", _parkDirection] call ALiVE_fnc_findVehicleSpawnPosition;
                         if (count _spawnResult >= 2) then {
                             _parkPosition = _spawnResult select 0;
                             _parkDirection = _spawnResult select 1;

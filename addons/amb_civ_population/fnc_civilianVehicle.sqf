@@ -58,6 +58,7 @@ See Also:
 
 Author:
 ARJay
+Jman
 
 Peer reviewed:
 nil
@@ -328,13 +329,58 @@ switch(_operation) do {
         // not already active
         if!(_active) then {
 
+            // Route the parking position through the unified vehicle
+            // spawn validator (#850). The position came from
+            // ALiVE_fnc_getParkingPosition at cluster init, which doesn't
+            // do a bbox-aware footprint check - so cars routinely spawn
+            // clipped into building corners / fences / walls and explode
+            // on the setPosAGLS settle. The validator's geometry sweep
+            // catches that geometry directly. Falls back to the original
+            // _position if the validator can't find a clear spot - the
+            // allowDamage settle window below covers the residual case.
+            // Pass the agent's stored direction so Stage 1 preserves the
+            // parking orientation when the original position is accepted.
+            private _spawnResult = [_agentClass, _position, 30, "auto", _direction] call ALiVE_fnc_findVehicleSpawnPosition;
+            if (count _spawnResult >= 2) then {
+                _position = _spawnResult select 0;
+                _direction = _spawnResult select 1;
+            };
+
             private _unit = createVehicle [_agentClass, [0,0,500 + random 500], [], 0, "NONE"];
-            
+
             _unit setDir _direction;
-            
+
             _unit setVelocity [0,0,0];
 
             [_unit,+_position] call ALiVE_fnc_setPosAGLS;
+
+            // #850 diagnostic. Mirrors the sys_profile path - tag with spawn
+            // time/pos and attach Killed/HandleDamage handlers so the RPT can
+            // correlate visible wrecks with their validator ENTER lines.
+            if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
+                _unit setVariable ["ALiVE_spawnTime", time];
+                _unit setVariable ["ALiVE_spawnPos", _position];
+                _unit addEventHandler ["Killed", {
+                    params ["_v"];
+                    private _spawnTime = _v getVariable ["ALiVE_spawnTime", -1];
+                    diag_log format ["[ALiVE VehSpawn DEBUG] KILLED class=%1 spawnPos=%2 deathPos=%3 elapsed=%4s",
+                        typeOf _v, _v getVariable ["ALiVE_spawnPos", [0,0,0]],
+                        getPosATL _v, (if (_spawnTime >= 0) then {time - _spawnTime} else {-1})];
+                }];
+                _unit addEventHandler ["HandleDamage", {
+                    params ["_v", "", "_damage"];
+                    private _spawnTime = _v getVariable ["ALiVE_spawnTime", -1];
+                    if (_damage > 0.05 && {(time - _spawnTime) < 60}) then {
+                        if !(_v getVariable ["ALiVE_firstDamageLogged", false]) then {
+                            _v setVariable ["ALiVE_firstDamageLogged", true];
+                            diag_log format ["[ALiVE VehSpawn DEBUG] DAMAGED class=%1 spawnPos=%2 currentPos=%3 damage=%4 elapsed=%5s",
+                                typeOf _v, _v getVariable ["ALiVE_spawnPos", [0,0,0]],
+                                getPosATL _v, _damage, time - _spawnTime];
+                        };
+                    };
+                    _damage
+                }];
+            };
             
             _unit setFuel _fuel;
             
@@ -381,6 +427,14 @@ switch(_operation) do {
 
             // store the profile id on the active profiles index
             [ALIVE_agentHandler,"setActive",[_agentID,_logic]] call ALIVE_fnc_agentHandler;
+
+            // Settle window (#850). Mirrors the profile-vehicle and
+            // roadblock paths - if the vehicle did spawn slightly
+            // clipped, the engine gets time to resolve before damage
+            // re-engages. After 15 s normal damage applies and civilians
+            // can interact with the vehicle as before.
+            _unit allowDamage false;
+            [{_this allowDamage true;}, _unit, 15] call CBA_fnc_waitAndExecute;
 
             // DEBUG -------------------------------------------------------------------------------------
             if(_debug) then {
