@@ -1,5 +1,60 @@
 #include "script_component.hpp"
 
+// ============================================================================
+// Orphan civilian-vehicle cleanup (server-only)
+// ----------------------------------------------------------------------------
+// Civilian vehicle profiles can end up driverless mid-mission for several
+// reasons - borrowed driver got culled before the sleep-while-driving guard
+// landed, driver was killed in a crash, ACE knocked them out, etc. Without a
+// cleanup the empty vehicle sits on the road indefinitely and can block AI
+// pathing or look out of place to players.
+//
+// This PFH scans active civilian vehicle profiles every 10 s, starts an
+// orphan timer when no living crew is found, and once the timer exceeds 30 s
+// despawns the vehicle - subject to the visibility gate so the player never
+// sees it pop out. Runs ahead of the AdvCiv enabled check so the handler is
+// active even on missions that don't enable AdvCiv.
+// ============================================================================
+if (isServer) then {
+    [{
+        // Wait until the civ agent handler is initialised
+        if (isNil "ALIVE_agentHandler") exitWith {};
+
+        private _agentsActive = [ALIVE_agentHandler, "getActive"] call ALIVE_fnc_agentHandler;
+        if (isNil "_agentsActive") exitWith {};
+
+        // CBA hash shape: [true, [keys], [values]]. Iterate values directly.
+        {
+            private _logic = _x;
+            // Profile struct: select 2 select 4 = type ("agent" | "vehicle")
+            private _type = _logic select 2 select 4;
+            if (_type isEqualTo "vehicle") then {
+                private _unit = _logic select 2 select 5; // unit
+                if (!isNull _unit && {alive _unit} && {(_unit isKindOf "LandVehicle" || {_unit isKindOf "Air" || {_unit isKindOf "Ship"}})}) then {
+                    private _crewAlive = ({alive _x} count (crew _unit)) > 0;
+                    if (_crewAlive) then {
+                        // Reset orphan timer when a living crew is present
+                        _unit setVariable ["ALiVE_orphanSince", -1];
+                    } else {
+                        private _since = _unit getVariable ["ALiVE_orphanSince", -1];
+                        if (_since < 0) then {
+                            _unit setVariable ["ALiVE_orphanSince", time];
+                        } else {
+                            if ((time - _since) > 30) then {
+                                // Visibility gate before deletion - never pop
+                                // a vehicle out in front of a player.
+                                if !([_unit, 150] call ALiVE_fnc_anyPlayerCanSee) then {
+                                    [_logic, "despawn"] call ALIVE_fnc_civilianVehicle;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        } forEach (_agentsActive select 2);
+    }, 10, []] call CBA_fnc_addPerFrameHandler;
+};
+
 // Safety check: if ALiVE_advciv_enabled doesn't exist yet, exit gracefully
 // This can happen if XEH_postInit runs before the Civilian Population module initializes
 if (isNil "ALiVE_advciv_enabled") exitWith {

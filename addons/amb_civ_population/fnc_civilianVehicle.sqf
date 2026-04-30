@@ -420,9 +420,15 @@ switch(_operation) do {
 			       	
                 _diceRoll = random 1;
                 if(_diceRoll < 0.45) then {
-			       	   (_nearcivs select 0) moveInDriver _unit;
-                 (_nearcivs select 0) assignAsDriver _unit;
-                 ["civilian driver: %1",_nearcivs select 0] call ALIVE_fnc_dump;
+                 private _civDriver = _nearcivs select 0;
+                 _civDriver moveInDriver _unit;
+                 _civDriver assignAsDriver _unit;
+                 // Tag the borrowed civ + vehicle so the foot agent cull
+                 // skips them while they are driving (sleep-while-driving),
+                 // and the orphan-vehicle cleanup knows who the driver is.
+                 _civDriver setVariable ["ALiVE_civDrivingVehicle", _unit, true];
+                 _unit setVariable ["ALiVE_civDriverUnit", _civDriver, true];
+                 ["civilian driver: %1",_civDriver] call ALIVE_fnc_dump;
                 };
 			       }; 
              // END Civ Drivers
@@ -462,7 +468,26 @@ switch(_operation) do {
         // not already inactive
         if(_active) then {
 
+            // Visibility gate: defer despawn while a player can actually
+            // see the vehicle. Active flag stays true so the cluster
+            // activator re-evaluates next tick - the activator naturally
+            // rotates to an alternate culling target when one is gated, so
+            // a permanently-watched vehicle does not block the cull pipeline.
+            if (!isNull _unit && {alive _unit} && {[_unit, 150] call ALiVE_fnc_anyPlayerCanSee}) exitWith {};
+
             [_logic,"active",false] call ALIVE_fnc_hashSet;
+
+            // Eject the borrowed civ driver before the vehicle is deleted
+            // (sleep-while-driving cleanup). Without this, deleteVehicle
+            // would also delete the driver - and the foot agent profile
+            // would then be orphaned and visible-pop on the next tick.
+            // Move them out gently so they re-enter normal foot-agent flow.
+            private _civDriver = _unit getVariable ["ALiVE_civDriverUnit", objNull];
+            if (!isNull _civDriver && {alive _civDriver}) then {
+                _civDriver setVariable ["ALiVE_civDrivingVehicle", nil, true];
+                moveOut _civDriver;
+                unassignVehicle _civDriver;
+            };
 
             private _position = getPosATL _unit;
             _position set [2, (_position select 2) + 1];
