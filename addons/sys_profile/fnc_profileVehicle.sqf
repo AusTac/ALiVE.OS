@@ -595,6 +595,22 @@ switch (_operation) do {
             _vehicle setFuel _fuel;
             _vehicle engineOn _engineOn;
 
+            // mil_placement reserve-pool empty vehicles can be flagged as
+            // locked at placement time (cluster-level attribute). Honour
+            // the flag here so players can't drive off with the parked
+            // reserve before its crew activates. Lock 2 = "locked from
+            // players, AI can still use" so the AI crew can mount up
+            // post-activation. We gate on `busy` (cleared by the
+            // activation path) so that re-spawns through the profile
+            // virtualisation cycle don't re-lock an already-activated
+            // vehicle.
+            if (
+                ([_logic, "ALiVE_reserveLocked", false] call ALiVE_fnc_HashGet)
+                && {[_logic, "busy", false] call ALiVE_fnc_HashGet}
+            ) then {
+                _vehicle lock 2;
+            };
+
             // #850 diagnostic. When ALiVE_vehicleSpawn_debug is on, tag the
             // vehicle with its spawn time and attach Killed/HandleDamage
             // handlers + a periodic state monitor. The monitor exists because
@@ -901,14 +917,22 @@ switch (_operation) do {
                 private _spawnPos = _v getVariable ["ALiVE_settleSpawnPos", getPosATL _v];
                 private _drift = (_v distance2D _spawnPos);
                 private _belowTerrain = (getPosATL _v select 2) < -0.5;
-                private _stillBroken = (damage _v) > 0.1 || _drift > 5 || _belowTerrain;
+                private _speed = vectorMagnitude (velocity _v);
+                // Freeze criterion: vehicle is GENUINELY broken if it took
+                // damage, ended up below terrain, or is still moving (physics
+                // didn't settle in 15 s = still in a clip). Drift alone is
+                // NOT a problem - the engine often nudges vehicles 5-100 m
+                // out of a clip and they end up at a perfectly stable
+                // healthy spot. Earlier criterion (drift > 5) lost
+                // legitimate vehicles per mission start.
+                private _stillBroken = (damage _v) > 0.1 || _belowTerrain || _speed > 1;
                 if (_stillBroken) then {
                     // Spawn-clip resolution failed - freeze instead of
                     // letting damage re-engage on a wreck-in-waiting.
                     _v enableSimulationGlobal false;
                     if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
-                        diag_log format ["[ALiVE VehSpawn DEBUG] FROZEN class=%1 pos=%2 spawnPos=%3 damage=%4 drift=%5 belowTerrain=%6 (post-settle clip detected, scheduling despawn)",
-                            typeOf _v, getPosATL _v, _spawnPos, damage _v, _drift, _belowTerrain];
+                        diag_log format ["[ALiVE VehSpawn DEBUG] FROZEN class=%1 pos=%2 spawnPos=%3 damage=%4 drift=%5 speed=%6 belowTerrain=%7 (post-settle clip detected, scheduling despawn)",
+                            typeOf _v, getPosATL _v, _spawnPos, damage _v, _drift, _speed, _belowTerrain];
                     };
                     // Frozen vehicles are visually-only; no physics, no
                     // gameplay value. Delete after 5 min so the world

@@ -237,13 +237,41 @@
     <Russian>Готовность:</Russian>
 </Key>
 <Key ID="STR_ALIVE_MP_READINESS_LEVEL_COMMENT">
-    <English>The proportion of the force that will be actively on duty and patrolling at mission start. Lower values leave more units in reserve.</English>
-    <Chinese>任務開始時主動值勤和巡邏的部隊比例。較低的值會讓更多單位留作預備隊。</Chinese>
-    <Chinesesimp>任务开始时主动值勤和巡逻的部队比例。较低的值会让更多单位留作预备队。</Chinesesimp>
-    <Spanish>La proporción de la fuerza que estará activamente de servicio y patrullando al inicio de la misión. Valores menores dejan más unidades en reserva.</Spanish>
-    <French>La proportion de la force qui sera activement en service et en patrouille au début de la mission. Des valeurs plus faibles laissent plus d'unités en réserve.</French>
-    <Portuguese>A proporção da força que estará ativamente em serviço e patrulhando no início da missão. Valores mais baixos deixam mais unidades de reserva.</Portuguese>
-    <Russian>Доля сил, которые будут на активном дежурстве и патрулировании при старте миссии. Меньшие значения оставляют больше юнитов в резерве.</Russian>
+    <English>Percentage of the configured INFANTRY force that activates at mission start. The remaining infantry stays in a reserve pool inside each objective and wakes to defend it when the active force takes losses (see Reserve activation threshold). Vehicle groups (armoured / mechanised / motorised) and air groups always activate at mission start regardless of this setting. Use 'Active patrol percent' to control how the active force splits between patrolling and garrisoning buildings.</English>
+</Key>
+<Key ID="STR_ALIVE_MP_HDR_RESERVE">
+    <English>READINESS &amp; RESERVES</English>
+</Key>
+<!-- TODO translation pass: HDR_RESERVE + Active patrol percent + Reserve activation threshold + Reserve activation cooldown strings need ZH / ZH-S / ES / FR / PT / RU translations during the next mil_placement overhaul cycle. -->
+<Key ID="STR_ALIVE_MP_ACTIVE_PATROL_PERCENT">
+    <English>Active patrol percent:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_ACTIVE_PATROL_PERCENT_COMMENT">
+    <English>Of the units active at mission start, what percentage actively patrols (vs garrisons buildings near the objective). 100% = all patrol; 0% = all garrison. Only affects active units — see 'Readiness' for the active vs reserve split.</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ACTIVATION_THRESHOLD">
+    <English>Reserve activation threshold:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ACTIVATION_THRESHOLD_COMMENT">
+    <English>Active force level at which reserves wake to defend the objective. 25% = wait until heavily depleted. 50% = wake when half are lost. 75% = wake early. 100% = wake on first loss. Reserves wake into objective buildings; for long-range vehicle reinforcements see the OPCOM module's Reinforcements setting.</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ACTIVATION_COOLDOWN">
+    <English>Reserve activation cooldown (s):</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ACTIVATION_COOLDOWN_COMMENT">
+    <English>Minimum seconds between reserve activations within the same objective. Prevents waterfall reinforcement when the active force takes rapid losses.</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED">
+    <English>Lock empty reserve vehicles:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED_COMMENT">
+    <English>Whether vehicles in the reserve pool (parked empty awaiting crew) are locked until activation. Yes (default) = player cannot steal or hijack them mid-mission. No = empty vehicles are unlocked, mission-makers can deliberately let players sneak into the motorpool. Locks lift automatically when activation crews the vehicle.</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ORPHAN_CREW_BEHAVIOUR">
+    <English>Reserve crew with destroyed vehicle:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ORPHAN_CREW_BEHAVIOUR_COMMENT">
+    <English>What happens when a reserve crew's linked vehicle is destroyed before activation. Spawn as infantry (default) = crew spawns at a nearby building like a normal infantry reserve. Drop silently = crew is removed from the pool without spawning, reducing force proportionally to vehicle losses.</English>
 </Key>
 <Key ID="STR_ALIVE_MP_PLACEMENT">
     <English>Place units:</English>

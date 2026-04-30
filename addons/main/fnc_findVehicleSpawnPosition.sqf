@@ -12,10 +12,13 @@ Description:
       1. CENTRE - if the supplied position is already clear (full
          obstacle table, bbox-aware footprint), use it as-is. Most
          callers pre-validate so this often wins.
-      2. ROAD (preference road / auto) - 30 sorted nearest road segments,
-         lateral side-of-road offset, footprint check on both sides of
-         the centreline. Vehicle faces along the road. Full obstacle
-         table including IED-clutter classes.
+      2. ROAD (preference road / auto) - up to 20 sorted nearest road
+         segments (nearRoads + distance-sort, no expanding-radius search
+         and no recursive segment walk - both contained sleeps / bugs
+         that hung scheduled-context callers). Lateral side-of-road
+         offset, footprint check on both sides of the centreline.
+         Vehicle faces along the road. Full obstacle table including
+         IED-clutter classes.
       3. FIELD (preference field / auto-fallback) - 500-iteration
          heuristic, footprint sampling at random points in the search
          radius. Surface-type whitelist (asphalt / concrete / dirt /
@@ -276,27 +279,69 @@ if ([_centerPos, _centerDir] call _fnc_footprintClear) then {
 };
 
 // Stage 2: road search (preference road / auto).
+//
+// Two-step inline search:
+//   (a) `nearRoads _maxDistance` for the seed segments closest to the
+//       caller's centre.
+//   (b) walk roadsConnectedTo from each seed up to a hop budget so the
+//       segment list extends ALONG the road network (curving off into
+//       the distance), not just clusters of seeds near centre. Vehicles
+//       parked further down the same road still feel "at the cluster".
+//
+// Replaces ALiVE_fnc_getClosestRoad (internal sleep 0.02 in expanding-
+// radius while loop, fires from scheduled context like mil_placement
+// INIT and snowballs to seconds per call) and
+// ALiVE_fnc_getSortedSeriesRoadPositions (buggy recursion shadowing
+// shared state, can iterate erratically). Both originals were designed
+// for human-paced lookups, not loop-driven validation.
 if (count _found == 0 && {_preference in ["road", "auto"]}) then {
-    private _closestRoad = [_centerPos] call ALIVE_fnc_getClosestRoad;
-    if (isNil "_closestRoad" || {_centerPos distance _closestRoad > _maxDistance}) then {
+    // Seed pool: roads physically near the centre.
+    private _seedRoads = _centerPos nearRoads _maxDistance;
+
+    // Extend along the road graph. Walk connections from each seed up
+    // to a shared hop budget. Bounded so we stop at roughly the same
+    // segment count as the legacy walker (30) but never spin.
+    private _walked = +_seedRoads;
+    private _walkBudget = 30 - (count _walked);
+    if (_walkBudget < 0) then { _walkBudget = 0 };
+    private _frontier = +_seedRoads;
+    while {_walkBudget > 0 && {count _frontier > 0}} do {
+        private _next = [];
+        {
+            if (_walkBudget <= 0) exitWith {};
+            {
+                if !(_x in _walked) then {
+                    _walked pushBack _x;
+                    _next pushBack _x;
+                    _walkBudget = _walkBudget - 1;
+                    if (_walkBudget <= 0) then { break };
+                };
+            } forEach (roadsConnectedTo _x);
+        } forEach _frontier;
+        _frontier = _next;
+    };
+
+    if (count _walked == 0) then {
         if (_debug) then { diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 2 road - SKIP (no road within %1m)", _maxDistance]; };
     } else {
-        private _segments = [_closestRoad, _maxDistance, 30] call ALIVE_fnc_getSortedSeriesRoadPositions;
+        // Sort by distance to centre so closest segments are tried first.
+        private _sortedRoads = [_walked, [], { _centerPos distance (getPos _x) }, "ASCEND"] call ALiVE_fnc_sortBy;
+
         private _segmentsTried = 0;
         private _sidesTried = 0;
         private _sidesRejected = 0;
         {
             if (count _found > 0) exitWith {};
-            private _segPos = _x;
-            private _road = roadAt _segPos;
+            private _road = _x;
+            private _segPos = getPos _road;
             // Skip bridge segments - vehicles spawning on a bridge with
             // any side offset fall off the edge.
-            if (!isNil "_road" && {(getRoadInfo _road) select 8}) then { continue };
+            if ((getRoadInfo _road) select 8) then { continue };
 
             _segmentsTried = _segmentsTried + 1;
 
             // Compute road direction from the segment's adjacent connections.
-            private _connected = if (!isNil "_road") then { roadsConnectedTo _road } else { [] };
+            private _connected = roadsConnectedTo _road;
             private _roadDir = if (count _connected > 0) then {
                 _segPos getDir (getPos (_connected select 0))
             } else {
@@ -326,7 +371,7 @@ if (count _found == 0 && {_preference in ["road", "auto"]}) then {
                 [_segPos getPos [_lateralOffset, _roadDir + 90], _roadDir],
                 [_segPos getPos [_lateralOffset, _roadDir - 90], _roadDir]
             ];
-        } forEach _segments;
+        } forEach _sortedRoads;
 
         if (_debug && {count _found == 0}) then {
             diag_log format ["[ALiVE VehSpawn DEBUG]   STAGE 2 road - REJECT (segments=%1, sides=%2, all blocked) lastReason=%3",

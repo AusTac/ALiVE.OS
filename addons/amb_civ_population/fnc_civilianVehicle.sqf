@@ -347,6 +347,12 @@ switch(_operation) do {
             };
 
             private _unit = createVehicle [_agentClass, [0,0,500 + random 500], [], 0, "NONE"];
+            // Suppress damage IMMEDIATELY after creation - the civilian
+            // vehicle path between createVehicle and the original
+            // allowDamage call (~80 lines later) was long enough for a
+            // clipping spawn to take massive engine-collision damage
+            // before suppression engaged. Re-enabled after settle below.
+            _unit allowDamage false;
 
             _unit setDir _direction;
 
@@ -431,9 +437,8 @@ switch(_operation) do {
             // Settle window (#850). Mirrors the profile-vehicle and
             // roadblock paths - if the vehicle did spawn slightly
             // clipped, the engine gets time to resolve before damage
-            // re-engages. After 15 s normal damage applies and civilians
-            // can interact with the vehicle as before.
-            _unit allowDamage false;
+            // re-engages. allowDamage was set immediately post-create
+            // above; this just schedules the re-enable.
             [{_this allowDamage true;}, _unit, 15] call CBA_fnc_waitAndExecute;
 
             // DEBUG -------------------------------------------------------------------------------------
