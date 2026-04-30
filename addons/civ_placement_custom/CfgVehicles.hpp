@@ -74,6 +74,11 @@ class CfgVehicles {
                     property = "ALiVE_civ_placement_custom_reserveEngagementMultiplier"; displayName = "$STR_ALIVE_MP_RESERVE_ENGAGEMENT_MULTIPLIER"; tooltip = "$STR_ALIVE_MP_RESERVE_ENGAGEMENT_MULTIPLIER_COMMENT"; defaultValue = """3""";
                     class Values { class CLOSE{name="1.5x cluster";value="1.5";}; class NEAR{name="2x cluster";value="2";}; class STANDARD{name="3x cluster";value="3";default=1;}; class FAR{name="4x cluster";value="4";}; class WIDE{name="6x cluster";value="6";}; };
             };
+            class reserveLockClearedBuildings : Combo
+            {
+                    property = "ALiVE_civ_placement_custom_reserveLockClearedBuildings"; displayName = "$STR_ALIVE_MP_RESERVE_LOCK_CLEARED_BUILDINGS"; tooltip = "$STR_ALIVE_MP_RESERVE_LOCK_CLEARED_BUILDINGS_COMMENT"; defaultValue = """1""";
+                    class Values { class YES{name="Yes";value="1";default=1;}; class NO{name="No";value="0";}; };
+            };
             class reserveEmptyVehicleLocked : Combo
             {
                     property = "ALiVE_civ_placement_custom_reserveEmptyVehicleLocked"; displayName = "$STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED"; tooltip = "$STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED_COMMENT"; defaultValue = """1""";

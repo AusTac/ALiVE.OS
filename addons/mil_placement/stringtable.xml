@@ -327,6 +327,24 @@
     <Portuguese>Quão perto um jogador deve estar do objetivo para que as reservas despertem, expresso como múltiplo do tamanho do cluster. O padrão 3x significa que um jogador a menos de (tamanho_cluster * 3) metros aciona a ativação; para um cluster de 150 m são 450 m de raio de engajamento. Aumente para despertar reservas mais cedo à distância, diminua para engajamentos mais próximos.</Portuguese>
     <Russian>Насколько близко игрок должен находиться к объекту для пробуждения резервов, выражено как множитель размера кластера. По умолчанию 3x — игрок в пределах (размер_кластера * 3) метров запускает активацию; для кластера 150 м это радиус боевого контакта 450 м. Увеличьте для более раннего пробуждения резервов на расстоянии, уменьшите для более тесных столкновений.</Russian>
 </Key>
+<Key ID="STR_ALIVE_MP_RESERVE_LOCK_CLEARED_BUILDINGS">
+    <English>Lock cleared buildings:</English>
+    <Chinese>鎖定已清除的建築物：</Chinese>
+    <Chinesesimp>锁定已清除的建筑：</Chinesesimp>
+    <Spanish>Bloquear edificios despejados:</Spanish>
+    <French>Verrouiller les bâtiments nettoyés :</French>
+    <Portuguese>Travar edifícios limpos:</Portuguese>
+    <Russian>Блокировать зачищенные здания:</Russian>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_LOCK_CLEARED_BUILDINGS_COMMENT">
+    <English>Whether buildings the reserve spawn picker has seen inside its 80 m player-proximity bubble get permanently disqualified for the rest of the mission. Yes (default) = touched once, locked. Reserves won't pop into a building you've already cleared, even if you walk well past it. No = the 80 m gate is rechecked each activation; a building you've moved away from becomes eligible to host reserves again. Yes is more immersion-friendly; No lets the cluster keep refilling as you push through.</English>
+    <Chinese>預備隊生成選擇器在其 80 公尺玩家鄰近範圍內看到的建築物是否在任務剩餘時間內永久取消資格。是（預設）= 觸碰一次即鎖定。預備隊不會出現在您已清除的建築物中，即使您走遠了。否 = 每次啟動時重新檢查 80 公尺閘門；您已遠離的建築物再次有資格容納預備隊。是更具沉浸感；否讓叢集在您推進時持續補充。</Chinese>
+    <Chinesesimp>预备队生成选择器在其 80 米玩家邻近范围内看到的建筑是否在任务剩余时间内永久取消资格。是（默认）= 触碰一次即锁定。预备队不会出现在您已清除的建筑中，即使您走远了。否 = 每次激活时重新检查 80 米门；您已远离的建筑再次有资格容纳预备队。是更具沉浸感；否让集群在您推进时持续补充。</Chinesesimp>
+    <Spanish>Si los edificios que el selector de aparición de reservas ha visto dentro de su burbuja de proximidad al jugador de 80 m quedan permanentemente descalificados durante el resto de la misión. Sí (por defecto) = tocado una vez, bloqueado. Las reservas no aparecerán en un edificio que ya hayas despejado, incluso si te alejas mucho. No = la puerta de 80 m se vuelve a comprobar en cada activación; un edificio del que te has alejado vuelve a ser elegible para acoger reservas. Sí es más inmersivo; No permite al objetivo seguir reponiéndose mientras avanzas.</Spanish>
+    <French>Si les bâtiments que le sélecteur de spawn de réserve a vus dans sa bulle de proximité de 80 m du joueur sont définitivement disqualifiés pour le reste de la mission. Oui (par défaut) = touché une fois, verrouillé. Les réserves n'apparaîtront pas dans un bâtiment que vous avez déjà nettoyé, même si vous vous en éloignez beaucoup. Non = la porte de 80 m est revérifiée à chaque activation ; un bâtiment dont vous vous êtes éloigné redevient éligible pour accueillir des réserves. Oui est plus immersif ; Non permet à l'objectif de continuer à se remplir au fur et à mesure que vous avancez.</French>
+    <Portuguese>Se os edifícios que o selecionador de spawn de reservas viu dentro de sua bolha de proximidade do jogador de 80 m ficam permanentemente desqualificados pelo resto da missão. Sim (padrão) = tocado uma vez, travado. As reservas não surgirão em um edifício que você já limpou, mesmo se você se afastar muito. Não = o portão de 80 m é reverificado em cada ativação; um edifício do qual você se afastou volta a ser elegível para hospedar reservas. Sim é mais imersivo; Não permite que o objetivo continue se reabastecendo enquanto você avança.</Portuguese>
+    <Russian>Здания, которые селектор появления резерва видел в его 80-метровом пузыре близости к игроку, будут навсегда дисквалифицированы на оставшуюся часть миссии. Да (по умолчанию) = тронуто один раз, заблокировано. Резервы не появятся в здании, которое вы уже зачистили, даже если вы далеко отошли. Нет = 80-метровый порог проверяется заново при каждой активации; здание, от которого вы отошли, снова имеет право принимать резервы. Да более иммерсивно; Нет позволяет объекту продолжать пополняться по мере продвижения.</Russian>
+</Key>
 <Key ID="STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED">
     <English>Lock empty reserve vehicles:</English>
     <Chinese>鎖定空載預備車輛：</Chinese>

@@ -61,6 +61,7 @@ Jman
 #define DEFAULT_RESERVE_ACTIVATION_THRESHOLD "0.5"
 #define DEFAULT_RESERVE_ACTIVATION_COOLDOWN "30"
 #define DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER "3"
+#define DEFAULT_RESERVE_LOCK_CLEARED_BUILDINGS "1"
 #define DEFAULT_RESERVE_EMPTY_VEHICLE_LOCKED "1"
 #define DEFAULT_RESERVE_ORPHAN_CREW_BEHAVIOUR "SpawnAsInfantry"
 
@@ -252,6 +253,9 @@ switch(_operation) do {
     };
     case "reserveEngagementMultiplier": {
         _result = [_logic,_operation,_args,DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER] call ALIVE_fnc_OOsimpleOperation;
+    };
+    case "reserveLockClearedBuildings": {
+        _result = [_logic,_operation,_args,DEFAULT_RESERVE_LOCK_CLEARED_BUILDINGS] call ALIVE_fnc_OOsimpleOperation;
     };
     case "reserveEmptyVehicleLocked": {
         _result = [_logic,_operation,_args,DEFAULT_RESERVE_EMPTY_VEHICLE_LOCKED] call ALIVE_fnc_OOsimpleOperation;

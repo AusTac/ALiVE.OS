@@ -63,6 +63,7 @@ Jman
 #define DEFAULT_RESERVE_ACTIVATION_THRESHOLD "0.5"
 #define DEFAULT_RESERVE_ACTIVATION_COOLDOWN "30"
 #define DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER "3"
+#define DEFAULT_RESERVE_LOCK_CLEARED_BUILDINGS "1"
 #define DEFAULT_RESERVE_EMPTY_VEHICLE_LOCKED "1"
 #define DEFAULT_RESERVE_ORPHAN_CREW_BEHAVIOUR "SpawnAsInfantry"
 #define DEFAULT_RANDOMCAMPS "0"
@@ -302,6 +303,11 @@ switch(_operation) do {
     // = engagement radius for player-presence gate)
     case "reserveEngagementMultiplier": {
         _result = [_logic,_operation,_args,DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER] call ALIVE_fnc_OOsimpleOperation;
+    };
+    // Return whether buildings within the proximity gate are permanently
+    // disqualified once the spawn picker has touched them ("1"/"0")
+    case "reserveLockClearedBuildings": {
+        _result = [_logic,_operation,_args,DEFAULT_RESERVE_LOCK_CLEARED_BUILDINGS] call ALIVE_fnc_OOsimpleOperation;
     };
     // Return whether empty reserve vehicles are locked until activation ("1"/"0")
     case "reserveEmptyVehicleLocked": {

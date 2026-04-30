@@ -169,18 +169,36 @@ private _activated = false;
 private _fnc_activateAsInfantry = {
     params ["_group", "_faction", "_onEachSpawn", "_onEachSpawnOnce"];
 
-    // Building check (same gate as native infantry path)
+    // Building check. The 80 m proximity gate keeps reserves from
+    // popping in next to the player. The optional "lock cleared
+    // buildings" mode (per-module attribute) further disqualifies
+    // any building this cluster's spawn picker has previously seen
+    // inside the proximity bubble - touched once = locked for the
+    // rest of the mission. Without the lock-cleared mode, the gate
+    // re-checks each activation (a building you've moved well past
+    // becomes eligible again).
     private _proximityGate = 80;
+    private _lockCleared = (parseNumber ([_logic, "reserveLockClearedBuildings"] call _modClass)) > 0;
+    private _clearedBuildings = [_cluster, "clearedBuildings", []] call ALiVE_fnc_hashGet;
     private _buildingsInArea = nearestObjects [_center, ["Building", "House"], _size];
     private _candidateBuilding = objNull;
     {
         private _b = _x;
         private _slots = _b call BIS_fnc_buildingPositions;
         if (count _slots == 0) then { continue };
+        if (_lockCleared && {_b in _clearedBuildings}) then { continue };
         private _tooClose = _playersInArea findIf { (_b distance2D _x) < _proximityGate };
-        if (_tooClose >= 0) then { continue };
+        if (_tooClose >= 0) then {
+            if (_lockCleared && {!(_b in _clearedBuildings)}) then {
+                _clearedBuildings pushBack _b;
+            };
+            continue
+        };
         _candidateBuilding = _b;
     } forEach _buildingsInArea;
+    if (_lockCleared) then {
+        [_cluster, "clearedBuildings", _clearedBuildings] call ALiVE_fnc_hashSet;
+    };
 
     if (isNull _candidateBuilding) exitWith {
         if (_debug) then {
