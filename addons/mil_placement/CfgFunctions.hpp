@@ -21,11 +21,6 @@ class cfgFunctions {
                                 file = "\x\alive\addons\mil_placement\fnc_auto_milClusterGeneration.sqf";
                                 RECOMPILE;
                         };
-                        class activateReserve {
-                                description = "Reserve-pool activation tick (one cluster per call)";
-                                file = "\x\alive\addons\mil_placement\fnc_activateReserve.sqf";
-                                RECOMPILE;
-                        };
                 };
         };
 };

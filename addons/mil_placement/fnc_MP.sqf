@@ -1743,11 +1743,15 @@ switch(_operation) do {
                     //                         activation (cooldown gate)
                     //   reserveModule       - back-ref to the placement module logic
                     //                         so the PFH can read live attribute values
+                    //   reserveModuleClass  - MAINCLASS function ref (e.g. ALIVE_fnc_MP)
+                    //                         so the shared activateReserve in addons/main
+                    //                         can dispatch attribute reads to this module
                     [_x, "reservePool", []] call ALiVE_fnc_hashSet;
                     [_x, "reserveActiveAtSpawn", 0] call ALiVE_fnc_hashSet;
                     [_x, "activeProfileIDs", []] call ALiVE_fnc_hashSet;
                     [_x, "lastReserveWake", -999] call ALiVE_fnc_hashSet;
                     [_x, "reserveModule", _logic] call ALiVE_fnc_hashSet;
+                    [_x, "reserveModuleClass", MAINCLASS] call ALiVE_fnc_hashSet;
                     
 
                     // DEBUG -------------------------------------------------------------------------------------

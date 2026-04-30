@@ -1,13 +1,22 @@
-#include "\x\alive\addons\mil_placement\script_component.hpp"
+#include "\x\alive\addons\main\script_component.hpp"
 SCRIPT(activateReserve);
 
 /* ----------------------------------------------------------------------------
 Function: ALIVE_fnc_activateReserve
 
 Description:
-    Reserve-pool activation tick for a single mil_placement cluster.
+    Reserve-pool activation tick for a single placement-module cluster.
     Called periodically by the activation watcher PFH started at the
-    end of fnc_MP.sqf's cluster placement loop.
+    end of each placement module's cluster loop.
+
+    Module-agnostic: works for any placement module that exposes the
+    standard reserve-pool attributes (reserveActivationThreshold,
+    reserveActivationCooldown, reserveEngagementMultiplier,
+    reserveOrphanCrewBehaviour, guardRadius, guardPatrolPercentage).
+    The owning module is identified via the cluster's "reserveModuleClass"
+    hash entry, which the placement code stores when it sets up the
+    reserve pool. The class is the module's MAINCLASS function (e.g.
+    ALIVE_fnc_MP for mil_placement, ALIVE_fnc_CP for civ_placement).
 
     Cascade:
       1. Cluster has reserves remaining? If pool empty, exit.
@@ -25,8 +34,8 @@ Description:
          home cluster, register in the active list, stamp lastReserveWake.
 
 Parameters:
-    _this select 0: HASH   - cluster (mil_placement cluster hash)
-    _this select 1: OBJECT - mil_placement module logic (for live attrs)
+    _this select 0: HASH   - cluster (placement module's cluster hash)
+    _this select 1: OBJECT - placement module logic (for live attrs)
 
 Returns:
     BOOLEAN - true if a reserve was activated this tick, false otherwise.
@@ -37,7 +46,7 @@ Examples:
     (end)
 
 See Also:
-    ALIVE_fnc_MP
+    ALIVE_fnc_MP, ALIVE_fnc_CP, ALIVE_fnc_CPC, ALIVE_fnc_CMP
 
 Author:
     Jman
@@ -51,6 +60,12 @@ params [
 ];
 
 if (count _cluster == 0 || {isNull _logic}) exitWith { false };
+
+// Owning module's MAINCLASS function, stored on the cluster by the
+// placement code when it set up the reserve pool. Without this we
+// can't read the module's attributes; treat as a hard fail.
+private _modClass = [_cluster, "reserveModuleClass", {nil}] call ALiVE_fnc_hashGet;
+if (isNil "_modClass") exitWith { false };
 
 private _debug = !isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug};
 
@@ -92,7 +107,7 @@ private _aliveCount = {
     !isNil "_p"
 } count _activeIDs;
 
-private _threshold = parseNumber ([_logic, "reserveActivationThreshold"] call ALIVE_fnc_MP);
+private _threshold = parseNumber ([_logic, "reserveActivationThreshold"] call _modClass);
 
 // Threshold gate. When activeAtSpawn > 0 AND fraction > threshold,
 // the force is healthy - skip silently. When activeAtSpawn == 0,
@@ -100,7 +115,7 @@ private _threshold = parseNumber ([_logic, "reserveActivationThreshold"] call AL
 if (_activeAtSpawn > 0 && {(_aliveCount / _activeAtSpawn) > _threshold}) exitWith { false };
 
 // 3. Cooldown elapsed?
-private _cooldown = parseNumber ([_logic, "reserveActivationCooldown"] call ALIVE_fnc_MP);
+private _cooldown = parseNumber ([_logic, "reserveActivationCooldown"] call _modClass);
 private _lastWake = [_cluster, "lastReserveWake", -999] call ALiVE_fnc_hashGet;
 if ((serverTime - _lastWake) < _cooldown) exitWith {
     if (_debug) then {
@@ -117,7 +132,7 @@ private _size = [_cluster, "size", 200] call ALiVE_fnc_hashGet;
 // (a 150 m cluster gives 450 m engagement). Larger values wake the
 // pool earlier as the player approaches; smaller values keep the
 // reserve dormant until the player is right on top of the cluster.
-private _engagementMultiplier = parseNumber ([_logic, "reserveEngagementMultiplier"] call ALIVE_fnc_MP);
+private _engagementMultiplier = parseNumber ([_logic, "reserveEngagementMultiplier"] call _modClass);
 if (_engagementMultiplier <= 0) then { _engagementMultiplier = 3 };
 private _engagementRadius = _size * _engagementMultiplier;
 private _playersInArea = (allPlayers - entities "HeadlessClient_F")
@@ -144,8 +159,8 @@ private _entryType = if (count _reserveEntry > 0 && {(_reserveEntry select 0) is
     "INFANTRY"
 };
 
-private _guardRadius = parseNumber ([_logic, "guardRadius"] call ALIVE_fnc_MP);
-private _guardPatrolPercentage = parseNumber ([_logic, "guardPatrolPercentage"] call ALIVE_fnc_MP);
+private _guardRadius = parseNumber ([_logic, "guardRadius"] call _modClass);
+private _guardPatrolPercentage = parseNumber ([_logic, "guardPatrolPercentage"] call _modClass);
 private _activated = false;
 
 // Helper: orphaned-crew → infantry fallback. Activates as if INFANTRY,
@@ -224,7 +239,7 @@ if (_entryType == "VEHICLE") then {
         || {!isNull _vehicleObject && {!alive _vehicleObject}};
 
     if (_isOrphaned) then {
-        private _orphanBehaviour = [_logic, "reserveOrphanCrewBehaviour"] call ALIVE_fnc_MP;
+        private _orphanBehaviour = [_logic, "reserveOrphanCrewBehaviour"] call _modClass;
         // Pop orphan from pool first - either way, this entry is consumed.
         _reservePool deleteAt 0;
 

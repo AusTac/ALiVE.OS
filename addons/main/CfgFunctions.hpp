@@ -98,6 +98,11 @@ class cfgFunctions {
                 file = "\x\alive\addons\main\fnc_findVehicleSpawnPosition.sqf";
                 RECOMPILE;
             };
+            class activateReserve {
+                description = "Reserve-pool activation tick (one cluster per call) - shared across mil_placement / civ_placement / mil_placement_custom / civ_placement_custom via the cluster's reserveModuleClass hash entry";
+                file = "\x\alive\addons\main\fnc_activateReserve.sqf";
+                RECOMPILE;
+            };
             class getAirfieldGeometry {
                 description = "Returns runway and taxiway segments around a position (mil_ato attrs + ALiVE_runway tags + BI substring matches)";
                 file = "\x\alive\addons\main\fnc_getAirfieldGeometry.sqf";
