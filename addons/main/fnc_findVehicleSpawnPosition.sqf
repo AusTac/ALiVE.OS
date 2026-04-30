@@ -21,8 +21,10 @@ Description:
          IED-clutter classes.
       3. FIELD (preference field / auto-fallback) - 500-iteration
          heuristic, footprint sampling at random points in the search
-         radius. Surface-type whitelist (asphalt / concrete / dirt /
-         grass; reject sand / mud).
+         radius. Surface-type blocklist (reject sand / mud / seabed /
+         beach / swamp; everything else accepted). Map-specific runway
+         and concrete-pad surfaces pass the filter without being
+         listed individually.
       4. FAIL - returns []. Caller decides fallback.
 
     Side-of-road placement: vehicles spawn on the verge, not the lane.
@@ -382,8 +384,17 @@ if (count _found == 0 && {_preference in ["road", "auto"]}) then {
 
 // Stage 3: field heuristic (preference field / auto-fallback).
 if (count _found == 0 && {_preference in ["field", "auto"]}) then {
-    // Surface-type whitelist. Vehicles bog on sand / mud.
-    private _surfaceAllowed = ["GdtAsphalt", "GdtConcrete", "GdtDirt", "GdtGrass", "GdtRoad", "GdtRubble", "GdtSoil"];
+    // Surface-type BLOCKLIST. Vehicles bog on sand / mud / seabed; reject
+    // those plus a couple of less common bog-prone variants. Anything else
+    // (concrete, grass, asphalt, dirt, plus map-specific runway / paving /
+    // terminal surfaces like Stratis's GdtStratisConcrete) passes the
+    // surface filter and progresses to the gradient + footprint checks.
+    //
+    // Substring match (case-insensitive) catches map-specific variants
+    // without listing every map's bespoke surface name. surfaceIsWater
+    // is checked separately inside _fnc_footprintClear and stays as an
+    // independent guard.
+    private _surfaceBlocked = ["beach", "sand", "mud", "seabed", "swamp"];
 
     private _candidatesTried = 0;
     private _surfaceRejects = 0;
@@ -396,10 +407,11 @@ if (count _found == 0 && {_preference in ["field", "auto"]}) then {
         private _dir = random 360;
         _candidatesTried = _candidatesTried + 1;
 
-        // Surface filter (cheap, runs first).
+        // Surface filter (cheap, runs first). Block bog-prone surfaces.
         private _surface = surfaceType _pos;
         if ((_surface select [0, 1]) == "#") then { _surface = _surface select [1] };
-        if !(_surface in _surfaceAllowed) then { _surfaceRejects = _surfaceRejects + 1; continue };
+        private _surfaceLower = toLower _surface;
+        if ({_surfaceLower find _x >= 0} count _surfaceBlocked > 0) then { _surfaceRejects = _surfaceRejects + 1; continue };
 
         // Gradient filter - skip steep slopes. The check radius is
         // the larger of half-length / half-width so it covers the

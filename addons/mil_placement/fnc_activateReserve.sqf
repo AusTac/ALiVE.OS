@@ -61,6 +61,22 @@ if (count _reservePool == 0) exitWith { false };
 
 private _center = [_cluster, "center"] call ALiVE_fnc_hashGet;
 
+// Resolve a human-readable label for the cluster so debug logs are
+// readable on the map. nearestLocation returns the closest named
+// location (a Location object, not a position - convert via
+// locationPosition before distance check). Guard with a 600 m sanity
+// distance - clusters that aren't near a named feature fall back to
+// raw coords, which the reader can punch into the map.
+private _clusterLabel = ([] call {
+    private _loc = nearestLocation [_center, ""];
+    if (isNull _loc) exitWith { format ["%1", _center] };
+    private _locPos = locationPosition _loc;
+    if ((_center distance2D _locPos) > 600) exitWith { format ["%1", _center] };
+    private _name = text _loc;
+    if (_name == "") exitWith { format ["%1", _center] };
+    format ["%1 (%2)", _name, _center]
+});
+
 // 2. Threshold check - alive vs activeAtSpawn.
 //    Edge case: activeAtSpawn==0 means placement put groups into this
 //    cluster's reserve pool but never spawned an active group there
@@ -88,8 +104,8 @@ private _cooldown = parseNumber ([_logic, "reserveActivationCooldown"] call ALIV
 private _lastWake = [_cluster, "lastReserveWake", -999] call ALiVE_fnc_hashGet;
 if ((serverTime - _lastWake) < _cooldown) exitWith {
     if (_debug) then {
-        diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster_center=%1 reason=cooldown waiting=%2s remaining=%3s reserves=%4 activeAlive=%5/%6",
-            _center, _cooldown, round (_cooldown - (serverTime - _lastWake)),
+        diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster=%1 reason=cooldown waiting=%2s remaining=%3s reserves=%4 activeAlive=%5/%6",
+            _clusterLabel, _cooldown, round (_cooldown - (serverTime - _lastWake)),
             count _reservePool, _aliveCount, _activeAtSpawn];
     };
     false
@@ -97,13 +113,19 @@ if ((serverTime - _lastWake) < _cooldown) exitWith {
 
 // 4. Players within engagement radius?
 private _size = [_cluster, "size", 200] call ALiVE_fnc_hashGet;
-private _engagementRadius = _size * 1.5;
+// Multiplier comes from the placement module attribute. Default 3x
+// (a 150 m cluster gives 450 m engagement). Larger values wake the
+// pool earlier as the player approaches; smaller values keep the
+// reserve dormant until the player is right on top of the cluster.
+private _engagementMultiplier = parseNumber ([_logic, "reserveEngagementMultiplier"] call ALIVE_fnc_MP);
+if (_engagementMultiplier <= 0) then { _engagementMultiplier = 3 };
+private _engagementRadius = _size * _engagementMultiplier;
 private _playersInArea = (allPlayers - entities "HeadlessClient_F")
     select { (_x distance2D _center) < _engagementRadius };
 if (_playersInArea isEqualTo []) exitWith {
     if (_debug) then {
-        diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster_center=%1 reason=no-player-in-area engagementRadius=%2 reserves=%3 activeAlive=%4/%5",
-            _center, _engagementRadius, count _reservePool, _aliveCount, _activeAtSpawn];
+        diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster=%1 reason=no-player-in-area engagementRadius=%2 reserves=%3 activeAlive=%4/%5",
+            _clusterLabel, _engagementRadius, count _reservePool, _aliveCount, _activeAtSpawn];
     };
     false
 };
@@ -147,8 +169,8 @@ private _fnc_activateAsInfantry = {
 
     if (isNull _candidateBuilding) exitWith {
         if (_debug) then {
-            diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster_center=%1 reason=no-safe-building reserves=%2 activeAlive=%3/%4",
-                _center, count _reservePool, _aliveCount, _activeAtSpawn];
+            diag_log format ["[ALiVE Reserve DEBUG] SKIP cluster=%1 reason=no-safe-building reserves=%2 activeAlive=%3/%4",
+                _clusterLabel, count _reservePool, _aliveCount, _activeAtSpawn];
         };
         false
     };
@@ -159,15 +181,20 @@ private _fnc_activateAsInfantry = {
 
     {
         if (([_x, "type"] call ALiVE_fnc_hashGet) == "entity") then {
-            [_x, "setActiveCommand", ["ALIVE_fnc_garrison", "spawn", [_guardRadius, "true", [0,0,0], "", 1, _guardPatrolPercentage]]] call ALIVE_fnc_profileEntity;
+            // Force patrolPercentage = 1 so newly-activated reserve
+            // infantry patrol the cluster instead of standing inside
+            // the candidate building waiting for OPCOM. OPCOM tasks
+            // on its own cadence (busy=false at activation), so the
+            // patrol stage is just "stay useful in the meantime".
+            [_x, "setActiveCommand", ["ALIVE_fnc_garrison", "spawn", [_guardRadius, "true", [0,0,0], "", 1, 1]]] call ALIVE_fnc_profileEntity;
             [_x, "homeCluster", _cluster] call ALiVE_fnc_hashSet;
             _activeIDs pushBack ([_x, "profileID"] call ALiVE_fnc_hashGet);
         };
     } forEach _profiles;
 
     if (_debug) then {
-        diag_log format ["[ALiVE Reserve DEBUG] ACTIVATE-INFANTRY faction=%1 cluster_center=%2 building=%3 activeAlive=%4/%5 reservesRemaining=%6",
-            _faction, _center, typeOf _candidateBuilding,
+        diag_log format ["[ALiVE Reserve DEBUG] ACTIVATE-INFANTRY faction=%1 cluster=%2 building=%3 activeAlive=%4/%5 reservesRemaining=%6",
+            _faction, _clusterLabel, typeOf _candidateBuilding,
             _aliveCount, _activeAtSpawn, count _reservePool - 1];
     };
 
@@ -203,8 +230,8 @@ if (_entryType == "VEHICLE") then {
 
         if (_orphanBehaviour == "Drop") then {
             if (_debug) then {
-                diag_log format ["[ALiVE Reserve DEBUG] DROP-ORPHAN cluster_center=%1 vehicleClass=%2 reservesRemaining=%3",
-                    _center, [_profileVehicle, "vehicleClass", "?"] call ALiVE_fnc_hashGet, count _reservePool];
+                diag_log format ["[ALiVE Reserve DEBUG] DROP-ORPHAN cluster=%1 vehicleClass=%2 reservesRemaining=%3",
+                    _clusterLabel, [_profileVehicle, "vehicleClass", "?"] call ALiVE_fnc_hashGet, count _reservePool];
             };
             // Activated=false (no real activation), but still update
             // lastReserveWake so we don't spin every tick burning CPU on
@@ -245,28 +272,56 @@ if (_entryType == "VEHICLE") then {
             };
         };
 
+        // Sync unitCount + (re)create vehicle assignment. profileEntity's
+        // `addUnit` case appends to unitClasses but doesn't update
+        // `unitCount`, and the empty-vehicle profile was created with
+        // an empty vehicle assignment. Without these two steps, the
+        // entity's spawn flow ignores the new crew (unitIndexes is
+        // derived from unitCount, vehicle assignment maps unitIndexes
+        // to seats) and the crew materialises next to the truck on
+        // foot instead of inside it.
+        private _unitClasses = [_profileEntity, "unitClasses"] call ALiVE_fnc_hashGet;
+        [_profileEntity, "unitCount", count _unitClasses] call ALiVE_fnc_hashSet;
+        [_profileEntity, _profileVehicle] call ALiVE_fnc_createProfileVehicleAssignment;
+
+        if (_debug) then {
+            private _entityActive = [_profileEntity, "active", false] call ALiVE_fnc_hashGet;
+            private _entityLocked = [_profileEntity, "locked", false] call ALiVE_fnc_hashGet;
+            private _vehicleActive = [_profileVehicle, "active", false] call ALiVE_fnc_hashGet;
+            private _vehicleObj = [_profileVehicle, "vehicle", objNull] call ALiVE_fnc_hashGet;
+            private _ea = [_profileEntity, "vehicleAssignments"] call ALiVE_fnc_hashGet;
+            private _va = [_profileVehicle, "vehicleAssignments"] call ALiVE_fnc_hashGet;
+            diag_log format ["[ALiVE Reserve DEBUG] PRE-SPAWN class=%1 entityActive=%2 entityLocked=%3 vehicleActive=%4 vehicleObj=%5 vehicleLocked=%6 unitClasses=%7 entityAssignmentValues=%8 vehicleAssignmentValues=%9",
+                _vehicleClass, _entityActive, _entityLocked, _vehicleActive, _vehicleObj,
+                if (!isNull _vehicleObj) then {locked _vehicleObj} else {-1},
+                _unitClasses, _ea select 2, _va select 2];
+        };
+
         // Clear busy flags - OPCOM picks them up next tick.
         [_profileEntity, "busy", false] call ALIVE_fnc_profileEntity;
         [_profileVehicle, "busy", false] call ALIVE_fnc_profileVehicle;
 
-        // Unlock the world vehicle if it was locked at placement. The
-        // profile flag stays set; the spawn-time lock in profileVehicle
-        // also gates on busy=true (just cleared above), so subsequent
-        // virtualisation despawn / spawn cycles won't re-lock now that
-        // the entity has been activated.
-        if ([_profileVehicle, "ALiVE_reserveLocked", false] call ALiVE_fnc_HashGet) then {
-            if (!isNull _vehicleObject) then { _vehicleObject lock 0; };
-        };
+        // Unlock the world vehicle for the despawn/spawn cycle below.
+        // Empirically, lock 2 blocks moveInDriver/moveInGunner when
+        // the unit isn't in the vehicle's group - reserve crew is
+        // freshly-created in a new group with no link to the vehicle,
+        // so the moveIn calls in profileVehicleAssignmentToVehicleAssignment
+        // silently no-op. Crew ends up created in the world but not
+        // mounted. Unlocking here lets the moveIn succeed; if the
+        // vehicle later ends up empty (crew killed) the next
+        // virtualisation cycle will lock again via the
+        // `reserveLockFlag && crewCount==0` gate in profileVehicle.
+        if (!isNull _vehicleObject) then { _vehicleObject lock 0 };
 
-        // Set active command BEFORE the despawn/spawn cycle. The
-        // command lives on the entity profile's "commands" field and
-        // gets picked up when the next spawn flow materialises the
-        // crew. Doing it inline here uses the outer scope's
-        // _guardRadius / _guardPatrolPercentage cleanly - capturing
-        // them through `[args] spawn { params [...] }` was producing
-        // "Undefined variable: _gr" errors (likely a SQF scope quirk
-        // when call'd-functions internally suspend mid-spawn-block).
-        [_profileEntity, "setActiveCommand", ["ALIVE_fnc_garrison", "spawn", [_guardRadius, "true", [0,0,0], "", 1, _guardPatrolPercentage]]] call ALIVE_fnc_profileEntity;
+        // Set active command BEFORE the despawn/spawn cycle. Vehicle
+        // reserves use ambientMovement so the crew stays mounted and
+        // the truck patrols on roads - garrison would have the crew
+        // dismount and seek cover in buildings, defeating the point
+        // of waking a vehicle. The reserve is essentially an AI patrol
+        // group that joins the cluster's active force; OPCOM picks
+        // them up at next tick (busy=false above) and re-tasks as
+        // needed.
+        [_profileEntity, "setActiveCommand", ["ALIVE_fnc_ambientMovement", "spawn", [_guardRadius, "SAFE", [0,0,0]]]] call ALIVE_fnc_profileEntity;
 
         // Despawn + spawn cycle on the entity to materialise the new
         // crew. The vehicle profile is independent and stays as-is, so
@@ -277,10 +332,63 @@ if (_entryType == "VEHICLE") then {
         // runs in unscheduled context, but fnc_profileEntity's "spawn"
         // path uses `sleep ALiVE_smoothSpawn` internally - which errors
         // "Suspending not allowed in this context" if call'd from a PFH.
-        [_profileEntity] spawn {
-            params ["_pe"];
+        [_profileEntity, _profileVehicle, _vehicleClass, _debug] spawn {
+            params ["_pe", "_pv", "_vc", "_dbg"];
             [_pe, "despawn"] call ALIVE_fnc_profileEntity;
             [_pe, "spawn"] call ALIVE_fnc_profileEntity;
+
+            // After the entity spawn, check if the vehicle assignment
+            // dispatch actually mounted the crew. If not (lock state,
+            // group mismatch, whatever - the chain is fragile), do a
+            // manual moveIn pass: driver first, then gunner/commander
+            // turret slots, then cargo. Brute-force but deterministic.
+            sleep 1;
+            private _veh = [_pv, "vehicle", objNull] call ALiVE_fnc_hashGet;
+            private _units = [_pe, "units", []] call ALiVE_fnc_hashGet;
+            if (!isNull _veh && {count _units > 0} && {count crew _veh < count _units}) then {
+                if (locked _veh > 0) then { _veh lock 0 };
+                private _seated = 0;
+                if (isNull driver _veh && {_seated < count _units}) then {
+                    private _u = _units select _seated;
+                    if (!isNull _u) then {
+                        _u assignAsDriver _veh;
+                        _u moveInDriver _veh;
+                        _seated = _seated + 1;
+                    };
+                };
+                // Gunner / commander / turret seats
+                private _turrets = allTurrets [_veh, true];
+                {
+                    if (_seated >= count _units) exitWith {};
+                    private _path = _x;
+                    if (isNull (_veh turretUnit _path)) then {
+                        private _u = _units select _seated;
+                        if (!isNull _u) then {
+                            _u assignAsTurret [_veh, _path];
+                            _u moveInTurret [_veh, _path];
+                            _seated = _seated + 1;
+                        };
+                    };
+                } forEach _turrets;
+                // Cargo
+                while {_seated < count _units && {(_veh emptyPositions "cargo") > 0}} do {
+                    private _u = _units select _seated;
+                    if (!isNull _u) then {
+                        _u assignAsCargo _veh;
+                        _u moveInCargo _veh;
+                    };
+                    _seated = _seated + 1;
+                };
+            };
+
+            if (_dbg) then {
+                sleep 4;
+                private _unitCount = [_pe, "unitCount"] call ALIVE_fnc_profileEntity;
+                private _entityActive = [_pe, "active", false] call ALiVE_fnc_hashGet;
+                diag_log format ["[ALiVE Reserve DEBUG] POST-SPAWN class=%1 vehicle=%2 entityActive=%3 unitCount=%4 unitsInWorld=%5 crewInVehicle=%6 vehiclePos=%7 vehicleLocked=%8",
+                    _vc, _veh, _entityActive, _unitCount, count _units, count crew _veh, getPosATL _veh,
+                    if (!isNull _veh) then {locked _veh} else {-1}];
+            };
         };
 
         // Track in cluster's active list so subsequent threshold checks
@@ -296,8 +404,8 @@ if (_entryType == "VEHICLE") then {
             // chain in some attribute-reading paths; guard so the log
             // is readable rather than chasing the underlying type bug.
             private _thresholdStr = if (_threshold > 0 && _threshold <= 1) then { str (round (_threshold * 100)) } else { "?" };
-            diag_log format ["[ALiVE Reserve DEBUG] ACTIVATE-VEHICLE faction=%1 cluster_center=%2 vehicleClass=%3 crewCount=%4 activeAlive=%5/%6 threshold=%7%% reservesRemaining=%8",
-                _entryFaction, _center, _vehicleClass, _countCrewPositions,
+            diag_log format ["[ALiVE Reserve DEBUG] ACTIVATE-VEHICLE faction=%1 cluster=%2 vehicleClass=%3 crewCount=%4 activeAlive=%5/%6 threshold=%7%% reservesRemaining=%8",
+                _entryFaction, _clusterLabel, _vehicleClass, _countCrewPositions,
                 _aliveCount, _activeAtSpawn, _thresholdStr, count _reservePool];
         };
     };

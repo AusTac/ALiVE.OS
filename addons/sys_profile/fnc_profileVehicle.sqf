@@ -595,20 +595,29 @@ switch (_operation) do {
             _vehicle setFuel _fuel;
             _vehicle engineOn _engineOn;
 
-            // mil_placement reserve-pool empty vehicles can be flagged as
-            // locked at placement time (cluster-level attribute). Honour
-            // the flag here so players can't drive off with the parked
-            // reserve before its crew activates. Lock 2 = "locked from
-            // players, AI can still use" so the AI crew can mount up
-            // post-activation. We gate on `busy` (cleared by the
-            // activation path) so that re-spawns through the profile
-            // virtualisation cycle don't re-lock an already-activated
-            // vehicle.
-            if (
-                ([_logic, "ALiVE_reserveLocked", false] call ALiVE_fnc_HashGet)
-                && {[_logic, "busy", false] call ALiVE_fnc_HashGet}
-            ) then {
+            // mil_placement vehicles (active + reserve) are tagged with
+            // `ALiVE_reserveLocked` at placement when the cluster's
+            // `reserveEmptyVehicleLocked` attribute is on. Honour the
+            // flag here only when the vehicle is empty - locking a
+            // crewed vehicle would block the crew AI from driving it
+            // (lock 2 only allows AI from the vehicle's own group,
+            // which empty-reserve crew aren't in by the time they
+            // moveIn). The activation flow unlocks the vehicle
+            // explicitly before crew arrives, and this re-lock gate
+            // catches future virtualisation cycles where the vehicle
+            // re-spawns empty (crew profile killed, vehicle preserved).
+            private _reserveLockFlag = [_logic, "ALiVE_reserveLocked", false] call ALiVE_fnc_HashGet;
+            private _crewCount = count crew _vehicle;
+            if (_reserveLockFlag && _crewCount == 0) then {
                 _vehicle lock 2;
+            };
+            if (!isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug}) then {
+                diag_log format ["[ALiVE VehSpawn DEBUG] LOCK-CHECK class=%1 pos=%2 reserveLockFlag=%3 crewCount=%4 action=%5 lockedNow=%6 nearestLocation=%7",
+                    _vehicleClass, getPosATL _vehicle, _reserveLockFlag,
+                    _crewCount,
+                    if (_reserveLockFlag && _crewCount == 0) then {"applied lock 2"} else {"no change"},
+                    locked _vehicle,
+                    text (nearestLocation [getPos _vehicle, ""])];
             };
 
             // #850 diagnostic. When ALiVE_vehicleSpawn_debug is on, tag the

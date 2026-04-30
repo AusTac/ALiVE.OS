@@ -59,9 +59,10 @@ Jman
 #define DEFAULT_HQ_CLUSTER []
 #define DEFAULT_NO_TEXT ""
 #define DEFAULT_READINESS_LEVEL "1"
-#define DEFAULT_ACTIVE_PATROL_PERCENT "1"
+#define DEFAULT_ACTIVE_PATROL_PERCENT "0.75"
 #define DEFAULT_RESERVE_ACTIVATION_THRESHOLD "0.5"
 #define DEFAULT_RESERVE_ACTIVATION_COOLDOWN "30"
+#define DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER "3"
 #define DEFAULT_RESERVE_EMPTY_VEHICLE_LOCKED "1"
 #define DEFAULT_RESERVE_ORPHAN_CREW_BEHAVIOUR "SpawnAsInfantry"
 #define DEFAULT_RANDOMCAMPS "0"
@@ -296,6 +297,11 @@ switch(_operation) do {
     // Return the Reserve Activation Cooldown (seconds between reserve wake-ups)
     case "reserveActivationCooldown": {
         _result = [_logic,_operation,_args,DEFAULT_RESERVE_ACTIVATION_COOLDOWN] call ALIVE_fnc_OOsimpleOperation;
+    };
+    // Return the Reserve Engagement Multiplier (cluster_size * multiplier
+    // = engagement radius for player-presence gate)
+    case "reserveEngagementMultiplier": {
+        _result = [_logic,_operation,_args,DEFAULT_RESERVE_ENGAGEMENT_MULTIPLIER] call ALIVE_fnc_OOsimpleOperation;
     };
     // Return whether empty reserve vehicles are locked until activation ("1"/"0")
     case "reserveEmptyVehicleLocked": {
@@ -1566,7 +1572,14 @@ switch(_operation) do {
                 private _activeCount = _groupCount
                     - (_vehicleGroupCount - _vehicleActiveCount)
                     - (_infantryGroupCount - _infantryActiveCount);
-                private _garrisonCount = round (_activeCount * (1 - _activePatrolPercent));
+                // Garrison budget applies to INFANTRY only - vehicle groups
+                // always go to ambientMovement (the garrison command is a
+                // building-occupation pattern that doesn't translate to
+                // crewed trucks). Compute against infantry active count so
+                // _activePatrolPercent scales the infantry-in-buildings vs
+                // infantry-on-patrol split, leaving vehicles to always
+                // patrol roads regardless of the percentage.
+                private _garrisonCount = round (_infantryActiveCount * (1 - _activePatrolPercent));
                 // Per-iteration trackers. _totalCount is the global index
                 // into _groups; these are decision counters for the
                 // garrison-split + reserve-cutoff thresholds.
@@ -1604,6 +1617,102 @@ switch(_operation) do {
                         };
                     };
                     _result
+                };
+
+                // Helper: cluster-aware parking-position lookup. The
+                // unified validator's default 100 m radius is correct
+                // for amb_civ_population (parking-spot semantics) but
+                // tight against mil_placement clusters that can be
+                // 150-500 m+ wide. With a tight radius, vehicles in
+                // forested clusters fall through to random terrain
+                // and AI drivers get stuck navigating trees.
+                //
+                // Cascade:
+                //   1. Validator at cluster-aware radius (size + 100,
+                //      min 200) seeded from a random pick inside the
+                //      cluster, pref="road" - Stage 1 centre + Stage 2
+                //      road graph. Roadside hit is the desired outcome.
+                //   2. Same radius, pref="auto" - lets Stage 3 field
+                //      heuristic find a flat clearing on heavily
+                //      forested maps where no road is in reach.
+                //   3. isFlatEmpty on the seed - if it's a stable
+                //      flat patch, use it.
+                //   4. Wide-radius retry - validator with cluster_size
+                //      * 3 radius from cluster centre, pref="auto".
+                //      Catches cases like Stratis's Air Station Mike-
+                //      26 where the cluster sits in an airport zone
+                //      and the access roads are hundreds of metres
+                //      from where stages 1-3 sampled. The validator's
+                //      bounded chain walk handles the wider radius
+                //      without runaway cost.
+                //   5. Truly last resort - 50 m offset from cluster
+                //      centre. Mirrors the legacy fallback so we
+                //      never block placement of a group; AI may still
+                //      get stuck but mission init succeeds.
+                //
+                // Returns [pos, dir]. Always succeeds (last resort).
+                private _fnc_findVehicleParkingPos = {
+                    params ["_vehicleClass", "_clusterCenter", "_clusterSize"];
+                    if (_vehicleClass == "") exitWith {
+                        [_clusterCenter getPos [(random (_clusterSize / 2)) + 30, random 360], random 360]
+                    };
+
+                    // Gradient acceptance check applied to validator
+                    // results before we accept them. The validator's
+                    // Stage 1 (centre) only checks obstacles, NOT
+                    // gradient - a sloped forest clearing passes the
+                    // footprint check but parks the vehicle at a
+                    // physics-unfriendly angle (rolls / sinks). A
+                    // 0.4 m max-delta over 5 m radius is roughly
+                    // ~5 deg - generous enough that legitimate gentle
+                    // slopes pass, strict enough to reject hillsides.
+                    private _fnc_isFlatEnough = {
+                        params ["_pos"];
+                        private _flat = _pos isFlatEmpty [-1, -1, 0.4, 5, 0, false, objNull];
+                        count _flat >= 2
+                    };
+
+                    private _searchRadius = (_clusterSize + 100) max 200;
+                    private _seedPos = _clusterCenter getPos [(random (_clusterSize / 2)) + 30, random 360];
+                    private _seedDir = random 360;
+
+                    // Stage A: validator pref="road". Validator's Stage
+                    // 1 (centre check) only checks obstacles, not
+                    // gradient - a sloped forest clearing can pass.
+                    // Gradient-check the result; if the seed-pos
+                    // accept is on a slope, fall through to the
+                    // road/field stages which prefer flat ground.
+                    private _result = [_vehicleClass, _seedPos, _searchRadius, "road", _seedDir] call ALiVE_fnc_findVehicleSpawnPosition;
+                    if (count _result >= 2 && {[_result select 0] call _fnc_isFlatEnough}) exitWith { _result };
+
+                    // Stage B: validator pref="auto" - Stage 3 field
+                    // heuristic. Stage 3 already gradient-checks; but
+                    // if Stage 1 accepted first (sloped seed) we'd
+                    // skip Stage 3 internally, so re-check here too.
+                    _result = [_vehicleClass, _seedPos, _searchRadius, "auto", _seedDir] call ALiVE_fnc_findVehicleSpawnPosition;
+                    if (count _result >= 2 && {[_result select 0] call _fnc_isFlatEnough}) exitWith { _result };
+
+                    // Stage C: flat seed. Only accept if the seed
+                    // itself is gradient-clear (catches the case where
+                    // the seed happened to land on grass clear of
+                    // trees AND on flat ground).
+                    if ([_seedPos] call _fnc_isFlatEnough) exitWith { [_seedPos, _seedDir] };
+
+                    // Stage D: wide-radius retry from cluster centre.
+                    // _maxDistance gates Stage 2's nearRoads seed and
+                    // Stage 3's getPos sample radius - tripling
+                    // cluster_size pulls in road segments and
+                    // clearings well beyond the immediate pre-pick
+                    // area. Useful when the cluster sits in airport-
+                    // like terrain where stages A-C all fail.
+                    _result = [_vehicleClass, _clusterCenter, _clusterSize * 3, "auto", _seedDir] call ALiVE_fnc_findVehicleSpawnPosition;
+                    if (count _result >= 2 && {[_result select 0] call _fnc_isFlatEnough}) exitWith { _result };
+
+                    // Stage E: truly last resort. 50 m offset from
+                    // cluster centre. Mirrors the legacy fallback so
+                    // we never block placement; AI may still get
+                    // stuck but mission init succeeds.
+                    [_clusterCenter getPos [50, random 360], _seedDir]
                 };
 
                 {
@@ -1708,38 +1817,23 @@ switch(_operation) do {
                                         // Crew config (the original group class)
                                         // gets held in the pool and added to the
                                         // entity at activation time.
-                                        // Use the unified validator at pref="road"
-                                        // which runs Stage 1 (centre check) +
-                                        // Stage 2 (road-segment scan) only,
-                                        // skipping the 500-iteration field
-                                        // heuristic. Falls back to a flat-area
-                                        // check then the raw random position
-                                        // when the validator declines.
-                                        private _vehiclePos = _center getPos [(random (_size / 2)) + 30, random 360];
-                                        private _vehicleDir = random 360;
-                                        private _reserveDebug = !isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug};
-                                        private _t0 = if (_reserveDebug) then { diag_tickTime } else { 0 };
-                                        private _spawnResult = [_vehicleReserveClass, _vehiclePos, 100, "road", _vehicleDir] call ALiVE_fnc_findVehicleSpawnPosition;
-                                        if (_reserveDebug) then {
-                                            diag_log format ["[ALiVE Reserve DEBUG] M-VALIDATOR class=%1 elapsed=%2ms result=%3", _vehicleReserveClass, round ((diag_tickTime - _t0) * 1000), if (count _spawnResult >= 2) then {"ACCEPT"} else {"FAIL"}];
-                                        };
-                                        if (count _spawnResult >= 2) then {
-                                            _vehiclePos = _spawnResult select 0;
-                                            _vehicleDir = _spawnResult select 1;
-                                        } else {
-                                            // Cheap flat-area fallback when validator
-                                            // declined.
-                                            private _flatCandidate = _vehiclePos isFlatEmpty [-1, -1, 0.4, 5, 0, false, objNull];
-                                            if (count _flatCandidate == 0) then {
-                                                _vehiclePos = _center getPos [50, random 360];
-                                            };
-                                        };
+                                        // Cluster-aware parking lookup via the
+                                        // helper above - road > field > flat >
+                                        // random fallback chain.
+                                        private _t0 = diag_tickTime;
+                                        private _parking = [_vehicleReserveClass, _center, _size] call _fnc_findVehicleParkingPos;
+                                        private _vehiclePos = _parking select 0;
+                                        private _vehicleDir = _parking select 1;
                                         if (surfaceIsWater _vehiclePos) then {
                                             _vehiclePos = _center getPos [50, random 360];
                                         };
-                                        if (_reserveDebug) then {
-                                            diag_log format ["[ALiVE Reserve DEBUG] M-VEHICLE-RESERVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5", _faction, _totalCount, _group, _vehicleReserveClass, _vehiclePos];
-                                        };
+                                        // Always logged - placement-time only fires
+                                        // briefly during INIT and the volume is bounded
+                                        // by group count. Lets diagnostics survive
+                                        // missions where the debug flag isn't set
+                                        // before module dispatch (init.sqf timing on
+                                        // some MP setups runs after ALiVE postInit).
+                                        diag_log format ["[ALiVE Reserve DEBUG] M-VEHICLE-RESERVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5 elapsed=%6ms", _faction, _totalCount, _group, _vehicleReserveClass, _vehiclePos, round ((diag_tickTime - _t0) * 1000)];
                                         private _emptyProfiles = [_vehicleReserveClass, _side, _faction, _vehiclePos, _vehicleDir, false, _faction] call ALIVE_fnc_createProfilesUnCrewedVehicle;
                                         private _profileEntity = _emptyProfiles select 0;
                                         private _profileVehicle = _emptyProfiles select 1;
@@ -1780,20 +1874,30 @@ switch(_operation) do {
                                     [_x, "reservePool", _reservePool] call ALiVE_fnc_hashSet;
                                     _totalCount = _totalCount + 1;
                                 } else {
-                                    if (_activePlacedCount < _garrisonCount) then {
-                                        _command = "ALIVE_fnc_garrison";
-                                        _garrisonPos = [_center, 50] call CBA_fnc_RandPos;
-                                        _radius = [_guardRadius,"true",[0,0,0],"",_guardProbabilityCount, _guardPatrolPercentage];
-                                    } else {
+                                    // Vehicle groups always patrol (ambientMovement
+                                    // takes them onto the road network); only
+                                    // infantry groups participate in the garrison
+                                    // budget. _garrisonCount is sized against
+                                    // infantry active count so the patrol
+                                    // percentage is the infantry-on-patrol fraction.
+                                    if (_isVehicle) then {
                                         _command = "ALIVE_fnc_ambientMovement";
                                         _radius = [_guardRadius,"SAFE",[0,0,0]];
+                                    } else {
+                                        if (_infantryActivePlacedCount < _garrisonCount) then {
+                                            _command = "ALIVE_fnc_garrison";
+                                            _garrisonPos = [_center, 50] call CBA_fnc_RandPos;
+                                            _radius = [_guardRadius,"true",[0,0,0],"",_guardProbabilityCount, _guardPatrolPercentage];
+                                        } else {
+                                            _command = "ALIVE_fnc_ambientMovement";
+                                            _radius = [_guardRadius,"SAFE",[0,0,0]];
 
-                                    // DEBUG -------------------------------------------------------------------------------------
-                                    if(_debug) then {
-                                     ["MP %2 - No more empty buildings (MP-01), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
-                                    };
-                                    // DEBUG -------------------------------------------------------------------------------------
-
+                                            // DEBUG -------------------------------------------------------------------------------------
+                                            if(_debug) then {
+                                                ["MP %2 - No more empty buildings (MP-01), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
+                                            };
+                                            // DEBUG -------------------------------------------------------------------------------------
+                                        };
                                     };
 
                                     if (isnil "_garrisonPos") then {
@@ -1801,9 +1905,29 @@ switch(_operation) do {
                                     } else {
                                         _position = [_garrisonPos, 50] call CBA_fnc_RandPos;
                                     };
+                                    // For vehicle groups, route to a road-
+                                    // validated parking spot via the cluster-
+                                    // aware helper. Infantry keeps the random-
+                                    // in-cluster pos (forest is fine for foot
+                                    // troops; AI navigation handles trees).
+                                    private _activeDir = random 360;
+                                    private _activeT0 = diag_tickTime;
+                                    private _activeVehClass = "";
+                                    if (_isVehicle) then {
+                                        _activeVehClass = [_group, _faction] call _fnc_getGroupVehicleClass;
+                                        if (_activeVehClass != "") then {
+                                            private _parking = [_activeVehClass, _center, _size] call _fnc_findVehicleParkingPos;
+                                            _position = _parking select 0;
+                                            _activeDir = _parking select 1;
+                                        };
+                                    };
 
                                     if!(surfaceIsWater _position) then {
-                                        _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                        _profiles = [_group, _position, _activeDir, true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
+
+                                        if (_isVehicle) then {
+                                            diag_log format ["[ALiVE Reserve DEBUG] M-VEHICLE-ACTIVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5 elapsed=%6ms", _faction, _totalCount, _group, _activeVehClass, _position, round ((diag_tickTime - _activeT0) * 1000)];
+                                        };
 
                                         // Garrison & Patrols instead of the static garrison.
                                         {
@@ -1819,6 +1943,16 @@ switch(_operation) do {
                                                 private _activeIDs = [_cluster, "activeProfileIDs"] call ALiVE_fnc_HashGet;
                                                 _activeIDs pushBack _profileID;
                                                 [_cluster, "activeProfileIDs", _activeIDs] call ALiVE_fnc_HashSet;
+                                            };
+                                            // Tag every vehicle profile with the lock
+                                            // flag too, so the spawn-time gate in
+                                            // profileVehicle locks any empty m_11
+                                            // vehicle (active + reserve). Crew AI
+                                            // mounts with moveInDriver/moveInGunner
+                                            // which bypasses lock 2; players can't
+                                            // hop in commandeer-style.
+                                            if (([_x,"type"] call ALiVE_fnc_HashGet) == "vehicle") then {
+                                                [_x, "ALiVE_reserveLocked", _vehicleEmptyLocked] call ALiVE_fnc_HashSet;
                                             };
                                         } foreach _profiles;
 
@@ -1855,31 +1989,16 @@ switch(_operation) do {
                             if (_isReserve) then {
                                 private _reservePool = [_x, "reservePool"] call ALiVE_fnc_hashGet;
                                 if (_isVehicleReserve) then {
-                                    // Validator at pref="road" - matches the
-                                    // multi-group branch above.
-                                    private _vehiclePos = _center getPos [(random (_size / 2)) + 30, random 360];
-                                    private _vehicleDir = random 360;
-                                    private _reserveDebug = !isNil "ALiVE_vehicleSpawn_debug" && {ALiVE_vehicleSpawn_debug};
-                                    private _t0 = if (_reserveDebug) then { diag_tickTime } else { 0 };
-                                    private _spawnResult = [_vehicleReserveClass, _vehiclePos, 100, "road", _vehicleDir] call ALiVE_fnc_findVehicleSpawnPosition;
-                                    if (_reserveDebug) then {
-                                        diag_log format ["[ALiVE Reserve DEBUG] S-VALIDATOR class=%1 elapsed=%2ms result=%3", _vehicleReserveClass, round ((diag_tickTime - _t0) * 1000), if (count _spawnResult >= 2) then {"ACCEPT"} else {"FAIL"}];
-                                    };
-                                    if (count _spawnResult >= 2) then {
-                                        _vehiclePos = _spawnResult select 0;
-                                        _vehicleDir = _spawnResult select 1;
-                                    } else {
-                                        private _flatCandidate = _vehiclePos isFlatEmpty [-1, -1, 0.4, 5, 0, false, objNull];
-                                        if (count _flatCandidate == 0) then {
-                                            _vehiclePos = _center getPos [50, random 360];
-                                        };
-                                    };
+                                    // Cluster-aware parking lookup - matches
+                                    // the multi-group branch above.
+                                    private _t0 = diag_tickTime;
+                                    private _parking = [_vehicleReserveClass, _center, _size] call _fnc_findVehicleParkingPos;
+                                    private _vehiclePos = _parking select 0;
+                                    private _vehicleDir = _parking select 1;
                                     if (surfaceIsWater _vehiclePos) then {
                                         _vehiclePos = _center getPos [50, random 360];
                                     };
-                                    if (_reserveDebug) then {
-                                        diag_log format ["[ALiVE Reserve DEBUG] S-VEHICLE-RESERVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5", _faction, _totalCount, _group, _vehicleReserveClass, _vehiclePos];
-                                    };
+                                    diag_log format ["[ALiVE Reserve DEBUG] S-VEHICLE-RESERVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5 elapsed=%6ms", _faction, _totalCount, _group, _vehicleReserveClass, _vehiclePos, round ((diag_tickTime - _t0) * 1000)];
                                     private _emptyProfiles = [_vehicleReserveClass, _side, _faction, _vehiclePos, _vehicleDir, false, _faction] call ALIVE_fnc_createProfilesUnCrewedVehicle;
                                     private _profileEntity = _emptyProfiles select 0;
                                     private _profileVehicle = _emptyProfiles select 1;
@@ -1904,20 +2023,27 @@ switch(_operation) do {
                                 [_x, "reservePool", _reservePool] call ALiVE_fnc_hashSet;
                                 _totalCount = _totalCount + 1;
                             } else {
-                                if (_activePlacedCount < _garrisonCount) then {
-                                    _command = "ALIVE_fnc_garrison";
-                                    _garrisonPos = [_center, 50] call CBA_fnc_RandPos;
-                                    _radius = [_guardRadius,"true",[0,0,0],"",_guardProbabilityCount, _guardPatrolPercentage];
-                                } else {
+                                // Vehicle groups always patrol; only infantry
+                                // groups use the garrison fork (matches the
+                                // multi-group branch above).
+                                if (_isVehicle) then {
                                     _command = "ALIVE_fnc_ambientMovement";
                                     _radius = [_guardRadius,"SAFE",[0,0,0]];
+                                } else {
+                                    if (_infantryActivePlacedCount < _garrisonCount) then {
+                                        _command = "ALIVE_fnc_garrison";
+                                        _garrisonPos = [_center, 50] call CBA_fnc_RandPos;
+                                        _radius = [_guardRadius,"true",[0,0,0],"",_guardProbabilityCount, _guardPatrolPercentage];
+                                    } else {
+                                        _command = "ALIVE_fnc_ambientMovement";
+                                        _radius = [_guardRadius,"SAFE",[0,0,0]];
 
-                                    // DEBUG -------------------------------------------------------------------------------------
-                                    if(_debug) then {
-                                     ["MP %2 - No more empty buildings (MP-02), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
+                                        // DEBUG -------------------------------------------------------------------------------------
+                                        if(_debug) then {
+                                            ["MP %2 - No more empty buildings (MP-02), lets patrol! calling ALIVE_fnc_ambientMovement, _guardRadius: %1", _guardRadius, _faction] call ALiVE_fnc_dump;
+                                        };
+                                        // DEBUG -------------------------------------------------------------------------------------
                                     };
-                                    // DEBUG -------------------------------------------------------------------------------------
-
                                 };
 
                                 if (isnil "_garrisonPos") then {
@@ -1925,9 +2051,26 @@ switch(_operation) do {
                                 } else {
                                     _position = [_garrisonPos, 50] call CBA_fnc_RandPos;
                                 };
+                                // Vehicle group - route to a road-validated
+                                // parking spot. Matches the multi-group branch.
+                                private _activeDir = random 360;
+                                private _activeT0 = diag_tickTime;
+                                private _activeVehClass = "";
+                                if (_isVehicle) then {
+                                    _activeVehClass = [_group, _faction] call _fnc_getGroupVehicleClass;
+                                    if (_activeVehClass != "") then {
+                                        private _parking = [_activeVehClass, _center, _size] call _fnc_findVehicleParkingPos;
+                                        _position = _parking select 0;
+                                        _activeDir = _parking select 1;
+                                    };
+                                };
 
                                 if!(surfaceIsWater _position) then {
-                                    _profiles = [_group, _position, random(360), true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
+                                    _profiles = [_group, _position, _activeDir, true, _faction, false, false, "STEALTH", _onEachSpawn, _onEachSpawnOnce] call ALIVE_fnc_createProfilesFromGroupConfig;
+
+                                    if (_isVehicle) then {
+                                        diag_log format ["[ALiVE Reserve DEBUG] S-VEHICLE-ACTIVE faction=%1 totalCount=%2 group=%3 class=%4 pos=%5 elapsed=%6ms", _faction, _totalCount, _group, _activeVehClass, _position, round ((diag_tickTime - _activeT0) * 1000)];
+                                    };
 
                                     // Garrison & Patrols instead of the static garrison.
                                     {
@@ -1940,6 +2083,11 @@ switch(_operation) do {
                                             private _activeIDs = [_cluster, "activeProfileIDs"] call ALiVE_fnc_HashGet;
                                             _activeIDs pushBack _profileID;
                                             [_cluster, "activeProfileIDs", _activeIDs] call ALiVE_fnc_HashSet;
+                                        };
+                                        // Tag vehicle profiles with the lock flag
+                                        // (matches the multi-group branch above).
+                                        if (([_x,"type"] call ALiVE_fnc_HashGet) == "vehicle") then {
+                                            [_x, "ALiVE_reserveLocked", _vehicleEmptyLocked] call ALiVE_fnc_HashSet;
                                         };
                                     } foreach _profiles;
 

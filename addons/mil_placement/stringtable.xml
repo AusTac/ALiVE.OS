@@ -261,6 +261,12 @@
 <Key ID="STR_ALIVE_MP_RESERVE_ACTIVATION_COOLDOWN_COMMENT">
     <English>Minimum seconds between reserve activations within the same objective. Prevents waterfall reinforcement when the active force takes rapid losses.</English>
 </Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ENGAGEMENT_MULTIPLIER">
+    <English>Reserve engagement radius:</English>
+</Key>
+<Key ID="STR_ALIVE_MP_RESERVE_ENGAGEMENT_MULTIPLIER_COMMENT">
+    <English>How close a player must be to the objective for reserves to wake, expressed as a multiple of the cluster size. Default 3x means a player within (cluster_size * 3) metres triggers activation; for a 150 m cluster that's a 450 m engagement radius. Increase to wake reserves earlier from a distance, decrease for tighter engagements.</English>
+</Key>
 <Key ID="STR_ALIVE_MP_RESERVE_EMPTY_VEHICLE_LOCKED">
     <English>Lock empty reserve vehicles:</English>
 </Key>
