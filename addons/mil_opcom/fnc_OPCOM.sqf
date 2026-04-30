@@ -1446,22 +1446,29 @@ switch(_operation) do {
                                 _CQB = +_CQB; {_CQB set [_foreachIndex,[[],"convertObject",_x] call ALiVE_fnc_OPCOM]} foreach _CQB;
 
                                 private _overrideObjectiveIDs = [_logic,"seedAsymmetricInstallations",_objectives] call ALiVE_fnc_OPCOM;
+                                ["[ASYM_DIAG] entry: objectives=%1 (civ=%2 mil=%3) asym_occupation=%4 sidesEnemy=%5 overrideHandled=%6", count _objectives, count _objectivesFilteredCiv, count _objectivesFilteredMil, _asym_occupation, _sidesEnemy, count _overrideObjectiveIDs] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                 {
                                     private _objective = _x;
                                     private _objectiveID = [_objective,"objectiveID",""] call ALiVE_fnc_HashGet;
                                     private _created = false;
 
+                                    ["[ASYM_DIAG] obj=%1 type=%2 inOverride=%3", _objectiveID, _objective select 2 select 3, _objectiveID in _overrideObjectiveIDs] call ALiVE_fnc_dump; // DIAG-STRIP
+
                                     if (!(_objectiveID in _overrideObjectiveIDs) && {random 1 < _asym_occupation}) then {
                                         private _center = [_objective,"center"] call ALiVE_fnc_HashGet;
                                         private _size = [_objective,"size",-1] call ALiVE_fnc_HashGet;
                                         private _dominantFaction = [_center, _size] call ALiVE_fnc_getDominantFaction;
+
+                                        ["[ASYM_DIAG]   gate1 PASS (random+override): obj=%1 dominantFaction=%2 size=%3 center=%4", _objectiveID, _dominantFaction, _size, _center] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                         if (isnil "_dominantFaction" || {!(([[_dominantFaction call ALiVE_fnc_factionSide] call ALiVE_fnc_SideObjectToNumber] call ALiVE_fnc_SideNumberToText) in _sidesEnemy)}) then {
                                             private _buildingTypes = [];
                                             private _roadTypes = [];
                                             private _availableBuildings = [_center,_size] call ALiVE_fnc_INS_filterObjectiveBuildings;
                                             private _availableRoads = _center nearRoads _size;
+
+                                            ["[ASYM_DIAG]   gate2 PASS (faction-side): obj=%1 availableBuildings=%2 availableRoads=%3", _objectiveID, count _availableBuildings, count _availableRoads] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                             if (count _availableBuildings > 0) then {
                                                 _buildingTypes = ["HQ","depot","factory"];
@@ -1485,13 +1492,17 @@ switch(_operation) do {
                                                 _fallbackTypes = (_roadTypes - [_preferredType]) + _buildingTypes;
                                             };
 
+                                            ["[ASYM_DIAG]   preferredType=%1 fallbacks=%2 (obj=%3)", _preferredType, _fallbackTypes, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
+
                                             if (_preferredType != "") then {
                                                 _created = [_logic,"createAsymmetricInstallation",[_preferredType,_center,_preferredType in ["HQ","depot","factory"],_objective]] call ALiVE_fnc_OPCOM;
+                                                ["[ASYM_DIAG]   primary call: type=%1 created=%2 (obj=%3)", _preferredType, _created, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                                 if (!_created) then {
                                                     {
                                                         if (!_created) then {
                                                             _created = [_logic,"createAsymmetricInstallation",[_x,_center,_x in ["HQ","depot","factory"],_objective]] call ALiVE_fnc_OPCOM;
+                                                            ["[ASYM_DIAG]   fallback call: type=%1 created=%2 (obj=%3)", _x, _created, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
                                                         };
                                                     } foreach _fallbackTypes;
                                                 };
