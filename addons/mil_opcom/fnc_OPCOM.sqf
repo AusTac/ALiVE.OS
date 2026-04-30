@@ -125,6 +125,7 @@ switch(_operation) do {
                     _customName = _logic getvariable ["customName",""];
                     _type = _logic getvariable ["controltype","invasion"];
                     _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
+                    ["[ASYM_DIAG] init: type=%1 raw_asym_occupation=<%2> typeName=%3 -> _occupation=%4", _type, _logic getvariable ["asym_occupation","__UNSET__"], typeName (_logic getvariable ["asym_occupation","__UNSET__"]), _occupation] call ALiVE_fnc_dump; // DIAG-STRIP
                     _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
                     // Phase 4: faction sources, all unioned below.
                     //   factions       : multi-select listbox (primary UX,
