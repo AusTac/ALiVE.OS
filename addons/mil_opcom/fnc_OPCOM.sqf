@@ -124,9 +124,8 @@ switch(_operation) do {
                     //Retrieve module-object variables
                     _customName = _logic getvariable ["customName",""];
                     _type = _logic getvariable ["controltype","invasion"];
-                    _occupation = (parseNumber str (_logic getvariable ["asym_occupation",-100]))/100;
-                    ["[ASYM_DIAG] init: type=%1 raw_asym_occupation=<%2> typeName=%3 -> _occupation=%4", _type, _logic getvariable ["asym_occupation","__UNSET__"], typeName (_logic getvariable ["asym_occupation","__UNSET__"]), _occupation] call ALiVE_fnc_dump; // DIAG-STRIP
-                    _intelChance = (parseNumber str (_logic getvariable ["intelchance",-100]))/100;
+                    _occupation = (parseNumber format ["%1", _logic getvariable ["asym_occupation",-100]])/100;
+                    _intelChance = (parseNumber format ["%1", _logic getvariable ["intelchance",-100]])/100;
                     // Phase 4: faction sources, all unioned below.
                     //   factions       : multi-select listbox (primary UX,
                     //                    ORIGINAL property so old `factions`
@@ -146,32 +145,32 @@ switch(_operation) do {
                     _faction2 = _logic getvariable ["faction2",""];
                     _faction3 = _logic getvariable ["faction3",""];
                     _faction4 = _logic getvariable ["faction4",""];
-                    _simultanObjectives = parseNumber str (_logic getvariable ["simultanObjectives",10]);
-                    _minAgents = parseNumber str (_logic getvariable ["minAgents",2]);
-                    _asymForceLimit = floor (parseNumber str (_logic getvariable ["asymForceLimit",-1]));
-                    _recruitCycleMin = (parseNumber str (_logic getvariable ["recruitCycleMin",30])) max 0;
-                    _recruitCycleMax = (parseNumber str (_logic getvariable ["recruitCycleMax",60])) max _recruitCycleMin;
-                    _recruitAttemptLimit = floor (parseNumber str (_logic getvariable ["recruitAttemptLimit",0]));
+                    _simultanObjectives = parseNumber format ["%1", _logic getvariable ["simultanObjectives",10]];
+                    _minAgents = parseNumber format ["%1", _logic getvariable ["minAgents",2]];
+                    _asymForceLimit = floor (parseNumber format ["%1", _logic getvariable ["asymForceLimit",-1]]);
+                    _recruitCycleMin = (parseNumber format ["%1", _logic getvariable ["recruitCycleMin",30]]) max 0;
+                    _recruitCycleMax = (parseNumber format ["%1", _logic getvariable ["recruitCycleMax",60]]) max _recruitCycleMin;
+                    _recruitAttemptLimit = floor (parseNumber format ["%1", _logic getvariable ["recruitAttemptLimit",0]]);
                     _recruitAttemptLimit = _recruitAttemptLimit max -1;
-                    _recruitSuccessChance = ((parseNumber str (_logic getvariable ["recruitSuccessChance",50])) max 0) min 100;
-                    _hostilityPresenceMultiplier = (parseNumber str (_logic getvariable ["hostilityPresenceMultiplier",1])) max 0;
-                    _hostilityInstallationMultiplier = (parseNumber str (_logic getvariable ["hostilityInstallationMultiplier",1])) max 0;
-                    _hostilityInstallationInterval = ((parseNumber str (_logic getvariable ["hostilityInstallationInterval",10])) max 0) * 60;
+                    _recruitSuccessChance = ((parseNumber format ["%1", _logic getvariable ["recruitSuccessChance",50]]) max 0) min 100;
+                    _hostilityPresenceMultiplier = (parseNumber format ["%1", _logic getvariable ["hostilityPresenceMultiplier",1]]) max 0;
+                    _hostilityInstallationMultiplier = (parseNumber format ["%1", _logic getvariable ["hostilityInstallationMultiplier",1]]) max 0;
+                    _hostilityInstallationInterval = ((parseNumber format ["%1", _logic getvariable ["hostilityInstallationInterval",10]]) max 0) * 60;
                     _taskProfileCountOverridesRaw = _logic getvariable ["taskProfileCountOverrides",""];
                     _taskProfileTypeOverridesRaw = _logic getvariable ["taskProfileTypeOverrides",""];
-                    _civicRecruitmentMultiplier = (parseNumber str (_logic getvariable ["civicRecruitmentMultiplier",1])) max 0;
-                    _civicInstallationMultiplier = (parseNumber str (_logic getvariable ["civicInstallationMultiplier",1])) max 0;
-                    private _civicRetaliationChanceRaw = (parseNumber str (_logic getvariable ["civicRetaliationChance",0])) max 0;
+                    _civicRecruitmentMultiplier = (parseNumber format ["%1", _logic getvariable ["civicRecruitmentMultiplier",1]]) max 0;
+                    _civicInstallationMultiplier = (parseNumber format ["%1", _logic getvariable ["civicInstallationMultiplier",1]]) max 0;
+                    private _civicRetaliationChanceRaw = (parseNumber format ["%1", _logic getvariable ["civicRetaliationChance",0]]) max 0;
                     _civicRetaliationChance = if (_civicRetaliationChanceRaw >= 1) then {
                         (_civicRetaliationChanceRaw min 100) / 100
                     } else {
                         _civicRetaliationChanceRaw min 1
                     };
-                    _civicRetaliationIntensity = (parseNumber str (_logic getvariable ["civicRetaliationIntensity",1])) max 0;
+                    _civicRetaliationIntensity = (parseNumber format ["%1", _logic getvariable ["civicRetaliationIntensity",1]]) max 0;
                     _debug = ((_logic getvariable ["debug","false"]) == "true");
                     _persistent = ((_logic getvariable ["persistent","false"]) == "true");
                     _reinforcements = call compile (_logic getvariable ["reinforcements","0.9"]);
-                    _roadblocks = (parseNumber str (_logic getvariable ["roadblocks",1])) > 0;
+                    _roadblocks = (parseNumber format ["%1", _logic getvariable ["roadblocks",1]]) > 0;
                     // #697 Phase 2.1: AI-driven friendly destroy of enemy asymmetric
                     // installations. Read the mode string here; the behavioural
                     // implementation lands in follow-up commits (proximity first,
@@ -1447,21 +1446,18 @@ switch(_operation) do {
                                 _CQB = +_CQB; {_CQB set [_foreachIndex,[[],"convertObject",_x] call ALiVE_fnc_OPCOM]} foreach _CQB;
 
                                 private _overrideObjectiveIDs = [_logic,"seedAsymmetricInstallations",_objectives] call ALiVE_fnc_OPCOM;
-                                ["[ASYM_DIAG] entry: objectives=%1 (civ=%2 mil=%3) asym_occupation=%4 sidesEnemy=%5 overrideHandled=%6", count _objectives, count _objectivesFilteredCiv, count _objectivesFilteredMil, _asym_occupation, _sidesEnemy, count _overrideObjectiveIDs] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                 {
                                     private _objective = _x;
                                     private _objectiveID = [_objective,"objectiveID",""] call ALiVE_fnc_HashGet;
                                     private _created = false;
 
-                                    ["[ASYM_DIAG] obj=%1 type=%2 inOverride=%3", _objectiveID, _objective select 2 select 3, _objectiveID in _overrideObjectiveIDs] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                     if (!(_objectiveID in _overrideObjectiveIDs) && {random 1 < _asym_occupation}) then {
                                         private _center = [_objective,"center"] call ALiVE_fnc_HashGet;
                                         private _size = [_objective,"size",-1] call ALiVE_fnc_HashGet;
                                         private _dominantFaction = [_center, _size] call ALiVE_fnc_getDominantFaction;
 
-                                        ["[ASYM_DIAG]   gate1 PASS (random+override): obj=%1 dominantFaction=%2 size=%3 center=%4", _objectiveID, _dominantFaction, _size, _center] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                         if (isnil "_dominantFaction" || {!(([[_dominantFaction call ALiVE_fnc_factionSide] call ALiVE_fnc_SideObjectToNumber] call ALiVE_fnc_SideNumberToText) in _sidesEnemy)}) then {
                                             private _buildingTypes = [];
@@ -1469,7 +1465,6 @@ switch(_operation) do {
                                             private _availableBuildings = [_center,_size] call ALiVE_fnc_INS_filterObjectiveBuildings;
                                             private _availableRoads = _center nearRoads _size;
 
-                                            ["[ASYM_DIAG]   gate2 PASS (faction-side): obj=%1 availableBuildings=%2 availableRoads=%3", _objectiveID, count _availableBuildings, count _availableRoads] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                             if (count _availableBuildings > 0) then {
                                                 _buildingTypes = ["HQ","depot","factory"];
@@ -1493,17 +1488,14 @@ switch(_operation) do {
                                                 _fallbackTypes = (_roadTypes - [_preferredType]) + _buildingTypes;
                                             };
 
-                                            ["[ASYM_DIAG]   preferredType=%1 fallbacks=%2 (obj=%3)", _preferredType, _fallbackTypes, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                             if (_preferredType != "") then {
                                                 _created = [_logic,"createAsymmetricInstallation",[_preferredType,_center,_preferredType in ["HQ","depot","factory"],_objective]] call ALiVE_fnc_OPCOM;
-                                                ["[ASYM_DIAG]   primary call: type=%1 created=%2 (obj=%3)", _preferredType, _created, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
 
                                                 if (!_created) then {
                                                     {
                                                         if (!_created) then {
                                                             _created = [_logic,"createAsymmetricInstallation",[_x,_center,_x in ["HQ","depot","factory"],_objective]] call ALiVE_fnc_OPCOM;
-                                                            ["[ASYM_DIAG]   fallback call: type=%1 created=%2 (obj=%3)", _x, _created, _objectiveID] call ALiVE_fnc_dump; // DIAG-STRIP
                                                         };
                                                     } foreach _fallbackTypes;
                                                 };
