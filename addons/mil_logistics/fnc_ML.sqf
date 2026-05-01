@@ -7897,11 +7897,44 @@ switch(_operation) do {
                                 _vehProfID, _leadPos, _roadSnapped] call ALiVE_fnc_dump;
                         };
 
-                        [_vehProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
-                        private _leadWP = [_leadPos,      10, "MOVE", "LIMITED", 2, [], "COLUMN"] call ALIVE_fnc_createProfileWaypoint;
-                        private _destWP = [_eventPosition, 50, "MOVE", "LIMITED", 2, [], "COLUMN"] call ALIVE_fnc_createProfileWaypoint;
-                        [_vehProfile, "addWaypoint", _leadWP] call ALIVE_fnc_profileEntity;
-                        [_vehProfile, "addWaypoint", _destWP] call ALIVE_fnc_profileEntity;
+                        // Route waypoints through the GROUP / PILOT entity profile,
+                        // not the vehicle profile. Vehicle profiles don't carry
+                        // a "units" / "waypoints" array - those live on the
+                        // entity profile of whichever group commands the
+                        // vehicle. Calling profileEntity addWaypoint on a
+                        // vehicle profile cascades into profileWaypointToWaypoint
+                        // (fnc_profileEntity.sqf:516) which reads
+                        // `_logic select 2 select 21` expecting the entity-layout
+                        // "units" array - in vehicle layout that index is the
+                        // "hasSimulated" Bool, producing a runtime "Type Bool,
+                        // expected Array" error and aborting the dismount.
+                        //
+                        // Reach the commanding entity via the vehicle profile's
+                        // entitiesInCommandOf list (vehicle layout select 2
+                        // select 8) and address waypoints to the first member
+                        // (the pilot / driver entity).
+                        private _entitiesInCommandOf = _vehProfile select 2 select 8;
+                        if (count _entitiesInCommandOf > 0) then {
+                            private _pilotProfileID = _entitiesInCommandOf select 0;
+                            private _pilotProfile = [ALIVE_profileHandler, "getProfile", _pilotProfileID] call ALIVE_fnc_profileHandler;
+                            if (!isNil "_pilotProfile") then {
+                                [_pilotProfile, "clearWaypoints"] call ALIVE_fnc_profileEntity;
+                                private _leadWP = [_leadPos,      10, "MOVE", "LIMITED", 2, [], "COLUMN"] call ALIVE_fnc_createProfileWaypoint;
+                                private _destWP = [_eventPosition, 50, "MOVE", "LIMITED", 2, [], "COLUMN"] call ALIVE_fnc_createProfileWaypoint;
+                                [_pilotProfile, "addWaypoint", _leadWP] call ALIVE_fnc_profileEntity;
+                                [_pilotProfile, "addWaypoint", _destWP] call ALIVE_fnc_profileEntity;
+                            } else {
+                                if (_debug) then {
+                                    ["ML - transportTravel: Vehicle %1 pilot profile %2 not found, skipping overwatch waypoint",
+                                        _vehProfID, _pilotProfileID] call ALiVE_fnc_dump;
+                                };
+                            };
+                        } else {
+                            if (_debug) then {
+                                ["ML - transportTravel: Vehicle %1 has no entitiesInCommandOf, skipping overwatch waypoint",
+                                    _vehProfID] call ALiVE_fnc_dump;
+                            };
+                        };
 
                         _dismountTriggered = true;
 
