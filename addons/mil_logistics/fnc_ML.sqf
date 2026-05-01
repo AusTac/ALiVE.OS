@@ -4850,18 +4850,45 @@ switch(_operation) do {
 
                                     if (_hasAliveProfiles) then {
 
-                                        // Check for enemy presence near the objective
+                                        // Check for enemy presence near the objective.
+                                        //
+                                        // Two-source check (#mil_logistics 2026-05-01 fix):
+                                        //   1. nearEntities catches SPAWNED units (players nearby).
+                                        //   2. ALiVE_fnc_getNearProfiles catches VIRTUALISED enemy
+                                        //      profiles (no players nearby - the common case for
+                                        //      contested objectives away from the player's AO).
+                                        //
+                                        // Without (2), an enemy-occupied objective whose units are
+                                        // virtualised looks "empty" to nearEntities, the validation
+                                        // passes, and HELI_INSERT routes reinforcements straight
+                                        // into hostile territory. Symptom: paradrop reinforcements
+                                        // landed at an enemy-held objective whose attackers were
+                                        // virtualised, so nearEntities returned 0 there.
                                         private _objPos = [_obj, "center"] call ALIVE_fnc_hashGet;
                                         private _sideObj = [_side] call ALIVE_fnc_sideTextToObject;
                                         private _nearUnits = _objPos nearEntities [["Man","Car","Tank"], 300];
                                         private _enemyNear = _nearUnits select { side _x != _sideObj && side _x != civilian };
 
-                                        if (count _enemyNear < 3) then {
+                                        // Build enemy-side string list for the profile lookup.
+                                        // getNearProfiles' categorySide takes side text strings
+                                        // ("EAST"/"WEST"/"GUER"), not side objects.
+                                        private _enemySides = ["EAST","WEST","GUER"] - [_side];
+                                        private _enemyProfiles = [_objPos, 300, [_enemySides, "entity"], true] call ALIVE_fnc_getNearProfiles;
+                                        // Filter out civilian-side profiles defensively in case
+                                        // a faction registry quirk leaves a civ profile flagged
+                                        // as a non-friendly side.
+                                        _enemyProfiles = _enemyProfiles select {
+                                            ((_x select 2 select 3) != "CIV") && {(_x select 2 select 3) != "CIVILIAN"}
+                                        };
+
+                                        private _enemyTotal = (count _enemyNear) + (count _enemyProfiles);
+
+                                        if (_enemyTotal < 3) then {
                                             _heldObjectives pushback _obj;
                                         } else {
                                             if (_debug) then {
-                                                ["ML - HELI_INSERT: Objective at %1 has tacom_state=reserve but %2 enemy units within 300m - treating as lost",
-                                                    _objPos, count _enemyNear] call ALiVE_fnc_dump;
+                                                ["ML - HELI_INSERT: Objective at %1 has tacom_state=reserve but %2 enemy units within 300m (entities=%3 profiles=%4) - treating as lost",
+                                                    _objPos, _enemyTotal, count _enemyNear, count _enemyProfiles] call ALiVE_fnc_dump;
                                             };
                                         };
 
