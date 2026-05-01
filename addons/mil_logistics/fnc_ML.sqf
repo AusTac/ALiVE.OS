@@ -4909,7 +4909,7 @@ switch(_operation) do {
                                     private _objID    = [_x, "objectiveID"] call ALIVE_fnc_hashGet;
                                     private _objState = [_x, "tacom_state", "none"] call ALIVE_fnc_hashGet;
                                     private _nearLocName = [_objPos] call ALIVE_fnc_taskGetNearestLocationName;
-                                    ["ML - HELI_INSERT: Held objective %1 near %2 at %3 tacom_state=%4",
+                                    ["ML - HELI_INSERT: Friendly-held objective %1 near %2 at %3 tacom_state=%4",
                                         _objID, _nearLocName, _objPos, _objState] call ALiVE_fnc_dump;
 
                                     // Temporary marker - auto-deletes after 3 minutes
