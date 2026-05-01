@@ -256,6 +256,11 @@ class CfgFunctions {
                 file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskGetCivilianClasses.sqf";
                 RECOMPILE;
             };
+            class taskGetHVTUnits {
+                description = "Utility return HVT-grade unit classnames (officer / commander / leader / captain) from a faction, with chooseRandomUnits fallback";
+                file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskGetHVTUnits.sqf";
+                RECOMPILE;
+            };
             class taskUpdateCivilianSupportState {
                 description = "Utility update persistent civilian support state for Hearts and Minds tasks";
                 file = "\x\alive\addons\mil_C2ISTAR\utils\fnc_taskUpdateCivilianSupportState.sqf";
