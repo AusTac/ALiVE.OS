@@ -6527,6 +6527,11 @@ switch(_operation) do {
                 _planeProfiles = [_eventCargoProfiles, 'plane'] call ALIVE_fnc_hashGet;
                 _heliProfiles = [_eventCargoProfiles, 'heli'] call ALIVE_fnc_hashGet;
 
+                if (_debug) then {
+                    ["ML - heliTransportStart ENTER: event=%1 transportProfiles=%2 infantryProfiles=%3 destination=%4",
+                        _eventID, count _transportProfiles, count _infantryProfiles, _eventPosition] call ALiVE_fnc_dump;
+                };
+
                 _count = [_logic, "checkEvent", _event] call MAINCLASS;
                 if(_count == 0) exitWith {
                     // set state to event complete
@@ -6686,6 +6691,15 @@ switch(_operation) do {
                 };
 
 
+                // Reset stateData on entry so heliTransport's iteration counter
+                // starts at 0. Without this, _waitIterations inherits whatever
+                // value the prior state left in stateData[0] - a heli that
+                // entered heliTransport with stateData[0] already near 200
+                // would trip the stuck-recovery cadence (50/80/110/140/170/200)
+                // and the 200-iteration timeout within minutes of state entry,
+                // not the documented 33-minute window (200 ticks * 10 s
+                // monitor loop).
+                [_event, "stateData", []] call ALIVE_fnc_hashSet;
                 [_event, "state", "heliTransport"] call ALIVE_fnc_hashSet;
                 [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
 
@@ -6697,6 +6711,12 @@ switch(_operation) do {
 
                 private ["_waitTotalIterations","_waitIterations","_waitDifference","_transportProfiles","_infantryProfiles","_completed",
                 "_planeProfiles","_heliProfiles","_waypointsCompleted","_waypointsNotCompleted","_profile","_position","_distance","_count"];
+
+                if (_debug) then {
+                    private _iterPreview = _eventStateData param [0, 0];
+                    ["ML - heliTransport ENTER: event=%1 iter=%2 transportProfiles=%3 destination=%4",
+                        _eventID, _iterPreview, count _eventTransportProfiles, _eventPosition] call ALiVE_fnc_dump;
+                };
 
                 _count = [_logic, "checkEvent", _event] call MAINCLASS;
                 if(_count == 0) exitWith {
@@ -6728,7 +6748,20 @@ switch(_operation) do {
 
                     if!(isNil "_profile") then {
 
-                        _completed = [_logic,"checkWaypointCompleted",_profile] call MAINCLASS;
+                        // Once an entity profile has signalled delivery (sling_ready
+                        // received, or live position confirmed within 500 m of the event
+                        // centre on a prior iteration), latch a per-profile delivered
+                        // flag and treat it as completed for the rest of heliTransport.
+                        // Without this, a heli that delivered then started RTB drifts
+                        // beyond 500 m, the position check below fails on the next
+                        // iteration, and the stuck-recovery block reassigns its
+                        // waypoint BACK to the event centre - cancelling RTB and
+                        // looping the heli around the drop site. Source of the
+                        // "freezing during phases" symptom in mil_logistics RPTs.
+                        private _alreadyDelivered = [_profile, "alive_ml_delivered", false] call ALIVE_fnc_hashGet;
+                        _completed = if (_alreadyDelivered) then { true } else {
+                            [_logic,"checkWaypointCompleted",_profile] call MAINCLASS
+                        };
 
                         if!(_completed) then {
 
@@ -6744,6 +6777,11 @@ switch(_operation) do {
                                 if (!isNull _heliObj && alive _heliObj) then {
                                     if (_heliObj distance _eventPosition < 500) then {
                                         _completed = true;
+                                        // Latch delivered so subsequent iterations skip
+                                        // the stuck-recovery branch.
+                                        [_profile, "alive_ml_delivered", true] call ALIVE_fnc_hashSet;
+                                        ["ML - heliTransport: %1 LATCH delivered via position-check (dist=%2 iter=%3)",
+                                            _x, _heliObj distance _eventPosition, _waitIterations] call ALiVE_fnc_dump;
                                     };
 
                                     // Stuck-heli recovery: if the heli has not reached the
@@ -6778,6 +6816,8 @@ switch(_operation) do {
                                     // Clear the flag immediately to prevent duplicate calls on
                                     // subsequent monitor loop cycles before the profile is destroyed.
                                     [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                                    // Latch delivered so subsequent iterations skip recovery.
+                                    [_profile, "alive_ml_delivered", true] call ALIVE_fnc_hashSet;
                                     ["ML - heliTransport: %1 sling_ready signal received (no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
                                         _x, (_profile select 2 select 1), isNull _heliObjSR] call ALiVE_fnc_dump;
                                 };
@@ -6787,7 +6827,15 @@ switch(_operation) do {
 
                         if (_completed) then {
                             _waypointsCompleted = _waypointsCompleted + 1;
-                            [_logic,"unloadTransportHelicopter",[_event,_profile]] call MAINCLASS;
+                            // Skip the unload re-trigger on iterations after the first
+                            // successful delivery. The first call is sufficient; the
+                            // alive_ml_sling_unload_active guard inside
+                            // unloadTransportHelicopter no-ops re-entry, but skipping
+                            // here avoids the redundant call entirely and keeps the log
+                            // clean.
+                            if (!_alreadyDelivered) then {
+                                [_logic,"unloadTransportHelicopter",[_event,_profile]] call MAINCLASS;
+                            };
                         } else {
                             _waypointsNotCompleted = _waypointsNotCompleted + 1;
                         };
@@ -6826,7 +6874,13 @@ switch(_operation) do {
                     _profile = [ALIVE_profileHandler, "getProfile", _x select 0] call ALIVE_fnc_profileHandler;
                     if!(isNil "_profile") then {
 
-                        _completed = [_logic,"checkWaypointCompleted",_profile] call MAINCLASS;
+                        // Mirror the _transportProfiles loop above: latch a delivered
+                        // flag once a heli has reached the destination, and skip
+                        // the stuck-recovery branch on subsequent iterations.
+                        private _alreadyDelivered = [_profile, "alive_ml_delivered", false] call ALIVE_fnc_hashGet;
+                        _completed = if (_alreadyDelivered) then { true } else {
+                            [_logic,"checkWaypointCompleted",_profile] call MAINCLASS
+                        };
 
                         if!(_completed) then {
 
@@ -6852,6 +6906,11 @@ switch(_operation) do {
                             if (!isNull _heliObj && alive _heliObj) then {
                                 if (_heliObj distance _eventPosition < 500) then {
                                     _completed = true;
+                                    // Latch delivered so subsequent iterations skip
+                                    // the stuck-recovery branch.
+                                    [_profile, "alive_ml_delivered", true] call ALIVE_fnc_hashSet;
+                                    ["ML - heliTransport: %1 LATCH delivered via position-check (heliProfiles, dist=%2 iter=%3)",
+                                        _x, _heliObj distance _eventPosition, _waitIterations] call ALiVE_fnc_dump;
                                 };
                                 if (_heliActive && !_completed && _waitIterations > 20 && (_waitIterations - 20) % 30 == 0) then {
                                     private _newWP = [_eventPosition, 200, "MOVE", "NORMAL", 300, [], "LINE"] call ALIVE_fnc_createProfileWaypoint;
@@ -6875,6 +6934,8 @@ switch(_operation) do {
                             if (!_alreadyActiveH) then {
                                 _completed = true;
                                 [_profile, "alive_ml_sling_ready", false] call ALIVE_fnc_hashSet;
+                                // Latch delivered so subsequent iterations skip recovery.
+                                [_profile, "alive_ml_delivered", true] call ALIVE_fnc_hashSet;
                                 ["ML - heliTransport: %1 sling_ready signal (heliProfiles no-player path), triggering unload. _heliActive=%2 heliObjNull=%3",
                                     _x, (_profile select 2 select 1), isNull _heliObjSRH] call ALiVE_fnc_dump;
                             };
@@ -6882,7 +6943,11 @@ switch(_operation) do {
 
                         if (_completed) then {
                             _waypointsCompleted = _waypointsCompleted + 1;
-                            [_logic,"unloadTransportHelicopter",[_event,_profile]] call MAINCLASS;
+                            // Skip the unload re-trigger on iterations after the first
+                            // successful delivery. Same rationale as _transportProfiles.
+                            if (!_alreadyDelivered) then {
+                                [_logic,"unloadTransportHelicopter",[_event,_profile]] call MAINCLASS;
+                            };
                         } else {
                             _waypointsNotCompleted = _waypointsNotCompleted + 1;
                         };
@@ -6942,6 +7007,11 @@ switch(_operation) do {
             };
 
             case "heliTransportReturn": {
+
+                if (_debug) then {
+                    ["ML - heliTransportReturn ENTER: event=%1 transportProfiles=%2",
+                        _eventID, count _eventTransportProfiles] call ALiVE_fnc_dump;
+                };
 
                 private _count = [_logic, "checkEvent", _event] call MAINCLASS;
                 if(_count == 0 && count _eventTransportProfiles == 0) exitWith {
@@ -8491,6 +8561,11 @@ switch(_operation) do {
                 _transportProfiles = _eventTransportProfiles;
                 _infantryProfiles  = [_eventCargoProfiles, 'infantry'] call ALIVE_fnc_hashGet;
 
+                if (_debug) then {
+                    ["ML - heliParadropStart ENTER: event=%1 transportProfiles=%2 infantryProfiles=%3 destination=%4",
+                        _eventID, count _transportProfiles, count _infantryProfiles, _eventPosition] call ALiVE_fnc_dump;
+                };
+
                 _count = [_logic, "checkEvent", _event] call MAINCLASS;
                 if(_count == 0) exitWith {
                     [_event, "state", "eventComplete"] call ALIVE_fnc_hashSet;
@@ -8559,6 +8634,10 @@ switch(_operation) do {
                     };
                 } forEach _transportProfiles;
 
+                // Reset stateData on entry to heliParadropFly so its 300-iteration
+                // timeout starts at 0. Mirrors the heliTransport reset - same
+                // stateData-inheritance bug between transition states.
+                [_event, "stateData", []] call ALIVE_fnc_hashSet;
                 [_event, "state", "heliParadropFly"] call ALIVE_fnc_hashSet;
                 [_eventQueue, _eventID, _event] call ALIVE_fnc_hashSet;
 
@@ -8622,6 +8701,11 @@ switch(_operation) do {
             };
 
             case "heliParadropReturn": {
+
+                if (_debug) then {
+                    ["ML - heliParadropReturn ENTER: event=%1 transportProfiles=%2",
+                        _eventID, count _eventTransportProfiles] call ALiVE_fnc_dump;
+                };
 
                 private _count = [_logic, "checkEvent", _event] call MAINCLASS;
                 if (_count == 0 && count _eventTransportProfiles == 0) exitWith {
