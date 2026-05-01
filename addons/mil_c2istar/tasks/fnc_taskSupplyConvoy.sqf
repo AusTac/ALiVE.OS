@@ -143,7 +143,7 @@ switch (_taskState) do {
         _convoyPosition set [2, 0];
 
         private _sourceContactGroup = createGroup [civilian, true];
-        private _sourceContact = _sourceContactGroup createUnit [selectRandom ["C_man_1", "C_man_polo_1_F", "C_man_polo_2_F", "C_man_w_worker_F"], _sourceContactPosition, [], 0, "NONE"];
+        private _sourceContact = _sourceContactGroup createUnit [selectRandom ([] call ALiVE_fnc_taskGetCivilianClasses), _sourceContactPosition, [], 0, "NONE"];
         removeAllWeapons _sourceContact;
         _sourceContact disableAI "AUTOTARGET";
         _sourceContact disableAI "TARGET";
@@ -157,7 +157,7 @@ switch (_taskState) do {
         _sourceContact setVariable ["ALiVE_advciv_active", false, true];
 
         private _destinationContactGroup = createGroup [civilian, true];
-        private _destinationContact = _destinationContactGroup createUnit [selectRandom ["C_man_1", "C_man_polo_4_F", "C_man_polo_5_F", "C_man_w_worker_F"], _destinationContactPosition, [], 0, "NONE"];
+        private _destinationContact = _destinationContactGroup createUnit [selectRandom ([] call ALiVE_fnc_taskGetCivilianClasses), _destinationContactPosition, [], 0, "NONE"];
         removeAllWeapons _destinationContact;
         _destinationContact disableAI "AUTOTARGET";
         _destinationContact disableAI "TARGET";
