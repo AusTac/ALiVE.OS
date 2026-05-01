@@ -6488,7 +6488,7 @@ switch(_operation) do {
                                     [_event, "state", "transportLoad"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -6499,7 +6499,7 @@ switch(_operation) do {
                                     [_event, "state", "heliTransportStart"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -6507,7 +6507,7 @@ switch(_operation) do {
 
                                     [_event, "state", "heliParadropStart"] call ALIVE_fnc_hashSet;
 
-                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -6518,7 +6518,7 @@ switch(_operation) do {
                                     [_event, "state", "airdropWait"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -6727,7 +6727,7 @@ switch(_operation) do {
 
 
                 // dispatch event
-                _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                 [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                 // respond to player request
@@ -7769,7 +7769,7 @@ switch(_operation) do {
 
 
                 // dispatch event
-                _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                 [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
 
@@ -10180,7 +10180,7 @@ switch(_operation) do {
                                     [_event, "state", "transportLoad"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -10191,7 +10191,7 @@ switch(_operation) do {
                                     [_event, "state", "heliTransportStart"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_INSERTION', [_reinforcementPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -10392,7 +10392,7 @@ switch(_operation) do {
                                     [_event, "state", "airdropStart"] call ALIVE_fnc_hashSet;
 
                                     // dispatch event
-                                    _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                                    _logEvent = ['LOGISTICS_DESTINATION', [_eventPosition,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                                 };
@@ -11914,7 +11914,7 @@ switch(_operation) do {
 
             // dispatch event
             _finalDestination = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
-            _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+            _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
             [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
             // Arrival summary -- always logged
@@ -12413,7 +12413,7 @@ switch(_operation) do {
 
                     // dispatch event
                     _finalDestination = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
-                    _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                    _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                     // respond to player request
@@ -12429,7 +12429,7 @@ switch(_operation) do {
 
                     // dispatch event
                     _finalDestination = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
-                    _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                    _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                     [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
                     // respond to player request
@@ -12490,7 +12490,7 @@ switch(_operation) do {
 
                 // dispatch event
                 _finalDestination = [_event, "finalDestination"] call ALIVE_fnc_hashGet;
-                _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID],"Logistics"] call ALIVE_fnc_event;
+                _logEvent = ['LOGISTICS_COMPLETE', [_finalDestination,_eventFaction,_side,_eventID,_eventType],"Logistics"] call ALIVE_fnc_event;
                 [ALIVE_eventLog, "addEvent",_logEvent] call ALIVE_fnc_eventLog;
 
             };
