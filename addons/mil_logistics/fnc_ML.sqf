@@ -5449,6 +5449,16 @@ switch(_operation) do {
                                 _transportGroups append ([ALIVE_sideDefaultAirTransport,_side] call ALIVE_fnc_hashGet);
                             };
 
+                            // HELI_INSERT requires LANDING at the destination LZ. Filter
+                            // _transportGroups to Helicopter-kindOf classes only - VTOL
+                            // planes (MV-22 Osprey, V-44 Blackfish) appear in some faction
+                            // / side air-transport registries but fail to use the helipad
+                            // landing positions and the slingload pickup never completes.
+                            // HELI_PARADROP (overflight, no landing) keeps planes / VTOLs;
+                            // only filter on this slingload-via-HELI_INSERT path. select
+                            // creates a new array so the registry stays intact.
+                            _transportGroups = _transportGroups select { _x isKindOf "Helicopter" };
+
                             if(count _transportGroups > 0) then {
 
                                 // If any of the vehicles cannot be airlifted, will need to switch to a standard delivery for vehicles
@@ -5753,6 +5763,15 @@ switch(_operation) do {
                             if(count _transportGroups == 0) then {
                                 _transportGroups = [ALIVE_sideDefaultAirTransport,_side] call ALIVE_fnc_hashGet;
                             };
+
+                            // HELI_INSERT (infantry transport) requires LANDING at the
+                            // destination LZ. Filter to Helicopter-kindOf classes only -
+                            // VTOL planes (MV-22 Osprey, V-44 Blackfish) appear in some
+                            // faction / side air-transport registries but cannot use the
+                            // helipad landing positions, leaving infantry stuck on the
+                            // departure LZ. HELI_PARADROP (overflight) keeps planes / VTOLs.
+                            // select creates a new array so the registry stays intact.
+                            _transportGroups = _transportGroups select { _x isKindOf "Helicopter" };
 
                             if(count _transportGroups > 0) then {
 
